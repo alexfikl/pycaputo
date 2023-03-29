@@ -1,0 +1,14 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools>=42",
+    "wheel",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+exclude='\.eggs|\.git|\.mypy_cache|build|dist|\.pytest_cache|\.pytype'
+
+[tool.isort]
+profile = "black"

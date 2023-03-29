@@ -26,5 +26,5 @@ Links
 
 Other known libraries for fractional calculus
 
-* `differint <https://github.com/differint/differint>`__.
-  `FractionalDiffEq.jl <https://github.com/SciFracX/FractionalDiffEq.jl>`__.
+* `differint <https://github.com/differint/differint>`__
+* `FractionalDiffEq.jl <https://github.com/SciFracX/FractionalDiffEq.jl>`__
