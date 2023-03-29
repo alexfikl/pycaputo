@@ -49,14 +49,8 @@ reuse:			## Check REUSE license compliance
 # {{{ testing
 
 REQUIREMENTS=\
-	requirements-build.txt \
 	requirements-dev.txt \
 	requirements.txt
-
-requirements-build.txt: requirements-build.in
-	$(PYTHON) -m piptools compile \
-		--resolver=backtracking --upgrade \
-		-o $@ $<
 
 requirements-dev.txt: setup.cfg
 	$(PYTHON) -m piptools compile \
