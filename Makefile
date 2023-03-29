@@ -68,7 +68,6 @@ pin: $(REQUIREMENTS)	## Pin dependencies versions to requirements.txt
 
 pip-install:			## Install pinned depdencies from requirements.txt
 	$(PYTHON) -m pip install --upgrade pip setuptools
-	$(PYTHON) -m pip install -r requirements-build.txt
 	$(PYTHON) -m pip install -r requirements-dev.txt -e .
 .PHONY: pip-install
 
