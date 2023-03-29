@@ -23,3 +23,8 @@ Links
 
 * `Documentation <https://pycaputo.readthedocs.io/en/latest/>`__
 * `Code <https://github.com/alexfikl/pycaputo>`__
+
+Other known libraries for fractional calculus
+
+* `differint <https://github.com/differint/differint>`__.
+  `FractionalDiffEq.jl <https://github.com/SciFracX/FractionalDiffEq.jl>`__.
