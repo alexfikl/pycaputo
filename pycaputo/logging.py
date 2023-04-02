@@ -10,6 +10,17 @@ def get_logger(
     module: str,
     level: Optional[Union[int, str]] = None,
 ) -> logging.Logger:
+    """Create a new logging for the module *module*.
+
+    The logger is created using a :class:`rich.logging.RichHandler` for fancy
+    highlighting. The ``NO_COLOR`` environment variable can be used to
+    disable colors.
+
+    :arg module: a name for the module to create a logger for.
+    :arg level: if *None*, the default value is taken to from the
+        ``PYCAPUTO_LOGGING_LEVEL`` environment variable and falls back to the
+        ``INFO`` level if it does not exist (see :mod:`logging`).
+    """
     if level is None:
         level = os.environ.get("PYCAPUTO_LOGGING_LEVEL", "INFO").upper()
 
@@ -18,11 +29,23 @@ def get_logger(
 
     assert isinstance(level, int)
 
+    logger = logging.getLogger(module)
+    logger.setLevel(level)
+
+    from rich.highlighter import NullHighlighter
     from rich.logging import RichHandler
 
-    logger = logging.getLogger(module)
-    logger.propagate = False
-    logger.setLevel(level)
-    logger.addHandler(RichHandler())
+    no_color = "NO_COLOR" in os.environ
+    handler = RichHandler(
+        level,
+        show_time=True,
+        omit_repeated_times=False,
+        show_level=True,
+        show_path=True,
+        highlighter=NullHighlighter() if no_color else None,
+        markup=True,
+    )
+
+    logger.addHandler(handler)
 
     return logger

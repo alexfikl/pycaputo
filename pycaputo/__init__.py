@@ -7,14 +7,14 @@ from pycaputo.derivatives import (
     FractionalDerivative,
     RiemannLiouvilleDerivative,
 )
-from pycaputo.differentiation import CaputoL1Algorithm, DerivativeAlgorithm
+from pycaputo.differentiation import CaputoL1Method, DerivativeMethod
 from pycaputo.utils import ScalarFunction
 
 __all__ = (
     "FractionalDerivative",
     "CaputoDerivative",
     "RiemannLiouvilleDerivative",
-    "DerivativeAlgorithm",
-    "CaputoL1Algorithm",
+    "DerivativeMethod",
+    "CaputoL1Method",
     "ScalarFunction",
 )
