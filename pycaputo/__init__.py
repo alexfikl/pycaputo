@@ -6,15 +6,18 @@ from pycaputo.derivatives import (
     CaputoDerivative,
     FractionalDerivative,
     RiemannLiouvilleDerivative,
+    Side,
 )
-from pycaputo.differentiation import CaputoL1Method, DerivativeMethod
+from pycaputo.differentiation import CaputoL1Method, DerivativeMethod, evaluate
 from pycaputo.utils import ScalarFunction
 
 __all__ = (
-    "FractionalDerivative",
     "CaputoDerivative",
-    "RiemannLiouvilleDerivative",
-    "DerivativeMethod",
     "CaputoL1Method",
+    "DerivativeMethod",
+    "FractionalDerivative",
+    "RiemannLiouvilleDerivative",
     "ScalarFunction",
+    "Side",
+    "evaluate",
 )

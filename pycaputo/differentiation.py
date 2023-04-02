@@ -7,6 +7,7 @@ from functools import singledispatch
 import numpy as np
 
 from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.grid import Points
 from pycaputo.utils import ScalarFunction
 
 # {{{ interface
@@ -18,7 +19,7 @@ class DerivativeMethod:
 
 
 @singledispatch
-def evaluate(alg: DerivativeMethod, f: ScalarFunction, x: np.ndarray) -> np.ndarray:
+def evaluate(alg: DerivativeMethod, f: ScalarFunction, x: Points) -> np.ndarray:
     """Evaluate the fractional derivative of *f*.
 
     :arg alg: method used to evaluate the derivative.
@@ -40,6 +41,8 @@ def evaluate(alg: DerivativeMethod, f: ScalarFunction, x: np.ndarray) -> np.ndar
 class CaputoL1Method(DerivativeMethod):
     r"""Implements the L1 method for the Caputo fractional derivative
     of order :math:`\alpha in (0, 1)`.
+
+    This method is defined in Section 4.1 from [Li2020]_.
     """
 
     #: The type of the Caputo derivative.
@@ -63,25 +66,33 @@ def make_caputo_l1(order: float, side: Side = Side.Left) -> CaputoL1Method:
 
 
 @evaluate.register(CaputoL1Method)
-def _evaluate_l1method(
-    alg: CaputoL1Method, f: ScalarFunction, x: np.ndarray
-) -> np.ndarray:
+def _evaluate_l1method(alg: CaputoL1Method, f: ScalarFunction, p: Points) -> np.ndarray:
     import math
 
-    fx = f(x)
-    h = np.diff(x)
+    from pycaputo.grid import UniformPoints
 
+    x = p.x
+    fx = f(x)
     alpha = alg.d.order
-    g_alpha = math.gamma(2 - alpha)
 
     df = np.empty_like(x)
-    for i in range(1, df.size - 1):
-        b = (
-            1
-            / (g_alpha * h[:i])
-            * ((x[i] - x[:i]) ** (1 - alpha) - (x[i] - x[1 : i + 1]) ** (1 - alpha))
-        )
-        df[i] = np.sum(b * np.diff(fx[: i + 1]))
+    if isinstance(x, UniformPoints):
+        c = p.dx[0] ** alpha * math.gamma(2 - alpha)
+
+        # NOTE: [Li2020] Equation 4.3
+        for n in range(1, df.size - 1):
+            k = np.arange(n)
+            omega = (n - k) ** (1 - alpha) - (n - k - 1) ** (1 - alpha)
+            df[n] = np.sum(omega * np.diff(fx[: n + 1])) / c
+    else:
+        c = math.gamma(2 - alpha)
+
+        # NOTE: [Li2020] Equation 4.20
+        for n in range(1, df.size - 1):
+            omega = (
+                (x[n] - x[:n]) ** (1 - alpha) - (x[n] - x[1 : n + 1]) ** (1 - alpha)
+            ) / p.dx[:n]
+            df[n] = np.sum(omega * np.diff(fx[: n + 1])) / c
 
     return df
 

@@ -8,6 +8,7 @@ Welcome
     derivative
     algorithms
     misc
+    references
 
 Indices and tables
 ==================
