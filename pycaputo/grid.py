@@ -6,19 +6,21 @@ from functools import cached_property
 
 import numpy as np
 
+from pycaputo.utils import Array
+
 
 @dataclass(frozen=True)
 class Points:
     a: float
     b: float
-    x: np.ndarray
+    x: Array
 
     @property
     def n(self) -> int:
         return self.x.size
 
     @cached_property
-    def dx(self) -> np.array:
+    def dx(self) -> Array:
         return np.diff(self.x)
 
 

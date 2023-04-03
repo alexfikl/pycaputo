@@ -8,7 +8,7 @@ import numpy as np
 
 from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import ScalarFunction
+from pycaputo.utils import Array, ScalarFunction
 
 # {{{ interface
 
@@ -19,7 +19,7 @@ class DerivativeMethod:
 
 
 @singledispatch
-def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> np.ndarray:
+def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
     """Evaluate the fractional derivative of *f*.
 
     :arg m: method used to evaluate the derivative.
@@ -66,7 +66,7 @@ def make_caputo_l1(order: float, side: Side = Side.Left) -> CaputoL1Method:
 
 
 @evaluate.register(CaputoL1Method)
-def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> np.ndarray:
+def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array:
     import math
 
     from pycaputo.grid import UniformPoints

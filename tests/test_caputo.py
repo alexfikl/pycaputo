@@ -6,7 +6,7 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import Array, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_caputo")
 set_recommended_matplotlib()
@@ -21,11 +21,11 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
     from pycaputo import CaputoDerivative, CaputoL1Method, Side, evaluate
     from pycaputo.grid import make_uniform_points
 
-    def f(x: np.ndarray) -> np.ndarray:
+    def f(x: Array) -> Array:
         return (1 + x) ** 3
 
-    def df(x: np.ndarray) -> np.ndarray:
-        return (
+    def df(x: Array) -> Array:
+        return np.array(
             3 * x ** (1 - alpha) / math.gamma(2 - alpha)
             + 6 * x ** (2 - alpha) / math.gamma(3 - alpha)
             + 6 * x ** (3 - alpha) / math.gamma(4 - alpha)

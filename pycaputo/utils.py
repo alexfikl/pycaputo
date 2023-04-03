@@ -30,11 +30,16 @@ T = TypeVar("T")
 #: A union of types supported as paths
 PathLike = Union[pathlib.Path, str]
 
+#: Array type for :class:`numpy.ndarray`
+Array = np.ndarray[Any, Any]
+#: Scalar type
+Scalar = Union[np.generic, Array]
+
 
 class ScalarFunction(Protocol):
     """A generic callable that can be evaluated at :math:`x`."""
 
-    def __call__(self, x: np.ndarray) -> np.ndarray:
+    def __call__(self, x: Array) -> Array:
         """
         :arg x: a scalar or array at which to evaluate the function.
         """
@@ -71,10 +76,10 @@ class EOCRecorder:
 
         self.name = name
         self.dtype = dtype
-        self.history: List[Tuple[np.ndarray, np.ndarray]] = []
+        self.history: List[Tuple[Scalar, Scalar]] = []
 
     @property
-    def _history(self) -> np.ndarray:
+    def _history(self) -> Array:
         return np.array(self.history, dtype=self.dtype).T
 
     def add_data_point(self, h: Any, error: Any) -> None:
@@ -89,7 +94,7 @@ class EOCRecorder:
     @property
     def estimated_order(self) -> float:
         if not self.history:
-            return np.array(np.nan, dtype=self.dtype)
+            return np.nan
 
         h, error = self._history
         _, eoc = estimate_order_of_convergence(h, error)
@@ -97,16 +102,14 @@ class EOCRecorder:
 
     @property
     def max_error(self) -> float:
-        return np.amax(
-            np.array([error for _, error in self.history], dtype=self.dtype),
-            initial=np.array(0.0, dtype=self.dtype),
-        )
+        r = np.amax(np.array([error for _, error in self.history], dtype=self.dtype))
+        return float(r)
 
     def __str__(self) -> str:
         return stringify_eoc(self)
 
 
-def estimate_order_of_convergence(x: np.ndarray, y: np.ndarray) -> Tuple[float, float]:
+def estimate_order_of_convergence(x: Array, y: Array) -> Tuple[float, float]:
     """Computes an estimate of the order of convergence in the least-square sense.
     This assumes that the :math:`(x, y)` pair follows a law of the form
 
@@ -120,14 +123,14 @@ def estimate_order_of_convergence(x: np.ndarray, y: np.ndarray) -> Tuple[float, 
     if x.size <= 1:
         raise RuntimeError("Need at least two values to estimate order.")
 
-    eps = np.finfo(x.dtype).eps  # type: ignore[no-untyped-call]
+    eps = np.finfo(x.dtype).eps
     c = np.polyfit(np.log10(x + eps), np.log10(y + eps), 1)
     return 10 ** c[-1], c[-2]
 
 
 def estimate_gliding_order_of_convergence(
-    x: np.ndarray, y: np.ndarray, *, gliding_mean: Optional[int] = None
-) -> np.ndarray:
+    x: Array, y: Array, *, gliding_mean: Optional[int] = None
+) -> Array:
     assert x.size == y.size
     if x.size <= 1:
         raise RuntimeError("Need at least two values to estimate order.")
