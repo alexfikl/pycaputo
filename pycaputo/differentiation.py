@@ -19,15 +19,15 @@ class DerivativeMethod:
 
 
 @singledispatch
-def evaluate(alg: DerivativeMethod, f: ScalarFunction, x: Points) -> np.ndarray:
+def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> np.ndarray:
     """Evaluate the fractional derivative of *f*.
 
-    :arg alg: method used to evaluate the derivative.
+    :arg m: method used to evaluate the derivative.
     :arg f: a simple function for which to evaluate the derivative.
     :arg x: an array of points at which to evaluate the derivative.
     """
     raise NotImplementedError(
-        f"Cannot evaluate function with method '{type(alg).__name__}'"
+        f"Cannot evaluate function with method '{type(m).__name__}'"
     )
 
 
@@ -66,24 +66,24 @@ def make_caputo_l1(order: float, side: Side = Side.Left) -> CaputoL1Method:
 
 
 @evaluate.register(CaputoL1Method)
-def _evaluate_l1method(alg: CaputoL1Method, f: ScalarFunction, p: Points) -> np.ndarray:
+def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> np.ndarray:
     import math
 
     from pycaputo.grid import UniformPoints
 
     x = p.x
     fx = f(x)
-    alpha = alg.d.order
+    alpha = m.d.order
 
-    df = np.empty_like(x)
-    if isinstance(x, UniformPoints):
+    df = np.zeros_like(x)
+    if isinstance(p, UniformPoints):
         c = p.dx[0] ** alpha * math.gamma(2 - alpha)
 
         # NOTE: [Li2020] Equation 4.3
-        for n in range(1, df.size - 1):
+        for n in range(1, df.size):
             k = np.arange(n)
-            omega = (n - k) ** (1 - alpha) - (n - k - 1) ** (1 - alpha)
-            df[n] = np.sum(omega * np.diff(fx[: n + 1])) / c
+            omega = (k + 1) ** (1 - alpha) - k ** (1 - alpha)
+            df[n] = np.sum(omega * np.diff(fx[: n + 1])[::-1]) / c
     else:
         c = math.gamma(2 - alpha)
 

@@ -1,12 +1,34 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-from typing import Any, Iterable, List, Optional, Protocol, Tuple, TypeVar
+import os
+import pathlib
+from contextlib import contextmanager
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 
+from pycaputo.logging import get_logger
+
+logger = get_logger(__name__)
+
+# {{{ typing
+
 #: A generic invariant :class:`typing.TypeVar`.
 T = TypeVar("T")
+
+#: A union of types supported as paths
+PathLike = Union[pathlib.Path, str]
 
 
 class ScalarFunction(Protocol):
@@ -17,6 +39,9 @@ class ScalarFunction(Protocol):
         :arg x: a scalar or array at which to evaluate the function.
         """
         ...
+
+
+# }}}
 
 
 # {{{ Estimated Order of Convergence (EOC)
@@ -158,7 +183,7 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
             (f"{h[i]:.3e}",)
             + flatten(
                 [
-                    (f"{error[i]:.6e}", "---" if i == 0 else f"{order[i - 1, i]:.3f}")
+                    (f"{error[i]:.6e}", "---" if i == 0 else f"{order[i - 1, 1]:.3f}")
                     for (_, error), order in zip(histories, orders)
                 ]
             )
@@ -177,6 +202,120 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
             for line in lines
         ]
     )
+
+
+# }}}
+
+
+# {{{ matplotlib helpers
+
+
+def check_usetex(*, s: bool) -> bool:
+    try:
+        import matplotlib
+    except ImportError:
+        return False
+
+    if matplotlib.__version__ < "3.6.0":
+        return bool(matplotlib.checkdep_usetex(s))
+
+    # NOTE: simplified version from matplotlib
+    # https://github.com/matplotlib/matplotlib/blob/ec85e725b4b117d2729c9c4f720f31cf8739211f/lib/matplotlib/__init__.py#L439=L456
+
+    import shutil
+
+    if not shutil.which("tex"):
+        return False
+
+    if not shutil.which("dvipng"):
+        return False
+
+    if not shutil.which("gs"):
+        return False
+
+    return True
+
+
+def set_recommended_matplotlib(use_tex: Optional[bool] = None) -> None:
+    try:
+        import matplotlib.pyplot as mp
+    except ImportError:
+        return
+
+    if use_tex is None:
+        use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)
+
+    defaults = {
+        "figure": {"figsize": (8, 8), "dpi": 300, "constrained_layout": {"use": True}},
+        "text": {"usetex": use_tex},
+        "legend": {"fontsize": 32},
+        "lines": {"linewidth": 2, "markersize": 10},
+        "axes": {
+            "labelsize": 32,
+            "titlesize": 32,
+            "grid": True,
+            # NOTE: preserve existing colors (the ones in "science" are ugly)
+            "prop_cycle": mp.rcParams["axes.prop_cycle"],
+        },
+        "xtick": {"labelsize": 24, "direction": "inout"},
+        "ytick": {"labelsize": 24, "direction": "inout"},
+        "axes.grid": {"axis": "both", "which": "both"},
+        "xtick.major": {"size": 6.5, "width": 1.5},
+        "ytick.major": {"size": 6.5, "width": 1.5},
+        "xtick.minor": {"size": 4.0},
+        "ytick.minor": {"size": 4.0},
+    }
+
+    try:
+        # NOTE: since v1.1.0 an import is required to import the styles
+        import SciencePlots  # noqa: F401
+    except ImportError:
+        pass
+
+    if "science" in mp.style.library:
+        mp.style.use(["science", "ieee"])
+    else:
+        if "seaborn-v0_8" in mp.style.library:
+            # NOTE: matplotlib v3.6 deprecated all the seaborn styles
+            mp.style.use("seaborn-v0_8-white")
+        elif "seaborn" in mp.style.library:
+            # NOTE: for older versions of matplotlib
+            mp.style.use("seaborn-white")
+
+    for group, params in defaults.items():
+        try:
+            mp.rc(group, **params)
+        except KeyError:
+            pass
+
+
+@contextmanager
+def figure(filename: Optional[PathLike] = None, **kwargs: Any) -> Iterator[Any]:
+    import matplotlib.pyplot as mp
+
+    fig = mp.figure()
+    try:
+        yield fig
+    finally:
+        if filename is not None:
+            savefig(fig, filename, **kwargs)
+        else:
+            mp.show()
+
+        mp.close(fig)
+
+
+def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
+    import matplotlib.pyplot as mp
+    import slugify
+
+    ext = mp.rcParams["savefig.format"]
+    filename = pathlib.Path(filename)
+    filename = (filename.parent / slugify.slugify(filename.name)).with_suffix(f".{ext}")
+
+    logger.info("Saving '%s'", filename)
+
+    fig.savefig(filename, **kwargs)
 
 
 # }}}
