@@ -38,7 +38,6 @@ class ScalarFunction(Protocol):
         """
         :arg x: a scalar or array at which to evaluate the function.
         """
-        ...
 
 
 # }}}
@@ -89,8 +88,6 @@ class EOCRecorder:
 
     @property
     def estimated_order(self) -> float:
-        import numpy as np
-
         if not self.history:
             return np.array(np.nan, dtype=self.dtype)
 

@@ -25,7 +25,8 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
         return (
             3 * x ** (1 - alpha) / math.gamma(2 - alpha)
             + 6 * x ** (2 - alpha) / math.gamma(3 - alpha)
-            + 6 * x ** (3 - alpha) / math.gamma(4 - alpha))
+            + 6 * x ** (3 - alpha) / math.gamma(4 - alpha)
+        )
 
     from pycaputo.utils import EOCRecorder, savefig
 

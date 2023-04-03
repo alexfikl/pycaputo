@@ -57,12 +57,12 @@ def make_caputo_l1(order: float, side: Side = Side.Left) -> CaputoL1Method:
         :math:`(0, 1)`.
     :arg side: the side of the derivative.
     """
-    if not (0 < order < 1):
+    if not 0 < order < 1:
         raise ValueError(
             "CaputoL1Method only supports order of (0, 1): order is '{order}'"
         )
 
-    return CaputoL1Method(d=CaputoDerivative(order=order))
+    return CaputoL1Method(d=CaputoDerivative(order=order, side=side))
 
 
 @evaluate.register(CaputoL1Method)
