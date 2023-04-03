@@ -14,3 +14,5 @@ pygments==2.14.0
     # via rich
 rich==13.3.3
     # via pycaputo (setup.cfg)
+slugify==0.0.1
+    # via pycaputo (setup.cfg)
