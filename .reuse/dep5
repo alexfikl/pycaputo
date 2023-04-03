@@ -1,0 +1,12 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: pycaputo
+Upstream-Contact: Alexandru Fikl <alexfikl@gmail.com>
+Source: https://github.com/alexfikl/pycaputo
+
+Files: docs/* *.md *.rst *.cfg requirements* Makefile
+Copyright: 2023 Alexandru Fikl <alexfikl@gmail.com>
+License: CC0-1.0
+
+Files: .gitignore pyproject.toml .github/*
+Copyright: 2022 Alexandru Fikl <alexfikl@gmail.com>
+License: CC0-1.0
