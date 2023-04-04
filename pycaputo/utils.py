@@ -5,6 +5,7 @@ import os
 import pathlib
 from contextlib import contextmanager
 from typing import (
+    TYPE_CHECKING,
     Any,
     Iterable,
     Iterator,
@@ -30,10 +31,13 @@ T = TypeVar("T")
 #: A union of types supported as paths
 PathLike = Union[pathlib.Path, str]
 
-#: Array type for :class:`numpy.ndarray`
-Array = np.ndarray[Any, Any]
-#: Scalar type
-Scalar = Union[np.generic, Array]
+if TYPE_CHECKING:
+    #: Array type for :class:`numpy.ndarray`
+    Array = np.ndarray[Any, Any]
+    #: Scalar type
+    Scalar = Union[np.generic, Array]
+else:
+    Array = Scalar = Any
 
 
 class ScalarFunction(Protocol):
