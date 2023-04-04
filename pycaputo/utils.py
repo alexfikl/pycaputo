@@ -18,6 +18,7 @@ from typing import (
 )
 
 import numpy as np
+from typing_extensions import TypeAlias
 
 from pycaputo.logging import get_logger
 
@@ -28,16 +29,17 @@ logger = get_logger(__name__)
 #: A generic invariant :class:`typing.TypeVar`.
 T = TypeVar("T")
 
-#: A union of types supported as paths
+#: A union of types supported as paths.
 PathLike = Union[pathlib.Path, str]
 
 if TYPE_CHECKING:
-    #: Array type for :class:`numpy.ndarray`
-    Array = np.ndarray[Any, Any]
-    #: Scalar type
-    Scalar = Union[np.generic, Array]
+    Array: TypeAlias = np.ndarray[Any, Any]
+    Scalar: TypeAlias = Union[np.generic, Array]
 else:
-    Array = Scalar = Any
+    #: Array type for :class:`numpy.ndarray`.
+    Array: TypeAlias = np.ndarray
+    #: Scalar type (generally a value convertible to a :class:`float`).
+    Scalar: TypeAlias = Union[np.generic, Array]
 
 
 class ScalarFunction(Protocol):
@@ -58,55 +60,46 @@ class ScalarFunction(Protocol):
 class EOCRecorder:
     """Keep track of all your *estimated order of convergence* needs.
 
-    .. attribute:: estimated_order
+    .. attribute:: name
 
-        Estimated order of convergence for currently available data. The
-        order is estimated by least squares through the given data
-        (see :func:`estimate_order_of_convergence`).
+        A string identifier for the value which is estimated.
 
-    .. attribute:: max_error
+    .. attribute:: history
 
-        Largest error (in absolute value) in current data.
-
-    .. automethod:: __init__
-    .. automethod:: add_data_point
-    .. automethod:: satisfied
+        A list of ``(h, error)`` entries added from :meth:`add_data_point`.
     """
 
-    def __init__(self, *, name: str = "Error", dtype: Any = None) -> None:
-        if dtype is None:
-            dtype = np.float64
-        dtype = np.dtype(dtype)
-
+    def __init__(self, *, name: str = "Error") -> None:
         self.name = name
-        self.dtype = dtype
-        self.history: List[Tuple[Scalar, Scalar]] = []
-
-    @property
-    def _history(self) -> Array:
-        return np.array(self.history, dtype=self.dtype).T
+        self.history: List[Tuple[float, float]] = []
 
     def add_data_point(self, h: Any, error: Any) -> None:
-        """
+        """Add a data point to the estimation.
+
+        Note that both *h* and *error* need to be convertible to a float.
+
         :arg h: abscissa, a value representative of the "grid size".
         :arg error: error at given *h*.
         """
-        self.history.append(
-            (np.array(h, dtype=self.dtype), np.array(error, dtype=self.dtype))
-        )
+        self.history.append((float(h), float(error)))
 
     @property
     def estimated_order(self) -> float:
+        """Estimated order of convergence for currently available data. The
+        order is estimated by least squares through the given data
+        (see :func:`estimate_order_of_convergence`).
+        """
         if not self.history:
             return np.nan
 
-        h, error = self._history
+        h, error = np.array(self.history).T
         _, eoc = estimate_order_of_convergence(h, error)
         return eoc
 
     @property
     def max_error(self) -> float:
-        r = np.amax(np.array([error for _, error in self.history], dtype=self.dtype))
+        """Largest error (in absolute value) in current data."""
+        r = np.amax(np.array([error for _, error in self.history]))
         return float(r)
 
     def __str__(self) -> str:
@@ -167,7 +160,7 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
     :returns: a string representing the results in *eocs* in the
         GitHub Markdown format.
     """
-    histories = [eoc._history for eoc in eocs]  # pylint: disable=protected-access
+    histories = [np.array(eoc.history).T for eoc in eocs]
     orders = [
         estimate_gliding_order_of_convergence(h, error, gliding_mean=2)
         for h, error in histories

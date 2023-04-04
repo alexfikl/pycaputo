@@ -40,7 +40,7 @@ def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
 @dataclass(frozen=True)
 class CaputoL1Method(DerivativeMethod):
     r"""Implements the L1 method for the Caputo fractional derivative
-    of order :math:`\alpha in (0, 1)`.
+    of order :math:`\alpha \in (0, 1)`.
 
     This method is defined in Section 4.1 from [Li2020]_.
     """
