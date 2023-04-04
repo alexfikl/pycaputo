@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+import pathlib
+
 import numpy as np
 import numpy.linalg as la
 import pytest
@@ -64,7 +66,8 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
-        savefig(fig, f"test_caputo_l1_{alpha}")
+        dirname = pathlib.Path(__file__).parent
+        savefig(fig, dirname / f"test_caputo_l1_{alpha}".replace(".", "_"))
 
 
 # }}}

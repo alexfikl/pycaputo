@@ -307,12 +307,9 @@ def figure(filename: Optional[PathLike] = None, **kwargs: Any) -> Iterator[Any]:
 
 def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
     import matplotlib.pyplot as mp
-    import slugify
 
     ext = mp.rcParams["savefig.format"]
-    filename = pathlib.Path(filename)
-    filename = (filename.parent / slugify.slugify(filename.name)).with_suffix(f".{ext}")
-
+    filename = pathlib.Path(filename).with_suffix(f".{ext}").resolve()
     logger.info("Saving '%s'", filename)
 
     fig.savefig(filename, **kwargs)
