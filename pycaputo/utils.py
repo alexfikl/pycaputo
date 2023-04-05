@@ -64,13 +64,18 @@ class EOCRecorder:
 
         A string identifier for the value which is estimated.
 
+    .. attribute:: order
+
+        An expected order of convergence, if any.
+
     .. attribute:: history
 
         A list of ``(h, error)`` entries added from :meth:`add_data_point`.
     """
 
-    def __init__(self, *, name: str = "Error") -> None:
+    def __init__(self, *, order: Optional[float] = None, name: str = "Error") -> None:
         self.name = name
+        self.order = order
         self.history: List[Tuple[float, float]] = []
 
     def add_data_point(self, h: Any, error: Any) -> None:
@@ -189,6 +194,12 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
     lines.append(
         ("Overall",) + flatten([("", f"{eoc.estimated_order:.3f}") for eoc in eocs])
     )
+
+    expected = flatten(
+        [("", f"{eoc.order:.3f}") for eoc in eocs if eoc.order is not None]
+    )
+    if expected:
+        lines.append(("Expected",) + expected)
 
     widths = [max(len(line[i]) for line in lines) for i in range(ncolumns)]
     formats = ["{:%s}" % w for w in widths]

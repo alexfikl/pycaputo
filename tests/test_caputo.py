@@ -37,7 +37,7 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
 
     side = Side.Left
     diff = CaputoL1Method(d=CaputoDerivative(order=alpha, side=side))
-    eoc = EOCRecorder()
+    eoc = EOCRecorder(order=2 - alpha)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -50,7 +50,7 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
         df_num = evaluate(diff, f, p)
         df_ref = df(p.x)
 
-        e = la.norm(df_num - df_ref) / la.norm(df_ref)
+        e = la.norm(df_num[1:] - df_ref[1:], ord=np.inf)
         eoc.add_data_point(e, p.dx[0])
         logger.info("n %4d h %.5e e %.12e", n, p.dx[0], e)
 
