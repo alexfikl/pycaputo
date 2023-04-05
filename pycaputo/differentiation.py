@@ -37,7 +37,7 @@ def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
 # }}}
 
 
-# {{{ L1Method
+# {{{ CaputoL1Method
 
 
 @dataclass(frozen=True)
@@ -45,9 +45,9 @@ class CaputoL1Method(DerivativeMethod):
     r"""Implements the L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
-    This method is defined in Section 4.1 from [Li2020]_. Note that it cannot
-    compute the derivative at the starting point, i.e. :math:`D_C^\alpha[f](a)`
-    is undefined.
+    This method is defined in Section 4.1 (I) and (II) from [Li2020]_. Note that
+    it cannot compute the derivative at the starting point, i.e.
+    :math:`D_C^\alpha[f](a)` is undefined.
     """
 
     #: The type of the Caputo derivative.
@@ -109,4 +109,21 @@ def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array
     return df
 
 
+# }}}
+
+
+# {{{ modified
+
+@dataclass(frozen=True)
+class CaputoModifiedL1Method(DerivativeMethod):
+    r"""Implements the modified L1 method for the Caputo fractional derivative
+    of order :math:`\alpha \in (0, 1)`.
+
+    This method is defined in Section 4.1 (III) from [Li2020]_. Note that
+    it cannot compute the derivative at the starting point, i.e.
+    :math:`D_C^\alpha[f](a)` is undefined.
+    """
+
+    #: The type of the Caputo derivative.
+    d: CaputoDerivative
 # }}}
