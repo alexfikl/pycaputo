@@ -3,10 +3,11 @@
 
 from dataclasses import dataclass
 from functools import singledispatch
+from typing import FrozenSet
 
 import numpy as np
 
-from pycaputo.derivatives import CaputoDerivative
+from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ScalarFunction
@@ -186,19 +187,20 @@ def _evaluate_modified_l1method(
     df = np.empty_like(x)
     df[0] = np.nan
 
-    c = h ** alpha * math.Gamma(2 - alpha)
+    c = h**alpha * math.gamma(2 - alpha)
     k = np.arange(df.size)
 
     # NOTE: [Li2020] Equation 4.51
     w = 1 / c
-    W = 2 / c * ((k[1:] + 0.5) ** (1 - alpha) - k[1:] ** (1 - alpha))
+    W = 2 * w * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
     df[1:] = w * fx[1:] - W * fx[0]
 
     for n in range(1, df.size):
-        w = (n - k[1:n + 1]) ** (1 - alpha) - (n - k[1:n + 1] - 1) ** (1 - alpha)
-        df[n] += np.sum(np.diff(w) * fx[:n]) / c
+        w = (n - k[1:n + 1] + 1) ** (1 - alpha) - (n - k[1:n + 1]) ** (1 - alpha)
+        df[n] += np.sum(np.diff(w[::-1]) * fx[1:n]) / c
 
     return df
+
 
 # }}}
 
@@ -233,7 +235,7 @@ class CaputoUniformL2Method(DerivativeMethod):
 
 
 @evaluate.register(CaputoUniformL2Method)
-def _evaluate_modified_l1method(
+def _evaluate_uniform_l2method(
     m: CaputoUniformL2Method, f: ScalarFunction, p: Points
 ) -> Array:
     from pycaputo.grid import UniformPoints
@@ -241,5 +243,50 @@ def _evaluate_modified_l1method(
     assert isinstance(p, UniformPoints)
 
     import math
+
+
+# }}}
+
+
+# {{{ make
+
+
+REGISTERED_METHODS = {
+    "CaputoL1Method": CaputoL1Method,
+    "CaputoUniformL1Method": CaputoUniformL1Method,
+    "CaputoModifiedL1Method": CaputoModifiedL1Method,
+}
+
+
+def make_diff_method(
+    name: str,
+    order: float,
+    *,
+    side: Side = Side.Left,
+    modified: bool = False,
+) -> DerivativeMethod:
+    if name not in REGISTERED_METHODS:
+        raise ValueError(
+            "Unknown differentiation method '{}'. Known methods are '{}'".format(
+                name, "', '".join(REGISTERED_METHODS)
+            )
+        )
+
+    d = CaputoDerivative(order=order, side=side)
+
+    if name == "CaputoL1Method":
+        method = CaputoL1Method(d)
+    elif name == "CaputoUniformL1Method":
+        method = CaputoUniformL1Method(d, modified=modified)
+    elif name == "CaputoModifiedL1Method":
+        method = CaputoModifiedL1Method(d)
+    else:
+        raise AssertionError
+
+    if not method.supports(order):
+        raise ValueError(f"Method '{name}' does not support order '{order}'")
+
+    return method
+
 
 # }}}

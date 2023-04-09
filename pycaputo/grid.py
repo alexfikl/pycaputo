@@ -77,6 +77,6 @@ def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> UniformMid
     :arg n: number of points in :math:`[a, b]`.
     """
     x = np.linspace(a, b, n)
-    x[1:] = np.diff(x)
+    x[1:] = (x[1:] + x[:-1]) / 2
 
-    return UniformMidpoints(a=a, b=b, x=x[:-1])
+    return UniformMidpoints(a=a, b=b, x=x)

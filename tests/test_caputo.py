@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import pathlib
+from typing import Type
 
 import numpy as np
 import numpy.linalg as la
@@ -16,12 +17,19 @@ set_recommended_matplotlib()
 # {{{ test_caputo_l1
 
 
+@pytest.mark.parametrize(
+    "name", ["CaputoL1Method", "CaputoUniformL1Method", "CaputoModifiedL1Method"]
+)
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
-def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
+def test_caputo_l1(name: str, alpha: float, visualize: bool = True) -> None:
     import math
 
-    from pycaputo import CaputoDerivative, CaputoL1Method, Side, evaluate
-    from pycaputo.grid import make_uniform_points
+    from pycaputo import evaluate, make_diff_method
+    from pycaputo.grid import (
+        make_stretched_points,
+        make_uniform_midpoints,
+        make_uniform_points,
+    )
 
     def f(x: Array) -> Array:
         return (1 + x) ** 3
@@ -35,8 +43,7 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
 
     from pycaputo.utils import EOCRecorder, savefig
 
-    side = Side.Left
-    diff = CaputoL1Method(d=CaputoDerivative(order=alpha, side=side))
+    diff = make_diff_method(name, alpha)
     eoc = EOCRecorder(order=2 - alpha)
 
     if visualize:
@@ -46,19 +53,30 @@ def test_caputo_l1(alpha: float, visualize: bool = True) -> None:
         ax = fig.gca()
 
     for n in [32, 64, 128, 256, 512, 768, 1024]:
-        p = make_uniform_points(n, a=0, b=1)
+        if name == "CaputoL1Method":
+            p = make_stretched_points(n, a=0, b=1, strength=4.0)
+        elif name == "CaputoUniformL1Method":
+            p = make_uniform_points(n, a=0, b=1)
+        elif name == "CaputoModifiedL1Method":
+            p = make_uniform_midpoints(n, a=0, b=1)
+        else:
+            raise AssertionError
+
         df_num = evaluate(diff, f, p)
         df_ref = df(p.x)
 
+        h = np.max(p.dx)
         e = la.norm(df_num[1:] - df_ref[1:], ord=np.inf)
-        eoc.add_data_point(e, p.dx[0])
-        logger.info("n %4d h %.5e e %.12e", n, p.dx[0], e)
+        eoc.add_data_point(h, e)
+        logger.info("n %4d h %.5e e %.12e", n, h, e)
 
         if visualize:
             ax.plot(p.x, df_num)
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
     logger.info("\n%s", eoc)
+    assert eoc.estimated_order > 0.5
+    # assert eoc.estimated_order > eoc.order
 
     if visualize:
         ax.plot(p.x, df_ref, "k-")
