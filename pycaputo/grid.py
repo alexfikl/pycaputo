@@ -42,3 +42,19 @@ def make_uniform_points(n: int, a: float = 0.0, b: float = 1.0) -> UniformPoints
     :arg n: number of points in :math:`[a, b]`.
     """
     return UniformPoints(a=a, b=b, x=np.linspace(a, b, n))
+
+
+@dataclass(frozen=True)
+class UniformMidpoints(Points):
+    """A set of points on :math:`[a, b]` formed from midpoints of a uniform grid.
+
+    This set of points consists of :math:`x_0 = a` and :math:`x_j` are the
+    midpoints of the uniform grid :class:`UniformPoints`
+    """
+
+
+def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> UniformMidpoints:
+    x = np.linspace(a, b, n)
+    x[1:] = np.diff(x)
+
+    return UniformMidpoints(a=a, b=b, x=x[:-1])
