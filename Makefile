@@ -23,7 +23,7 @@ black:			## Run black over the source code
 .PHONY: black
 
 flake8:			## Run flake8 checks over the source code
-	$(PYTHON) -m flake8 pycaputo tests
+	PYTHONWARNINGS=ignore $(PYTHON) -m flake8 pycaputo tests
 	@echo -e "\e[1;32mflake8 clean!\e[0m"
 .PHONY: flake8
 

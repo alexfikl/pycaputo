@@ -3,7 +3,6 @@
 
 from dataclasses import dataclass
 from functools import singledispatch
-from typing import FrozenSet
 
 import numpy as np
 
@@ -144,7 +143,7 @@ def _evaluate_uniform_l1method(
     c = p.dx[0] ** alpha * math.gamma(2 - alpha)
     k = np.arange(df.size - 1)
 
-    if m.modified:
+    if m.modified:  # pylint: disable=no-else-raise
         # NOTE: [Li2020] Equation 4.53
         raise NotImplementedError
     else:
@@ -196,7 +195,7 @@ def _evaluate_modified_l1method(
     df[1:] = w * fx[1:] - W * fx[0]
 
     for n in range(1, df.size):
-        w = (n - k[1:n + 1] + 1) ** (1 - alpha) - (n - k[1:n + 1]) ** (1 - alpha)
+        w = (n - k[1 : n + 1] + 1) ** (1 - alpha) - (n - k[1 : n + 1]) ** (1 - alpha)
         df[n] += np.sum(np.diff(w[::-1]) * fx[1:n]) / c
 
     return df
@@ -242,7 +241,7 @@ def _evaluate_uniform_l2method(
 
     assert isinstance(p, UniformPoints)
 
-    import math
+    return np.zeros_like(p.x)
 
 
 # }}}

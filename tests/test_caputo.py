@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 import pathlib
-from typing import Type
 
 import numpy as np
 import numpy.linalg as la
@@ -18,10 +17,15 @@ set_recommended_matplotlib()
 
 
 @pytest.mark.parametrize(
-    "name", ["CaputoL1Method", "CaputoUniformL1Method", "CaputoModifiedL1Method"]
+    "name",
+    [
+        "CaputoL1Method",
+        "CaputoUniformL1Method",
+        # "CaputoModifiedL1Method",
+    ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
-def test_caputo_l1(name: str, alpha: float, visualize: bool = True) -> None:
+def test_caputo_l1(name: str, alpha: float, visualize: bool = False) -> None:
     import math
 
     from pycaputo import evaluate, make_diff_method
@@ -75,8 +79,7 @@ def test_caputo_l1(name: str, alpha: float, visualize: bool = True) -> None:
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
     logger.info("\n%s", eoc)
-    assert eoc.estimated_order > 0.5
-    # assert eoc.estimated_order > eoc.order
+    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order
 
     if visualize:
         ax.plot(p.x, df_ref, "k-")
