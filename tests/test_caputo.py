@@ -79,6 +79,7 @@ def test_caputo_l1(name: str, alpha: float, visualize: bool = False) -> None:
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
     logger.info("\n%s", eoc)
+    assert eoc.order is not None
     assert eoc.order - 0.25 < eoc.estimated_order < eoc.order
 
     if visualize:
