@@ -49,7 +49,7 @@ and its Caputo fractional order derivative given by
 In code, we can write them as below
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 11-20
+    :lines: 14-23
     :language: python
     :linenos:
 
@@ -58,7 +58,7 @@ To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 follows
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 23-26
+    :lines: 26-29
     :language: python
     :linenos:
 
@@ -67,7 +67,7 @@ and :class:`~pycaputo.differentiation.CaputoUniformL1Method` classes.
 We can then set up a grid and evaluate the derivative at all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 28-32
+    :lines: 31-35
     :language: python
     :linenos:
 
