@@ -31,6 +31,12 @@ from pycaputo.grid import make_uniform_points
 p = make_uniform_points(256, a=0, b=1)
 df_num = evaluate(method, f, p)
 
+df_ref = df(p.x, d.order)
+print(
+    "Relative error: ",
+    np.linalg.norm(df_num[1:] - df_ref[1:]) / np.linalg.norm(df_ref[1:]),
+)
+
 
 # }}}
 
@@ -45,7 +51,7 @@ fig = mp.figure()
 ax = fig.gca()
 
 ax.plot(p.x, df_num, lw=5, label="L1 Method")
-ax.plot(p.x[1:], df(p.x[1:], d.order), "k--", label="Exact")
+ax.plot(p.x[1:], df_ref[1:], "k--", label="Exact")
 
 # NOTE: this is the color of the 'sphinx_rtd_theme' background
 fig.patch.set_facecolor("#FCFCFC")

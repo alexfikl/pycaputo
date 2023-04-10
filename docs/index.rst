@@ -18,12 +18,12 @@ Welcome
    Python or `FractionalDiffEq.jl <https://github.com/SciFracX/FractionalDiffEq.jl>`__
    in Julia.
 
-This package provides tools to compute fractional order derivatives and
-integrals.
+This package provides tools to (numerically) compute fractional order
+derivatives and integrals.
 
-To get an idea of the intended API an workflow of the library, we have here
-a small example using the classical Caputo fractional order derivative,
-as defined in [Li2020]_
+To get an idea of the intended API and workflow of the library, we have here
+a small example using the classical Caputo fractional order derivative.
+Its definition can be in e.g. [Li2020]_
 
 .. math::
 
@@ -38,7 +38,7 @@ and use a simple test function
 
     f(x) = (1 + x)^3
 
-with its Caputo fractional order derivative given by
+and its Caputo fractional order derivative given by
 
 .. math::
 
@@ -46,7 +46,7 @@ with its Caputo fractional order derivative given by
         + \frac{6}{\Gamma(3 - \alpha)} x^{2 - \alpha}
         + \frac{6}{\Gamma(4 - \alpha)} x^{3 - \alpha}
 
-They are simply defined as
+In code, we can write them as below
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
     :lines: 11-20
@@ -62,6 +62,8 @@ follows
     :language: python
     :linenos:
 
+These methods are described by the :class:`~pycaputo.derivatives.CaputoDerivative`
+and :class:`~pycaputo.differentiation.CaputoUniformL1Method` classes.
 We can then set up a grid and evaluate the derivative at all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
@@ -69,6 +71,7 @@ We can then set up a grid and evaluate the derivative at all points
     :language: python
     :linenos:
 
+For the chosen number of points, this gives an error of about :math:`10^{-3}`.
 The resulting approximation can be see below
 
 .. image:: caputo-derivative-l1.png
