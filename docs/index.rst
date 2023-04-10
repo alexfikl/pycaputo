@@ -65,7 +65,7 @@ follows
 We can then set up a grid and evaluate the derivative at all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 29-32
+    :lines: 28-32
     :language: python
     :linenos:
 
