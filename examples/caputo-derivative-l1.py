@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
+# SPDX-License-Identifier: MIT
+
 import math
 
 import matplotlib.pyplot as mp

@@ -7,6 +7,6 @@ Files: docs/* *.md *.rst *.cfg requirements* Makefile
 Copyright: 2023 Alexandru Fikl <alexfikl@gmail.com>
 License: CC0-1.0
 
-Files: .gitignore pyproject.toml .github/*
+Files: .gitignore pyproject.toml .readthedocs.yml .github/*
 Copyright: 2022 Alexandru Fikl <alexfikl@gmail.com>
 License: CC0-1.0

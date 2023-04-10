@@ -6,6 +6,10 @@
     :alt: Documentation
     :target: https://pycaputo.readthedocs.io/en/latest/?badge=latest
 
+.. image:: https://api.reuse.software/badge/github.com/alexfikl/pycaputo
+    :alt: REUSE
+    :target: https://api.reuse.software/info/github.com/alexfikl/pycaputo
+
 pycaputo
 ========
 
