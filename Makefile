@@ -13,29 +13,29 @@ help: 			## Show this help
 fmt: black		## Run all formatting scripts
 	$(PYTHON) -m setup_cfg_fmt --include-version-classifiers setup.cfg
 	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
-	$(PYTHON) -m isort pycaputo tests
+	$(PYTHON) -m isort pycaputo tests examples
 .PHONY: fmt
 
 black:			## Run black over the source code
 	$(PYTHON) -m black \
 		--safe --target-version py38 --preview \
-		pycaputo tests
+		pycaputo tests examples
 .PHONY: black
 
 flake8:			## Run flake8 checks over the source code
-	PYTHONWARNINGS=ignore $(PYTHON) -m flake8 pycaputo tests
+	PYTHONWARNINGS=ignore $(PYTHON) -m flake8 pycaputo tests examples
 	@echo -e "\e[1;32mflake8 clean!\e[0m"
 .PHONY: flake8
 
 pylint:			## Run pylint checks over the source code
-	PYTHONWARNINGS=ignore $(PYTHON) -m pylint pycaputo tests/*.py
+	PYTHONWARNINGS=ignore $(PYTHON) -m pylint pycaputo tests/*.py examples/*.py
 	@echo -e "\e[1;32mpylint clean!\e[0m"
 .PHONY: pylint
 
 mypy:			## Run mypy checks over the source code
 	$(PYTHON) -m mypy \
 		--strict --show-error-codes \
-		pycaputo tests
+		pycaputo tests examples
 	@echo -e "\e[1;32mmypy clean!\e[0m"
 .PHONY: mypy
 
