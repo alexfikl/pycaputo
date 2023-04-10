@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 
 @dataclass(frozen=True)
 class DerivativeMethod:
-    """A generic method used to evaluate a fractional derivative at a point."""
+    """A generic method used to evaluate a fractional derivative at a set of points."""
 
     def supports(self, alpha: float) -> bool:
         """
@@ -190,13 +190,12 @@ def _evaluate_modified_l1method(
     k = np.arange(df.size)
 
     # NOTE: [Li2020] Equation 4.51
-    w = 1 / c
-    W = 2 * w * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
-    df[1:] = w * fx[1:] - W * fx[0]
+    w = 2 / c * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
+    df[1:] = w * (fx[1] - fx[0])
 
     for n in range(1, df.size):
-        w = (n - k[1 : n + 1] + 1) ** (1 - alpha) - (n - k[1 : n + 1]) ** (1 - alpha)
-        df[n] += np.sum(np.diff(w[::-1]) * fx[1:n]) / c
+        w = (n - k[1:n]) ** (1 - alpha) - (n - k[1:n] - 1) ** (1 - alpha)
+        df[n] += np.sum(w * np.diff(fx[1 : n + 1])) / c
 
     return df
 
