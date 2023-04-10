@@ -44,7 +44,7 @@ set_recommended_matplotlib()
 fig = mp.figure()
 ax = fig.gca()
 
-ax.plot(p.x, df_num, lw=5, label="Approximation")
+ax.plot(p.x, df_num, lw=5, label="L1 Method")
 ax.plot(p.x[1:], df(p.x[1:], d.order), "k--", label="Exact")
 
 # NOTE: this is the color of the 'sphinx_rtd_theme' background
