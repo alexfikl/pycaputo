@@ -190,6 +190,7 @@ def _evaluate_modified_l1method(
     k = np.arange(df.size)
 
     # NOTE: [Li2020] Equation 4.51
+    # FIXME: this does not use the formula from the book; any benefit to it?
     w = 2 / c * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
     df[1:] = w * (fx[1] - fx[0])
 
@@ -240,7 +241,31 @@ def _evaluate_uniform_l2method(
 
     assert isinstance(p, UniformPoints)
 
-    return np.zeros_like(p.x)
+    import math
+
+    x = p.x
+    h = p.dx[1]
+    fx = f(x)
+    alpha = m.d.order
+
+    # NOTE: this method cannot compute the derivative at x[0], since it relies
+    # on approximating an integral, better luck elsewhere :(
+    df = np.empty_like(x)
+    df[0] = np.nan
+
+    c = h**alpha * math.gamma(2 - alpha)
+    k = np.arange(df.size)
+
+    # NOTE: [Li2020] Equation 4.51
+    # FIXME: this does not use the formula from the book; any benefit to it?
+    w = 2 / c * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
+    df[1:] = w * (fx[1] - fx[0])
+
+    for n in range(1, df.size):
+        w = (n - k[1:n]) ** (1 - alpha) - (n - k[1:n] - 1) ** (1 - alpha)
+        df[n] += np.sum(w * np.diff(fx[1 : n + 1])) / c
+
+    return df
 
 
 # }}}

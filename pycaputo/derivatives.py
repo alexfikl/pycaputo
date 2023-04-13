@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import enum
+import math
 from dataclasses import dataclass
 
 
@@ -20,6 +21,10 @@ class FractionalDerivative:
 
     #: Order of the fractional derivative, as an integer in :math:[0, \infty]`.
     order: float
+
+    @property
+    def n(self) -> int:
+        return math.ceil(self.order)
 
 
 @dataclass(frozen=True)
