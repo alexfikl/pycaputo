@@ -2,6 +2,7 @@
 name = "pycaputo"
 version = "2023.3.0"
 edition = "2021"
+license = "LICENCES/MIT.txt"
 
 [lib]
 name = "pycaputo"

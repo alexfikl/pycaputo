@@ -5,9 +5,64 @@ requires = [
     "wheel",
 ]
 
-[tool.maturin]
-python-source = "pycaputo"
-features = ["pyo3/extension-module"]
+[project]
+name = "pycaputo"
+version = "2023.3.0"
+description = "Evaluate fractional integrals and solve fractional ODEs"
+readme = "README.rst"
+keywords = [
+    "fractional-derivatives",
+    "fractional-integrals",
+    "quadrature",
+    "time-stepping"
+]
+license = {file = "LICENSES/MIT.txt"}
+maintainers = [{ name = "Alexandru Fikl", email = "alexfikl@gmail.com"}]
+authors = [{ name = "Alexandru Fikl", email = "alexfikl@gmail.com"}]
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities"
+]
+dependencies = [
+    "numpy",
+    "rich",
+    "typing-extensions"
+]
+urls = {repository = "https://github.com/alexfikl/pycaputo"}
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "flake8-bugbear",
+    "flake8-comprehensions",
+    "flake8-isort",
+    "flake8-quotes",
+    "matplotlib",
+    "mypy",
+    "pep8-naming",
+    "pip-tools",
+    "pylint",
+    "pytest",
+    "types-dataclasses",
+]
+vis = [
+    "SciencePlots",
+]
 
 [tool.black]
 line-length = 88
@@ -16,3 +71,8 @@ exclude='\.eggs|\.git|\.mypy_cache|build|dist|\.pytest_cache|\.pytype'
 
 [tool.isort]
 profile = "black"
+
+[tool.maturin]
+python-source = "pycaputo"
+features = ["pyo3/extension-module"]
+strip = true
