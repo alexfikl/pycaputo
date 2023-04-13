@@ -10,9 +10,9 @@ mdurl==0.1.2
     # via markdown-it-py
 numpy==1.24.2
     # via pycaputo (setup.cfg)
-pygments==2.14.0
+pygments==2.15.0
     # via rich
-rich==13.3.3
+rich==13.3.4
     # via pycaputo (setup.cfg)
-slugify==0.0.1
+typing-extensions==4.5.0
     # via pycaputo (setup.cfg)
