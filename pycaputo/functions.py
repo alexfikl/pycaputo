@@ -14,32 +14,43 @@ from pycaputo.utils import Array
 
 
 class CaputoFunctionDerivative(CaputoDerivative, ABC):
-    @abstractmethod
-    def f(self, x: Array) -> Array:
-        pass
+    """A function and its Caputo fractional order derivative.
+
+    .. automethod:: __call__
+    """
 
     @abstractmethod
-    def df(self, x: Array) -> Array:
-        pass
+    def diff(self, x: Array) -> Array:
+        """Evaluate the Caputo fractional order derivative at *x*."""
+
+    @abstractmethod
+    def __call__(self, x: Array) -> Array:
+        """Evaluate the function at *x*."""
 
 
 class CaputoConstantDerivative(CaputoFunctionDerivative):
+    """The constant function :math:`f(x) = a`."""
+
+    #: Value of the constant function.
     value: float
 
-    def f(self, x: Array) -> Array:
+    def __call__(self, x: Array) -> Array:
         return np.full_like(x, self.value)
 
-    def df(self, x: Array) -> Array:
+    def diff(self, x: Array) -> Array:
         return np.zeros_like(x)
 
 
 class CaputoPolynomialDerivative(CaputoFunctionDerivative):
+    """A polynomial of integer order :math:`f(x) = a_i x^{p_i}`."""
+
+    #: A sequence of ``(coefficient, power)`` tuples that define the polynomial.
     a: Tuple[Tuple[float, float], ...]
 
-    def f(self, x: Array) -> Array:
-        return sum([a * x**p for a, p in self.a], 0)
+    def __call__(self, x: Array) -> Array:
+        return sum([a * x**p for a, p in self.a], np.zeros_like(x))
 
-    def df(self, x: Array) -> Array:
+    def diff(self, x: Array) -> Array:
         alpha = self.order
         n = self.n
 
@@ -49,13 +60,13 @@ class CaputoPolynomialDerivative(CaputoFunctionDerivative):
             [
                 a
                 * (
-                    0
+                    np.zeros_like(x)
                     if p < n
                     else math.gamma(p) / math.gamma(p - alpha) * x ** (p - alpha - 1)
                 )
-                for a, p in self.p
+                for a, p in self.a
             ],
-            0,
+            np.zeros_like(x),
         )
 
 
