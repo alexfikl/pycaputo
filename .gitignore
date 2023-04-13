@@ -1,6 +1,7 @@
 # system
 .DS_Store
 tags
+Cargo.lock
 
 # temporary
 *~
@@ -35,6 +36,7 @@ _output
 build
 latex.out
 __pycache__
+target
 
 # binary
 *.h5

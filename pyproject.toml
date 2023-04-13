@@ -1,9 +1,13 @@
 [build-system]
-build-backend = "setuptools.build_meta"
+build-backend = "maturin"
 requires = [
-    "setuptools>=42",
+    "maturin>=0.14",
     "wheel",
 ]
+
+[tool.maturin]
+python-source = "pycaputo"
+features = ["pyo3/extension-module"]
 
 [tool.black]
 line-length = 88
