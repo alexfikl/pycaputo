@@ -32,7 +32,35 @@ def test_mittag_leffler_series(alpha: float, beta: float) -> None:
     result_ref = mittag_leffler(z, alpha=alpha, beta=beta)
     result = np.vectorize(_mittag_leffler_series)(z, alpha=alpha, beta=beta)
 
-    error = np.linalg.norm(result - result_ref) / np.linalg.norm(result_ref)
+    error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))
+    logger.info("Error E[%g, %g]: %.12e", alpha, beta, error)
+    assert error < 2.0e-15
+
+
+@pytest.mark.parametrize(
+    ("alpha", "beta"),
+    [
+        (0, 1),
+        (0, 3),
+        (1, 1),
+        (2, 1),
+        (3, 1),
+        (4, 1),
+        (0.5, 1),
+        (1, 2),
+        (2, 2),
+    ],
+)
+def test_mittag_leffler_diethelm(alpha: float, beta: float) -> None:
+    from pycaputo.mittagleffler import _mittag_leffler_diethelm, mittag_leffler
+
+    rng = np.random.default_rng(seed=42)
+    z = rng.random(128)
+
+    result_ref = mittag_leffler(z, alpha=alpha, beta=beta)
+    result = np.vectorize(_mittag_leffler_diethelm)(z, alpha=alpha, beta=beta)
+
+    error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))
     logger.info("Error E[%g, %g]: %.12e", alpha, beta, error)
     assert error < 2.0e-15
 
