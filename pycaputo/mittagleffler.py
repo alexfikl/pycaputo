@@ -3,7 +3,7 @@
 
 import enum
 import math
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 
@@ -27,6 +27,9 @@ class Algorithm(enum.Enum):
 
     #: Algorithm by [Garrappa2015]_.
     Garrappa = enum.auto()
+
+    #: Algorithm by [Ortigueira2019]_.
+    Ortigueira = enum.auto()
 
 
 # {{{ series
@@ -66,8 +69,18 @@ def _mittag_leffler_series(
 
 
 def _ml_quad_k(
-    a: float, b: float, alpha: float, beta: float, z: complex, *, eps: float
+    a: float,
+    b: float,
+    alpha: float,
+    beta: float,
+    z: complex,
+    *,
+    eps: float,
+    delta: Optional[float] = None,
 ) -> complex:
+    if delta is None:
+        delta = 1.0e-2 * math.sqrt(eps)
+
     sin_pb = math.sin(np.pi * (1 - beta))
     sin_ab = math.sin(np.pi * (1 - beta + alpha))
     cos_pa = math.cos(np.pi * alpha)
@@ -83,9 +96,20 @@ def _ml_quad_k(
 
         return complex(chi**inv_ab * math.exp(-(chi**inv_aa)) * r)
 
+    from functools import partial
+
     from scipy.integrate import quad
 
-    r, _ = quad(K, a, b, epsabs=eps, epsrel=eps, limit=1000, complex_func=True)
+    quad = partial(quad, epsabs=eps, epsrel=eps, limit=1000, complex_func=True)
+    if a < abs(z) < b:
+        rl, errl = quad(K, a, abs(z) - delta)
+        rr, errr = quad(K, abs(z) + delta, b)
+
+        r = rl + rr
+        error = errl + errr
+    else:
+        r, error = quad(K, a, b)
+
     return complex(r)
 
 
@@ -107,7 +131,16 @@ def _ml_quad_p(
 
     from scipy.integrate import quad
 
-    r, _ = quad(P, a, b, epsabs=eps, epsrel=eps, limit=1000, complex_func=True)
+    r, error = quad(
+        P,
+        a,
+        b,
+        epsabs=eps,
+        epsrel=eps,
+        limit=1000,
+        complex_func=True,
+    )
+
     return complex(r)
 
 
@@ -142,7 +175,11 @@ def _mittag_leffler_diethelm(
 
         def rec_ml(k: int) -> complex:
             return _mittag_leffler_diethelm(
-                z * np.exp(2j * np.pi * k / k0), alpha=alpha, beta=beta
+                z * np.exp(2j * np.pi * k / k0),
+                alpha=alpha,
+                beta=beta,
+                eps=eps,
+                zeta=zeta,
             )
 
         return sum((rec_ml(k) for k in range(k0)), 0.0) / k0
@@ -166,12 +203,12 @@ def _mittag_leffler_diethelm(
 
     zarg = abs(cmath.phase(z))
     if zabs < math.floor(10 + 5 * alpha):
-        if beta > 0:
+        if beta >= 0:
             chi0 = max(1, 2 * zabs, (-math.log(eps * np.pi / 6)) ** alpha)
         else:
             babs = abs(beta)
             chi0 = (
-                -math.log(eps * np.pi / 6 / (babs + 2) / (2 * babs) ** babs)
+                -2 * math.log(eps * np.pi / 6 / (babs + 2) / (2 * babs) ** babs)
             ) ** alpha
             chi0 = max((1 + babs) ** alpha, 2 * zabs, chi0)
 
@@ -197,20 +234,46 @@ def _mittag_leffler_diethelm(
             R = z ** ((1 - beta) / alpha) * cmath.exp(z ** (1 / alpha)) / alpha
             return K + P + R
 
-        K = _ml_quad_k((zabs + 1) / 2, chi0, alpha, beta, z, eps=eps)
-        P = _ml_quad_p(-api, api, alpha, beta, (zabs + 1) / 2, z, eps=eps)
+        # NOTE: modified based on
+        #   https://sistemas.fc.unesp.br/ojs/index.php/revistacqd/article/view/306
+        K = _ml_quad_k(zabs + 1, chi0, alpha, beta, z, eps=eps)
+        P = _ml_quad_p(-api, api, alpha, beta, zabs + 1, z, eps=eps)
 
         return K + P
 
     k0 = math.floor(-math.log(eps) / math.log(zabs))
-    result = -sum(
-        (z**-k / math.gamma(beta - alpha * k) for k in range(1, k0 + 1)), 0.0
-    )
+    result = -sum((z**-k / math.gamma(beta - alpha * k) for k in range(k0)), 0.0)
 
     if zarg < 0.75 * alpha * np.pi:
         result += z ** ((1 - beta) / alpha) * cmath.exp(z ** (1 / alpha)) / alpha
 
     return result
+
+
+# }}}
+
+
+# {{{
+
+
+def _mittag_leffler_ortigueira(
+    z: complex,
+    *,
+    alpha: float,
+    beta: float,
+    eps: Optional[float] = None,
+    kmax: Optional[int] = None,
+) -> complex:
+    if eps is None:
+        eps = 2 * float(np.finfo(np.array(z).dtype).eps)
+
+    if kmax is None:
+        kmax = 2048
+
+    if abs(z) == 0:
+        return 1 / math.gamma(beta)
+
+    return 0
 
 
 # }}}
@@ -264,11 +327,12 @@ def mittag_leffler(
 
     # NOTE: special cases taken from:
     #       https://arxiv.org/abs/0909.0230
+    z = np.array(z)
     if beta == 1:
         if alpha == 0:
             return np.array(1 / (1 - z))
         if alpha == 1:
-            return np.exp(z)
+            return np.array(np.exp(z))
         if alpha == 2:
             return np.cosh(np.sqrt(z))  # type: ignore[no-any-return]
         if alpha == 3:
@@ -286,21 +350,25 @@ def mittag_leffler(
 
     if beta == 2:
         if alpha == 1:
-            return (np.exp(z) - 1) / z
+            return np.array((np.exp(z) - 1) / z)
         if alpha == 2:
             z = np.sqrt(z)
-            return np.sinh(z) / z  # type: ignore[no-any-return]
+            return np.sinh(z) / z
 
     if alpha == 0 and np.all(np.abs(z) < 1):
-        return np.array(1 / (1 - z)) / math.gamma(beta)
+        return 1 / (1 - z) / math.gamma(beta)
 
+    func: Any
     if alg == Algorithm.Series:
-        r = np.vectorize(_mittag_leffler_series)(z, alpha=alpha, beta=beta)
+        func = _mittag_leffler_series
     elif alg == Algorithm.Diethelm:
-        r = np.vectorize(_mittag_leffler_diethelm)(z, alpha=alpha, beta=beta)
+        func = _mittag_leffler_diethelm
     elif alg == Algorithm.Garrappa:
-        r = np.vectorize(_mittag_leffler_garrapa)(z, alpha=alpha, beta=beta)
+        func = _mittag_leffler_garrapa
+    elif alg == Algorithm.Ortigueira:
+        func = _mittag_leffler_ortigueira
     else:
         raise ValueError(f"Unknown algorithm: '{alg}'")
 
-    return np.array(r)
+    ml = np.vectorize(lambda zi: 0j + func(zi, alpha=alpha, beta=beta))
+    return np.real_if_close(ml(z))
