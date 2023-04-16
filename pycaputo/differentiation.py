@@ -253,17 +253,20 @@ def _evaluate_uniform_l2method(
     df = np.empty_like(x)
     df[0] = np.nan
 
-    c = h**alpha * math.gamma(2 - alpha)
+    # NOTE: [Li2020] Equation 4.51
+    # NOTE: the boundary terms are not taken as in [Li2020]; instead we use a
+    # upwind / downwind biased stencils to obtain an approximation of the same order
+
+    c = 1 / (h**alpha * math.gamma(3 - alpha))
     k = np.arange(df.size)
 
-    # NOTE: [Li2020] Equation 4.51
-    # FIXME: this does not use the formula from the book; any benefit to it?
-    w = 2 / c * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
-    df[1:] = w * (fx[1] - fx[0])
+    df[1:] = c * (2 * fx[1:] - 5 * fx[0:-1] + 4 * fx[0:-1] - fx[0:-1])
+    df[-1] += c * (2 * fx[0] - 5 * fx[1] + 4 * fx[2] - fx[3])
 
-    for n in range(1, df.size):
-        w = (n - k[1:n]) ** (1 - alpha) - (n - k[1:n] - 1) ** (1 - alpha)
-        df[n] += np.sum(w * np.diff(fx[1 : n + 1])) / c
+    for n in range(1, df.size - 2):
+        omega = c * (k[1:n + 1] ** (2 - alpha) - k[:n] ** (2 - alpha))
+        F = fx[2:n + 2] - 2 * fx[1:n + 1] + fx[0:n]
+        df[n] += np.sum(omega * F[::-1])
 
     return df
 

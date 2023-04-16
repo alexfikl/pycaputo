@@ -55,7 +55,7 @@ REQUIREMENTS=\
 requirements-dev.txt: setup.cfg
 	$(PYTHON) -m piptools compile \
 		--resolver=backtracking --upgrade \
-		--extra dev --extra pyweno \
+		--extra dev \
 		-o $@ $<
 
 requirements.txt: setup.cfg

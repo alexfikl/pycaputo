@@ -371,4 +371,4 @@ def mittag_leffler(
         raise ValueError(f"Unknown algorithm: '{alg}'")
 
     ml = np.vectorize(lambda zi: 0j + func(zi, alpha=alpha, beta=beta))
-    return ml(z)
+    return np.array(ml(z))
