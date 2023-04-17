@@ -13,7 +13,7 @@ from pycaputo.utils import Array, set_recommended_matplotlib
 logger = get_logger("pycaputo.test_caputo")
 set_recommended_matplotlib()
 
-# {{{ test_caputo_l1
+# {{{ test_caputo_lmethods
 
 
 @pytest.mark.parametrize(
@@ -22,10 +22,11 @@ set_recommended_matplotlib()
         "CaputoL1Method",
         "CaputoUniformL1Method",
         "CaputoModifiedL1Method",
+        "CaputoUniformL2Method",
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
-def test_caputo_l1(name: str, alpha: float, visualize: bool = False) -> None:
+def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> None:
     import math
 
     from pycaputo import evaluate, make_diff_method
@@ -35,20 +36,29 @@ def test_caputo_l1(name: str, alpha: float, visualize: bool = False) -> None:
         make_uniform_points,
     )
 
+    if name in ("CaputoUniformL2Method",):
+        alpha += 1
+        order = 3 - alpha
+    else:
+        order = 2 - alpha
+
     def f(x: Array) -> Array:
         return (1 + x) ** 3
 
     def df(x: Array) -> Array:
-        return np.array(
-            3 * x ** (1 - alpha) / math.gamma(2 - alpha)
-            + 6 * x ** (2 - alpha) / math.gamma(3 - alpha)
-            + 6 * x ** (3 - alpha) / math.gamma(4 - alpha)
-        )
+        if name in ("CaputoUniformL2Method",):
+            return np.zeros_like(x)
+        else:
+            return np.array(
+                3 * x ** (1 - alpha) / math.gamma(2 - alpha)
+                + 6 * x ** (2 - alpha) / math.gamma(3 - alpha)
+                + 6 * x ** (3 - alpha) / math.gamma(4 - alpha)
+            )
 
     from pycaputo.utils import EOCRecorder, savefig
 
     diff = make_diff_method(name, alpha)
-    eoc = EOCRecorder(order=2 - alpha)
+    eoc = EOCRecorder(order=order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -63,6 +73,8 @@ def test_caputo_l1(name: str, alpha: float, visualize: bool = False) -> None:
             p = make_uniform_points(n, a=0, b=1)
         elif name == "CaputoModifiedL1Method":
             p = make_uniform_midpoints(n, a=0, b=1)
+        elif name == "CaputoUniformL2Method":
+            p = make_uniform_points(n, a=0, b=1)
         else:
             raise AssertionError
 
@@ -89,7 +101,7 @@ def test_caputo_l1(name: str, alpha: float, visualize: bool = False) -> None:
         # ax.set_ylim([1.0e-16, 1])
 
         dirname = pathlib.Path(__file__).parent
-        savefig(fig, dirname / f"test_caputo_l1_{alpha}".replace(".", "_"))
+        savefig(fig, dirname / f"test_caputo_l_{alpha}".replace(".", "_"))
 
 
 # }}}
