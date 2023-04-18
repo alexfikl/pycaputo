@@ -50,7 +50,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
             return np.array(
                 -3 / 4 * x ** (1 - alpha) / math.gamma(2 - alpha)
                 + 3 * x ** (2 - alpha) / math.gamma(3 - alpha)
-                - 3 * x ** (3 - alpha) / math.gamma(4 - alpha)
+                - 6 * x ** (3 - alpha) / math.gamma(4 - alpha)
             )
 
         if 1 < alpha < 2:
