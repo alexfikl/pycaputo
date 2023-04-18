@@ -36,7 +36,11 @@ class DerivativeMethod(ABC):
 
 @singledispatch
 def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
-    """Evaluate the fractional derivative of *f*.
+    """Evaluate the fractional derivative of *f* at *x*.
+
+    Note that not all numerical methods can evaluate the derivative at all
+    points in *x*. For example, the :class:`CaputoL1Method` cannot evaluate the
+    derivative at ``x[0]``.
 
     :arg m: method used to evaluate the derivative.
     :arg f: a simple function for which to evaluate the derivative.
@@ -254,6 +258,8 @@ def _evaluate_uniform_l2method(
     from pycaputo.grid import UniformPoints
 
     assert isinstance(p, UniformPoints)
+    assert abs(p.x[0]) < 2 * np.finfo(p.x.dtype).eps
+    assert abs(p.a) < 2 * np.finfo(p.x.dtype).eps
 
     import math
 
@@ -267,20 +273,25 @@ def _evaluate_uniform_l2method(
     df = np.empty_like(x)
     df[0] = np.nan
 
-    # NOTE: [Li2020] Equation 4.51
-    # NOTE: the boundary terms are not taken as in [Li2020]; instead we use a
-    # upwind / downwind biased stencils to obtain an approximation of the same order
+    # NOTE: [Li2020] Section 4.2
+    # NOTE: the method is not written as in [Li2020] and has several tweaks:
+    # * terms are written as `sum(w * f'')` instead of `sum(w * f)`, which
+    #   makes it easier to express w
+    # * boundary terms are approximated with a biased stencil.
 
-    c = 1 / (h**alpha * math.gamma(3 - alpha))
+    omega0 = 1 / (h**alpha * math.gamma(3 - alpha))
     k = np.arange(df.size)
 
-    df[1:] = c * (2 * fx[1:] - 5 * fx[0:-1] + 4 * fx[0:-1] - fx[0:-1])
-    df[-1] += c * (2 * fx[0] - 5 * fx[1] + 4 * fx[2] - fx[3])
+    ddf = np.zeros_like(fx)
+    ddf[1:-1] = fx[2:] - 2 * fx[1:-1] + fx[:-2]
+    ddf[0] = 2 * fx[0] - 5 * fx[1] + 4 * fx[2] - fx[3]
 
-    for n in range(1, df.size - 2):
-        omega = c * (k[1:n + 1] ** (2 - alpha) - k[:n] ** (2 - alpha))
-        F = fx[2:n + 2] - 2 * fx[1:n + 1] + fx[0:n]
-        df[n] += np.sum(omega * F[::-1])
+    omega = omega0 * (k[:-1] ** (2 - alpha) - k[1:] ** (2 - alpha))
+    df[1:] = omega * ddf[0]
+
+    for n in range(2, df.size):
+        omega = (n - k[1:n] - 1) ** (2 - alpha) - (n - k[1:n]) ** (2 - alpha)
+        df[n] -= omega0 * np.sum(omega * ddf[1:n])
 
     return df
 
@@ -314,6 +325,7 @@ def make_diff_method(
         )
 
     d = CaputoDerivative(order=order, side=side)
+    method: DerivativeMethod
 
     if name == "CaputoL1Method":
         method = CaputoL1Method(d)

@@ -43,17 +43,27 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         order = 2 - alpha
 
     def f(x: Array) -> Array:
-        return (1 + x) ** 3
+        return (0.5 - x) ** 3
 
     def df(x: Array) -> Array:
-        if name in ("CaputoUniformL2Method",):
-            return np.zeros_like(x)
-        else:
+        if 0 < alpha < 1:
             return np.array(
-                3 * x ** (1 - alpha) / math.gamma(2 - alpha)
-                + 6 * x ** (2 - alpha) / math.gamma(3 - alpha)
-                + 6 * x ** (3 - alpha) / math.gamma(4 - alpha)
+                -3 / 4 * x ** (1 - alpha) / math.gamma(2 - alpha)
+                + 3 * x ** (2 - alpha) / math.gamma(3 - alpha)
+                - 3 * x ** (3 - alpha) / math.gamma(4 - alpha)
             )
+
+        if 1 < alpha < 2:
+            return np.array(
+                3
+                * x ** (2 - alpha)
+                * (3 - alpha - 2 * x)
+                / (3 - alpha)
+                / (2 - alpha)
+                / math.gamma(2 - alpha)
+            )
+
+        raise ValueError(f"Unsupported order: {alpha}")
 
     from pycaputo.utils import EOCRecorder, savefig
 
@@ -91,8 +101,6 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
     logger.info("\n%s", eoc)
-    assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order
 
     if visualize:
         ax.plot(p.x, df_ref, "k-")
@@ -102,6 +110,9 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
 
         dirname = pathlib.Path(__file__).parent
         savefig(fig, dirname / f"test_caputo_l_{alpha}".replace(".", "_"))
+
+    assert eoc.order is not None
+    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order
 
 
 # }}}

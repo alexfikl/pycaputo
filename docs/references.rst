@@ -11,6 +11,12 @@ References
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
     `DOI <https://doi.org/10.1137/140971191>`__.
 
+.. [Stynes2017] M. Stynes, E. O'Riordan, J. L. Gracia,
+    *Error Analysis of a Finite Difference Method on Graded Meshes for a
+    Time-Fractional Diffusion Equation*,
+    SIAM Journal on Numerical Analysis, Vol. 55, pp. 1057--1079, 2017,
+    `DOI <https://doi.org/10.1137/16m1082329>`__.
+
 .. [Ortigueira2019] M. D. Ortigueira, A. M. Lopes, J. Tenreiro Machado,
     *On the Numerical Computation of the Mittag--Leffler Function*,
     International Journal of Nonlinear Sciences and Numerical Simulation,

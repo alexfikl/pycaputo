@@ -34,10 +34,16 @@ class Points:
 def make_stretched_points(
     n: int, a: float = 0.0, b: float = 1.0, strength: float = 4.0
 ) -> Points:
-    """Construct a :class:`Points` on :math:`[a, b]`.
+    r"""Construct a :class:`Points` on :math:`[a, b]`.
 
     This uses a custom function that clusters points around the midpoint
-    based on the strength *strength*.
+    based on the strength *strength*. The stretching is given by
+
+    .. math::
+
+        \phi(\xi) = \xi + A (x_c - x) (1 - \xi) \xi^2
+
+    where :math:`A` is the *strength* and :math:`x_c = 1/2` for the midpoint.
 
     :arg n: number of points in :math:`[a, b]`.
     :arg strength: a positive number that constrols the clustering of points at
@@ -47,6 +53,31 @@ def make_stretched_points(
     x = x + strength * (0.5 - x) * (1 - x) * x**2
 
     return Points(a=a, b=b, x=a + (b - a) * x)
+
+
+def make_stynes_points(
+    n: int, a: float = 0.0, b: float = 1.0, gamma: float = 1.0
+) -> Points:
+    r"""Construct a graded set of points on :math:`[a, b]`.
+
+    This builds the graded mesh from [Stynes2017]_. The stretching function
+    is given by
+
+    .. math::
+
+        \phi(\xi) = \xi^\gamma,
+
+    where the optimal grading :math:`\gamma` is :math:`(2 - \alpha) / \alpha`.
+    Note that, according to [Stynes2017]_, this grading is optimal for the L1
+    method.
+
+    :arg n: number of points in :math:`[a, b]`.
+    :arg gamma: mesh grading -- a larger :math:`\gamma` leads to more clustering
+        of points near the origin :math:`a`.
+    """
+
+    x = np.linspace(0.0, 1.0, n)
+    return Points(a=a, b=b, x=a + (b - a) * x**gamma)
 
 
 @dataclass(frozen=True)
