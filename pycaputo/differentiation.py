@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
 
@@ -17,15 +18,20 @@ logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
-class DerivativeMethod:
+class DerivativeMethod(ABC):
     """A generic method used to evaluate a fractional derivative at a set of points."""
 
+    @property
+    @abstractmethod
+    def order(self) -> float:
+        """Expected order of convergence of the method."""
+
+    @abstractmethod
     def supports(self, alpha: float) -> bool:
         """
         :returns: *True* if the method supports computing the fractional
             order derivative of order *alpha*.
         """
-        return False
 
 
 @singledispatch
@@ -68,6 +74,10 @@ class CaputoL1Method(DerivativeMethod):
                     f"{type(self).__name__} only supports orders in (0, 1): "
                     f"got order '{self.d.order}'"
                 )
+
+    @property
+    def order(self) -> float:
+        return 2 - self.d.order
 
     def supports(self, alpha: float) -> bool:
         return 0 < alpha < 1
@@ -229,6 +239,10 @@ class CaputoUniformL2Method(DerivativeMethod):
                     f"got order '{self.d.order}'"
                 )
 
+    @property
+    def order(self) -> float:
+        return 3 - self.d.order
+
     def supports(self, alpha: float) -> bool:
         return 1 < alpha < 2
 
@@ -281,6 +295,7 @@ REGISTERED_METHODS = {
     "CaputoL1Method": CaputoL1Method,
     "CaputoUniformL1Method": CaputoUniformL1Method,
     "CaputoModifiedL1Method": CaputoModifiedL1Method,
+    "CaputoUniformL2Method": CaputoUniformL2Method,
 }
 
 
@@ -306,11 +321,13 @@ def make_diff_method(
         method = CaputoUniformL1Method(d, modified=modified)
     elif name == "CaputoModifiedL1Method":
         method = CaputoModifiedL1Method(d)
+    elif name == "CaputoUniformL2Method":
+        method = CaputoUniformL2Method(d)
     else:
         raise AssertionError
 
     if not method.supports(order):
-        raise ValueError(f"Method '{name}' does not support order '{order}'")
+        raise ValueError(f"Method '{name}' does not support derivative order '{order}'")
 
     return method
 

@@ -22,7 +22,7 @@ set_recommended_matplotlib()
         "CaputoL1Method",
         "CaputoUniformL1Method",
         "CaputoModifiedL1Method",
-        "CaputoUniformL2Method",
+        # "CaputoUniformL2Method",
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
