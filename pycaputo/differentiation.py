@@ -269,7 +269,7 @@ class CaputoUniformL2Method(DerivativeMethod):
 
 
 def l2uweights(alpha: float, i: Any, k: Any) -> Array:
-    return (i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha)
+    return np.array((i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha))
 
 
 @evaluate.register(CaputoUniformL2Method)

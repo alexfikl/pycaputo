@@ -53,10 +53,8 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
             )
 
         if 1 < alpha < 2:
-            p = 12 + 8 * (x - 2) * x - 7 * alpha + 4 * alpha * x + alpha ** 2
-            return np.array(
-                3 * x ** (2 - alpha) * p / math.gamma(5 - alpha)
-            )
+            p = 12 + 8 * (x - 2) * x - 7 * alpha + 4 * alpha * x + alpha**2
+            return np.array(3 * x ** (2 - alpha) * p / math.gamma(5 - alpha))
 
         raise ValueError(f"Unsupported order: {alpha}")
 
