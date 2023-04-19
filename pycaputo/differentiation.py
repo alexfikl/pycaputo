@@ -30,7 +30,7 @@ class DerivativeMethod(ABC):
     def supports(self, alpha: float) -> bool:
         """
         :returns: *True* if the method supports computing the fractional
-            order derivative of order *alpha*.
+            order derivative of order *alpha* and *False* otherwise.
         """
 
 

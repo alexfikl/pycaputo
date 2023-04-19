@@ -29,7 +29,21 @@ class FractionalDerivative:
 
 @dataclass(frozen=True)
 class RiemannLiouvilleDerivative(FractionalDerivative):
-    """Riemann-Liouville fractional order derivatives."""
+    r"""Riemann-Liouville fractional order derivatives.
+
+    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{N}_+`,
+    the lower Riemann-Liouville fractional derivative of a function
+    :math:`f: [a, b] \to \mathbb{R}` is given by (see e.g. [Li2020]_)
+
+    .. math::
+
+        D_{RL}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
+            \frac{\mathrm{d}^n}{\mathrm{d} x^n} \int_a^x
+            \frac{f(s)}{(x - s)^{\alpha + 1 - n}} \,\mathrm{d}s,
+
+    while the upper Riemann-Liouville fractional derivative is integrated on
+    :math:`[x, b]`.
+    """
 
     #: Side on which to compute the derivative
     side: Side
@@ -37,7 +51,19 @@ class RiemannLiouvilleDerivative(FractionalDerivative):
 
 @dataclass(frozen=True)
 class CaputoDerivative(FractionalDerivative):
-    """Caputo fractional order derivatives."""
+    r"""Caputo fractional order derivatives.
+
+    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{N}_+`,
+    the lower Caputo fractional derivative of a function
+    :math:`f: [a, b] \to \mathbb{R}` is given by (see e.g. [Li2020]_)
+
+    .. math::
+
+        D_C^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)} \int_a^x
+            \frac{f^{(n)}(s)}{(x - s)^{\alpha + 1 - n}} \,\mathrm{d}s,
+
+    while the upper Caputo fractional derivative is integrated on :math:`[x, b]`.
+    """
 
     #: Side on which to compute the derivative
     side: Side

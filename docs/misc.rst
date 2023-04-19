@@ -9,6 +9,11 @@ Grids
 Special Functions
 -----------------
 
+.. automodule:: pycaputo.mittagleffler
+
+Test Functions
+--------------
+
 This module contains some analytical expressions for known fractional order
 derivatives. The classes are meant to be used as
 
