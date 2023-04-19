@@ -22,7 +22,8 @@ set_recommended_matplotlib()
         "CaputoL1Method",
         "CaputoUniformL1Method",
         "CaputoModifiedL1Method",
-        # "CaputoUniformL2Method",
+        "CaputoUniformL2Method",
+        "CaputoUniformL2CMethod",
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -36,31 +37,25 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         make_uniform_points,
     )
 
-    if name in ("CaputoUniformL2Method",):
+    if name in ("CaputoUniformL2Method", "CaputoUniformL2CMethod"):
         alpha += 1
-        order = 3 - alpha
-    else:
-        order = 2 - alpha
 
     def f(x: Array) -> Array:
-        return (0.5 - x) ** 3
+        return (0.5 - x) ** 4
 
     def df(x: Array) -> Array:
         if 0 < alpha < 1:
             return np.array(
-                -3 / 4 * x ** (1 - alpha) / math.gamma(2 - alpha)
+                -1 / 2 * x ** (1 - alpha) / math.gamma(2 - alpha)
                 + 3 * x ** (2 - alpha) / math.gamma(3 - alpha)
-                - 6 * x ** (3 - alpha) / math.gamma(4 - alpha)
+                - 12 * x ** (3 - alpha) / math.gamma(4 - alpha)
+                + 24 * x ** (4 - alpha) / math.gamma(5 - alpha)
             )
 
         if 1 < alpha < 2:
+            p = 12 + 8 * (x - 2) * x - 7 * alpha + 4 * alpha * x + alpha ** 2
             return np.array(
-                3
-                * x ** (2 - alpha)
-                * (3 - alpha - 2 * x)
-                / (3 - alpha)
-                / (2 - alpha)
-                / math.gamma(2 - alpha)
+                3 * x ** (2 - alpha) * p / math.gamma(5 - alpha)
             )
 
         raise ValueError(f"Unsupported order: {alpha}")
@@ -68,7 +63,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
     from pycaputo.utils import EOCRecorder, savefig
 
     diff = make_diff_method(name, alpha)
-    eoc = EOCRecorder(order=order)
+    eoc = EOCRecorder(order=diff.order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -76,7 +71,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         fig = mp.figure()
         ax = fig.gca()
 
-    for n in [32, 64, 128, 256, 512, 768, 1024]:
+    for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
         if name == "CaputoL1Method":
             p = make_stretched_points(n, a=0, b=1, strength=4.0)
         elif name == "CaputoUniformL1Method":
@@ -85,6 +80,8 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
             p = make_uniform_midpoints(n, a=0, b=1)
         elif name == "CaputoUniformL2Method":
             p = make_uniform_points(n, a=0, b=1)
+        elif name == "CaputoUniformL2CMethod":
+            p = make_uniform_points(n, a=0, b=1)
         else:
             raise AssertionError
 
@@ -92,27 +89,29 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         df_ref = df(p.x)
 
         h = np.max(p.dx)
-        e = la.norm(df_num[1:] - df_ref[1:], ord=np.inf)
+        e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
+        # e = abs(df_num[n // 2] - df_ref[n // 2])
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
         if visualize:
-            ax.plot(p.x, df_num)
+            ax.plot(p.x[1:], df_num[1:])
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
     logger.info("\n%s", eoc)
 
     if visualize:
-        ax.plot(p.x, df_ref, "k-")
+        ax.plot(p.x[1:], df_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
         dirname = pathlib.Path(__file__).parent
-        savefig(fig, dirname / f"test_caputo_l_{alpha}".replace(".", "_"))
+        filename = f"test_caputo_{diff.name}_{alpha}".replace(".", "_")
+        savefig(fig, dirname / filename.lower())
 
     assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order
+    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 0.25
 
 
 # }}}

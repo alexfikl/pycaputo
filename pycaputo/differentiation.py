@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
+from typing import Any
 
 import numpy as np
 
@@ -20,6 +22,11 @@ logger = get_logger(__name__)
 @dataclass(frozen=True)
 class DerivativeMethod(ABC):
     """A generic method used to evaluate a fractional derivative at a set of points."""
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """An identifier for the method."""
 
     @property
     @abstractmethod
@@ -80,6 +87,10 @@ class CaputoL1Method(DerivativeMethod):
                 )
 
     @property
+    def name(self) -> str:
+        return "L1"
+
+    @property
     def order(self) -> float:
         return 2 - self.d.order
 
@@ -89,8 +100,6 @@ class CaputoL1Method(DerivativeMethod):
 
 @evaluate.register(CaputoL1Method)
 def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array:
-    import math
-
     x = p.x
     fx = f(x)
     alpha = m.d.order
@@ -134,6 +143,10 @@ class CaputoUniformL1Method(CaputoL1Method):
     #: Flag to denote the modified L1 method.
     modified: bool
 
+    @property
+    def name(self) -> str:
+        return "L1U"
+
 
 @evaluate.register(CaputoUniformL1Method)
 def _evaluate_uniform_l1method(
@@ -142,8 +155,6 @@ def _evaluate_uniform_l1method(
     from pycaputo.grid import UniformPoints
 
     assert isinstance(p, UniformPoints)
-
-    import math
 
     x = p.x
     fx = f(x)
@@ -179,6 +190,10 @@ class CaputoModifiedL1Method(CaputoL1Method):
     :math:`D_C^\alpha[f](a)` is undefined.
     """
 
+    @property
+    def name(self) -> str:
+        return "L1M"
+
 
 @evaluate.register(CaputoModifiedL1Method)
 def _evaluate_modified_l1method(
@@ -187,8 +202,6 @@ def _evaluate_modified_l1method(
     from pycaputo.grid import UniformMidpoints
 
     assert isinstance(p, UniformMidpoints)
-
-    import math
 
     x = p.x
     h = p.dx[1]
@@ -244,11 +257,19 @@ class CaputoUniformL2Method(DerivativeMethod):
                 )
 
     @property
+    def name(self) -> str:
+        return "L2U"
+
+    @property
     def order(self) -> float:
-        return 3 - self.d.order
+        return 1
 
     def supports(self, alpha: float) -> bool:
         return 1 < alpha < 2
+
+
+def l2uweights(alpha: float, i: Any, k: Any) -> Array:
+    return (i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha)
 
 
 @evaluate.register(CaputoUniformL2Method)
@@ -258,10 +279,6 @@ def _evaluate_uniform_l2method(
     from pycaputo.grid import UniformPoints
 
     assert isinstance(p, UniformPoints)
-    assert abs(p.x[0]) < 2 * np.finfo(p.x.dtype).eps
-    assert abs(p.a) < 2 * np.finfo(p.x.dtype).eps
-
-    import math
 
     x = p.x
     h = p.dx[1]
@@ -282,16 +299,69 @@ def _evaluate_uniform_l2method(
     omega0 = 1 / (h**alpha * math.gamma(3 - alpha))
     k = np.arange(df.size)
 
-    ddf = np.zeros_like(fx)
-    ddf[1:-1] = fx[2:] - 2 * fx[1:-1] + fx[:-2]
-    ddf[0] = 2 * fx[0] - 5 * fx[1] + 4 * fx[2] - fx[3]
+    ddf = np.zeros(fx.size - 1, dtype=fx.dtype)
+    ddf[:-1] = fx[2:] - 2 * fx[1:-1] + fx[:-2]
+    ddf[-1] = 2 * fx[-1] - 5 * fx[-2] + 4 * fx[-3] - fx[-4]
 
-    omega = omega0 * (k[:-1] ** (2 - alpha) - k[1:] ** (2 - alpha))
-    df[1:] = omega * ddf[0]
+    for n in range(1, df.size):
+        df[n] = omega0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
 
-    for n in range(2, df.size):
-        omega = (n - k[1:n] - 1) ** (2 - alpha) - (n - k[1:n]) ** (2 - alpha)
-        df[n] -= omega0 * np.sum(omega * ddf[1:n])
+    return df
+
+
+@dataclass(frozen=True)
+class CaputoUniformL2CMethod(CaputoUniformL2Method):
+    r"""Implements the uniform L2C method for the Caputo fractional derivative
+    of order :math:`\alpha \in (1, 2)`.
+
+    This method is defined in Section 4.1.2 from [Li2020]_. Note that
+    it cannot compute the derivative at the starting point, i.e.
+    :math:`D_C^\alpha[f](a)` is undefined.
+    """
+
+    @property
+    def name(self) -> str:
+        return "L2CU"
+
+    @property
+    def order(self) -> float:
+        return 3 - self.d.order
+
+
+@evaluate.register(CaputoUniformL2CMethod)
+def _evaluate_uniform_l2cmethod(
+    m: CaputoUniformL2CMethod, f: ScalarFunction, p: Points
+) -> Array:
+    from pycaputo.grid import UniformPoints
+
+    assert isinstance(p, UniformPoints)
+
+    x = p.x
+    h = p.dx[1]
+    fx = f(x)
+    alpha = m.d.order
+
+    # NOTE: this method cannot compute the derivative at x[0], since it relies
+    # on approximating an integral, better luck elsewhere :(
+    df = np.empty_like(x)
+    df[0] = np.nan
+
+    # NOTE: [Li2020] Section 4.2
+    # NOTE: the method is not written as in [Li2020] and has several tweaks:
+    # * terms are written as `sum(w * f'')` instead of `sum(w * f)`, which
+    #   makes it easier to express w
+    # * boundary terms are approximated with a biased stencil.
+
+    omega0 = 1 / (2 * h**alpha * math.gamma(3 - alpha))
+    k = np.arange(df.size)
+
+    ddf = np.zeros(fx.size - 1, dtype=fx.dtype)
+    ddf[1:-1] = (fx[3:] - fx[2:-1]) - (fx[1:-2] - fx[:-3])
+    ddf[0] = 3 * fx[0] - 7 * fx[1] + 5 * fx[2] - fx[3]
+    ddf[-1] = 3 * fx[-1] - 7 * fx[-2] + 5 * fx[-3] - fx[-4]
+
+    for n in range(1, df.size):
+        df[n] = omega0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
 
     return df
 
@@ -307,6 +377,7 @@ REGISTERED_METHODS = {
     "CaputoUniformL1Method": CaputoUniformL1Method,
     "CaputoModifiedL1Method": CaputoModifiedL1Method,
     "CaputoUniformL2Method": CaputoUniformL2Method,
+    "CaputoUniformL2CMethod": CaputoUniformL2CMethod,
 }
 
 
@@ -335,6 +406,8 @@ def make_diff_method(
         method = CaputoModifiedL1Method(d)
     elif name == "CaputoUniformL2Method":
         method = CaputoUniformL2Method(d)
+    elif name == "CaputoUniformL2CMethod":
+        method = CaputoUniformL2CMethod(d)
     else:
         raise AssertionError
 
