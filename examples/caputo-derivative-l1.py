@@ -26,7 +26,7 @@ def df(x: Array, alpha: float) -> Array:
 from pycaputo import CaputoDerivative, CaputoUniformL1Method, Side
 
 d = CaputoDerivative(order=0.9, side=Side.Left)
-method = CaputoUniformL1Method(d, modified=False)
+method = CaputoUniformL1Method(d)
 
 from pycaputo import evaluate
 from pycaputo.grid import make_uniform_points

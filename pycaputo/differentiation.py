@@ -100,24 +100,21 @@ class CaputoL1Method(DerivativeMethod):
 
 @evaluate.register(CaputoL1Method)
 def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array:
+    # precompute variables
     x = p.x
     fx = f(x)
     alpha = m.d.order
+    w0 = 1 / math.gamma(2 - alpha)
 
-    # NOTE: this method cannot compute the derivative at x[0], since it relies
-    # on approximating an integral, better luck elsewhere :(
+    # NOTE: [Li2020] Equation 4.20
     df = np.zeros_like(x)
     df[0] = np.nan
 
-    # TODO: How to do this convolution faster??
-    c = math.gamma(2 - alpha)
-
-    # NOTE: [Li2020] Equation 4.20
     for n in range(1, df.size):
-        omega = (
+        w = (
             (x[n] - x[:n]) ** (1 - alpha) - (x[n] - x[1 : n + 1]) ** (1 - alpha)
         ) / p.dx[:n]
-        df[n] = np.sum(omega * np.diff(fx[: n + 1])) / c
+        df[n] = w0 * np.sum(w * np.diff(fx[: n + 1]))
 
     return df
 
@@ -140,9 +137,6 @@ class CaputoUniformL1Method(CaputoL1Method):
         \frac{f(x_{k}) + f(x_{k - 1})}{2}.
     """
 
-    #: Flag to denote the modified L1 method.
-    modified: bool
-
     @property
     def name(self) -> str:
         return "L1U"
@@ -156,26 +150,21 @@ def _evaluate_uniform_l1method(
 
     assert isinstance(p, UniformPoints)
 
+    # precompute variables
     x = p.x
     fx = f(x)
     alpha = m.d.order
 
-    # NOTE: this method cannot compute the derivative at x[0], since it relies
-    # on approximating an integral, better luck elsewhere :(
+    w0 = 1 / (p.dx[0] ** alpha * math.gamma(2 - alpha))
+    k = np.arange(fx.size - 1)
+
+    # NOTE: [Li2020] Equation 4.3
     df = np.zeros_like(x)
     df[0] = np.nan
 
-    c = p.dx[0] ** alpha * math.gamma(2 - alpha)
-    k = np.arange(df.size - 1)
-
-    if m.modified:  # pylint: disable=no-else-raise
-        # NOTE: [Li2020] Equation 4.53
-        raise NotImplementedError
-    else:
-        # NOTE: [Li2020] Equation 4.3
-        for n in range(1, df.size):
-            w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-            df[n] = np.sum(w * np.diff(fx[: n + 1])) / c
+    for n in range(1, df.size):
+        w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
+        df[n] = w0 * np.sum(w * np.diff(fx[: n + 1]))
 
     return df
 
@@ -203,27 +192,26 @@ def _evaluate_modified_l1method(
 
     assert isinstance(p, UniformMidpoints)
 
+    # precompute variables
     x = p.x
     h = p.dx[1]
     fx = f(x)
     alpha = m.d.order
 
-    # NOTE: this method cannot compute the derivative at x[0], since it relies
-    # on approximating an integral, better luck elsewhere :(
+    w0 = 1 / (h**alpha * math.gamma(2 - alpha))
+    k = np.arange(fx.size)
+
+    # NOTE: [Li2020] Equation 4.51
     df = np.empty_like(x)
     df[0] = np.nan
 
-    c = h**alpha * math.gamma(2 - alpha)
-    k = np.arange(df.size)
-
-    # NOTE: [Li2020] Equation 4.51
     # FIXME: this does not use the formula from the book; any benefit to it?
-    w = 2 / c * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
+    w = 2 * w0 * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
     df[1:] = w * (fx[1] - fx[0])
 
     for n in range(1, df.size):
         w = (n - k[1:n]) ** (1 - alpha) - (n - k[1:n] - 1) ** (1 - alpha)
-        df[n] += np.sum(w * np.diff(fx[1 : n + 1])) / c
+        df[n] += w0 * np.sum(w * np.diff(fx[1 : n + 1]))
 
     return df
 
@@ -280,15 +268,14 @@ def _evaluate_uniform_l2method(
 
     assert isinstance(p, UniformPoints)
 
+    # precompute variables
     x = p.x
     h = p.dx[1]
     fx = f(x)
     alpha = m.d.order
 
-    # NOTE: this method cannot compute the derivative at x[0], since it relies
-    # on approximating an integral, better luck elsewhere :(
-    df = np.empty_like(x)
-    df[0] = np.nan
+    w0 = 1 / (h**alpha * math.gamma(3 - alpha))
+    k = np.arange(fx.size)
 
     # NOTE: [Li2020] Section 4.2
     # NOTE: the method is not written as in [Li2020] and has several tweaks:
@@ -296,15 +283,15 @@ def _evaluate_uniform_l2method(
     #   makes it easier to express w
     # * boundary terms are approximated with a biased stencil.
 
-    omega0 = 1 / (h**alpha * math.gamma(3 - alpha))
-    k = np.arange(df.size)
+    df = np.empty_like(x)
+    df[0] = np.nan
 
     ddf = np.zeros(fx.size - 1, dtype=fx.dtype)
     ddf[:-1] = fx[2:] - 2 * fx[1:-1] + fx[:-2]
     ddf[-1] = 2 * fx[-1] - 5 * fx[-2] + 4 * fx[-3] - fx[-4]
 
     for n in range(1, df.size):
-        df[n] = omega0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
+        df[n] = w0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
 
     return df
 
@@ -336,24 +323,18 @@ def _evaluate_uniform_l2cmethod(
 
     assert isinstance(p, UniformPoints)
 
+    # precompute variables
     x = p.x
     h = p.dx[1]
     fx = f(x)
     alpha = m.d.order
 
-    # NOTE: this method cannot compute the derivative at x[0], since it relies
-    # on approximating an integral, better luck elsewhere :(
-    df = np.empty_like(x)
-    df[0] = np.nan
+    w0 = 1 / (2 * h**alpha * math.gamma(3 - alpha))
+    k = np.arange(fx.size)
 
     # NOTE: [Li2020] Section 4.2
-    # NOTE: the method is not written as in [Li2020] and has several tweaks:
-    # * terms are written as `sum(w * f'')` instead of `sum(w * f)`, which
-    #   makes it easier to express w
-    # * boundary terms are approximated with a biased stencil.
-
-    omega0 = 1 / (2 * h**alpha * math.gamma(3 - alpha))
-    k = np.arange(df.size)
+    df = np.empty_like(x)
+    df[0] = np.nan
 
     ddf = np.zeros(fx.size - 1, dtype=fx.dtype)
     ddf[1:-1] = (fx[3:] - fx[2:-1]) - (fx[1:-2] - fx[:-3])
@@ -361,7 +342,7 @@ def _evaluate_uniform_l2cmethod(
     ddf[-1] = 3 * fx[-1] - 7 * fx[-2] + 5 * fx[-3] - fx[-4]
 
     for n in range(1, df.size):
-        df[n] = omega0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
+        df[n] = w0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
 
     return df
 
@@ -386,7 +367,6 @@ def make_diff_method(
     order: float,
     *,
     side: Side = Side.Left,
-    modified: bool = False,
 ) -> DerivativeMethod:
     if name not in REGISTERED_METHODS:
         raise ValueError(
@@ -401,7 +381,7 @@ def make_diff_method(
     if name == "CaputoL1Method":
         method = CaputoL1Method(d)
     elif name == "CaputoUniformL1Method":
-        method = CaputoUniformL1Method(d, modified=modified)
+        method = CaputoUniformL1Method(d)
     elif name == "CaputoModifiedL1Method":
         method = CaputoModifiedL1Method(d)
     elif name == "CaputoUniformL2Method":
