@@ -13,7 +13,7 @@ Welcome
 .. warning::
 
    This package is currently in development and very experimental (the API
-   can and will change frequently for the forseeable future). For more mature
+   can and will change frequently for the foreseeable future). For more mature
    libraries see `differint <https://github.com/differint/differint>`__ in
    Python or `FractionalDiffEq.jl <https://github.com/SciFracX/FractionalDiffEq.jl>`__
    in Julia.
@@ -77,7 +77,7 @@ The resulting approximation can be see below
 .. image:: caputo-derivative-l1.png
     :width: 75%
     :align: center
-    :alt: Approximation of the Caputo derivative usig the L1 method
+    :alt: Approximation of the Caputo derivative using the L1 method
 
 
 The complete example can be found in

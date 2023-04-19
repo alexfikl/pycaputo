@@ -44,6 +44,13 @@ reuse:			## Check REUSE license compliance
 	@echo -e "\e[1;32mREUSE compliant!\e[0m"
 .PHONY: reuse
 
+codespell:		## Run codespell over the source code and documentation
+	@codespell --summary \
+		--skip _build \
+		--ignore-words .codespell-ignore \
+		pycaputo tests examples docs
+.PHONY: codespell
+
 # }}}
 
 # {{{ testing
