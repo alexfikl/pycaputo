@@ -4,6 +4,8 @@ Numerical Methods
 Quadrature
 ----------
 
+.. automodule:: pycaputo.quadrature
+
 Differentiation
 ---------------
 

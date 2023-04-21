@@ -36,20 +36,22 @@ and use a simple test function
 
 .. math::
 
-    f(x) = (1 + x)^3
+    f(x) = \left(\frac{1}{2} + x\right)^4
 
 and its Caputo fractional order derivative given by
 
 .. math::
 
-    D^\alpha_C[f](x) = \frac{3}{\Gamma(2 - \alpha)} x^{1 - \alpha}
-        + \frac{6}{\Gamma(3 - \alpha)} x^{2 - \alpha}
-        + \frac{6}{\Gamma(4 - \alpha)} x^{3 - \alpha}
+    D^\alpha_C[f](x) =
+        - \frac{x^{1 - \alpha}}{2 \Gamma(2 - \alpha)}
+        + \frac{3 x^{2 - \alpha}}{\Gamma(3 - \alpha)}
+        - \frac{12 x^{3 - \alpha}}{\Gamma(4 - \alpha)}
+        + \frac{24 x^{4 - \alpha}}{\Gamma(5 - \alpha)}.
 
 In code, we can write them as below
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 14-23
+    :lines: 14-24
     :language: python
     :linenos:
 
@@ -58,16 +60,16 @@ To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 follows
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 26-29
+    :lines: 27-30
     :language: python
     :linenos:
 
 These methods are described by the :class:`~pycaputo.derivatives.CaputoDerivative`
-and :class:`~pycaputo.differentiation.CaputoUniformL1Method` classes.
+and :class:`~pycaputo.differentiation.CaputoL1Method` classes.
 We can then set up a grid and evaluate the derivative at all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 31-35
+    :lines: 32-36
     :language: python
     :linenos:
 

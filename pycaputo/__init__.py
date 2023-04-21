@@ -10,10 +10,9 @@ from pycaputo.derivatives import (
 )
 from pycaputo.differentiation import (
     CaputoL1Method,
+    CaputoL2CMethod,
+    CaputoL2Method,
     CaputoModifiedL1Method,
-    CaputoUniformL1Method,
-    CaputoUniformL2CMethod,
-    CaputoUniformL2Method,
     DerivativeMethod,
     diff,
     make_diff_method,
@@ -30,10 +29,9 @@ from pycaputo.utils import ScalarFunction
 __all__ = (
     "CaputoDerivative",
     "CaputoL1Method",
+    "CaputoL2CMethod",
+    "CaputoL2Method",
     "CaputoModifiedL1Method",
-    "CaputoUniformL1Method",
-    "CaputoUniformL2CMethod",
-    "CaputoUniformL2Method",
     "DerivativeMethod",
     "FractionalDerivative",
     "QuadratureMethod",

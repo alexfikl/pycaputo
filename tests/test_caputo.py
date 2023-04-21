@@ -20,10 +20,9 @@ set_recommended_matplotlib()
     "name",
     [
         "CaputoL1Method",
-        "CaputoUniformL1Method",
         "CaputoModifiedL1Method",
-        "CaputoUniformL2Method",
-        "CaputoUniformL2CMethod",
+        "CaputoL2CMethod",
+        "CaputoL2Method",
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -37,7 +36,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         make_uniform_points,
     )
 
-    if name in ("CaputoUniformL2Method", "CaputoUniformL2CMethod"):
+    if name in ("CaputoL2Method", "CaputoL2CMethod"):
         alpha += 1
 
     def f(x: Array) -> Array:
@@ -72,13 +71,11 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
         if name == "CaputoL1Method":
             p = make_stretched_points(n, a=0, b=1, strength=4.0)
-        elif name == "CaputoUniformL1Method":
-            p = make_uniform_points(n, a=0, b=1)
         elif name == "CaputoModifiedL1Method":
             p = make_uniform_midpoints(n, a=0, b=1)
-        elif name == "CaputoUniformL2Method":
+        elif name == "CaputoL2Method":
             p = make_uniform_points(n, a=0, b=1)
-        elif name == "CaputoUniformL2CMethod":
+        elif name == "CaputoL2CMethod":
             p = make_uniform_points(n, a=0, b=1)
         else:
             raise AssertionError

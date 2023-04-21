@@ -68,7 +68,15 @@ class RiemannLiouvilleMethod(QuadratureMethod):
 
 @dataclass(frozen=True)
 class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
-    """Riemann-Liouville integral approximation using the rectangular formula."""
+    r"""Riemann-Liouville integral approximation using the rectangular formula.
+
+    The rectangular formula is derived in Section 3.1 I from [Li2020]_. It
+    uses a piecewise constant approximation on each subinterval and cannot
+    be used to evaluate the value at the starting point, i.e.
+    :math:`I_{RL}^\alpha[f](a)` is not defined.
+
+    This method is of order :math:`\mathcal{O}(h)`.
+    """
 
     #: Weight used in the approximation :math:`w f_k + (1 - w) f_{k + 1}`.
     weight: float = 1.0
@@ -118,7 +126,15 @@ def _quad_rl_rect(
 
 @dataclass(frozen=True)
 class RiemannLiouvilleTrapezoidalMethod(RiemannLiouvilleMethod):
-    """Riemann-Liouville integral approximation using the trapezoidal formula."""
+    r"""Riemann-Liouville integral approximation using the trapezoidal formula.
+
+    The rectangular formula is derived in Section 3.1 II from [Li2020]_. It
+    uses a linear approximation on each subinterval and cannot be used to
+    evaluate the value at the starting point, i.e.
+    :math:`I_{RL}^\alpha[f](a)` is not defined.
+
+    This method is of order :math:`\mathcal{O}(h^2)`.
+    """
 
     @property
     def name(self) -> str:
