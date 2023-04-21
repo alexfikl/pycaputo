@@ -15,7 +15,7 @@ from pycaputo.differentiation import (
     CaputoModifiedL1Method,
     DerivativeMethod,
     diff,
-    make_diff_method,
+    make_diff_from_name,
 )
 from pycaputo.quadrature import (
     QuadratureMethod,
@@ -42,6 +42,6 @@ __all__ = (
     "ScalarFunction",
     "Side",
     "diff",
-    "make_diff_method",
+    "make_diff_from_name",
     "quad",
 )

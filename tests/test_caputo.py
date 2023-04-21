@@ -17,24 +17,23 @@ set_recommended_matplotlib()
 
 
 @pytest.mark.parametrize(
-    "name",
+    ("name", "grid_type"),
     [
-        "CaputoL1Method",
-        "CaputoModifiedL1Method",
-        "CaputoL2CMethod",
-        "CaputoL2Method",
+        ("CaputoL1Method", "stretch"),
+        ("CaputoL1Method", "uniform"),
+        ("CaputoModifiedL1Method", "midpoints"),
+        ("CaputoL2CMethod", "uniform"),
+        ("CaputoL2Method", "uniform"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
-def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> None:
+def test_caputo_lmethods(
+    name: str, grid_type: str, alpha: float, visualize: bool = False
+) -> None:
     import math
 
-    from pycaputo import diff, make_diff_method
-    from pycaputo.grid import (
-        make_stretched_points,
-        make_uniform_midpoints,
-        make_uniform_points,
-    )
+    from pycaputo import diff, make_diff_from_name
+    from pycaputo.grid import make_points_from_name
 
     if name in ("CaputoL2Method", "CaputoL2CMethod"):
         alpha += 1
@@ -59,7 +58,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
 
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = make_diff_method(name, alpha)
+    meth = make_diff_from_name(name, alpha)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -69,17 +68,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         ax = fig.gca()
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
-        if name == "CaputoL1Method":
-            p = make_stretched_points(n, a=0, b=1, strength=4.0)
-        elif name == "CaputoModifiedL1Method":
-            p = make_uniform_midpoints(n, a=0, b=1)
-        elif name == "CaputoL2Method":
-            p = make_uniform_points(n, a=0, b=1)
-        elif name == "CaputoL2CMethod":
-            p = make_uniform_points(n, a=0, b=1)
-        else:
-            raise AssertionError
-
+        p = make_points_from_name(grid_type, n, a=0.0, b=1.0)
         df_num = diff(meth, f, p)
         df_ref = df(p.x)
 

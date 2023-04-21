@@ -3,10 +3,13 @@
 
 from dataclasses import dataclass
 from functools import cached_property
+from typing import Callable, Dict
 
 import numpy as np
 
 from pycaputo.utils import Array
+
+# {{{ non-uniform points
 
 
 @dataclass(frozen=True)
@@ -80,6 +83,12 @@ def make_stynes_points(
     return Points(a=a, b=b, x=a + (b - a) * x**gamma)
 
 
+# }}}
+
+
+# {{{ uniform
+
+
 @dataclass(frozen=True)
 class UniformPoints(Points):
     """A uniform set of points in :math:`[a, b]`."""
@@ -91,6 +100,11 @@ def make_uniform_points(n: int, a: float = 0.0, b: float = 1.0) -> UniformPoints
     :arg n: number of points in :math:`[a, b]`.
     """
     return UniformPoints(a=a, b=b, x=np.linspace(a, b, n))
+
+
+# }}}
+
+# {{{ midpoints
 
 
 @dataclass(frozen=True)
@@ -111,3 +125,35 @@ def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> UniformMid
     x[1:] = (x[1:] + x[:-1]) / 2
 
     return UniformMidpoints(a=a, b=b, x=x)
+
+
+# }}}
+
+
+# {{{ make
+
+REGISTERED_POINTS: Dict[str, Callable[..., Points]] = {
+    "stretch": make_stretched_points,
+    "stynes": make_stynes_points,
+    "uniform": make_uniform_points,
+    "midpoints": make_uniform_midpoints,
+}
+
+
+def make_points_from_name(name: str, n: int, a: float = 0.0, b: float = 1.0) -> Points:
+    """Construct a set of points by name.
+
+    :arg name: the name of the point set.
+    :arg n: number of points in :math:`[a, b]`.
+    """
+    if name not in REGISTERED_POINTS:
+        raise ValueError(
+            "Unknown point distribution '{}'. Known distributions are '{}'".format(
+                name, "', '".join(REGISTERED_POINTS)
+            )
+        )
+
+    return REGISTERED_POINTS[name](n, a=a, b=b)
+
+
+# }}}

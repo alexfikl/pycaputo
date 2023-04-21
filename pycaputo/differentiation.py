@@ -5,7 +5,7 @@ import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
-from typing import Any
+from typing import Any, Dict, Type
 
 import numpy as np
 
@@ -322,7 +322,7 @@ def _diff_uniform_l2cmethod(m: CaputoL2CMethod, f: ScalarFunction, p: Points) ->
 # {{{ make
 
 
-REGISTERED_METHODS = {
+REGISTERED_METHODS: Dict[str, Type[DerivativeMethod]] = {
     "CaputoL1Method": CaputoL1Method,
     "CaputoL2CMethod": CaputoL2CMethod,
     "CaputoL2Method": CaputoL2Method,
@@ -330,7 +330,7 @@ REGISTERED_METHODS = {
 }
 
 
-def make_diff_method(
+def make_diff_from_name(
     name: str,
     order: float,
     *,
@@ -344,18 +344,7 @@ def make_diff_method(
         )
 
     d = CaputoDerivative(order=order, side=side)
-    method: DerivativeMethod
-
-    if name == "CaputoL1Method":
-        method = CaputoL1Method(d)
-    elif name == "CaputoModifiedL1Method":
-        method = CaputoModifiedL1Method(d)
-    elif name == "CaputoUniformL2Method":
-        method = CaputoL2Method(d)
-    elif name == "CaputoUniformL2CMethod":
-        method = CaputoL2CMethod(d)
-    else:
-        raise AssertionError
+    method = REGISTERED_METHODS[name](d)  # type: ignore[call-arg]
 
     if not method.supports(order):
         raise ValueError(f"Method '{name}' does not support derivative order '{order}'")
