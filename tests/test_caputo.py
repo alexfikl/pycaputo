@@ -28,7 +28,10 @@ set_recommended_matplotlib()
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
 def test_caputo_lmethods(
-    name: str, grid_type: str, alpha: float, visualize: bool = False
+    name: str,
+    grid_type: str,
+    alpha: float,
+    visualize: bool = False,
 ) -> None:
     import math
 

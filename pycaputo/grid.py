@@ -59,7 +59,7 @@ def make_stretched_points(
 
 
 def make_stynes_points(
-    n: int, a: float = 0.0, b: float = 1.0, gamma: float = 1.0
+    n: int, a: float = 0.0, b: float = 1.0, gamma: float = 2.0
 ) -> Points:
     r"""Construct a graded set of points on :math:`[a, b]`.
 
