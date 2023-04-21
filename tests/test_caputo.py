@@ -30,7 +30,7 @@ set_recommended_matplotlib()
 def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> None:
     import math
 
-    from pycaputo import evaluate, make_diff_method
+    from pycaputo import diff, make_diff_method
     from pycaputo.grid import (
         make_stretched_points,
         make_uniform_midpoints,
@@ -60,8 +60,8 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
 
     from pycaputo.utils import EOCRecorder, savefig
 
-    diff = make_diff_method(name, alpha)
-    eoc = EOCRecorder(order=diff.order)
+    meth = make_diff_method(name, alpha)
+    eoc = EOCRecorder(order=meth.order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -83,7 +83,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         else:
             raise AssertionError
 
-        df_num = evaluate(diff, f, p)
+        df_num = diff(meth, f, p)
         df_ref = df(p.x)
 
         h = np.max(p.dx)
@@ -105,7 +105,7 @@ def test_caputo_lmethods(name: str, alpha: float, visualize: bool = False) -> No
         # ax.set_ylim([1.0e-16, 1])
 
         dirname = pathlib.Path(__file__).parent
-        filename = f"test_caputo_{diff.name}_{alpha}".replace(".", "_")
+        filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
     assert eoc.order is not None

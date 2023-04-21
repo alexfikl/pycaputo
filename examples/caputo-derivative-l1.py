@@ -28,11 +28,11 @@ from pycaputo import CaputoDerivative, CaputoUniformL1Method, Side
 d = CaputoDerivative(order=0.9, side=Side.Left)
 method = CaputoUniformL1Method(d)
 
-from pycaputo import evaluate
+from pycaputo import diff
 from pycaputo.grid import make_uniform_points
 
 p = make_uniform_points(256, a=0, b=1)
-df_num = evaluate(method, f, p)
+df_num = diff(method, f, p)
 
 df_ref = df(p.x, d.order)
 print(
