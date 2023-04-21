@@ -42,7 +42,7 @@ class DerivativeMethod(ABC):
 
 
 @singledispatch
-def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
+def diff(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
     """Evaluate the fractional derivative of *f* at *x*.
 
     Note that not all numerical methods can evaluate the derivative at all
@@ -54,7 +54,7 @@ def evaluate(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
     :arg x: an array of points at which to evaluate the derivative.
     """
     raise NotImplementedError(
-        f"Cannot evaluate function with method '{type(m).__name__}'"
+        f"Cannot evaluate derivative with method '{type(m).__name__}'"
     )
 
 
@@ -98,8 +98,8 @@ class CaputoL1Method(DerivativeMethod):
         return 0 < alpha < 1
 
 
-@evaluate.register(CaputoL1Method)
-def _evaluate_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array:
+@diff.register(CaputoL1Method)
+def _diff_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
     fx = f(x)
@@ -142,8 +142,8 @@ class CaputoUniformL1Method(CaputoL1Method):
         return "L1U"
 
 
-@evaluate.register(CaputoUniformL1Method)
-def _evaluate_uniform_l1method(
+@diff.register(CaputoUniformL1Method)
+def _diff_uniform_l1method(
     m: CaputoUniformL1Method, f: ScalarFunction, p: Points
 ) -> Array:
     from pycaputo.grid import UniformPoints
@@ -184,8 +184,8 @@ class CaputoModifiedL1Method(CaputoL1Method):
         return "L1M"
 
 
-@evaluate.register(CaputoModifiedL1Method)
-def _evaluate_modified_l1method(
+@diff.register(CaputoModifiedL1Method)
+def _diff_modified_l1method(
     m: CaputoModifiedL1Method, f: ScalarFunction, p: Points
 ) -> Array:
     from pycaputo.grid import UniformMidpoints
@@ -260,8 +260,8 @@ def l2uweights(alpha: float, i: Any, k: Any) -> Array:
     return np.array((i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha))
 
 
-@evaluate.register(CaputoUniformL2Method)
-def _evaluate_uniform_l2method(
+@diff.register(CaputoUniformL2Method)
+def _diff_uniform_l2method(
     m: CaputoUniformL2Method, f: ScalarFunction, p: Points
 ) -> Array:
     from pycaputo.grid import UniformPoints
@@ -315,8 +315,8 @@ class CaputoUniformL2CMethod(CaputoUniformL2Method):
         return 3 - self.d.order
 
 
-@evaluate.register(CaputoUniformL2CMethod)
-def _evaluate_uniform_l2cmethod(
+@diff.register(CaputoUniformL2CMethod)
+def _diff_uniform_l2cmethod(
     m: CaputoUniformL2CMethod, f: ScalarFunction, p: Points
 ) -> Array:
     from pycaputo.grid import UniformPoints
