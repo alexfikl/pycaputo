@@ -13,55 +13,39 @@ from pycaputo.utils import Array, set_recommended_matplotlib
 logger = get_logger("pycaputo.test_caputo")
 set_recommended_matplotlib()
 
-# {{{ test_caputo_lmethods
+
+# {{{ test_riemann_liouville_quad
 
 
+@pytest.mark.xfail(reason="work in progress")
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
-        ("CaputoL1Method", "stretch"),
-        ("CaputoL1Method", "uniform"),
-        ("CaputoModifiedL1Method", "midpoints"),
-        ("CaputoL2CMethod", "uniform"),
-        ("CaputoL2Method", "uniform"),
+        ("RiemannLiouvilleRectangularMethod", "uniform"),
+        ("RiemannLiouvilleRectangularMethod", "stretch"),
+        # ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
+        # ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
     ],
 )
-@pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
-def test_caputo_lmethods(
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 1.0, 2.0, 7.0])
+def test_riemann_liouville_quad(
     name: str,
     grid_type: str,
     alpha: float,
     visualize: bool = False,
 ) -> None:
-    import math
-
-    from pycaputo import diff, make_diff_from_name
+    from pycaputo import make_quad_from_name, quad
     from pycaputo.grid import make_points_from_name
 
-    if name in ("CaputoL2Method", "CaputoL2CMethod"):
-        alpha += 1
-
     def f(x: Array) -> Array:
-        return (0.5 - x) ** 4
+        return np.zeros_like(x)
 
-    def df(x: Array) -> Array:
-        if 0 < alpha < 1:
-            return np.array(
-                -1 / 2 * x ** (1 - alpha) / math.gamma(2 - alpha)
-                + 3 * x ** (2 - alpha) / math.gamma(3 - alpha)
-                - 12 * x ** (3 - alpha) / math.gamma(4 - alpha)
-                + 24 * x ** (4 - alpha) / math.gamma(5 - alpha)
-            )
-
-        if 1 < alpha < 2:
-            p = 12 + 8 * (x - 2) * x - 7 * alpha + 4 * alpha * x + alpha**2
-            return np.array(3 * x ** (2 - alpha) * p / math.gamma(5 - alpha))
-
-        raise ValueError(f"Unsupported order: {alpha}")
+    def qf(x: Array) -> Array:
+        return np.zeros_like(x)
 
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = make_diff_from_name(name, alpha)
+    meth = make_quad_from_name(name, -alpha)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -72,25 +56,23 @@ def test_caputo_lmethods(
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
         p = make_points_from_name(grid_type, n, a=0.0, b=1.0)
-        df_num = diff(meth, f, p)
-        df_ref = df(p.x)
+        qf_num = quad(meth, f, p)
+        qf_ref = qf(p.x)
 
         h = np.max(p.dx)
-        e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
+        e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
         if visualize:
-            ax.plot(p.x[1:], df_num[1:])
-            # ax.semilogy(p.x, abs(df_num - df_ref))
+            ax.plot(p.x[1:], qf_num[1:])
 
     logger.info("\n%s", eoc)
 
     if visualize:
-        ax.plot(p.x[1:], df_ref[1:], "k--")
+        ax.plot(p.x[1:], qf_ref[1:], "k--")
         ax.set_xlabel("$x$")
-        ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
-        # ax.set_ylim([1.0e-16, 1])
+        ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
         dirname = pathlib.Path(__file__).parent
         filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")

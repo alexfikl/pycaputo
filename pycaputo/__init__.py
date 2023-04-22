@@ -22,6 +22,7 @@ from pycaputo.quadrature import (
     RiemannLiouvilleMethod,
     RiemannLiouvilleRectangularMethod,
     RiemannLiouvilleTrapezoidalMethod,
+    make_quad_from_name,
     quad,
 )
 from pycaputo.utils import ScalarFunction
@@ -43,5 +44,6 @@ __all__ = (
     "Side",
     "diff",
     "make_diff_from_name",
+    "make_quad_from_name",
     "quad",
 )

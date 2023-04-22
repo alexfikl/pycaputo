@@ -12,6 +12,7 @@ from pycaputo.utils import set_recommended_matplotlib
 logger = get_logger("pycaputo.test_caputo")
 set_recommended_matplotlib()
 
+
 # {{{ test_points
 
 

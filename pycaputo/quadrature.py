@@ -5,10 +5,11 @@ import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
+from typing import Dict, Type
 
 import numpy as np
 
-from pycaputo.derivatives import RiemannLiouvilleDerivative
+from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
 from pycaputo.utils import Array, ScalarFunction
 
@@ -84,7 +85,8 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            if not 0.0 <= self.weight < 1.0:
+            super().__post_init__()
+            if not 0.0 <= self.weight <= 1.0:
                 raise ValueError(
                     f"Weight is expected to be in [0, 1]: weight is '{self.weight}'"
                 )
@@ -109,9 +111,7 @@ def _quad_rl_rect(
     alpha = -m.d.order
     w0 = 1 / math.gamma(1 + alpha)
 
-    fc = np.empty(fx.size - 1, dtype=fx.dtype)
-    fc[1:] = m.weight * fx[:-1] + (1 - m.weight) * fx[1:]
-    fc[0] = fx[0]
+    fc = m.weight * fx[:-1] + (1 - m.weight) * fx[1:]
 
     # compute integral
     qf = np.empty_like(fx)
@@ -189,6 +189,35 @@ def _quad_rl_trap(
             qf[n] = w0 * np.sum((wl * fx[:n] + wr * fx[1 : n + 1]) / p.dx[:n])
 
     return qf
+
+
+# }}}
+
+
+# {{{ make
+
+
+REGISTERED_METHODS: Dict[str, Type[QuadratureMethod]] = {
+    "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
+    "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
+}
+
+
+def make_quad_from_name(
+    name: str,
+    order: float,
+    *,
+    side: Side = Side.Left,
+) -> QuadratureMethod:
+    if name not in REGISTERED_METHODS:
+        raise ValueError(
+            "Unknown differentiation method '{}'. Known methods are '{}'".format(
+                name, "', '".join(REGISTERED_METHODS)
+            )
+        )
+
+    d = RiemannLiouvilleDerivative(order=order, side=side)
+    return REGISTERED_METHODS[name](d)  # type: ignore[call-arg]
 
 
 # }}}
