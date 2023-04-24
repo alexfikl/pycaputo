@@ -59,8 +59,8 @@ autodoc_default_options = {
 # {{{ links
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable", None),
+    "python": ("https://docs.python.org/3", None),
     "rich": ("https://rich.readthedocs.io/en/stable", None),
 }
 
