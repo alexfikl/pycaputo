@@ -58,24 +58,14 @@ class ScalarFunction(Protocol):
 
 
 class EOCRecorder:
-    """Keep track of all your *estimated order of convergence* needs.
-
-    .. attribute:: name
-
-        A string identifier for the value which is estimated.
-
-    .. attribute:: order
-
-        An expected order of convergence, if any.
-
-    .. attribute:: history
-
-        A list of ``(h, error)`` entries added from :meth:`add_data_point`.
-    """
+    """Keep track of all your *estimated order of convergence* needs."""
 
     def __init__(self, *, order: Optional[float] = None, name: str = "Error") -> None:
-        self.name = name
-        self.order = order
+        #: A string identifier for the value which is estimated.
+        self.name: str = name
+        #: An expected order of convergence, if any.
+        self.order: Optional[float] = order
+        #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
         self.history: List[Tuple[float, float]] = []
 
     def add_data_point(self, h: Any, error: Any) -> None:
