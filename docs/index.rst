@@ -23,7 +23,7 @@ derivatives and integrals.
 
 To get an idea of the intended API and workflow of the library, we have here
 a small example using the classical Caputo fractional order derivative.
-Its definition can be in e.g. [Li2020]_
+Its definition is, see e.g. [Li2020]_,
 
 .. math::
 

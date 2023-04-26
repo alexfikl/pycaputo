@@ -19,7 +19,7 @@ class Side(enum.Enum):
 class FractionalDerivative:
     """Generic type of fractional derivative."""
 
-    #: Order of the fractional derivative, as an integer in :math:[0, \infty]`.
+    #: Order of the fractional derivative, as an integer in :math:`[0, \infty]`.
     order: float
 
     @property

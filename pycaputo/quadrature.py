@@ -80,7 +80,7 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     """
 
     #: Weight used in the approximation :math:`w f_k + (1 - w) f_{k + 1}`.
-    weight: float = 1.0
+    weight: float = 0.5
 
     if __debug__:
 
@@ -97,7 +97,10 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
 
     @property
     def order(self) -> float:
-        return 1.0
+        if self.weight == 0.5:
+            return min(2.0, 1.0 - self.d.order)
+        else:
+            return 1.0
 
 
 @quad.register(RiemannLiouvilleRectangularMethod)
@@ -118,7 +121,7 @@ def _quad_rl_rect(
     qf[0] = np.nan
 
     for n in range(1, qf.size):
-        w = (x[n] - x[1 : n + 1]) ** alpha - (x[n] - x[:n]) ** alpha
+        w = (x[n] - x[:n]) ** alpha - (x[n] - x[1 : n + 1]) ** alpha
         qf[n] = w0 * np.sum(w * fc[:n])
 
     return qf
@@ -156,7 +159,6 @@ def _quad_rl_trap(
     x = p.x
     fx = f(x)
     alpha = -m.d.order
-    alpha1 = 1 + alpha
     w0 = 1 / math.gamma(2 + alpha)
 
     # compute integral
@@ -165,26 +167,25 @@ def _quad_rl_trap(
 
     if isinstance(p, UniformPoints):
         k = np.arange(qf.size)
-        w0 = w0 / p.dx[0] ** alpha
+        w0 = w0 * p.dx[0] ** alpha
+
+        w = k[:-1] ** (1 + alpha) - (k[:-1] - alpha) * k[1:] ** alpha
+        qf[1:] = fx[0] + w * fx[1:]
 
         # NOTE: [Li2020] Equation 3.15
         for n in range(1, qf.size):
             w = (
-                (n - k[1:n] + 1) ** alpha1
-                - 2 * (n - k[1:n]) ** alpha1
-                + (n - k[1:n] - 1) ** alpha1
+                (n - k[1:n - 1] + 1) ** (1 + alpha)
+                - 2 * (n - k[1:n - 1]) ** (1 + alpha)
+                + (n - k[1:n - 1] - 1) ** (1 + alpha)
             )
 
-            qf[n] = w0 * (
-                np.sum(w * fx[1:n])
-                + fx[0]
-                + (k[:-1] ** alpha1 - (k[1:] - alpha1) * k[1:] ** alpha) * fx[n]
-            )
+            qf[n] += w0 * np.sum(w * fx[1:n - 1])
     else:
         for n in range(1, qf.size):
             dl, dr = x[n] - x[:n], x[n] - x[1 : n + 1]
-            wl = dl**alpha1 * (dr - alpha * p.dx[:n]) - dr**alpha1
-            wr = dr**alpha1 * (dl + alpha * p.dx[:n]) - dl**alpha1
+            wl = dr ** (1 + alpha) + dl ** alpha * (alpha * p.dx[:n] - dr)
+            wr = dl ** (1 + alpha) - dr ** alpha * (alpha * p.dx[:n] + dl)
 
             qf[n] = w0 * np.sum((wl * fx[:n] + wr * fx[1 : n + 1]) / p.dx[:n])
 

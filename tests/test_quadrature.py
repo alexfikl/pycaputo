@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+import math
 import pathlib
 
 import numpy as np
@@ -22,12 +23,12 @@ set_recommended_matplotlib()
     ("name", "grid_type"),
     [
         ("RiemannLiouvilleRectangularMethod", "uniform"),
-        ("RiemannLiouvilleRectangularMethod", "stretch"),
+        ("RiemannLiouvilleRectangularMethod", "stynes"),
         # ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
-        # ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
+        ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
     ],
 )
-@pytest.mark.parametrize("alpha", [0.1, 0.5, 1.0, 2.0, 7.0])
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 1.25, 2.5, 7.75])
 def test_riemann_liouville_quad(
     name: str,
     grid_type: str,
@@ -38,10 +39,16 @@ def test_riemann_liouville_quad(
     from pycaputo.grid import make_points_from_name
 
     def f(x: Array) -> Array:
-        return np.zeros_like(x)
+        return (0.5 - x) ** 4
 
     def qf(x: Array) -> Array:
-        return np.zeros_like(x)
+        return np.array(
+            0.0625 * x**alpha / math.gamma(1 + alpha)
+            - 0.5 * x ** (1 + alpha) / math.gamma(2 + alpha)
+            + 3 * x ** (2 + alpha) / math.gamma(3 + alpha)
+            - 12 * x ** (3 + alpha) / math.gamma(4 + alpha)
+            + 24 * x ** (4 + alpha) / math.gamma(5 + alpha)
+        )
 
     from pycaputo.utils import EOCRecorder, savefig
 

@@ -3,10 +3,10 @@ Upstream-Name: pycaputo
 Upstream-Contact: Alexandru Fikl <alexfikl@gmail.com>
 Source: https://github.com/alexfikl/pycaputo
 
-Files: docs/* *.md *.rst *.cfg requirements* Makefile
+Files: docs/* *.md *.rst *.cfg pyproject.toml requirements* Makefile
 Copyright: 2023 Alexandru Fikl <alexfikl@gmail.com>
 License: CC0-1.0
 
-Files: .gitignore pyproject.toml .readthedocs.yml .github/*
-Copyright: 2022 Alexandru Fikl <alexfikl@gmail.com>
+Files: .gitignore .codespell-ignore .readthedocs.yml .github/*
+Copyright: 2023 Alexandru Fikl <alexfikl@gmail.com>
 License: CC0-1.0
