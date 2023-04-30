@@ -212,6 +212,8 @@ def test_caputo_vs_differint(
     alpha: float,
     visualize: bool = False,
 ) -> None:
+    pytest.importorskip("differint")
+
     from pycaputo import make_diff_from_name
 
     if name in ("CaputoL2Method", "CaputoL2CMethod"):
