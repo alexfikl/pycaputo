@@ -24,25 +24,25 @@ class DerivativeMethod(ABC):
     """A generic method used to evaluate a fractional derivative at a set of points."""
 
     @property
-    @abstractmethod
     def name(self) -> str:
         """An identifier for the method."""
+        return type(self).__name__.replace("Method", "")
 
     @property
     @abstractmethod
     def order(self) -> float:
         """Expected order of convergence of the method."""
 
-    @abstractmethod
     def supports(self, alpha: float) -> bool:
         """
         :returns: *True* if the method supports computing the fractional
             order derivative of order *alpha* and *False* otherwise.
         """
+        return False
 
 
 @singledispatch
-def diff(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
+def diff(m: DerivativeMethod, f: ScalarFunction, p: Points) -> Array:
     """Evaluate the fractional derivative of *f* at *x*.
 
     Note that not all numerical methods can evaluate the derivative at all
@@ -51,11 +51,19 @@ def diff(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
 
     :arg m: method used to evaluate the derivative.
     :arg f: a simple function for which to evaluate the derivative.
-    :arg x: an array of points at which to evaluate the derivative.
+    :arg p: an array of points at which to evaluate the derivative.
     """
     raise NotImplementedError(
         f"Cannot evaluate derivative with method '{type(m).__name__}'"
     )
+
+
+@dataclass(frozen=True)
+class CaputoDerivativeMethod(DerivativeMethod):
+    """A method used to evaluate a :class:`~pycaputo.derivatives.CaputoDerivative`."""
+
+    #: The type of the Caputo derivative.
+    d: CaputoDerivative
 
 
 # }}}
@@ -65,7 +73,7 @@ def diff(m: DerivativeMethod, f: ScalarFunction, x: Points) -> Array:
 
 
 @dataclass(frozen=True)
-class CaputoL1Method(DerivativeMethod):
+class CaputoL1Method(CaputoDerivativeMethod):
     r"""Implements the L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
@@ -76,21 +84,14 @@ class CaputoL1Method(DerivativeMethod):
     This method is of order :math:`\mathcal{O}(h^{2 - \alpha})`.
     """
 
-    #: The type of the Caputo derivative.
-    d: CaputoDerivative
-
     if __debug__:
 
         def __post_init__(self) -> None:
             if not self.supports(self.d.order):
                 raise ValueError(
-                    f"{type(self).__name__} only supports orders in (0, 1): "
+                    f"'{type(self).__name__}' supports orders in (0, 1): "
                     f"got order '{self.d.order}'"
                 )
-
-    @property
-    def name(self) -> str:
-        return "L1"
 
     @property
     def order(self) -> float:
@@ -142,10 +143,6 @@ class CaputoModifiedL1Method(CaputoL1Method):
     This method is of order :math:`\mathcal{O}(h^{2 - \alpha})`.
     """
 
-    @property
-    def name(self) -> str:
-        return "L1M"
-
 
 @diff.register(CaputoModifiedL1Method)
 def _diff_modified_l1method(
@@ -188,7 +185,7 @@ def _diff_modified_l1method(
 
 
 @dataclass(frozen=True)
-class CaputoL2Method(DerivativeMethod):
+class CaputoL2Method(CaputoDerivativeMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
@@ -199,21 +196,14 @@ class CaputoL2Method(DerivativeMethod):
     This method is of order :math:`\mathcal{O}(h^{3 - \alpha})`.
     """
 
-    #: The type of the Caputo derivative.
-    d: CaputoDerivative
-
     if __debug__:
 
         def __post_init__(self) -> None:
             if not self.supports(self.d.order):
                 raise ValueError(
-                    f"{type(self).__name__} only supports orders in (1, 2): "
+                    f"'{type(self).__name__}' supports orders in (1, 2): "
                     f"got order '{self.d.order}'"
                 )
-
-    @property
-    def name(self) -> str:
-        return "L2"
 
     @property
     def order(self) -> float:
@@ -274,10 +264,6 @@ class CaputoL2CMethod(CaputoL2Method):
 
     This method is of order :math:`\mathcal{O}(h^{3 - \alpha})`.
     """
-
-    @property
-    def name(self) -> str:
-        return "L2C"
 
     @property
     def order(self) -> float:
