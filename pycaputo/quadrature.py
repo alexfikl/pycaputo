@@ -99,8 +99,8 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     def order(self) -> float:
         if self.weight == 0.5:
             return min(2.0, 1.0 - self.d.order)
-        else:
-            return 1.0
+
+        return 1.0
 
 
 @quad.register(RiemannLiouvilleRectangularMethod)
