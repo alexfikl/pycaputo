@@ -192,6 +192,79 @@ def _quad_rl_trap(
     return qf
 
 
+@dataclass(frozen=True)
+class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
+    r"""Riemann-Liouville integral approximation using spectral methods based
+    on Jacobi polynomials.
+
+    This method is described in more detail in Section 3.3 of [Li2020]_. It
+    approximates the polynomial by projecting the function on each interval
+    to the Jacobi basis and constructing a quadrature rule, i.e.
+
+    .. math::
+
+        I^\alpha[f](x_j) = I^\alpha[p_N](x_j) = \sum_{k = 0}^N w_{jk} f(x_k),
+
+    where :math:`p_N` is a degree :math:`N` polynomial approximating :math:`f`
+    and :math:`w_{jk}` are a set of weights. Here, we approximate the function
+    by the Jacobi polynomials :math:`P^{(\alpha, \beta)}`.
+    """
+
+    #: Maximum total degree of the Jacobi polynomials.
+    degree: int = 16
+    #: First Jacobi polynomial coefficient.
+    j_alpha: float = 0
+    #: Second Jacobi polynomial coefficient.
+    j_beta: float = 0
+
+    @property
+    def name(self) -> str:
+        return "RLSpec"
+
+    @property
+    def order(self) -> float:
+        return self.degree
+
+
+def _quad_rl_spec_uniform_legendre(
+    m: RiemannLiouvilleSpectralMethod, f: ScalarFunction, p: Points
+) -> Array:
+    raise NotImplementedError
+
+
+def _quad_rl_spec_uniform_chebyshev(
+    m: RiemannLiouvilleSpectralMethod, f: ScalarFunction, p: Points
+) -> Array:
+    raise NotImplementedError
+
+
+def _quad_rl_spec_uniform_jacobi(
+    m: RiemannLiouvilleSpectralMethod, f: ScalarFunction, p: Points
+) -> Array:
+    raise NotImplementedError
+
+
+@quad.register(RiemannLiouvilleSpectralMethod)
+def _quad_rl_spec(
+    m: RiemannLiouvilleSpectralMethod,
+    f: ScalarFunction,
+    p: Points,
+) -> Array:
+    from pycaputo.grid import UniformPoints
+
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"Only uniform points are supported: '{type(p).__name__}'")
+
+    if m.j_alpha == 0 and m.j_beta == 0:
+        df = _quad_rl_spec_uniform_legendre(m, f, p)
+    elif m.j_alpha == -0.5 and m.j_beta == -0.5:
+        df = _quad_rl_spec_uniform_chebyshev(m, f, p)
+    else:
+        df = _quad_rl_spec_uniform_jacobi(m, f, p)
+
+    return df
+
+
 # }}}
 
 
