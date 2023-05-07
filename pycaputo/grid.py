@@ -202,10 +202,11 @@ def make_jacobi_gauss_lobatto_points(
 # {{{ make
 
 REGISTERED_POINTS: Dict[str, Callable[..., Points]] = {
+    "jacobi": make_jacobi_gauss_lobatto_points,
+    "midpoints": make_uniform_midpoints,
     "stretch": make_stretched_points,
     "stynes": make_stynes_points,
     "uniform": make_uniform_points,
-    "midpoints": make_uniform_midpoints,
 }
 
 

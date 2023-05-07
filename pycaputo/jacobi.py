@@ -19,6 +19,10 @@ def jacobi_gamma(n: int, alpha: float, beta: float) -> float:
     """
     from math import gamma
 
+    if alpha == beta == -0.5 and n == 0:
+        # NOTE: gamma(n + alpha + beta + 1) is not defined in this case
+        return np.pi
+
     return (
         2 ** (alpha + beta + 1)
         * gamma(n + alpha + 1)
@@ -40,8 +44,9 @@ def jacobi_rec_coefficients(
     # NOTE: Equation 3.52 in [Li2020]
     a = 2 * n + alpha + beta
     b = (n + 1) * (n + alpha + beta + 1)
+
     A = (a + 1) * (a + 2) / (2 * b)
-    B = (alpha**2 - beta**2) * (a + 1) / (2 * a * b)
+    B = (beta**2 - alpha**2) * (a + 1) / (2 * a * b)
     C = (n + alpha) * (n + beta) * (a + 2) / (a * b)
 
     return A, B, C
@@ -81,6 +86,9 @@ def jacobi_polynomial(
 ) -> Iterator[Array]:
     r"""Evaluate the Jacobi polynomials :math:`P^{\alpha, \beta}_n` at the points *p*.
 
+    Note that the Jacobi polynomials are only define on :math:`[-1, 1]`, so
+    other intervals are simply translated to this in an affine manner.
+
     :arg p: a set of points at which to evaluate the polynomials.
     :arg alpha: parameter of the Jacobi polynomial.
     :arg beta: parameter of the Jacobi polynomial.
@@ -88,7 +96,9 @@ def jacobi_polynomial(
 
     :returns: the Jacobi polynomials evaluated at *p*.
     """
-    x = p.x
+    xm = (p.b + p.a) / 2
+    dx = (p.b - p.a) / 2
+    x = (p.x - xm) / dx
 
     P0 = np.ones_like(x)
     yield P0
@@ -98,7 +108,7 @@ def jacobi_polynomial(
 
     for n in range(2, npoly):
         # NOTE: Equation 3.51 in [Li2020]
-        A, B, C = jacobi_rec_coefficients(n, alpha, beta)
+        A, B, C = jacobi_rec_coefficients(n - 1, alpha, beta)
         Pn = (A * x - B) * P1 - C * P0
         yield Pn
 
@@ -154,8 +164,8 @@ def jacobi_riemann_liouville_integral(
     P1 = -(p.alpha + p.beta + 1) / 2 + (p.alpha - p.beta) / 2
 
     for n in range(2, x.size):
-        A, B, C = jacobi_rec_coefficients(n, p.alpha, p.beta)
-        Ahat, Bhat, Chat = jacobi_diff_rec_coefficients(n, p.alpha, p.beta)
+        A, B, C = jacobi_rec_coefficients(n - 1, p.alpha, p.beta)
+        Ahat, Bhat, Chat = jacobi_diff_rec_coefficients(n - 1, p.alpha, p.beta)
 
         D = 1 + alpha * A * Chat
         P2 = -(A + B) * P1 - C * P0
@@ -198,13 +208,12 @@ def jacobi_project(f: Array, p: JacobiGaussLobattoPoints) -> Array:
     alpha = p.alpha
     beta = p.beta
 
-    N = w.size - 1
-
     fhat = np.empty(f.size)
-    for n, Pn in enumerate(jacobi_polynomial(p, N + 1, alpha=alpha, beta=beta)):
+    for n, Pn in enumerate(jacobi_polynomial(p, w.size, alpha=alpha, beta=beta)):
         # NOTE: Equation 3.61 in [Li2020]
-        delta = (2 + (alpha + beta + 1) / N) if n == N else 1
-        fhat[n] = np.sum(f * Pn * w) / (delta * jacobi_gamma(n, alpha, beta))
+        fhat[n] = np.sum(f[1:-1] * Pn[1:-1] * w[1:-1]) / jacobi_gamma(n, alpha, beta)
+
+    fhat[-1] *= 2 + (alpha + beta + 1) / (w.size - 1)
 
     return fhat
 
