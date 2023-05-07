@@ -46,7 +46,7 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
     # check vs scipy at uniform points
     q = make_uniform_points(N, a=-1, b=1)
 
-    for n, Pn in enumerate(jacobi_polynomial(p, N, alpha=alpha, beta=beta)):
+    for n, Pn in enumerate(jacobi_polynomial(q, N, alpha=alpha, beta=beta)):
         Pn_ref = jacobi(n, alpha, beta)(q.x)
 
         error = la.norm(Pn - Pn_ref) / la.norm(Pn_ref)
