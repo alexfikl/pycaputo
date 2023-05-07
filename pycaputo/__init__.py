@@ -4,7 +4,9 @@
 
 from pycaputo.derivatives import (
     CaputoDerivative,
-    FractionalDerivative,
+    FractionalOperator,
+    GrunwaldLetnikovDerivative,
+    HadamardDerivative,
     RiemannLiouvilleDerivative,
     Side,
 )
@@ -34,7 +36,9 @@ __all__ = (
     "CaputoL2Method",
     "CaputoModifiedL1Method",
     "DerivativeMethod",
-    "FractionalDerivative",
+    "FractionalOperator",
+    "GrunwaldLetnikovDerivative",
+    "HadamardDerivative",
     "QuadratureMethod",
     "RiemannLiouvilleDerivative",
     "RiemannLiouvilleMethod",

@@ -17,15 +17,20 @@ References
     SIAM Journal on Numerical Analysis, Vol. 55, pp. 1057--1079, 2017,
     `DOI <https://doi.org/10.1137/16m1082329>`__.
 
+.. [Karniadakis2019] G. E. Karniadakis,
+    *Handbook of Fractional Calculus With Applications, Volume 3: Numerical Methods*,
+    De Gruyter GmbH, Walter, 2019.
+
 .. [Ortigueira2019] M. D. Ortigueira, A. M. Lopes, J. Tenreiro Machado,
     *On the Numerical Computation of the Mittag--Leffler Function*,
     International Journal of Nonlinear Sciences and Numerical Simulation,
     Vol. 20, pp. 725--736, 2019,
     `DOI <https://doi.org/10.1515/ijnsns-2018-0358>`__.
 
-.. [Karniadakis2019] G. E. Karniadakis,
-    *Handbook of Fractional Calculus With Applications, Volume 3: Numerical Methods*,
-    De Gruyter GmbH, Walter, 2019.
+.. [SalesTeodoro2019] G. Sales Teodoro, J. A. Tenreiro Machado, E. Capelas de Oliveira,
+    *A Review of Definitions of Fractional Derivatives and Other Operators*,
+    Journal of Computational Physics, Vol. 388, pp. 195--208, 2019,
+    `DOI <https://doi.org/10.1016/j.jcp.2019.03.008>`__.
 
 .. [Li2020] C. Li, M. Cai,
     *Theory and numerical approximations of fractional integrals and derivatives*,
