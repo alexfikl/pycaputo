@@ -182,8 +182,7 @@ def make_jacobi_gauss_lobatto_points(
     from scipy.special import roots_jacobi
 
     xi, w = np.empty(n), np.empty(n)
-
-    xi[1:-1], w[1:-1] = roots_jacobi(n - 2, alpha, beta)
+    xi[1:-1], w[1:-1], _ = roots_jacobi(n - 2, alpha, beta, mu=True)
 
     # add Lobatto points
     xi[0], xi[-1] = -1.0, 1.0

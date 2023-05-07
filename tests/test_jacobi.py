@@ -44,7 +44,7 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
         assert p_norm < rtol or abs(p_norm - 1.0) < rtol
 
     # check vs scipy at uniform points
-    q = make_uniform_points(n, a=-1, b=1)
+    q = make_uniform_points(N, a=-1, b=1)
 
     for n, Pn in enumerate(jacobi_polynomial(p, N, alpha=alpha, beta=beta)):
         Pn_ref = jacobi(n, alpha, beta)(q.x)
