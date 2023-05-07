@@ -11,6 +11,11 @@ Special Functions
 
 .. automodule:: pycaputo.mittagleffler
 
+Jacobi Polynomials
+------------------
+
+.. automodule:: pycaputo.jacobi
+
 Test Functions
 --------------
 

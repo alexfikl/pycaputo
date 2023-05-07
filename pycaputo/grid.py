@@ -7,7 +7,10 @@ from typing import Callable, Dict
 
 import numpy as np
 
+from pycaputo.logging import get_logger
 from pycaputo.utils import Array
+
+logger = get_logger(__name__)
 
 # {{{ non-uniform points
 
@@ -125,6 +128,72 @@ def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> UniformMid
     x[1:] = (x[1:] + x[:-1]) / 2
 
     return UniformMidpoints(a=a, b=b, x=x)
+
+
+# }}}
+
+
+# {{{ Jacobi-Gauss-Lobatto
+
+
+@dataclass(frozen=True)
+class JacobiGaussLobattoPoints(Points):
+    """A set of Jacobi-Gauss-Lobatto points on :math:`[a, b]`.
+
+    See :func:`scipy.special.roots_jacobi`. This can also be used for quadrature
+    using :attr:`w` and is accurate for polynomials of degreen up to
+    :math:`2 n - 3`.
+    """
+
+    #: Parameter of the Jacobi polynomials.
+    alpha: float
+    #: Parameter of the Jacobi poylnomials.
+    beta: float
+    #: Jacobi-Gauss-Lobatto quadrature weights on :math:`[a, b]`.
+    w: Array
+
+
+def make_jacobi_gauss_lobatto_points(
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    *,
+    alpha: float = 0.0,
+    beta: float = 0.0,
+) -> JacobiGaussLobattoPoints:
+    r"""Construct a set of Jacobi-Gauss-Lobatto points on :math:`[a, b]`.
+
+    For the special cases of :math:`\alpha = \beta = 0` we get the
+    Legendre-Gauss-Lobatto points and for :math:`\alpha = \beta = -1/2` we
+    get the Chebyshev-Gauss-Lobatto points.
+
+    :arg n: number of points in :math:`[a, b]`.
+    :arg alpha: parameter for the Jacobi polynomial.
+    :arg beta: parameter for the Jacobi polynomial.
+    """
+    if n < 3:
+        raise ValueError("At least 3 points are required")
+
+    if n > 30:
+        from warnings import warn
+
+        warn("Evaluating Jacobi nodes for large n > 30 might be numerically unstable")
+
+    from scipy.special import roots_jacobi
+
+    xi, w = np.empty(n), np.empty(n)
+
+    xi[1:-1], w[1:-1] = roots_jacobi(n - 2, alpha, beta)
+
+    # add Lobatto points
+    xi[0], xi[-1] = -1.0, 1.0
+    w[0] = w[-1] = 2 / (n * (n - 1))
+
+    # translate affinely to [a, b] from [-1, 1]
+    x = (b + a) / 2 + (b - a) / 2 * xi
+    w = (b - a) / 2 * w
+
+    return JacobiGaussLobattoPoints(a=a, b=b, x=x, alpha=alpha, beta=beta, w=w)
 
 
 # }}}
