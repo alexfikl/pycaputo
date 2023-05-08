@@ -156,12 +156,14 @@ def jacobi_riemann_liouville_integral(
         - alpha * (x + 1) ** (alpha + 1) / gamma(alpha + 2)
     )
     # fmt: on
-    Phat1 = (p.alpha + p.beta + 2) * Phat1 + (p.alpha - p.beta) / 2 * Phat0
+    Phat1 = (p.alpha + p.beta + 2) / 2 * Phat1 + (p.alpha - p.beta) / 2 * Phat0
     yield dx**alpha * Phat1
 
     # NOTE: this holds the Jacobi polynomials at x = -1 in use in the recursion
+    # FIXME: these have an exact formula:
+    #       P^{alpha, beta}_n(-1) = (-1)^n binomial(n + beta, b)
     P0 = 1.0
-    P1 = -(p.alpha + p.beta + 1) / 2 + (p.alpha - p.beta) / 2
+    P1 = -(p.alpha + p.beta + 2) / 2 + (p.alpha - p.beta) / 2
 
     for n in range(2, x.size):
         A, B, C = jacobi_rec_coefficients(n - 1, p.alpha, p.beta)
@@ -172,8 +174,8 @@ def jacobi_riemann_liouville_integral(
 
         C0 = alpha * A * (Ahat * P0 + Bhat * P1 + Chat * P2) / (D * gamma(alpha + 1))
         C1 = (A * x - B - alpha * A * Bhat) / D
-        C2 = -(C + alpha * A * Ahat) / D
-        Phatn = C0 * (x + 1) ** alpha + C1 * Phat1 + C2 * Phat0
+        C2 = (C + alpha * A * Ahat) / D
+        Phatn = C0 * (x + 1) ** alpha + C1 * Phat1 - C2 * Phat0
         yield dx**alpha * Phatn
 
         P1, P0 = P2, P1
