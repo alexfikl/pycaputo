@@ -226,41 +226,25 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
         return self.degree
 
 
-def _quad_rl_spec_uniform_legendre(
-    m: RiemannLiouvilleSpectralMethod, f: ScalarFunction, p: Points
-) -> Array:
-    raise NotImplementedError
-
-
-def _quad_rl_spec_uniform_chebyshev(
-    m: RiemannLiouvilleSpectralMethod, f: ScalarFunction, p: Points
-) -> Array:
-    raise NotImplementedError
-
-
-def _quad_rl_spec_uniform_jacobi(
-    m: RiemannLiouvilleSpectralMethod, f: ScalarFunction, p: Points
-) -> Array:
-    raise NotImplementedError
-
-
 @quad.register(RiemannLiouvilleSpectralMethod)
 def _quad_rl_spec(
     m: RiemannLiouvilleSpectralMethod,
     f: ScalarFunction,
     p: Points,
 ) -> Array:
-    from pycaputo.grid import UniformPoints
+    from pycaputo.grid import JacobiGaussLobattoPoints
 
-    if not isinstance(p, UniformPoints):
-        raise TypeError(f"Only uniform points are supported: '{type(p).__name__}'")
+    if not isinstance(p, JacobiGaussLobattoPoints):
+        raise TypeError(f"Only JGL points are supported: '{type(p).__name__}'")
 
-    if m.j_alpha == 0 and m.j_beta == 0:
-        df = _quad_rl_spec_uniform_legendre(m, f, p)
-    elif m.j_alpha == -0.5 and m.j_beta == -0.5:
-        df = _quad_rl_spec_uniform_chebyshev(m, f, p)
-    else:
-        df = _quad_rl_spec_uniform_jacobi(m, f, p)
+    from pycaputo.jacobi import jacobi_project, jacobi_riemann_liouville_integral
+
+    # NOTE: Equation 3.63 [Li2020]
+    fhat = jacobi_project(f(p.x), p)
+    df = np.zeros_like(fhat)
+
+    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, m.d.order)):
+        df[n] += fhat[n] * Phat
 
     return df
 
@@ -274,6 +258,7 @@ def _quad_rl_spec(
 REGISTERED_METHODS: Dict[str, Type[QuadratureMethod]] = {
     "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
     "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
+    "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,
 }
 
 

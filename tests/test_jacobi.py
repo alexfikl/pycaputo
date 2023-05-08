@@ -10,7 +10,7 @@ import pytest
 from pycaputo.logging import get_logger
 from pycaputo.utils import set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_caputo")
+logger = get_logger("pycaputo.test_jacobi")
 set_recommended_matplotlib()
 
 
