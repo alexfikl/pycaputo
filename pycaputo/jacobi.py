@@ -213,9 +213,9 @@ def jacobi_project(f: Array, p: JacobiGaussLobattoPoints) -> Array:
     fhat = np.empty(f.size)
     for n, Pn in enumerate(jacobi_polynomial(p, w.size, alpha=alpha, beta=beta)):
         # NOTE: Equation 3.61 in [Li2020]
-        fhat[n] = np.sum(f[1:-1] * Pn[1:-1] * w[1:-1]) / jacobi_gamma(n, alpha, beta)
+        fhat[n] = np.sum(f * Pn * w) / jacobi_gamma(n, alpha, beta)
 
-    fhat[-1] *= 2 + (alpha + beta + 1) / (w.size - 1)
+    fhat[-1] = fhat[-1] / (2 + (alpha + beta + 1) / (w.size - 2))
 
     return fhat
 

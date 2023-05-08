@@ -174,19 +174,21 @@ def make_jacobi_gauss_lobatto_points(
     if n < 3:
         raise ValueError("At least 3 points are required")
 
-    if n > 30:
+    if n > 100:
         from warnings import warn
 
-        warn("Evaluating Jacobi nodes for large n > 30 might be numerically unstable")
+        warn("Evaluating Jacobi nodes for large n > 100 might be numerically unstable")
 
-    from scipy.special import roots_jacobi
+    from scipy.special import jacobi, roots_jacobi
 
-    xi, w = np.empty(n), np.empty(n)
-    xi[1:-1], w[1:-1], _ = roots_jacobi(n - 2, alpha, beta, mu=True)
-
-    # add Lobatto points
+    # Lobatto nodes
+    xi = np.empty(n)
+    xi[1:-1], _, _ = roots_jacobi(n - 2, alpha + 1, beta + 1, mu=True)
     xi[0], xi[-1] = -1.0, 1.0
-    w[0] = w[-1] = 2 / (n * (n - 1))
+
+    # Lobatto weights
+    Jab = jacobi(n - 1, alpha, beta)
+    w = 2 / (n * (n - 1) * Jab(xi) ** 2)
 
     # translate affinely to [a, b] from [-1, 1]
     x = (b + a) / 2 + (b - a) / 2 * xi

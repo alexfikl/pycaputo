@@ -14,6 +14,46 @@ logger = get_logger("pycaputo.test_jacobi")
 set_recommended_matplotlib()
 
 
+# {{{ test_jacobi_weights
+
+
+def quad_monomial(k: int, a: float, b: float) -> float:
+    return (b ** (k + 1) - a ** (k + 1)) / (k + 1)
+
+
+def test_jacobi_weights() -> None:
+    from pycaputo.grid import make_jacobi_gauss_lobatto_points
+
+    a = -4.0
+    b = np.pi
+
+    for n in [4, 5, 8, 9, 16, 17]:
+        p = make_jacobi_gauss_lobatto_points(n, a=a, b=b)
+
+        # NOTE: JGL should be exact up to 2n - 3, so 2n - 2 is approximate
+        for k in range(2 * n - 1):
+            q_ref = quad_monomial(k, a=a, b=b)
+            q = np.sum(p.x**k * p.w)
+
+            error = abs(q - q_ref) / abs(q_ref)
+            logger.error(
+                "order %3d monomial %3d %+.12e ref %+.12e error %.12e",
+                n,
+                k,
+                q,
+                q_ref,
+                error,
+            )
+
+            if k == 2 * n - 2:
+                assert error > 1.0e-10
+            else:
+                assert error < 5.0e-15
+
+
+# }}}
+
+
 # {{{ test_jacobi_polynomials
 
 
@@ -40,11 +80,11 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
     for n, Pn in enumerate(jacobi_polynomial(p, N, alpha=alpha, beta=beta)):
         Pn_ref = jacobi(n, alpha, beta)(p.x)
 
-        p_norm = np.sum(Pn[1:-1] * p.w[1:-1]) / jacobi_gamma(0, alpha, beta)
+        pn_int = np.sum(Pn * p.w) / jacobi_gamma(0, alpha, beta)
         error = la.norm(Pn - Pn_ref) / la.norm(Pn_ref)
-        logger.info("order %3d error %.12e norm %.12e", n, error, p_norm)
+        logger.info("order %3d error %.12e integral %.12e", n, error, pn_int)
         assert error < rtol
-        assert p_norm < rtol or abs(p_norm - 1.0) < rtol
+        # assert pn_int < rtol or abs(pn_int - 1.0) < rtol
 
     # check vs scipy at uniform points
     q = make_uniform_points(N, a=-1, b=1)

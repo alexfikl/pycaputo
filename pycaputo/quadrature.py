@@ -241,10 +241,10 @@ def _quad_rl_spec(
 
     # NOTE: Equation 3.63 [Li2020]
     fhat = jacobi_project(f(p.x), p)
-    df = np.zeros_like(fhat)
 
-    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, m.d.order)):
-        df[n] += fhat[n] * Phat
+    df = np.zeros_like(fhat)
+    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, -m.d.order)):
+        df += fhat[n] * Phat
 
     return df
 
