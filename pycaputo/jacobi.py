@@ -256,7 +256,7 @@ def jacobi_riemann_liouville_integral(
 
     # NOTE: Equation 3.64 [Li2020]
     Phat0 = (x + 1) ** alpha / gamma(alpha + 1)
-    yield dx**alpha * Phat0
+    yield dx ** (alpha - 1) * Phat0
 
     # fmt: off
     Phat1 = (
@@ -265,7 +265,7 @@ def jacobi_riemann_liouville_integral(
     )
     # fmt: on
     Phat1 = (p.alpha + p.beta + 2) / 2 * Phat1 + (p.alpha - p.beta) / 2 * Phat0
-    yield dx**alpha * Phat1
+    yield dx ** (alpha - 1) * Phat1
 
     # NOTE: this holds the Jacobi polynomials at x = -1 in use in the recursion
     # FIXME: these have an exact formula:
@@ -284,7 +284,7 @@ def jacobi_riemann_liouville_integral(
         C1 = (A * x - B - alpha * A * Bhat) / D
         C2 = (C + alpha * A * Ahat) / D
         Phatn = C0 * (x + 1) ** alpha + C1 * Phat1 - C2 * Phat0
-        yield dx**alpha * Phatn
+        yield dx ** (alpha - 1) * Phatn
 
         P1, P0 = P2, P1
         Phat1, Phat0 = Phatn, Phat1

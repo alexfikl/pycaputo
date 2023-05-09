@@ -111,7 +111,7 @@ def test_riemann_liouville_quad_spectral(
     from pycaputo.utils import EOCRecorder, savefig
 
     d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
-    meth = RiemannLiouvilleSpectralMethod(d=d, degree=0, j_alpha=0.0, j_beta=0.0)
+    meth = RiemannLiouvilleSpectralMethod(d=d, degree=8, j_alpha=0.0, j_beta=0.0)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
