@@ -96,8 +96,21 @@ def test_riemann_liouville_quad(
 # {{{ test_riemann_liouville_quad_spectral
 
 
+@pytest.mark.parametrize(
+    ("j_alpha", "j_beta"),
+    [
+        # Legendre polynomials
+        (0.0, 0.0),
+        # Chebyshev polynomials
+        (-0.5, -0.5),
+        # Other? Not really of any interest
+        (1.0, 1.0),
+    ],
+)
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.25, 2.5, 7.75])
 def test_riemann_liouville_quad_spectral(
+    j_alpha: float,
+    j_beta: float,
     alpha: float,
     visualize: bool = False,
 ) -> None:
@@ -111,7 +124,7 @@ def test_riemann_liouville_quad_spectral(
     from pycaputo.utils import EOCRecorder, savefig
 
     d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
-    meth = RiemannLiouvilleSpectralMethod(d=d, j_alpha=0.0, j_beta=0.0)
+    meth = RiemannLiouvilleSpectralMethod(d=d, j_alpha=j_alpha, j_beta=j_beta)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -144,8 +157,12 @@ def test_riemann_liouville_quad_spectral(
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
+    # NOTE: the test function is polynomial, so this is always exact
+    assert eoc.max_error < 1.0e-13
+
 
 # }}}
+
 
 if __name__ == "__main__":
     import sys
