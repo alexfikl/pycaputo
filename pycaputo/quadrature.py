@@ -210,8 +210,6 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
     by the Jacobi polynomials :math:`P^{(\alpha, \beta)}`.
     """
 
-    #: Maximum total degree of the Jacobi polynomials.
-    degree: int = 16
     #: First Jacobi polynomial coefficient.
     j_alpha: float = 0
     #: Second Jacobi polynomial coefficient.
@@ -223,7 +221,7 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
 
     @property
     def order(self) -> float:
-        return self.degree
+        return np.inf
 
 
 @quad.register(RiemannLiouvilleSpectralMethod)
