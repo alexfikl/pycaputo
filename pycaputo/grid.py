@@ -179,20 +179,14 @@ def make_jacobi_gauss_lobatto_points(
 
         warn("Evaluating Jacobi nodes for large n > 100 might be numerically unstable")
 
-    from scipy.special import jacobi, roots_jacobi
+    from pycaputo.jacobi import jacobi_gauss_lobatto_nodes, jacobi_gauss_lobatto_weights
 
-    # Lobatto nodes
-    xi = np.empty(n)
-    xi[1:-1], _, _ = roots_jacobi(n - 2, alpha + 1, beta + 1, mu=True)
-    xi[0], xi[-1] = -1.0, 1.0
-
-    # Lobatto weights
-    Jab = jacobi(n - 1, alpha, beta)
-    w = 2 / (n * (n - 1) * Jab(xi) ** 2)
+    xi = jacobi_gauss_lobatto_nodes(n, alpha, beta)
+    wi = jacobi_gauss_lobatto_weights(xi, alpha, beta)
 
     # translate affinely to [a, b] from [-1, 1]
     x = (b + a) / 2 + (b - a) / 2 * xi
-    w = (b - a) / 2 * w
+    w = (b - a) / 2 * wi
 
     return JacobiGaussLobattoPoints(a=a, b=b, x=x, alpha=alpha, beta=beta, w=w)
 

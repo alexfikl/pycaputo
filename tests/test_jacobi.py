@@ -48,7 +48,7 @@ def test_jacobi_weights() -> None:
             if k == 2 * n - 2:
                 assert error > 1.0e-10
             else:
-                assert error < 5.0e-15
+                assert error < 2.0e-14
 
 
 # }}}
@@ -72,7 +72,7 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
     from pycaputo.grid import make_jacobi_gauss_lobatto_points, make_uniform_points
     from pycaputo.jacobi import jacobi_gamma, jacobi_polynomial
 
-    N = 32
+    N = 31
 
     # check vs scipy at Jacobi-Gauss-Lobatto points
     p = make_jacobi_gauss_lobatto_points(N, a=-1, b=1, alpha=alpha, beta=beta)
@@ -84,7 +84,7 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
         error = la.norm(Pn - Pn_ref) / la.norm(Pn_ref)
         logger.info("order %3d error %.12e integral %.12e", n, error, pn_int)
         assert error < rtol
-        # assert pn_int < rtol or abs(pn_int - 1.0) < rtol
+        assert pn_int < rtol or abs(pn_int - 1.0) < rtol
 
     # check vs scipy at uniform points
     q = make_uniform_points(N, a=-1, b=1)

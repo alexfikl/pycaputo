@@ -8,7 +8,7 @@ import numpy as np
 from pycaputo.grid import JacobiGaussLobattoPoints, Points
 from pycaputo.utils import Array
 
-# {{{ coefficients
+# {{{ Jacobi polynomial related coefficients
 
 
 def jacobi_gamma(n: int, alpha: float, beta: float) -> float:
@@ -71,10 +71,25 @@ def jacobi_diff_rec_coefficients(
     return Ahat, Bhat, Chat
 
 
+def jacobi_weights_coefficient(n: int, alpha: float, beta: float) -> float:
+    r"""Computes the cofficient used in the weights of the Jacobi-Gauss-Lobatto
+    quadrature rule from Theorem 3.27 [Shen2011]_.
+
+    :returns: the coefficient :math:`\tilde{G}^{\alpha, \beta}_n`.
+    """
+    from math import gamma
+
+    return (
+        2 ** (alpha + beta + 1)
+        * gamma(n + alpha + 2)
+        * gamma(n + beta + 2)
+        / (gamma(n + 2) * gamma(n + alpha + beta + 2))
+    )
+
+
 # }}}
 
-
-# {{{ jacobi_polynomial
+# {{{ Jacobi polynomial evaluation
 
 
 def jacobi_polynomial(
@@ -115,10 +130,103 @@ def jacobi_polynomial(
         P1, P0 = Pn, P1
 
 
+def jacobi_derivative(n: int, k: int, alpha: float, beta: float, x: Array) -> Array:
+    r"""Compute the :math:`k`-th derivative of a Jacobi polynomial.
+
+    .. math::
+
+        \frac{\mathrm{d}^k}{\mathrm{d} x^k} P^{\alpha, \beta}_n(x) =
+        \frac{\Gamma(n + k + \alpha + \beta + 1)}{2^k \Gamma(n + \alpha + \beta + 1)}
+        P^{\alpha + k, \beta + k}_{n - k}(x)
+
+    :arg n: index of the Jacobi polynomial.
+    :arg k: order of the derivative.
+    """
+    from math import gamma
+
+    from scipy.special import eval_jacobi  # pylint: disable=no-name-in-module
+
+    d = gamma(n + k + alpha + beta + 1) / gamma(n + alpha + beta + 1) / 2**k
+    P = eval_jacobi(n - k, alpha + k, beta + k, x)
+
+    return np.array(d * P)
+
+
 # }}}
 
+# {{{ Jacobi quadrature
 
-# {{{ jacobi_riemann_liouville_integral
+
+def jacobi_gauss_lobatto_nodes(n: int, alpha: float, beta: float) -> Array:
+    r"""Construct the Jacobi-Gauss-Lobatto nodes.
+
+    The Jacobi-Gauss-Lobatto nodes :math:`\{x\}_{k = 1}^{n - 2}` are the
+    zeros of the first derivative of the Jacobi polynomials
+    :math:`P^{\alpha, \beta}_n(x)`, while :math:`x_0 = -1` and
+    :math:`x_{n - 1} = 1`.
+
+    :arg n: number of nodes to construct.
+    :arg alpha: parameter of the Jacobi polynomial.
+    :arg beta: parameter of the Jacobi polynomial.
+    """
+    from scipy.special import roots_jacobi
+
+    x = np.empty(n)
+    x[0] = -1.0
+    x[-1] = 1.0
+    x[1:-1], _, _ = roots_jacobi(n - 2, alpha + 1, beta + 1, mu=True)
+
+    return x
+
+
+def jacobi_gauss_lobatto_weights(x: Array, alpha: float, beta: float) -> Array:
+    """Construct the Jacobi-Gauss-Lobatto quadrature weights.
+
+    The weights are described in Theorem 3.27 [Shen2011]_ for the general case
+    and in the following sections for special cases (e.g. Legendre-Gauss-Lobatto).
+    In general, these weights have explicit, but complex expressions.
+
+    Note that the quadrature rule with :math:`n` terms is accurate for
+    polynomials up to :math:`2n - 1`.
+
+    :arg x: Jacobi-Gauss-Lobatto nodes.
+    :arg alpha: parameter of the Jacobi polynomial.
+    :arg beta: parameter of the Jacobi polynomial.
+    """
+    from math import gamma
+
+    # NOTE: Theorem 3.27 [Shen2011]
+    n = x.size - 1
+    w = np.empty_like(x)
+
+    # fmt: off
+    Gab = 2 ** (alpha + beta + 1) * gamma(n) / gamma(n + alpha + beta + 2)
+    w[0] = (
+        Gab * (beta + 1) * gamma(beta + 1) ** 2 * gamma(n + alpha + 1)
+        / (gamma(n + beta + 1))
+    )
+    w[-1] = (
+        Gab * (alpha + 1) * gamma(alpha + 1) ** 2 * gamma(n + beta + 1)
+        / (gamma(n + alpha + 1))
+    )
+
+    Gab = jacobi_weights_coefficient(n - 2, alpha + 1, beta + 1)
+    Jab = jacobi_derivative(n - 1, 1, alpha + 1, beta + 1, x[1:-1])
+    w[1:-1] = Gab / (1 - x[1:-1]**2) ** 2 / Jab ** 2
+    # fmt: on
+
+    if __debug__:
+        sum_w = np.sum(w)
+        sum_w_ref = jacobi_gamma(0, alpha, beta)
+        error = abs(sum_w - sum_w_ref) / abs(sum_w_ref)
+        assert error < 5 * np.finfo(w.dtype).eps
+
+    return w
+
+
+# }}}
+
+# {{{ Jacobi Riemann-Liouville integral
 
 
 def jacobi_riemann_liouville_integral(
@@ -184,7 +292,7 @@ def jacobi_riemann_liouville_integral(
 
 # }}}
 
-# {{{ jacobi_project
+# {{{ Jacobi project
 
 
 def jacobi_project(f: Array, p: JacobiGaussLobattoPoints) -> Array:

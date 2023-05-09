@@ -6,6 +6,10 @@ References
     Computer Methods in Applied Mechanics and Engineering, Vol. 194, pp. 743-773, 2005,
     `DOI <https://doi.org/10.1016/j.cma.2004.06.006>`__.
 
+.. [Shen2011] J. Shen, T. Tang, L.-L. Wang,
+    *Spectral Methods - Algorithms, Analysis and Applications*,
+    Springer, 2011.
+
 .. [Garrappa2015] R. Garrappa,
     *Numerical Evaluation of Two and Three Parameter Mittag-Leffler Functions*,
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
