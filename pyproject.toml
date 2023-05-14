@@ -122,3 +122,10 @@ ignore = [
 docstring-quotes = "double"
 inline-quotes = "double"
 multiline-quotes = "double"
+
+[tool.check-manifest]
+ignore = [
+    "*.yml",
+    "*.yaml",
+    ".ci/*",
+]

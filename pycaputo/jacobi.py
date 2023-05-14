@@ -72,7 +72,7 @@ def jacobi_diff_rec_coefficients(
 
 
 def jacobi_weights_coefficient(n: int, alpha: float, beta: float) -> float:
-    r"""Computes the cofficient used in the weights of the Jacobi-Gauss-Lobatto
+    r"""Computes the coefficient used in the weights of the Jacobi-Gauss-Lobatto
     quadrature rule from Theorem 3.27 [Shen2011]_.
 
     :returns: the coefficient :math:`\tilde{G}^{\alpha, \beta}_n`.

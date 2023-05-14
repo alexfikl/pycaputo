@@ -18,7 +18,7 @@ from pycaputo.utils import Array, ScalarFunction
 
 @dataclass(frozen=True)
 class QuadratureMethod(ABC):
-    """A generic method used to evalute a fractional integral."""
+    """A generic method used to evaluate a fractional integral."""
 
     @property
     @abstractmethod

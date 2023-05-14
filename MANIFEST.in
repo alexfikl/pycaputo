@@ -1,0 +1,18 @@
+include .codespell-ignore
+include .reuse/dep5
+include Makefile
+include README.rst
+include pyproject.toml
+include requirements-dev.txt
+include requirements.txt
+include setup.py
+recursive-include LICENSES *.txt
+
+recursive-include docs *.png
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs *.txt
+recursive-include docs Makefile
+recursive-include examples *.py
+recursive-include pycaputo *.typed
+recursive-include tests *.py
