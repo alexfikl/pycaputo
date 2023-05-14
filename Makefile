@@ -11,7 +11,6 @@ help: 			## Show this help
 # {{{ linting
 
 fmt: black		## Run all formatting scripts
-	$(PYTHON) -m setup_cfg_fmt --include-version-classifiers setup.cfg
 	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
 	$(PYTHON) -m isort pycaputo tests examples
 .PHONY: fmt
@@ -35,7 +34,7 @@ mypy:			## Run mypy checks over the source code
 .PHONY: mypy
 
 reuse:			## Check REUSE license compliance
-	reuse lint
+	$(PYTHON) -m reuse lint
 	@echo -e "\e[1;32mREUSE compliant!\e[0m"
 .PHONY: reuse
 
@@ -46,6 +45,11 @@ codespell:		## Run codespell over the source code and documentation
 		pycaputo tests examples docs
 .PHONY: codespell
 
+manifest:		## Update MANIFEST.in file
+	$(PYTHON) -m check_manifest
+	@echo -e "\e[1;32mMANIFEST.in is up to date!\e[0m"
+.PHONY: manifest
+
 # }}}
 
 # {{{ testing
@@ -54,13 +58,13 @@ REQUIREMENTS=\
 	requirements-dev.txt \
 	requirements.txt
 
-requirements-dev.txt: setup.cfg
+requirements-dev.txt: pyproject.toml
 	$(PYTHON) -m piptools compile \
 		--resolver=backtracking --upgrade \
 		--extra dev \
 		-o $@ $<
 
-requirements.txt: setup.cfg
+requirements.txt: pyproject.toml
 	$(PYTHON) -m piptools compile \
 		--resolver=backtracking --upgrade \
 		-o $@ $<
