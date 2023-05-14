@@ -22,15 +22,10 @@ black:			## Run black over the source code
 		pycaputo tests examples
 .PHONY: black
 
-flake8:			## Run flake8 checks over the source code
-	PYTHONWARNINGS=ignore $(PYTHON) -m flake8 pycaputo tests examples
-	@echo -e "\e[1;32mflake8 clean!\e[0m"
-.PHONY: flake8
-
-pylint:			## Run pylint checks over the source code
-	PYTHONWARNINGS=ignore $(PYTHON) -m pylint pycaputo tests/*.py examples/*.py
-	@echo -e "\e[1;32mpylint clean!\e[0m"
-.PHONY: pylint
+ruff:			## Run ruff checks over the source code
+	ruff check pycaputo tests examples
+	@echo -e "\e[1;32mruff clean!\e[0m"
+.PHONY: ruff
 
 mypy:			## Run mypy checks over the source code
 	$(PYTHON) -m mypy \

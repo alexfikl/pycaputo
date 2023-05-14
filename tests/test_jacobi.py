@@ -137,7 +137,7 @@ def test_jacobi_project(alpha: float, beta: float, rtol: float = 5.0e-13) -> Non
 # {{{ test_jacobi_riemann_liouville_integral
 
 
-def test_jacobi_riemann_liouville_integral(visualize: bool = False) -> None:
+def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.jacobi import jacobi_riemann_liouville_integral
 

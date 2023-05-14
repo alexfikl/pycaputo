@@ -47,6 +47,7 @@ def test_riemann_liouville_quad(
     name: str,
     grid_type: str,
     alpha: float,
+    *,
     visualize: bool = False,
 ) -> None:
     from pycaputo import make_quad_from_name, quad
@@ -112,6 +113,7 @@ def test_riemann_liouville_quad_spectral(
     j_alpha: float,
     j_beta: float,
     alpha: float,
+    *,
     visualize: bool = False,
 ) -> None:
     from pycaputo import (

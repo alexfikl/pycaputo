@@ -166,30 +166,31 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
     nrows = h.size
 
     lines = []
-    lines.append(("h",) + flatten([(eoc.name, "EOC") for eoc in eocs]))
+    lines.append(("h", *flatten([(eoc.name, "EOC") for eoc in eocs])))
 
     lines.append((":-:",) * ncolumns)
 
     for i in range(nrows):
-        lines.append(
-            (f"{h[i]:.3e}",)
-            + flatten(
-                [
-                    (f"{error[i]:.6e}", "---" if i == 0 else f"{order[i - 1, 1]:.3f}")
-                    for (_, error), order in zip(histories, orders)
-                ]
-            )
+        values = flatten(
+            [
+                (
+                    f"{error[i]:.6e}",
+                    "---" if i == 0 else f"{order[i - 1, 1]:.3f}",
+                )
+                for (_, error), order in zip(histories, orders)
+            ]
         )
+        lines.append((f"{h[i]:.3e}", *values))
 
     lines.append(
-        ("Overall",) + flatten([("", f"{eoc.estimated_order:.3f}") for eoc in eocs])
+        ("Overall", *flatten([("", f"{eoc.estimated_order:.3f}") for eoc in eocs]))
     )
 
     expected = flatten(
         [("", f"{eoc.order:.3f}") for eoc in eocs if eoc.order is not None]
     )
     if expected:
-        lines.append(("Expected",) + expected)
+        lines.append(("Expected", *expected))
 
     widths = [max(len(line[i]) for line in lines) for i in range(ncolumns)]
     formats = ["{:%s}" % w for w in widths]
@@ -264,27 +265,23 @@ def set_recommended_matplotlib(use_tex: Optional[bool] = None) -> None:
         "ytick.minor": {"size": 4.0},
     }
 
-    try:
-        # NOTE: since v1.1.0 an import is required to import the styles
+    from contextlib import suppress
+
+    with suppress(ImportError):
         import SciencePlots  # noqa: F401
-    except ImportError:
-        pass
 
     if "science" in mp.style.library:
         mp.style.use(["science", "ieee"])
-    else:
-        if "seaborn-v0_8" in mp.style.library:
-            # NOTE: matplotlib v3.6 deprecated all the seaborn styles
-            mp.style.use("seaborn-v0_8-white")
-        elif "seaborn" in mp.style.library:
-            # NOTE: for older versions of matplotlib
-            mp.style.use("seaborn-white")
+    elif "seaborn-v0_8" in mp.style.library:
+        # NOTE: matplotlib v3.6 deprecated all the seaborn styles
+        mp.style.use("seaborn-v0_8-white")
+    elif "seaborn" in mp.style.library:
+        # NOTE: for older versions of matplotlib
+        mp.style.use("seaborn-white")
 
     for group, params in defaults.items():
-        try:
+        with suppress(KeyError):
             mp.rc(group, **params)
-        except KeyError:
-            pass
 
 
 @contextmanager

@@ -301,6 +301,7 @@ def mittag_leffler(
     z: Union[float, complex, Array],
     alpha: float = 0.0,
     beta: float = 1.0,
+    *,
     alg: Optional[Algorithm] = None,
     use_explicit: bool = True,
 ) -> Array:
@@ -319,7 +320,7 @@ def mittag_leffler(
     if alpha < 0 or beta < 0:
         raise NotImplementedError(
             "Negative parameters are not implemented: "
-            + f"alpha '{alpha}' and beta '{beta}'"
+            f"alpha '{alpha}' and beta '{beta}'"
         )
 
     if alg is None:
@@ -344,7 +345,7 @@ def mittag_leffler(
             z = np.sqrt(np.sqrt(z))
             return (np.cos(z) + np.cosh(z)) / 2  # type: ignore[no-any-return]
         if alpha == 0.5:
-            from scipy.special import erfc  # pylint: disable=no-name-in-module
+            from scipy.special import erfc
 
             return np.exp(z**2) * erfc(-z)  # type: ignore[no-any-return]
 

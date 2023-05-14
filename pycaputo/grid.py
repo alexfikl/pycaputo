@@ -177,7 +177,10 @@ def make_jacobi_gauss_lobatto_points(
     if n > 100:
         from warnings import warn
 
-        warn("Evaluating Jacobi nodes for large n > 100 might be numerically unstable")
+        warn(
+            "Evaluating Jacobi nodes for large n > 100 might be numerically unstable",
+            stacklevel=2,
+        )
 
     from pycaputo.jacobi import jacobi_gauss_lobatto_nodes, jacobi_gauss_lobatto_weights
 

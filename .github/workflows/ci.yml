@@ -9,8 +9,9 @@ on:
     - cron: '30 12 * * 0'
 
 jobs:
-  flake8:
+  ruff:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
+    name: Linting (ruff)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -21,24 +22,11 @@ jobs:
     - name: Main Script
       run: |
         make pip-install
-        make flake8
-
-  pylint:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    -
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    - name: Main Script
-      run: |
-        make pip-install
-        make pylint
+        make ruff
 
   mypy:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
+    name: Annotations (mypy)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -53,7 +41,7 @@ jobs:
 
   pytest:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    name: pytest-${{ matrix.python-version }}
+    name: Tests (pytest-${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:

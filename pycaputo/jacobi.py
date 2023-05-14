@@ -144,7 +144,7 @@ def jacobi_derivative(n: int, k: int, alpha: float, beta: float, x: Array) -> Ar
     """
     from math import gamma
 
-    from scipy.special import eval_jacobi  # pylint: disable=no-name-in-module
+    from scipy.special import eval_jacobi
 
     d = gamma(n + k + alpha + beta + 1) / gamma(n + alpha + beta + 1) / 2**k
     P = eval_jacobi(n - k, alpha + k, beta + k, x)

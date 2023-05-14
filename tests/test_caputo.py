@@ -57,6 +57,7 @@ def test_caputo_lmethods(
     name: str,
     grid_type: str,
     alpha: float,
+    *,
     visualize: bool = False,
 ) -> None:
     from pycaputo import make_diff_from_name
@@ -210,6 +211,7 @@ def test_caputo_vs_differint(
     name: str,
     cls: Type[CaputoDerivativeMethod],
     alpha: float,
+    *,
     visualize: bool = False,
 ) -> None:
     pytest.importorskip("differint")

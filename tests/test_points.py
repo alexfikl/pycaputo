@@ -16,7 +16,7 @@ set_recommended_matplotlib()
 # {{{ test_points
 
 
-def test_points(visualize: bool = False) -> None:
+def test_points(*, visualize: bool = False) -> None:
     from pycaputo.grid import REGISTERED_POINTS, make_points_from_name
     from pycaputo.utils import savefig
 
