@@ -7,8 +7,8 @@ from importlib import metadata
 
 m = metadata.metadata("pycaputo")
 project = m["Name"]
-author = m["Author"]
-copyright = f"2023 {author}"
+author = m["Author-email"]
+copyright = f"2023 {author}"    # noqa: A001
 version = m["Version"]
 release = version
 
