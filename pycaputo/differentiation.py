@@ -305,6 +305,60 @@ def _diff_uniform_l2cmethod(m: CaputoL2CMethod, f: ScalarFunction, p: Points) ->
 # }}}
 
 
+# {{{ Caputo Spectral Method
+
+
+@dataclass(frozen=True)
+class CaputoSpectralMethod(CaputoDerivativeMethod):
+    r"""Caputo derivative approximation using spectral methods based
+    on Jacobi polynomials.
+
+    This method is described in more detail in Section 4.4 of [Li2020]_. It
+    approximates the function by projecting it to the Jacobi polynomial basis
+    and constructing a quadrature rule, i.e.
+
+    .. math::
+
+        D^\alpha[f](x_j) = D^\alpha[p_N](x_j)
+                         = \sum_{k = m}^N w^\alpha_{jk} \hat{f}_k,
+
+    where :math:`p_N` is a degree :math:`N` polynomial approximating :math:`f`.
+    Then, :math:`w^\alpha_{jk}` are a set of weights and :math:`\hat{f}_k` are
+    the modal coefficients. Here, we approximate the function by the Jacobi
+    polynomials :math:`P^{(u, v)}`.
+    """
+
+    @property
+    def name(self) -> str:
+        return "CSpec"
+
+    @property
+    def order(self) -> float:
+        return np.inf
+
+
+@diff.register(CaputoSpectralMethod)
+def _diff_jacobi(m: CaputoSpectralMethod, f: ScalarFunction, p: Points) -> Array:
+    from pycaputo.grid import JacobiGaussLobattoPoints
+
+    if not isinstance(p, JacobiGaussLobattoPoints):
+        raise TypeError(
+            f"Only JacobiGaussLobattoPoints points are supported: '{type(p).__name__}'"
+        )
+
+    from pycaputo.jacobi import jacobi_caputo_derivative, jacobi_project
+
+    # NOTE: Equation 3.63 [Li2020]
+    fhat = jacobi_project(f(p.x), p)
+
+    df = np.zeros_like(fhat)
+    for n, Dhat in jacobi_caputo_derivative(p, m.d.order):
+        df += fhat[n] * Dhat
+
+    return df
+
+# }}}
+
 # {{{ make
 
 
@@ -313,6 +367,7 @@ REGISTERED_METHODS: Dict[str, Type[DerivativeMethod]] = {
     "CaputoL2CMethod": CaputoL2CMethod,
     "CaputoL2Method": CaputoL2Method,
     "CaputoModifiedL1Method": CaputoModifiedL1Method,
+    "CaputoSpectralMethod": CaputoSpectralMethod,
 }
 
 

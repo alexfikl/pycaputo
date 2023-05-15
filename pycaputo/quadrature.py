@@ -198,22 +198,19 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
     on Jacobi polynomials.
 
     This method is described in more detail in Section 3.3 of [Li2020]_. It
-    approximates the polynomial by projecting the function on each interval
-    to the Jacobi basis and constructing a quadrature rule, i.e.
+    approximates the function by projecting it to the Jacobi polynomial basis
+    and constructing a quadrature rule, i.e.
 
     .. math::
 
-        I^\alpha[f](x_j) = I^\alpha[p_N](x_j) = \sum_{k = 0}^N w_{jk} f(x_k),
+        I^\alpha[f](x_j) = I^\alpha[p_N](x_j)
+                         = \sum_{k = 0}^N w^\alpha_{jk} \hat{f}_k,
 
-    where :math:`p_N` is a degree :math:`N` polynomial approximating :math:`f`
-    and :math:`w_{jk}` are a set of weights. Here, we approximate the function
-    by the Jacobi polynomials :math:`P^{(\alpha, \beta)}`.
+    where :math:`p_N` is a degree :math:`N` polynomial approximating :math:`f`.
+    Then, :math:`w^\alpha_{jk}` are a set of weights and :math:`\hat{f}_k` are
+    the modal coefficients. Here, we approximate the function by the Jacobi
+    polynomials :math:`P^{(u, v)}`.
     """
-
-    #: First Jacobi polynomial coefficient.
-    j_alpha: float = 0
-    #: Second Jacobi polynomial coefficient.
-    j_beta: float = 0
 
     @property
     def name(self) -> str:
@@ -233,7 +230,9 @@ def _quad_rl_spec(
     from pycaputo.grid import JacobiGaussLobattoPoints
 
     if not isinstance(p, JacobiGaussLobattoPoints):
-        raise TypeError(f"Only JGL points are supported: '{type(p).__name__}'")
+        raise TypeError(
+            f"Only JacobiGaussLobattoPoints points are supported: '{type(p).__name__}'"
+        )
 
     from pycaputo.jacobi import jacobi_project, jacobi_riemann_liouville_integral
 

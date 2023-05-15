@@ -126,7 +126,7 @@ def test_riemann_liouville_quad_spectral(
     from pycaputo.utils import EOCRecorder, savefig
 
     d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
-    meth = RiemannLiouvilleSpectralMethod(d=d, j_alpha=j_alpha, j_beta=j_beta)
+    meth = RiemannLiouvilleSpectralMethod(d=d)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -136,7 +136,9 @@ def test_riemann_liouville_quad_spectral(
         ax = fig.gca()
 
     for n in [8, 12, 16, 24, 32]:
-        p = make_jacobi_gauss_lobatto_points(n, a=0.0, b=1.0)
+        p = make_jacobi_gauss_lobatto_points(
+            n, a=0.0, b=1.0, alpha=j_alpha, beta=j_beta,
+        )
         qf_num = quad(meth, f_test, p)
         qf_ref = qf_test(p.x, alpha=alpha)
 

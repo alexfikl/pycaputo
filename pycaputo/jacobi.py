@@ -263,7 +263,7 @@ def jacobi_riemann_liouville_integral(
         x * (x + 1) ** alpha / gamma(alpha + 1)
         - alpha * (x + 1) ** (alpha + 1) / gamma(alpha + 2)
     )
-    # fmt: on
+    # fm    t: on
     Phat1 = (p.alpha + p.beta + 2) / 2 * Phat1 + (p.alpha - p.beta) / 2 * Phat0
     yield dx ** (alpha - 1) * Phat1
 
@@ -288,6 +288,25 @@ def jacobi_riemann_liouville_integral(
 
         P1, P0 = P2, P1
         Phat1, Phat0 = Phatn, Phat1
+
+
+# }}}
+
+# {{{ Jacobi Caputo derivative
+
+
+def jacobi_caputo_derivative(
+    p: JacobiGaussLobattoPoints, alpha: float
+) -> Iterator[Tuple[int, Array]]:
+    import math
+    from dataclasses import replace
+
+    m = math.ceil(alpha)
+    p = replace(p, alpha=p.alpha + m, beta=p.beta + m)
+
+    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, m - alpha)):
+        Dhat = 1 * Phat
+        yield n + m, Dhat
 
 
 # }}}
