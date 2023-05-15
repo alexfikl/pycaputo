@@ -20,24 +20,31 @@ set_recommended_matplotlib()
 # {{{ test_caputo_lmethods
 
 
-def f_test(x: Array) -> Array:
-    return (0.5 - x) ** 4
+def f_test(x: Array, *, mu: float = 3.5) -> Array:
+    return (0.5 - x) ** mu
 
 
-def df_test(x: Array, *, alpha: float) -> Array:
-    import math
+def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
+    from scipy.special import gamma, hyp2f1
 
     if 0 < alpha < 1:
         return np.array(
-            -1 / 2 * x ** (1 - alpha) / math.gamma(2 - alpha)
-            + 3 * x ** (2 - alpha) / math.gamma(3 - alpha)
-            - 12 * x ** (3 - alpha) / math.gamma(4 - alpha)
-            + 24 * x ** (4 - alpha) / math.gamma(5 - alpha)
+            -mu
+            * 2 ** (1 - mu)
+            * x ** (1 - alpha)
+            * hyp2f1(1, 1 - mu, 2 - alpha, 2 * x)
+            / gamma(2 - alpha)
         )
 
     if 1 < alpha < 2:
-        p = 12 + 8 * (x - 2) * x - 7 * alpha + 4 * alpha * x + alpha**2
-        return np.array(3 * x ** (2 - alpha) * p / math.gamma(5 - alpha))
+        return np.array(
+            -mu
+            * (1 - mu)
+            * 2 ** (2 - mu)
+            * x ** (2 - alpha)
+            * hyp2f1(1, 2 - mu, 3 - alpha, 2 * x)
+            / gamma(3 - alpha)
+        )
 
     raise ValueError(f"Unsupported order: {alpha}")
 
@@ -78,7 +85,7 @@ def test_caputo_lmethods(
         ax = fig.gca()
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
-        p = make_points_from_name(grid_type, n, a=0.0, b=1.0)
+        p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
         df_num = diff(meth, f_test, p)
         df_ref = df_test(p.x, alpha=alpha)
 
@@ -226,7 +233,7 @@ def test_caputo_vs_differint(
 
     from pycaputo.grid import make_points_from_name
 
-    p = make_points_from_name("uniform", 512, a=0.0, b=1.0)
+    p = make_points_from_name("uniform", 512, a=0.0, b=0.5)
 
     df_ref = df_test(p.x, alpha=alpha)
     df_num = diff(meth, f_test, p)

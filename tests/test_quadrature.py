@@ -18,21 +18,18 @@ set_recommended_matplotlib()
 # {{{ test_riemann_liouville_quad
 
 
-def f_test(x: Array) -> Array:
-    return (0.5 - x) ** 4
+def f_test(x: Array, *, mu: float = 3.5) -> Array:
+    return (0.5 - x) ** mu
 
 
-def qf_test(x: Array, *, alpha: float) -> Array:
+def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
+    from scipy.special import gamma, hyp2f1
+
     return np.array(
-        0.0625 * x**alpha / math.gamma(1 + alpha)
-        - 0.5 * x ** (1 + alpha) / math.gamma(2 + alpha)
-        + 3 * x ** (2 + alpha) / math.gamma(3 + alpha)
-        - 12 * x ** (3 + alpha) / math.gamma(4 + alpha)
-        + 24 * x ** (4 + alpha) / math.gamma(5 + alpha)
+        2**-mu * x**alpha * hyp2f1(1, -mu, 1 + alpha, 2 * x) / gamma(1 + alpha)
     )
 
 
-@pytest.mark.xfail(reason="work in progress")
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
@@ -64,7 +61,7 @@ def test_riemann_liouville_quad(
         ax = fig.gca()
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
-        p = make_points_from_name(grid_type, n, a=0.0, b=1.0)
+        p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
         qf_num = quad(meth, f_test, p)
         qf_ref = qf_test(p.x, alpha=alpha)
 
@@ -139,7 +136,7 @@ def test_riemann_liouville_quad_spectral(
         p = make_jacobi_gauss_lobatto_points(
             n,
             a=0.0,
-            b=1.0,
+            b=0.5,
             alpha=j_alpha,
             beta=j_beta,
         )
@@ -165,8 +162,9 @@ def test_riemann_liouville_quad_spectral(
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
-    # NOTE: the test function is polynomial, so this is always exact
-    assert eoc.max_error < 1.0e-13
+    # FIXME: what's the expected behavior here? This just checks that the code
+    # doesn't start doing something else all of a sudden..
+    assert eoc.estimated_order > 7.0
 
 
 # }}}
