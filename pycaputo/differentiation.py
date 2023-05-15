@@ -357,6 +357,7 @@ def _diff_jacobi(m: CaputoSpectralMethod, f: ScalarFunction, p: Points) -> Array
 
     return df
 
+
 # }}}
 
 # {{{ make
