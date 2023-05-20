@@ -263,6 +263,85 @@ def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
 # }}}
 
 
+# {{{ test_jacobi_caputo_derivative
+
+
+def test_jacobi_caputo_derivative(*, visualize: bool = False) -> None:
+    from pycaputo.grid import make_jacobi_gauss_lobatto_points
+    from pycaputo.jacobi import jacobi_caputo_derivative
+
+    N = 8
+    alpha = beta = 0.0
+    p = make_jacobi_gauss_lobatto_points(N, a=-1, b=1, alpha=alpha, beta=beta)
+
+    from scipy.special import gamma
+
+    alpha = 1.5
+    m = int(np.ceil(alpha))
+
+    # NOTE: these are also integrated with mathematica
+    Dhat_ref = [
+        # D0
+        0,
+        # D1
+        0,
+        # D2
+        6 * np.sqrt(1 + p.x) / gamma(m - alpha),
+        # D3
+        10 * np.sqrt(1 + p.x) * (2 * p.x - 1) / gamma(m - alpha),
+        # D4
+        2 * np.sqrt(1 + p.x) * (28 * p.x**2 - 14 * p.x + 3) / gamma(m - alpha),
+        # D5
+        2
+        * np.sqrt(1 + p.x)
+        * (72 * p.x**3 - 36 * p.x**2 - 8 * p.x - 5)
+        / gamma(m - alpha),
+        # D6
+        4
+        * np.sqrt(1 + p.x)
+        * (88 * p.x**4 - 44 * p.x**3 - 30 * p.x**2 + 4 * p.x + 7)
+        / gamma(m - alpha),
+        # D7
+        4
+        * np.sqrt(1 + p.x)
+        * (
+            208 * p.x**5
+            - 104 * p.x**4
+            - 120 * p.x**3
+            + 34 * p.x**2
+            + 22 * p.x
+            - 9
+        )
+        / gamma(m - alpha),
+    ]
+
+    for n, Dhat in jacobi_caputo_derivative(p, alpha=alpha):
+        assert n >= m
+
+        error = la.norm(Dhat - Dhat_ref[n]) / la.norm(Dhat_ref[n])
+        logger.info("order %3d error %.12e", n, error)
+
+        if visualize:
+            import matplotlib.pyplot as mp
+
+            fig = mp.figure()
+            ax = fig.gca()
+
+            ax.plot(p.x, Dhat)
+            ax.plot(p.x, Dhat_ref[n], "k--")
+            ax.set_xlabel("$x$")
+            ax.set_ylabel(rf"$\hat{{D}}^{{{p.alpha}, {p.beta}, {alpha}}}_{{{n}}}$")
+
+            from pycaputo.utils import savefig
+
+            dirname = pathlib.Path(__file__).parent
+            filename = f"test_jacobi_caputo_derivative_{n}"
+            savefig(fig, dirname / filename)
+
+
+# }}}
+
+
 if __name__ == "__main__":
     import sys
 

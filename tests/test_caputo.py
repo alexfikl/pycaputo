@@ -117,6 +117,81 @@ def test_caputo_lmethods(
 # }}}
 
 
+# {{{ test_caputo_spectral
+
+
+@pytest.mark.xfail()
+@pytest.mark.parametrize(
+    ("j_alpha", "j_beta"),
+    [
+        # Legendre polynomials
+        (0.0, 0.0),
+        # Chebyshev polynomials
+        (-0.5, -0.5),
+        # Other? Not really of any interest
+        (1.0, 1.0),
+    ],
+)
+@pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
+def test_caputo_spectral(
+    j_alpha: float,
+    j_beta: float,
+    alpha: float,
+    *,
+    visualize: bool = True,
+) -> None:
+    from pycaputo import CaputoDerivative, CaputoSpectralMethod, Side
+    from pycaputo.grid import make_jacobi_gauss_lobatto_points
+    from pycaputo.utils import EOCRecorder, savefig
+
+    meth = CaputoSpectralMethod(d=CaputoDerivative(alpha, side=Side.Left))
+    eoc = EOCRecorder(order=meth.order)
+
+    if visualize:
+        import matplotlib.pyplot as mp
+
+        fig = mp.figure()
+        ax = fig.gca()
+
+    for n in [8, 12, 16, 24, 32]:
+        p = make_jacobi_gauss_lobatto_points(
+            n,
+            a=0.0,
+            b=0.5,
+            alpha=j_alpha,
+            beta=j_beta,
+        )
+        df_num = diff(meth, f_test, p)
+        df_ref = df_test(p.x, alpha=alpha)
+
+        h = np.max(p.dx)
+        e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
+        eoc.add_data_point(h, e)
+        logger.info("n %4d h %.5e e %.12e", n, h, e)
+
+        if visualize:
+            ax.plot(p.x[1:], df_num[1:])
+            # ax.semilogy(p.x, abs(df_num - df_ref))
+
+    logger.info("\n%s", eoc)
+
+    if visualize:
+        ax.plot(p.x[1:], df_ref[1:], "k--")
+        ax.set_xlabel("$x$")
+        ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
+        # ax.set_ylim([1.0e-16, 1])
+
+        dirname = pathlib.Path(__file__).parent
+        filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
+        savefig(fig, dirname / filename.lower())
+
+    assert eoc.order is not None
+    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 0.25
+
+
+# }}}
+
+
 # {{{ test_caputo_vs_differint
 
 

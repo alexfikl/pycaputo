@@ -31,6 +31,21 @@ def jacobi_gamma(n: int, alpha: float, beta: float) -> float:
     )
 
 
+def jacobi_diff_coefficient(n: int, k: int, alpha: float, beta: float) -> float:
+    r"""Computes the coefficient for the Jacobi polynomial derivative
+    (see Equation 3.102 [Shen2011]_).
+
+    The same equation is given by Equation 3.57 [Li2020]_. However, it has an
+    incorrect denominator, which should be :math:`\Gamma(n + \alpha + \beta + 1)`.
+
+    :arg k: order of the derivative.
+    :returns: the coefficient :math:`d^{\alpha, \beta}_{n, k}`.
+    """
+    from math import gamma
+
+    return gamma(n + k + alpha + beta + 1) / (2.0**k * gamma(n + alpha + beta + 1))
+
+
 def jacobi_rec_coefficients(
     n: int, alpha: float, beta: float
 ) -> Tuple[float, float, float]:
@@ -301,15 +316,43 @@ def jacobi_riemann_liouville_integral(
 def jacobi_caputo_derivative(
     p: JacobiGaussLobattoPoints, alpha: float
 ) -> Iterator[Tuple[int, Array]]:
+    r"""Computes an integral of the Jacobi polynomials used in the definition
+    of the Caputo derivative (see Section 4.4 in [Li2020]_).
+
+    This effectively computes
+
+    .. math::
+
+        \hat{D}^{u, v, \alpha, m}_j(x) = \frac{1}{m - \alpha}
+            \int_{-1}^x (x - s)^{m - \alpha - 1}
+            \frac{\mathrm{d}^m}{\mathrm{d} s^m} P^{u, v}_j(s) \,\mathrm{d} s,
+
+    where :math:`P^{u, v}_j` is the usual Jacobi polynomial and
+    :math:`m - 1 < \alpha \le m`. Computing this integral is largely based on
+    :func:`jacobi_riemann_liouville_integral` and Equation 3.50 [Li2020]_.
+    Note that, by definition, :math:`\hat{D}^{u, v, \alpha, m}_j = 0` for
+    :math:`0 \le j \le m - 1`.
+
+    :returns: the Caputo derivative of the Jacobi polynomials of every order.
+    """
+
     import math
     from dataclasses import replace
 
-    m = math.ceil(alpha)
-    p = replace(p, alpha=p.alpha + m, beta=p.beta + m)
+    m = int(math.ceil(alpha))
+    pm = replace(p, alpha=p.alpha + m, beta=p.beta + m)
+    dx = (p.b - p.a) / 2
 
-    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, m - alpha)):
-        Dhat = 1 * Phat
-        yield n + m, Dhat
+    for n, Phat in enumerate(jacobi_riemann_liouville_integral(pm, m - alpha)):
+        if n + m >= p.n:
+            break
+
+        # NOTE: compute D^{u, v, alpha, m}_{n + m} Equation 4.313 [Li2020]
+        d = jacobi_diff_coefficient(n + m, m, p.alpha, p.beta)
+        Dhat = d * Phat
+
+        # NOTE: Phat is already multiplied by dx^(alpha - 1)
+        yield n + m, dx ** (-2 * alpha + 1) * Dhat
 
 
 # }}}
