@@ -248,7 +248,7 @@ def jacobi_gauss_lobatto_weights(x: Array, alpha: float, beta: float) -> Array:
 
 
 def jacobi_riemann_liouville_integral(
-    p: JacobiGaussLobattoPoints, alpha: float
+    p: JacobiGaussLobattoPoints, alpha: float, *, weighted: bool = True
 ) -> Iterator[Array]:
     r"""Computes an integral of the Jacobi polynomials used in the definition
     of the Riemann-Liouville integral (see Section 3.3 (I) in [Li2020]_).
@@ -262,6 +262,8 @@ def jacobi_riemann_liouville_integral(
 
     where :math:`P^{u, v}_n` is the usual Jacobi polynomial.
 
+    :arg weighted: if *True*, the integral is taken in the interval :math:`[a, b]`,
+        which gives an extra weight of :math:`h^{\alpha - 1}`.
     :returns: the Riemann-Liouville integral of the Jacobi polynomials of
         every order.
     """
@@ -272,9 +274,11 @@ def jacobi_riemann_liouville_integral(
     dx = (p.b - p.a) / 2
     x = (p.x - xm) / dx
 
+    w = dx ** (alpha - 1) if weighted else 1.0
+
     # NOTE: Equation 3.64 [Li2020]
     Phat0 = (x + 1) ** alpha / gamma(alpha + 1)
-    yield dx ** (alpha - 1) * Phat0
+    yield w * Phat0
 
     # fmt: off
     Phat1 = (
@@ -283,7 +287,7 @@ def jacobi_riemann_liouville_integral(
     )
     # fm    t: on
     Phat1 = (p.alpha + p.beta + 2) / 2 * Phat1 + (p.alpha - p.beta) / 2 * Phat0
-    yield dx ** (alpha - 1) * Phat1
+    yield w * Phat1
 
     # NOTE: this holds the Jacobi polynomials at x = -1 in use in the recursion
     # FIXME: these have an exact formula:
@@ -302,7 +306,7 @@ def jacobi_riemann_liouville_integral(
         C1 = (A * x - B - alpha * A * Bhat) / D
         C2 = (C + alpha * A * Ahat) / D
         Phatn = C0 * (x + 1) ** alpha + C1 * Phat1 - C2 * Phat0
-        yield dx ** (alpha - 1) * Phatn
+        yield w * Phatn
 
         P1, P0 = P2, P1
         Phat1, Phat0 = Phatn, Phat1
@@ -314,7 +318,10 @@ def jacobi_riemann_liouville_integral(
 
 
 def jacobi_caputo_derivative(
-    p: JacobiGaussLobattoPoints, alpha: float
+    p: JacobiGaussLobattoPoints,
+    alpha: float,
+    *,
+    weighted: bool = True,
 ) -> Iterator[Tuple[int, Array]]:
     r"""Computes an integral of the Jacobi polynomials used in the definition
     of the Caputo derivative (see Section 4.4 in [Li2020]_).
@@ -333,6 +340,8 @@ def jacobi_caputo_derivative(
     Note that, by definition, :math:`\hat{D}^{u, v, \alpha, m}_j = 0` for
     :math:`0 \le j \le m - 1`.
 
+    :arg weighted: if *True*, the integral is taken in the interval :math:`[a, b]`,
+        which gives an extra weight of :math:`h^{-\alpha - 1}`.
     :returns: the Caputo derivative of the Jacobi polynomials of every order.
     """
 
@@ -341,9 +350,12 @@ def jacobi_caputo_derivative(
 
     m = int(math.ceil(alpha))
     pm = replace(p, alpha=p.alpha + m, beta=p.beta + m)
-    dx = (p.b - p.a) / 2
+    # FIXME: the weight is h^-alpha in [Li2020], but that seems incorrect?
+    w = ((p.b - p.a) / 2) ** (-alpha - 1) if weighted else 1
 
-    for n, Phat in enumerate(jacobi_riemann_liouville_integral(pm, m - alpha)):
+    for n, Phat in enumerate(
+        jacobi_riemann_liouville_integral(pm, m - alpha, weighted=False)
+    ):
         if n + m >= p.n:
             break
 
@@ -351,8 +363,7 @@ def jacobi_caputo_derivative(
         d = jacobi_diff_coefficient(n + m, m, p.alpha, p.beta)
         Dhat = d * Phat
 
-        # NOTE: Phat is already multiplied by dx^(alpha - 1)
-        yield n + m, dx ** (-2 * alpha + 1) * Dhat
+        yield n + m, w * Dhat
 
 
 # }}}

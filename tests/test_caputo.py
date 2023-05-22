@@ -120,7 +120,6 @@ def test_caputo_lmethods(
 # {{{ test_caputo_spectral
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("j_alpha", "j_beta"),
     [
@@ -182,11 +181,10 @@ def test_caputo_spectral(
         # ax.set_ylim([1.0e-16, 1])
 
         dirname = pathlib.Path(__file__).parent
-        filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_caputo_{meth.name}_{j_alpha}_{j_beta}_{alpha}"
+        savefig(fig, dirname / filename.replace(".", "_").replace("-", "m").lower())
 
-    assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 0.25
+    assert eoc.estimated_order > 5.0
 
 
 # }}}

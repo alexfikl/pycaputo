@@ -307,6 +307,7 @@ def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
     filename = pathlib.Path(filename).with_suffix(f".{ext}").resolve()
     logger.info("Saving '%s'", filename)
 
+    fig.tight_layout()
     fig.savefig(filename, **kwargs)
 
 
