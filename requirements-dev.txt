@@ -60,7 +60,7 @@ python-dateutil==2.8.2
     # via matplotlib
 rich==13.3.5
     # via pycaputo (pyproject.toml)
-ruff==0.0.267
+ruff==0.0.270
     # via pycaputo (pyproject.toml)
 scipy==1.10.1
     # via pycaputo (pyproject.toml)
@@ -68,7 +68,7 @@ six==1.16.0
     # via python-dateutil
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml)
-typing-extensions==4.5.0
+typing-extensions==4.6.2
     # via
     #   mypy
     #   pycaputo (pyproject.toml)

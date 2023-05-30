@@ -1,11 +1,12 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
-from typing import Dict, Type
 
 import numpy as np
 
@@ -252,7 +253,7 @@ def _quad_rl_spec(
 # {{{ make
 
 
-REGISTERED_METHODS: Dict[str, Type[QuadratureMethod]] = {
+REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
     "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
     "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
     "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,

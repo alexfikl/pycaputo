@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import enum
 import math
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 
@@ -40,8 +42,8 @@ def _mittag_leffler_series(
     *,
     alpha: float,
     beta: float,
-    eps: Optional[float] = None,
-    kmax: Optional[int] = None,
+    eps: float | None = None,
+    kmax: int | None = None,
 ) -> complex:
     if eps is None:
         eps = 2 * float(np.finfo(np.array(z).dtype).eps)
@@ -76,7 +78,7 @@ def _ml_quad_k(
     z: complex,
     *,
     eps: float,
-    delta: Optional[float] = None,
+    delta: float | None = None,
 ) -> complex:
     if delta is None:
         delta = 1.0e-2 * math.sqrt(eps)
@@ -149,8 +151,8 @@ def _mittag_leffler_diethelm(
     *,
     alpha: float,
     beta: float,
-    eps: Optional[float] = None,
-    zeta: Optional[float] = None,
+    eps: float | None = None,
+    zeta: float | None = None,
 ) -> complex:
     if eps is None:
         eps = 2 * float(np.finfo(np.array(z).dtype).eps)
@@ -261,8 +263,8 @@ def _mittag_leffler_ortigueira(
     *,
     alpha: float,
     beta: float,
-    eps: Optional[float] = None,
-    kmax: Optional[int] = None,
+    eps: float | None = None,
+    kmax: int | None = None,
 ) -> complex:
     if eps is None:
         eps = 2 * float(np.finfo(np.array(z).dtype).eps)
@@ -298,11 +300,11 @@ def _mittag_leffler_garrapa(
 
 
 def mittag_leffler(
-    z: Union[float, complex, Array],
+    z: float | complex | Array,
     alpha: float = 0.0,
     beta: float = 1.0,
     *,
-    alg: Optional[Algorithm] = None,
+    alg: Algorithm | None = None,
     use_explicit: bool = True,
 ) -> Array:
     r"""Evaluate the Mittag-Leffler function :math:`E_{\alpha, \beta}(z)`.

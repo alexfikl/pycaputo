@@ -1,7 +1,9 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-from typing import Iterator, Tuple
+from __future__ import annotations
+
+from typing import Iterator
 
 import numpy as np
 
@@ -48,7 +50,7 @@ def jacobi_diff_coefficient(n: int, k: int, alpha: float, beta: float) -> float:
 
 def jacobi_rec_coefficients(
     n: int, alpha: float, beta: float
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     r"""Computes coefficients for the Jacobi recursion relation
     (see Equation 3.51 [Li2020]_).
 
@@ -69,7 +71,7 @@ def jacobi_rec_coefficients(
 
 def jacobi_diff_rec_coefficients(
     n: int, alpha: float, beta: float
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     r"""Computes coefficients for a derivative-based Jacobi recursion relation
     (see Equation 3.58 [Li2020]_).
 
@@ -322,7 +324,7 @@ def jacobi_caputo_derivative(
     alpha: float,
     *,
     weighted: bool = True,
-) -> Iterator[Tuple[int, Array]]:
+) -> Iterator[tuple[int, Array]]:
     r"""Computes an integral of the Jacobi polynomials used in the definition
     of the Caputo derivative (see Section 4.4 in [Li2020]_).
 

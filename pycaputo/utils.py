@@ -1,21 +1,12 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import os
 import pathlib
 from contextlib import contextmanager
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Protocol,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Iterable, Iterator, Protocol, TypeVar, Union
 
 import numpy as np
 from typing_extensions import TypeAlias
@@ -60,13 +51,13 @@ class ScalarFunction(Protocol):
 class EOCRecorder:
     """Keep track of all your *estimated order of convergence* needs."""
 
-    def __init__(self, *, order: Optional[float] = None, name: str = "Error") -> None:
+    def __init__(self, *, order: float | None = None, name: str = "Error") -> None:
         #: A string identifier for the value which is estimated.
         self.name: str = name
         #: An expected order of convergence, if any.
-        self.order: Optional[float] = order
+        self.order: float | None = order
         #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
-        self.history: List[Tuple[float, float]] = []
+        self.history: list[tuple[float, float]] = []
 
     def add_data_point(self, h: Any, error: Any) -> None:
         """Add a data point to the estimation.
@@ -101,7 +92,7 @@ class EOCRecorder:
         return stringify_eoc(self)
 
 
-def estimate_order_of_convergence(x: Array, y: Array) -> Tuple[float, float]:
+def estimate_order_of_convergence(x: Array, y: Array) -> tuple[float, float]:
     """Computes an estimate of the order of convergence in the least-square sense.
     This assumes that the :math:`(x, y)` pair follows a law of the form
 
@@ -121,7 +112,7 @@ def estimate_order_of_convergence(x: Array, y: Array) -> Tuple[float, float]:
 
 
 def estimate_gliding_order_of_convergence(
-    x: Array, y: Array, *, gliding_mean: Optional[int] = None
+    x: Array, y: Array, *, gliding_mean: int | None = None
 ) -> Array:
     assert x.size == y.size
     if x.size <= 1:
@@ -142,7 +133,7 @@ def estimate_gliding_order_of_convergence(
     )
 
 
-def flatten(iterable: Iterable[Iterable[T]]) -> Tuple[T, ...]:
+def flatten(iterable: Iterable[Iterable[T]]) -> tuple[T, ...]:
     from itertools import chain
 
     return tuple(chain.from_iterable(iterable))
@@ -235,7 +226,7 @@ def check_usetex(*, s: bool) -> bool:
     return True
 
 
-def set_recommended_matplotlib(use_tex: Optional[bool] = None) -> None:
+def set_recommended_matplotlib(use_tex: bool | None = None) -> None:
     try:
         import matplotlib.pyplot as mp
     except ImportError:
@@ -285,7 +276,7 @@ def set_recommended_matplotlib(use_tex: Optional[bool] = None) -> None:
 
 
 @contextmanager
-def figure(filename: Optional[PathLike] = None, **kwargs: Any) -> Iterator[Any]:
+def figure(filename: PathLike | None = None, **kwargs: Any) -> Iterator[Any]:
     import matplotlib.pyplot as mp
 
     fig = mp.figure()

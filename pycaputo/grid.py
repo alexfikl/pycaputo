@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Callable, Dict
+from typing import Callable
 
 import numpy as np
 
@@ -199,7 +201,7 @@ def make_jacobi_gauss_lobatto_points(
 
 # {{{ make
 
-REGISTERED_POINTS: Dict[str, Callable[..., Points]] = {
+REGISTERED_POINTS: dict[str, Callable[..., Points]] = {
     "jacobi": make_jacobi_gauss_lobatto_points,
     "midpoints": make_uniform_midpoints,
     "stretch": make_stretched_points,

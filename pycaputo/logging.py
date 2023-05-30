@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import logging
 import os
-from typing import Optional, Union
 
 
 def get_logger(
     module: str,
-    level: Optional[Union[int, str]] = None,
+    level: int | str | None = None,
 ) -> logging.Logger:
     """Create a new logging for the module *module*.
 
