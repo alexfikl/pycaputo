@@ -42,6 +42,30 @@ class ScalarFunction(Protocol):
         """
 
 
+class StateFunction(Protocol):
+    r"""A generic callable for right-hand side functions
+    :math:`\mathbf{f}(t, \mathbf{y})`.
+    """
+
+    def __call__(self, t: float, y: Array) -> Array:
+        """
+        :arg t: time at which to evaluate the function.
+        :arg y: state vector value at which to evaluate the function.
+        """
+
+
+class ScalarStateFunction(Protocol):
+    """A generic callable similar to :class:`StateFunction` that returns a
+    scalar.
+    """
+
+    def __call__(self, t: float, y: Array) -> float:
+        """
+        :arg t: time at which to evaluate the function.
+        :arg y: state vector value at which to evaluate the function.
+        """
+
+
 # }}}
 
 
