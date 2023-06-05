@@ -6,7 +6,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import singledispatch
-from typing import Any, Iterator
+from typing import Iterator
 
 import numpy as np
 
@@ -79,6 +79,9 @@ class History:
 
         :returns: a tuple of ``(t, y)`` mirroring the state from :meth:`dump`.
         """
+        if k == -1:
+            k = self.nhistory - 1
+
         if not 0 <= k < self.nhistory:
             raise IndexError(f"history index out of range: {k} >= {self.nhistory}")
 
@@ -116,9 +119,6 @@ class FractionalDifferentialEquationMethod(ABC):
     #: Values used to reconstruct the required initial conditions.
     y0: tuple[Array, ...]
 
-    #: A history of the evolved solution states.
-    history: History
-
     @property
     def name(self) -> str:
         """An identifier for the method."""
@@ -143,9 +143,9 @@ def make_initial_condition(
 def evolve(
     m: FractionalDifferentialEquationMethod,
     *,
+    history: History | None = None,
     maxit: int | None = None,
     verbose: bool = True,
-    **kwargs: Any,
 ) -> Iterator[StepResult]:
     """Evolve the fractional-order ordinary differential equation in time.
 
@@ -156,11 +156,14 @@ def evolve(
         the solution at a time :math:`t`.
     """
 
+    if history is None:
+        history = History()
+
     n = 0
     t, tfinal = m.tspan
     y = make_initial_condition(m, t, m.y0)
 
-    m.history.dump(t, y)
+    history.dump(t, y)
     yield StepCompleted(t=t, iteration=n, dt=0.0, y=y)
 
     while True:
@@ -179,19 +182,21 @@ def evolve(
                 # NOTE: adding 1.0e-15 to ensure that t >= tfinal is true
                 dt = min(dt, tfinal - t) + 1.0e-15
 
-            y = advance(m, t, y, dt)
+            y = advance(m, history, t, y, dt)
             n += 1
             t += dt
 
-            m.history.dump(t, y)
+            history.dump(t, y)
             yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
-        except Exception:
+        except Exception as exc:
+            logger.error("Step failed.", exc_info=exc)
             yield StepFailed(t=t, iteration=n)
 
 
 @singledispatch
 def advance(
     m: FractionalDifferentialEquationMethod,
+    history: History,
     t: float,
     y: Array,
     dt: float,
@@ -237,25 +242,26 @@ class CaputoForwardEulerMethod(CaputoDifferentialEquationMethod):
 @advance.register(CaputoForwardEulerMethod)
 def _advance_caputo_forward_euler(
     m: CaputoForwardEulerMethod,
+    history: History,
     t: float,
     y: Array,
     dt: float,
 ) -> Array:
     from math import gamma
 
-    n = m.history.nhistory
+    n = history.nhistory
     alpha = m.d.order
     t = t + dt
 
     # FIXME: this is intensely inefficient
     ynext = sum(
-        [(t - m.tspan[0]) ** k / gamma(k) * y0k for k, y0k in enumerate(m.y0)],
+        [(t - m.tspan[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
         np.zeros_like(y),
     )
-    ts = [*m.history.thistory, t]
+    ts = [*history.thistory, t]
 
     for k in range(n):
-        _, yk = m.history.load(k)
+        _, yk = history.load(k)
         omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
         ynext += omega * m.source(ts[k], yk)
 
@@ -289,25 +295,26 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
 @advance.register(CaputoCrankNicolsonMethod)
 def _advance_caputo_crank_nicolson(
     m: CaputoCrankNicolsonMethod,
+    history: History,
     t: float,
     y: Array,
     dt: float,
 ) -> Array:
     from math import gamma
 
-    n = m.history.nhistory
+    n = history.nhistory
     alpha = m.d.order
     t = t + dt
 
     # FIXME: this is intensely inefficient
     ynext = sum(
-        [(t - m.tspan[0]) ** k / gamma(k) * y0k for k, y0k in enumerate(m.y0)],
+        [(t - m.tspan[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
         np.zeros_like(y),
     )
-    ts = [*m.history.thistory, t]
+    ts = [*history.thistory, t]
 
     for k in range(n):
-        _, yk = m.history.load(k)
+        _, yk = history.load(k)
         omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
         ynext += omega * m.source(ts[k], yk)
 
