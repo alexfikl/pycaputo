@@ -10,3 +10,8 @@ Differentiation
 ---------------
 
 .. automodule:: pycaputo.differentiation
+
+Single-Term Fractional Ordinary Differential Equations
+------------------------------------------------------
+
+.. automodule:: pycaputo.fode

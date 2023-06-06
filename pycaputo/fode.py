@@ -104,7 +104,8 @@ class FractionalDifferentialEquationMethod(ABC):
 
     where the Caputo derivative :math:`D_C^\alpha` is used with
     :math:`\alpha \in (0, 1)`. In this case, only :math:`y(0)` is required
-    as an initial condition. Higher-order
+    as an initial condition. Different derivatives or higher-order derivatives
+    will required additional initial data.
     """
 
     #: The fractional operator used for the derivative.
