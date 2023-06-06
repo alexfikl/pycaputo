@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 import pathlib
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Iterable, Iterator, Protocol, TypeVar, Union
 
 import numpy as np
@@ -72,16 +73,17 @@ class ScalarStateFunction(Protocol):
 # {{{ Estimated Order of Convergence (EOC)
 
 
+@dataclass(frozen=True)
 class EOCRecorder:
     """Keep track of all your *estimated order of convergence* needs."""
 
-    def __init__(self, *, order: float | None = None, name: str = "Error") -> None:
-        #: A string identifier for the value which is estimated.
-        self.name: str = name
-        #: An expected order of convergence, if any.
-        self.order: float | None = order
-        #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
-        self.history: list[tuple[float, float]] = []
+    #: A string identifier for the value which is estimated.
+    name: str = "Error"
+    #: An expected order of convergence, if any.
+    order: float | None = None
+
+    #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
+    history: list[tuple[float, float]] = field(default_factory=list, repr=False)
 
     def add_data_point(self, h: Any, error: Any) -> None:
         """Add a data point to the estimation.

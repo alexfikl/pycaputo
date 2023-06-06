@@ -276,20 +276,75 @@ def _advance_caputo_forward_euler(
 
 @dataclass(frozen=True)
 class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
-    """The second-order Crank-Nicolson discretization of the Caputo derivative.
+    r"""The Crank-Nicolson discretization of the Caputo derivative.
 
     The Crank-Nicolson method is a convex combination of the forward Euler
     and the backward Euler method. This implementation uses a parameter
     :attr:`theta` to interpolate between the two.
+
+    Note that for :math:`\theta = 0` we get the forward Euler method, which
+    is first order, for :math:`\theta = 1` we get the backward Euler method,
+    which is first order, and for :math:`\theta = 1/2` we get the Crank-Nicolson
+    method, which is order :math:`1 + \alpha`. This method only becomes second
+    order in the limit of :math:`\alpha \to 1`.
     """
 
     #: Parameter weight between the forward and backward Euler methods. The value
     #: of :math:`\theta = 1/2` gives the standard Crank-Nicolson method.
     theta: float
 
+    source_jac: StateFunction | None
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if not 0.0 <= self.theta <= 1.0:
+                raise ValueError(
+                    f"'theta' parameter must be in [0, 1]: got {self.theta}"
+                )
+
     @property
     def order(self) -> float:
-        return 2.0 if self.theta == 0.5 else 1.0
+        return (1.0 + self.d.order) if self.theta == 0.5 else 1.0
+
+    def solve(self, t: float, y0: Array, c: float, r: Array) -> Array:
+        """Solves an implicit update formula.
+
+        This function will solve an equation of the form
+
+        .. math::
+
+            y - c * f(t, y) = r
+
+        for the solution :math:`y`. This is specific to first-order FODEs.
+
+        :arg t: time at which the solution *y* is evaluated.
+        :arg y: unknown solution at time *t*.
+        :arg c: constant for the source term *f* that corresponds to
+            :attr:`FractionalDifferentialEquationMethod.source`.
+        :arg r: right-hand side term.
+
+        :returns: solution :math:`y^*` of the above root finding problem.
+        """
+
+        def func(y: Array) -> Array:
+            return np.array(y - c * self.source(t, y) - r)
+
+        def jac(y: Array) -> Array:
+            assert self.source_jac is not None
+            return np.array(1 - c * self.source_jac(t, y))
+
+        import scipy.optimize as so
+
+        result = so.root(
+            func,
+            y0,
+            jac=jac if self.source_jac is not None else None,
+            method="lm",
+            options={"ftol": 1.0e-10},
+        )
+
+        return np.array(result.x)
 
 
 @advance.register(CaputoCrankNicolsonMethod)
@@ -305,18 +360,39 @@ def _advance_caputo_crank_nicolson(
     n = history.nhistory
     alpha = m.d.order
     t = t + dt
-
-    # FIXME: this is intensely inefficient
-    ynext = sum(
-        [(t - m.tspan[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
-        np.zeros_like(y),
-    )
     ts = [*history.thistory, t]
 
-    for k in range(n):
-        _, yk = history.load(k)
+    # FIXME: this is intensely inefficient
+    fnext = sum(
+        [(t - ts[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
+        np.zeros_like(y),
+    )
+
+    for k in range(n - 1):
         omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        ynext += omega * m.source(ts[k], yk)
+
+        # add forward term
+        _, yk = history.load(k)
+        if m.theta != 0.0:
+            fnext += omega * m.theta * m.source(ts[k], yk)
+
+        # add backward term
+        if m.theta != 1.0:
+            _, yk = history.load(k + 1)
+            fnext += omega * (1 - m.theta) * m.source(ts[k + 1], yk)
+
+    k = n - 1
+    omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
+
+    if m.theta != 0.0:
+        # add last forward
+        _, yk = history.load(k)
+        fnext += omega * m.theta * m.source(ts[k], yk)
+
+    if m.theta != 1.0:
+        ynext = m.solve(ts[-1], y, omega * (1 - m.theta), fnext)
+    else:
+        ynext = fnext
 
     return ynext
 

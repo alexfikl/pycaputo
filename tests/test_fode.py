@@ -3,12 +3,14 @@
 
 import pathlib
 from functools import partial
+from typing import Callable
 
 import numpy as np
 import numpy.linalg as la
 import pytest
 
 from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.fode import FractionalDifferentialEquationMethod
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, set_recommended_matplotlib
 
@@ -29,41 +31,112 @@ def fode_source(t: float, y: Array, *, alpha: float) -> Array:
     return np.array(t**2 - y + 2 * t ** (2 - alpha) / gamma(3 - alpha))
 
 
+def fode_source_jac(t: float, y: Array, *, alpha: float) -> Array:
+    return -np.ones_like(y)
+
+
 def fode_solution(t: float) -> Array:
     return np.array([t**2])
 
 
+def forward_euler_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
+    y0 = fode_solution(0.0)
+    tspan = (0.0, 1.0)
+    dt = (tspan[1] - tspan[0]) / n
+
+    from pycaputo.fode import CaputoForwardEulerMethod
+
+    return CaputoForwardEulerMethod(
+        d=CaputoDerivative(order=alpha, side=Side.Left),
+        predict_time_step=partial(fode_time_step, dt=dt),
+        source=partial(fode_source, alpha=alpha),
+        tspan=tspan,
+        y0=(y0,),
+    )
+
+
+def backward_euler_factory(
+    alpha: float, n: int
+) -> FractionalDifferentialEquationMethod:
+    y0 = fode_solution(0.0)
+    tspan = (0.0, 1.0)
+    dt = (tspan[1] - tspan[0]) / n
+
+    from pycaputo.fode import CaputoCrankNicolsonMethod
+
+    return CaputoCrankNicolsonMethod(
+        d=CaputoDerivative(order=alpha, side=Side.Left),
+        predict_time_step=partial(fode_time_step, dt=dt),
+        source=partial(fode_source, alpha=alpha),
+        tspan=tspan,
+        y0=(y0,),
+        # cr
+        source_jac=partial(fode_source_jac, alpha=alpha),
+        theta=0.0,
+    )
+
+
+def crank_nicolson_factory(
+    alpha: float, n: int
+) -> FractionalDifferentialEquationMethod:
+    y0 = fode_solution(0.0)
+    tspan = (0.0, 1.0)
+    dt = (tspan[1] - tspan[0]) / n
+
+    from pycaputo.fode import CaputoCrankNicolsonMethod
+
+    return CaputoCrankNicolsonMethod(
+        d=CaputoDerivative(order=alpha, side=Side.Left),
+        predict_time_step=partial(fode_time_step, dt=dt),
+        source=partial(fode_source, alpha=alpha),
+        tspan=tspan,
+        y0=(y0,),
+        # cr
+        source_jac=partial(fode_source_jac, alpha=alpha),
+        theta=0.5,
+    )
+
+
+@pytest.mark.parametrize(
+    "factory",
+    [
+        forward_euler_factory,
+        backward_euler_factory,
+        crank_nicolson_factory,
+    ],
+)
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
-def test_caputo_fode(alpha: float, *, visualize: bool = True) -> None:
-    from pycaputo.fode import CaputoForwardEulerMethod, History, evolve
+def test_caputo_fode(
+    factory: Callable[[float, int], FractionalDifferentialEquationMethod],
+    alpha: float,
+    *,
+    visualize: bool = True,
+) -> None:
+    from pycaputo.fode import History, StepFailed, evolve
     from pycaputo.utils import EOCRecorder
 
-    eoc = EOCRecorder(order=1.0)
+    eoc = EOCRecorder()
 
     for n in [32, 64, 128, 256, 512]:
-        y0 = fode_solution(0.0)
-        tspan = (0.0, 1.0)
-        dt = (tspan[1] - tspan[0]) / n
-
-        m = CaputoForwardEulerMethod(
-            d=CaputoDerivative(order=alpha, side=Side.Left),
-            predict_time_step=partial(fode_time_step, dt=dt),
-            source=partial(fode_source, alpha=alpha),
-            tspan=tspan,
-            y0=(y0,),
-        )
-
         history = History()
-        for _ in evolve(m, history=history, verbose=True):
-            pass
+        m = factory(alpha, n)
+
+        for event in evolve(m, history=history, verbose=True):
+            if isinstance(event, StepFailed):
+                raise ValueError("Step update failed")
 
         t, y = history.load(-1)
+        dt = m.predict_time_step(t, y)
+
         y_ref = fode_solution(t)
         error = la.norm(y - y_ref) / la.norm(y_ref)
         logger.info("dt %.5f error %.12e", dt, error)
 
         eoc.add_data_point(dt, error)
 
+    from dataclasses import replace
+
+    eoc = replace(eoc, order=m.order)
     logger.info("\n%s", eoc)
 
     if not visualize:
