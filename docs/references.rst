@@ -1,6 +1,12 @@
 References
 ==========
 
+.. [Diethelm2002] K. Diethelm, N. J. Ford, A. D. Freed,
+    *A Predictor-Corrector Approach for the Numerical Solution of
+    Fractional Differential Equations*,
+    Nonlinear Dynamics, Vol. 29, pp. 3--22, 2002,
+    `DOI <https://doi.org/10.1023/a:1016592219341>`__.
+
 .. [Diethelm2005] K. Diethelm, N. J. Ford, A. D. Freed, Y. Luchko,
     *Algorithms for the Fractional Calculus: A Selection of Numerical Methods*,
     Computer Methods in Applied Mechanics and Engineering, Vol. 194, pp. 743-773, 2005,

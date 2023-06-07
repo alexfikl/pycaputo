@@ -400,4 +400,75 @@ def _advance_caputo_crank_nicolson(
 
 # }}}
 
+
+# {{{ Predictor-Corector (PEC and PECE)
+
+@dataclass(frozen=True)
+class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
+    """The Predictor-Corrector discretization of the Caputo derivative.
+
+    This method is described in [Diethelm2002]_ in its simplest case with a
+    single corrector step, which effectively gives the so-called
+    Predict-Evaluate-Correct-Evaluate (PECE) scheme. The corrector step can
+    be repeated any number of times to give the :math:`PE(CE)^k` methods
+    (see :attr:`corrector_iterations`).
+
+    The Predict-Evaluate-Correct (PEC) family of methods is also implemented
+    (see :attr:`use_pece` flag). This is essentially the same method, but saves
+    on an evaluation of the right-hand side term.
+    """
+
+    #: A flag denoting if the PECE (*True*) or PEC (*False*) family of methods
+    #: is used.
+    use_pece: bool
+
+    #: Number of repetitions of the corrector step.
+    corrector_iterations: int
+
+    @property
+    def order(self) -> float:
+        return 1.0 + self.d.order
+
+
+@advance.register(CaputoPredictorCorrectorMethod)
+def _advance_caputo_crank_nicolson(
+    m: CaputoPredictorCorrectorMethod,
+    history: History,
+    t: float,
+    y: Array,
+    dt: float,
+) -> Array:
+    from math import gamma
+
+    n = history.nhistory
+    alpha = m.d.order
+    t = t + dt
+    ts = [*history.thistory, t]
+
+    y0 = sum(
+        [(t - ts[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
+        np.zeros_like(y),
+    )
+
+    # predictor step (forward Euler)
+    yp = np.copy(y0)
+    for k in range(n):
+        _, yk = history.load(k)
+        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
+        yp += omega * m.source(ts[k], yk)
+
+    # corrector step (Adams-Bashforth)
+    ynext = np.copy(y0)
+    for k in range(n - 1):
+        _, yk = history.load(k)
+        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
+        ynext += omega * m.source(ts[k], yk)
+
+    for _ in range(m.corrector_iterations):
+        yp = ynext
+
+    return ynext
+
+# }}}
+
 # }}}
