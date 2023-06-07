@@ -7,13 +7,14 @@ import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
+from typing import Iterator
 
 import numpy as np
 
 from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import Points, UniformMidpoints, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ScalarFunction
+from pycaputo.utils import Array, ArrayOrScalarFunction
 
 logger = get_logger(__name__)
 
@@ -43,7 +44,27 @@ class DerivativeMethod(ABC):
 
 
 @singledispatch
-def diff(m: DerivativeMethod, f: ScalarFunction, p: Points) -> Array:
+def weights(m: DerivativeMethod, p: Points) -> Iterator[Array]:
+    r"""Evaluates the weights used in the derivative approximation.
+
+    In general, a fractional order derivative is a convolution with a given
+    kernel (e.g. a :math:`\log` kernel for the
+    :class:`~pycaputo.derivatives.HadamardDerivative`) and can be written as
+
+    .. math::
+
+        D^\alpha[f](x_n) = \sum_{k = 0}^{n - 1} w_{nk} f(x_k),
+
+    where the convolution weights are given by :math:`w_{nk}`.
+
+    :returns: weights for computing the derivative approximations at each point
+        in *p* except at :math:`x_0`.
+    """
+    raise NotImplementedError(f"Weights for method '{type(m).__name__}'")
+
+
+@singledispatch
+def diff(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
     """Evaluate the fractional derivative of *f* at *x*.
 
     Note that not all numerical methods can evaluate the derivative at all
@@ -102,32 +123,38 @@ class CaputoL1Method(CaputoDerivativeMethod):
         return 0 < alpha < 1
 
 
-@diff.register(CaputoL1Method)
-def _diff_l1method(m: CaputoL1Method, f: ScalarFunction, p: Points) -> Array:
-    # precompute variables
-    x = p.x
-    fx = f(x)
-
+@weights.register(CaputoL1Method)
+def _weights_l1_method(m: CaputoL1Method, p: Points) -> Iterator[Array]:
+    x, dx = p.x, p.dx
     alpha = m.d.order
     w0 = 1 / math.gamma(2 - alpha)
 
-    # NOTE: [Li2020] Equation 4.20
-    df = np.zeros_like(x)
-    df[0] = np.nan
-
+    # NOTE: weights given in [Li2020] Equation 4.20
     if isinstance(p, UniformPoints):
         w0 = w0 / p.dx[0] ** alpha
-        k = np.arange(fx.size - 1)
+        k = np.arange(x.size - 1)
 
-        for n in range(1, df.size):
+        for n in range(1, x.size):
             w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-            df[n] = w0 * np.sum(w * np.diff(fx[: n + 1]))
+            yield w0 * w
     else:
-        for n in range(1, df.size):
+        for n in range(1, x.size):
             w = (
                 (x[n] - x[:n]) ** (1 - alpha) - (x[n] - x[1 : n + 1]) ** (1 - alpha)
-            ) / p.dx[:n]
-            df[n] = w0 * np.sum(w * np.diff(fx[: n + 1]))
+            ) / dx[:n]
+
+            yield w0 * w
+
+
+@diff.register(CaputoL1Method)
+def _diff_l1method(m: CaputoL1Method, f: ArrayOrScalarFunction, p: Points) -> Array:
+    dfx = np.diff(f(p.x) if callable(f) else f)
+
+    df = np.empty(p.x.shape, dtype=dfx.dtype)
+    df[0] = np.nan
+
+    for n, w in enumerate(weights(m, p)):
+        df[n + 1] = np.sum(w * dfx[: n + 1])
 
     return df
 
@@ -145,36 +172,47 @@ class CaputoModifiedL1Method(CaputoL1Method):
     """
 
 
+@weights.register(CaputoModifiedL1Method)
+def _weights_modified_l1method(m: CaputoModifiedL1Method, p: Points) -> Iterator[Array]:
+    if not isinstance(p, UniformMidpoints):
+        raise NotImplementedError(
+            f"'{type(m).__name__}' does not implement 'weights' for"
+            f" '{type(p).__name__}' grids"
+        )
+
+    # NOTE: weights from [Li2020] Equation 4.51
+    # FIXME: this does not use the formula from the book; any benefit to it?
+    alpha = m.d.order
+    wc = 1 / math.gamma(2 - alpha) / p.dx[-1] ** alpha
+    k = np.arange(p.x.size)
+
+    # NOTE: first interval has a size of h / 2 and is weighted differently
+    w0 = 2 * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
+
+    for n in range(1, p.x.size):
+        w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
+        w[0] = w0
+
+        yield wc * w
+
+
 @diff.register(CaputoModifiedL1Method)
 def _diff_modified_l1method(
-    m: CaputoModifiedL1Method, f: ScalarFunction, p: Points
+    m: CaputoModifiedL1Method, f: ArrayOrScalarFunction, p: Points
 ) -> Array:
-    # precompute variables
-    x = p.x
-    fx = f(x)
+    if not isinstance(p, UniformMidpoints):
+        raise NotImplementedError(
+            f"'{type(m).__name__}' does not implement 'diff' for '{type(p).__name__}'"
+            " grids"
+        )
 
-    alpha = m.d.order
-    w0 = 1 / math.gamma(2 - alpha)
+    dfx = np.diff(f(p.x) if callable(f) else f)
 
-    # NOTE: [Li2020] Equation 4.51
-    df = np.empty_like(x)
+    df = np.empty(p.x.size)
     df[0] = np.nan
 
-    if isinstance(p, UniformMidpoints):
-        w0 = w0 / p.dx[-1] ** alpha
-        k = np.arange(fx.size)
-
-        # FIXME: this does not use the formula from the book; any benefit to it?
-        w = 2 * w0 * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
-        df[1:] = w * (fx[1] - fx[0])
-
-        for n in range(1, df.size):
-            w = (n - k[1:n]) ** (1 - alpha) - (n - k[1:n] - 1) ** (1 - alpha)
-            df[n] += w0 * np.sum(w * np.diff(fx[1 : n + 1]))
-    else:
-        raise NotImplementedError(
-            f"'{type(m).__name__}' not implemented for '{type(p).__name__}' grids"
-        )
+    for n, w in enumerate(weights(m, p)):
+        df[n + 1] = np.sum(w * dfx[:n + 1])
 
     return df
 
@@ -219,10 +257,10 @@ def l2uweights(alpha: float, i: int | Array, k: int | Array) -> Array:
 
 
 @diff.register(CaputoL2Method)
-def _diff_l2method(m: CaputoL2Method, f: ScalarFunction, p: Points) -> Array:
+def _diff_l2method(m: CaputoL2Method, f: ArrayOrScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
-    fx = f(x)
+    fx = f(x) if callable(f) else f
 
     alpha = m.d.order
     w0 = 1 / math.gamma(3 - alpha)
@@ -272,10 +310,12 @@ class CaputoL2CMethod(CaputoL2Method):
 
 
 @diff.register(CaputoL2CMethod)
-def _diff_uniform_l2cmethod(m: CaputoL2CMethod, f: ScalarFunction, p: Points) -> Array:
+def _diff_uniform_l2cmethod(
+    m: CaputoL2CMethod, f: ArrayOrScalarFunction, p: Points
+) -> Array:
     # precompute variables
     x = p.x
-    fx = f(x)
+    fx = f(x) if callable(f) else f
 
     alpha = m.d.order
     w0 = 1 / math.gamma(3 - alpha)
@@ -339,7 +379,7 @@ class CaputoSpectralMethod(CaputoDerivativeMethod):
 
 
 @diff.register(CaputoSpectralMethod)
-def _diff_jacobi(m: CaputoSpectralMethod, f: ScalarFunction, p: Points) -> Array:
+def _diff_jacobi(m: CaputoSpectralMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
     from pycaputo.grid import JacobiGaussLobattoPoints
 
     if not isinstance(p, JacobiGaussLobattoPoints):
@@ -350,7 +390,8 @@ def _diff_jacobi(m: CaputoSpectralMethod, f: ScalarFunction, p: Points) -> Array
     from pycaputo.jacobi import jacobi_caputo_derivative, jacobi_project
 
     # NOTE: Equation 3.63 [Li2020]
-    fhat = jacobi_project(f(p.x), p)
+    fx = f(p.x) if callable(f) else f
+    fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)
     for n, Dhat in jacobi_caputo_derivative(p, m.d.order):

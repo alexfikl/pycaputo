@@ -67,6 +67,8 @@ class ScalarStateFunction(Protocol):
         """
 
 
+ArrayOrScalarFunction = Union[Array, ScalarFunction]
+
 # }}}
 
 

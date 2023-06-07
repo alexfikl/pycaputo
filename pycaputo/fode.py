@@ -403,6 +403,7 @@ def _advance_caputo_crank_nicolson(
 
 # {{{ Predictor-Corector (PEC and PECE)
 
+
 @dataclass(frozen=True)
 class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
     """The Predictor-Corrector discretization of the Caputo derivative.
@@ -431,7 +432,7 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
 
 
 @advance.register(CaputoPredictorCorrectorMethod)
-def _advance_caputo_crank_nicolson(
+def _advance_caputo_predictor_corrector(
     m: CaputoPredictorCorrectorMethod,
     history: History,
     t: float,
@@ -468,6 +469,7 @@ def _advance_caputo_crank_nicolson(
         yp = ynext
 
     return ynext
+
 
 # }}}
 
