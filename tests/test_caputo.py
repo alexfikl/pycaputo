@@ -277,7 +277,7 @@ def _diff_differint_l2c(
     return df
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("name", "cls"),
     [

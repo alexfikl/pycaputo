@@ -98,6 +98,7 @@ select = [
     "ISC",      # flake8-implicit-str-concat
     "N",        # pep8-naming
     "PL",       # pylint
+    "PT",       # flake8-pytest-style
     "Q",        # flake8-quotes
     "RUF",      # ruff
     "S",        # flake8-bandit

@@ -212,7 +212,7 @@ def _diff_modified_l1method(
     df[0] = np.nan
 
     for n, w in enumerate(weights(m, p)):
-        df[n + 1] = np.sum(w * dfx[:n + 1])
+        df[n + 1] = np.sum(w * dfx[: n + 1])
 
     return df
 
