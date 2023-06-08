@@ -14,9 +14,9 @@ numpy==1.24.3
     #   scipy
 pygments==2.15.1
     # via rich
-rich==13.3.5
+rich==13.4.1
     # via pycaputo (pyproject.toml)
 scipy==1.10.1
     # via pycaputo (pyproject.toml)
-typing-extensions==4.6.2
+typing-extensions==4.6.3
     # via pycaputo (pyproject.toml)
