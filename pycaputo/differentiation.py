@@ -193,7 +193,7 @@ def _weights_modified_l1method(m: CaputoModifiedL1Method, p: Points) -> Iterator
 
     for n in range(1, p.x.size):
         w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-        w[0] = w0[n]
+        w[0] = w0[n - 1]
 
         yield wc * w
 
