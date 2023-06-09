@@ -36,12 +36,27 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
 
 html_theme = "sphinx_book_theme"
+html_title = f"{project} documentation"
 html_theme_options = {
     "show_toc_level": 2,
     "use_source_button": True,
     "use_repository_button": True,
     "repository_url": "https://github.com/alexfikl/pycaputo",
     "repository_branch": "main",
+    "icon_links": [
+        {
+            "name": "CI",
+            "url": "https://github.com/alexfikl/pycaputo",
+            "icon": "https://github.com/alexfikl/pycaputo/workflows/CI/badge.svg",
+            "type": "url",
+        },
+        {
+            "name": "Issues",
+            "url": "https://github.com/alexfikl/pycaputo/issues",
+            "icon": "https://img.shields.io/github/issues/alexfikl/pycaputo",
+            "type": "url",
+        }
+    ],
 }
 
 # }}}
