@@ -44,7 +44,7 @@ class DerivativeMethod(ABC):
 
 
 @singledispatch
-def weights(m: DerivativeMethod, p: Points) -> Iterator[Array]:
+def weights(m: DerivativeMethod, p: Points, n: int | None = None) -> Iterator[Array]:
     r"""Evaluates the weights used in the derivative approximation.
 
     In general, a fractional order derivative is a convolution with a given
@@ -53,10 +53,12 @@ def weights(m: DerivativeMethod, p: Points) -> Iterator[Array]:
 
     .. math::
 
-        D^\alpha[f](x_n) = \sum_{k = 0}^{n - 1} w_{nk} f(x_k),
+        D^\alpha[f](x_n) = \sum_{k = 0}^n w_{nk} f(x_k),
 
-    where the convolution weights are given by :math:`w_{nk}`.
+    where the convolution weights are given by :math:`w_{nk}`. This is not the
+    case for all methods, so this does not need to be implemented.
 
+    :arg n: if given, gives the weights for only for :math:`w_{nk}`.
     :returns: weights for computing the derivative approximations at each point
         in *p* except at :math:`x_0`.
     """
@@ -191,7 +193,7 @@ def _weights_modified_l1method(m: CaputoModifiedL1Method, p: Points) -> Iterator
 
     for n in range(1, p.x.size):
         w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-        w[0] = w0
+        w[0] = w0[n]
 
         yield wc * w
 
