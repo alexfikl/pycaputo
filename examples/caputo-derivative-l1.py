@@ -57,10 +57,6 @@ ax = fig.gca()
 ax.plot(p.x, df_num, lw=5, label="$L1~ Method$")
 ax.plot(p.x[1:], df_ref[1:], "k--", label="$Exact$")
 
-# NOTE: this is the color of the 'sphinx_rtd_theme' background
-fig.patch.set_facecolor("#FCFCFC")
-ax.set_facecolor("#FCFCFC")
-
 ax.set_xlabel("$x$")
 ax.set_ylabel(r"$D^\alpha_C[f](x)$")
 ax.legend()

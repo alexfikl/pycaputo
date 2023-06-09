@@ -8,7 +8,7 @@ from importlib import metadata
 m = metadata.metadata("pycaputo")
 project = m["Name"]
 author = m["Author-email"]
-copyright = f"2023 {author}"    # noqa: A001
+copyright = f"2023 {author}"  # noqa: A001
 version = m["Version"]
 release = version
 
@@ -35,7 +35,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # highlighting
 pygments_style = "sphinx"
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
+html_theme_options = {
+    "show_toc_level": 2,
+    "use_source_button": True,
+    "use_repository_button": True,
+    "repository_url": "https://github.com/alexfikl/pycaputo",
+    "repository_branch": "main",
+}
 
 # }}}
 

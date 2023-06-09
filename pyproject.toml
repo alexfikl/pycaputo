@@ -45,6 +45,10 @@ dev = [
     "ruff",
     "types-dataclasses",
 ]
+docs = [
+    "sphinx>=6",
+    "sphinx-book-theme",
+]
 vis = [
     "SciencePlots",
 ]

@@ -18,7 +18,7 @@ fmt: black		## Run all formatting scripts
 black:			## Run black over the source code
 	$(PYTHON) -m black \
 		--safe --target-version py38 --preview \
-		pycaputo tests examples
+		pycaputo tests examples docs
 .PHONY: black
 
 ruff:			## Run ruff checks over the source code
