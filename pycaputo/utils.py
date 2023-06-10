@@ -35,7 +35,10 @@ else:
 
 
 class ScalarFunction(Protocol):
-    """A generic callable that can be evaluated at :math:`x`."""
+    """A generic callable that can be evaluated at :math:`x`.
+
+    .. automethod:: __call__
+    """
 
     def __call__(self, x: Array) -> Array:
         """
@@ -46,6 +49,8 @@ class ScalarFunction(Protocol):
 class StateFunction(Protocol):
     r"""A generic callable for right-hand side functions
     :math:`\mathbf{f}(t, \mathbf{y})`.
+
+    .. automethod:: __call__
     """
 
     def __call__(self, t: float, y: Array) -> Array:
@@ -58,12 +63,31 @@ class StateFunction(Protocol):
 class ScalarStateFunction(Protocol):
     """A generic callable similar to :class:`StateFunction` that returns a
     scalar.
+
+    .. automethod:: __call__
     """
 
     def __call__(self, t: float, y: Array) -> float:
         """
         :arg t: time at which to evaluate the function.
         :arg y: state vector value at which to evaluate the function.
+        """
+
+
+class CallbackFunction(Protocol):
+    """A generic callback for evolution equations that can be used to modify
+    the state.
+
+    .. automethod:: __call__
+    """
+
+    def __call__(self, t: float, y: Array) -> bool:
+        """
+        :arg t: time at which to evaluate the function.
+        :arg y: state vector value at which to evaluate the function.
+
+        :returns: if *True*, hint to the algorithm that the evolution should be
+            stopped.
         """
 
 

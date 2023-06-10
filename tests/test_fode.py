@@ -112,24 +112,27 @@ def test_caputo_fode(
     *,
     visualize: bool = True,
 ) -> None:
-    from pycaputo.fode import History, StepFailed, evolve
+    from pycaputo.fode import StepCompleted, StepFailed, evolve
     from pycaputo.utils import EOCRecorder
 
     eoc = EOCRecorder()
 
     for n in [32, 64, 128, 256, 512]:
-        history = History()
         m = factory(alpha, n)
 
-        for event in evolve(m, history=history, verbose=True):
+        ts = []
+        ys = []
+        for event in evolve(m, verbose=True):
             if isinstance(event, StepFailed):
                 raise ValueError("Step update failed")
+            elif isinstance(event, StepCompleted):
+                ts.append(event.t)
+                ys.append(event.y)
 
-        t, y = history.load(-1)
-        dt = m.predict_time_step(t, y)
+        dt = m.predict_time_step(ts[-1], ys[-1])
 
-        y_ref = fode_solution(t)
-        error = la.norm(y - y_ref) / la.norm(y_ref)
+        y_ref = fode_solution(ts[-1])
+        error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
         logger.info("dt %.5f error %.12e", dt, error)
 
         eoc.add_data_point(dt, error)
@@ -140,9 +143,9 @@ def test_caputo_fode(
     logger.info("\n%s", eoc)
 
     if not visualize:
-        ts = np.array(history.thistory)
-        ys = np.array(history.yhistory).squeeze()
-        ys_ref = np.array([fode_solution(t) for t in ts]).squeeze()
+        t = np.array(ts)
+        y = np.array(ys).squeeze()
+        y_ref = np.array([fode_solution(ti) for ti in t]).squeeze()
 
         from pycaputo.utils import figure
 
@@ -151,8 +154,8 @@ def test_caputo_fode(
         with figure(dirname / filename) as fig:
             ax = fig.gca()
 
-            ax.plot(t, ys)
-            ax.plot(t, ys_ref, "k--")
+            ax.plot(t, y)
+            ax.plot(t, y_ref, "k--")
             ax.set_xlabel("$t$")
             ax.set_ylabel("$y$")
 

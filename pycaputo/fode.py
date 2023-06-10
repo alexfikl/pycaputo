@@ -12,7 +12,7 @@ import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ScalarStateFunction, StateFunction
+from pycaputo.utils import Array, CallbackFunction, ScalarStateFunction, StateFunction
 
 logger = get_logger(__name__)
 
@@ -20,13 +20,16 @@ logger = get_logger(__name__)
 # {{{ interface
 
 
-@dataclass(frozen=True)
-class StepResult:
-    """Result of advancing a time step."""
+# {{{ events
 
 
 @dataclass(frozen=True)
-class StepFailed(StepResult):
+class Event:
+    """Event after attempting to advance in a time step."""
+
+
+@dataclass(frozen=True)
+class StepFailed(Event):
     """Result of a failed update to time :attr:`t`."""
 
     #: Current time.
@@ -36,7 +39,7 @@ class StepFailed(StepResult):
 
 
 @dataclass(frozen=True)
-class StepCompleted(StepResult):
+class StepCompleted(Event):
     """Result of a successful update to time :attr:`t`."""
 
     #: Current time.
@@ -52,40 +55,78 @@ class StepCompleted(StepResult):
         return f"[{self.iteration:5d}] t = {self.t:.5e} dt {self.dt:.5e}"
 
 
+# }}}
+
+
+# {{{ history
+
+
+@dataclass(frozen=True)
+class StateHistory:
+    """A class the holds the history of the state variables.
+
+    For a simple method, this can be only :math:`(t_n, y_n)` at every time step.
+    However, more complex methods can also checkpoint the right-hand side
+    evaluations or other intermediary calculations.
+    """
+
+
+@dataclass(frozen=True)
+class SourceHistory(StateHistory):
+    """A state history that holds the right-hand side evaluations."""
+
+    #: Time of the evaluation
+    t: float
+    #: Evaluation of the right-hand side.
+    f: Array
+
+
 @dataclass(frozen=True)
 class History:
-    """A class handling the history checkpointing for the equation."""
+    """A class handling the history checkpointing of an evolution equation.
+
+    This class essentially acts as a :class:`list` where items cannot be removed.
+    """
 
     #: History of state variables, required to compute the memory term.
-    yhistory: list[Array] = field(default_factory=list, init=False, repr=False)
-    #: History of time instantes corresponding to :attr:`yhistory`.
-    thistory: list[float] = field(default_factory=list, init=False, repr=False)
+    history: list[StateHistory] = field(default_factory=list, repr=False)
+    #: Time instances of each entry in the :attr:`history`.
+    ts: list[float] = field(default_factory=list, repr=False)
 
-    @property
-    def nhistory(self) -> int:
-        return len(self.yhistory)
-
-    def dump(self, t: float, y: Array) -> None:
-        """Save the solution *y* at time *t*.
-
-        :arg t: time at which the checkpoint is taken.
-        :arg y: solution at the time *t*.
+    def __bool__(self) -> bool:
         """
-        self.yhistory.append(y)
-        self.thistory.append(t)
-
-    def load(self, k: int) -> tuple[float, Array]:
-        """Load solution from the *k*-th time step.
-
-        :returns: a tuple of ``(t, y)`` mirroring the state from :meth:`dump`.
+        :returns: *False* if the history is empty and *True* otherwise.
         """
+        return bool(self.history)
+
+    def __len__(self) -> int:
+        """
+        :returns: the number of checkpointed solutions.
+        """
+        return len(self.history)
+
+    def __iter__(self) -> Iterator[StateHistory]:
+        return iter(self.history)
+
+    def __getitem__(self, k: int) -> StateHistory:
+        """
+        :returns: a :class:`StateHistory` from the *k*-th checkpoint.
+        """
+        nhistory = len(self)
         if k == -1:
-            k = self.nhistory - 1
+            k = nhistory - 1
 
-        if not 0 <= k < self.nhistory:
-            raise IndexError(f"history index out of range: {k} >= {self.nhistory}")
+        if not 0 <= k < nhistory:
+            raise IndexError(f"history index out of range: 0 <= {k} < {nhistory}")
 
-        return self.thistory[k], self.yhistory[k]
+        return self.history[k]
+
+    def append(self, value: StateHistory) -> None:
+        """Add the *state* to the existing history."""
+        self.history.append(value)
+
+
+# }}}
 
 
 @dataclass(frozen=True)
@@ -144,16 +185,22 @@ def make_initial_condition(
 def evolve(
     m: FractionalDifferentialEquationMethod,
     *,
+    callback: CallbackFunction | None = None,
     history: History | None = None,
     maxit: int | None = None,
     verbose: bool = True,
-) -> Iterator[StepResult]:
+) -> Iterator[Event]:
     """Evolve the fractional-order ordinary differential equation in time.
 
     :arg m: method used to evolve the FODE.
     :arg f: right-hand side of the FODE.
     :arg y0: initial conditions for the FODE.
-    :returns: a :class:`StepResult` (usually a :class:`StepCompleted`) containing
+    :arg history: a :class:`History` instance that handles checkpointing the
+        necessary state history for the method *m*.
+    :arg maxit: the maximum number of iterations.
+    :arg verbose: print additional iteration details.
+
+    :returns: an :class:`Event` (usually a :class:`StepCompleted`) containing
         the solution at a time :math:`t`.
     """
 
@@ -164,33 +211,50 @@ def evolve(
     t, tfinal = m.tspan
     y = make_initial_condition(m, t, m.y0)
 
-    history.dump(t, y)
+    # NOTE: called to update the history
+    y = advance(m, history, t, y)
+
     yield StepCompleted(t=t, iteration=n, dt=0.0, y=y)
 
     while True:
+        if callback is not None and callback(t, y):
+            break
+
         if tfinal is not None and t >= tfinal:
             break
 
         if maxit is not None and n >= maxit:
             break
 
+        # next iteration
+        n += 1
+
+        # next time step
         try:
             dt = m.predict_time_step(t, y)
+
             if not np.isfinite(dt):
                 raise ValueError(f"Invalid time step at iteration {n}: {dt!r}")
+        except Exception as exc:
+            if verbose:
+                logger.error("Failed to predict time step.", exc_info=exc)
 
-            if tfinal is not None:
-                # NOTE: adding 1.0e-15 to ensure that t >= tfinal is true
-                dt = min(dt, tfinal - t) + 1.0e-15
+            yield StepFailed(t=t, iteration=n)
 
-            y = advance(m, history, t, y, dt)
-            n += 1
-            t += dt
+        if tfinal is not None:
+            # NOTE: adding eps to ensure that t >= tfinal is true
+            dt = min(dt, tfinal - t) + float(5 * np.finfo(y.dtype).eps)
 
-            history.dump(t, y)
+        t += dt
+
+        # advance
+        try:
+            y = advance(m, history, t, y)
             yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
         except Exception as exc:
-            logger.error("Step failed.", exc_info=exc)
+            if verbose:
+                logger.error("Failed to advance time step.", exc_info=exc)
+
             yield StepFailed(t=t, iteration=n)
 
 
@@ -200,9 +264,15 @@ def advance(
     history: History,
     t: float,
     y: Array,
-    dt: float,
 ) -> Array:
-    """Advance the solution *y* by *dt* from the current time *t*."""
+    """Advance the solution *y* by to the time *t*.
+
+    This function takes ``(history[t_0, ... t_n], t_{n + 1}, y_n)`` and is
+    expected to update the history with values at :math:`t_{n + 1}`. The time
+    steps can be recalculated from the history if necessary.
+
+    :returns: value of :math:`y_{n + 1}` at time :math:`t_{n + 1}`.
+    """
     raise NotImplementedError(f"'advance' functionality for '{type(m).__name__}'")
 
 
@@ -246,26 +316,32 @@ def _advance_caputo_forward_euler(
     history: History,
     t: float,
     y: Array,
-    dt: float,
 ) -> Array:
+    history.ts.append(t)
+    if not history:
+        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        return y
+
     from math import gamma
 
-    n = history.nhistory
+    n = len(history)
     alpha = m.d.order
-    t = t + dt
 
-    # FIXME: this is intensely inefficient
-    ynext = sum(
-        [(t - m.tspan[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
-        np.zeros_like(y),
-    )
-    ts = [*history.thistory, t]
+    # add initial conditions
+    ynext = np.zeros_like(y)
+    for k, y0k in enumerate(m.y0):
+        ynext += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
 
+    # add history term
+    ts = history.ts
     for k in range(n):
-        _, yk = history.load(k)
-        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        ynext += omega * m.source(ts[k], yk)
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
 
+        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
+        ynext += omega * yk.f
+
+    history.append(SourceHistory(t=ts[-1], f=m.source(ts[-1], ynext)))
     return ynext
 
 
@@ -354,47 +430,55 @@ def _advance_caputo_crank_nicolson(
     history: History,
     t: float,
     y: Array,
-    dt: float,
 ) -> Array:
+    history.ts.append(t)
+    if not history:
+        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        return y
+
     from math import gamma
 
-    n = history.nhistory
+    n = len(history)
     alpha = m.d.order
-    t = t + dt
-    ts = [*history.thistory, t]
 
-    # FIXME: this is intensely inefficient
-    fnext = sum(
-        [(t - ts[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
-        np.zeros_like(y),
-    )
+    # add initial conditions
+    fnext = np.zeros_like(y)
+    for k, y0k in enumerate(m.y0):
+        fnext += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
 
+    # compute explicit memory term
+    ts = history.ts
     for k in range(n - 1):
         omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
 
         # add forward term
-        _, yk = history.load(k)
         if m.theta != 0.0:
-            fnext += omega * m.theta * m.source(ts[k], yk)
+            yk = history[k]
+            assert isinstance(yk, SourceHistory)
+            fnext += omega * m.theta * yk.f
 
         # add backward term
         if m.theta != 1.0:
-            _, yk = history.load(k + 1)
-            fnext += omega * (1 - m.theta) * m.source(ts[k + 1], yk)
+            yk = history[k + 1]
+            assert isinstance(yk, SourceHistory)
+            fnext += omega * (1 - m.theta) * yk.f
 
+    # add last forward
     k = n - 1
     omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
 
     if m.theta != 0.0:
-        # add last forward
-        _, yk = history.load(k)
-        fnext += omega * m.theta * m.source(ts[k], yk)
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
+        fnext += omega * m.theta * yk.f
 
+    # solve implicit equation
     if m.theta != 1.0:
         ynext = m.solve(ts[-1], y, omega * (1 - m.theta), fnext)
     else:
         ynext = fnext
 
+    history.append(SourceHistory(t=ts[-1], f=m.source(ts[-1], ynext)))
     return ynext
 
 
@@ -419,10 +503,6 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
     on an evaluation of the right-hand side term.
     """
 
-    #: A flag denoting if the PECE (*True*) or PEC (*False*) family of methods
-    #: is used.
-    use_pece: bool
-
     #: Number of repetitions of the corrector step.
     corrector_iterations: int
 
@@ -437,37 +517,45 @@ def _advance_caputo_predictor_corrector(
     history: History,
     t: float,
     y: Array,
-    dt: float,
 ) -> Array:
+    history.ts.append(t)
+    if not history:
+        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        return y
+
     from math import gamma
 
-    n = history.nhistory
+    n = len(history)
     alpha = m.d.order
-    t = t + dt
-    ts = [*history.thistory, t]
 
-    y0 = sum(
-        [(t - ts[0]) ** k / gamma(k + 1) * y0k for k, y0k in enumerate(m.y0)],
-        np.zeros_like(y),
-    )
+    # add initial conditions
+    y0 = np.zeros_like(y)
+    for k, y0k in enumerate(m.y0):
+        y0 += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
 
     # predictor step (forward Euler)
+    ts = history.ts
     yp = np.copy(y0)
     for k in range(n):
-        _, yk = history.load(k)
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
+
         omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        yp += omega * m.source(ts[k], yk)
+        yp += omega * yk.f
 
     # corrector step (Adams-Bashforth)
     ynext = np.copy(y0)
     for k in range(n - 1):
-        _, yk = history.load(k)
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
+
         omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        ynext += omega * m.source(ts[k], yk)
+        ynext += omega * yk.f
 
     for _ in range(m.corrector_iterations):
         yp = ynext
 
+    history.append(SourceHistory(t=ts[-1], f=m.source(ts[-1], ynext)))
     return ynext
 
 
