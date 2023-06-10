@@ -36,7 +36,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
 
 html_theme = "sphinx_book_theme"
-html_title = f"{project} documentation"
+html_title = project
 html_theme_options = {
     "show_toc_level": 2,
     "use_source_button": True,
@@ -44,6 +44,18 @@ html_theme_options = {
     "repository_url": "https://github.com/alexfikl/pycaputo",
     "repository_branch": "main",
     "icon_links": [
+        # {
+        #     "name": "Release",
+        #     "url": "https://github.com/alexfikl/pycaputo/releases",
+        #     "icon": "https://img.shields.io/github/v/release/alexfikl/pycaputo",
+        #     "type": "url",
+        # },
+        {
+            "name": "License",
+            "url": "https://github.com/alexfikl/pycaputo/tree/main/LICENSES",
+            "icon": "https://img.shields.io/badge/License-MIT-blue.svg",
+            "type": "url",
+        },
         {
             "name": "CI",
             "url": "https://github.com/alexfikl/pycaputo",
@@ -55,7 +67,7 @@ html_theme_options = {
             "url": "https://github.com/alexfikl/pycaputo/issues",
             "icon": "https://img.shields.io/github/issues/alexfikl/pycaputo",
             "type": "url",
-        }
+        },
     ],
 }
 
