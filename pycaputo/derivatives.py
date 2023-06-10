@@ -94,7 +94,7 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
         D_{GL}^\alpha[f](x) = \lim_{h \to 0^+} \frac{1}{h^\alpha}
             \sum_{k = 0}^{N(h)} (-1)^k
             \frac{\Gamma(\alpha + 1)}{\Gamma(k + 1) \Gamma(\alpha + 1 - k)}
-            f(x - k h)
+            f(x - k h),
 
     where :math:`N(h) = (x - a) / h`. The upper derivative is similarly defined.
     """
@@ -114,6 +114,6 @@ class HadamardDerivative(FractionalOperator):
     .. math::
 
         D_{H}^\alpha[f](x) = \frac{\alpha}{\Gamma(1 - \alpha)}
-            \frac{\mathrm{d}^n}{\mathrm{d} x}
+            \frac{\mathrm{d}^n}{\mathrm{d} x^n}
             \int_a^x (\log x - \log s)^{2 + n - \alpha} \frac{f(s)}{s} \,\mathrm{d}s.
     """
