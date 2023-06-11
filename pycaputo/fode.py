@@ -645,15 +645,21 @@ def _advance_caputo_predictor_corrector(
 
         dt = ts[k + 1] - ts[k]
         omega = (
-            (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-            - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-            - (t - ts[k]) ** alpha / gamma1
+            (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+            - (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+            + (t - ts[k]) ** alpha / gamma1
         )
         yexplicit += omega * yk.f
 
         yk = history[k + 1]
         assert isinstance(yk, SourceHistory)
-        yexplicit += (-omega + omega_e[k]) * yk.f
+
+        omega = (
+            (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+            - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+            - (t - ts[k + 1]) ** alpha / gamma1
+        )
+        yexplicit += omega * yk.f
 
     k = n - 1
     yk = history[k]
@@ -661,14 +667,18 @@ def _advance_caputo_predictor_corrector(
 
     dt = ts[k + 1] - ts[k]
     omega = (
-        (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k]) ** alpha / gamma1
+        (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+        + (t - ts[k]) ** alpha / gamma1
     )
     yexplicit += omega * yk.f
 
     # corrector iterations
-    omega = -omega + omega_e[k]
+    omega = (
+        (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k + 1]) ** alpha / gamma1
+    )
     for _ in range(m.corrector_iterations):
         fp = m.source(t, yp)
         yp = yexplicit + omega * fp

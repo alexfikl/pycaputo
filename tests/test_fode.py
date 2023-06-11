@@ -174,7 +174,7 @@ def pec_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
         forward_euler_factory,
         backward_euler_factory,
         crank_nicolson_factory,
-        # pece_factory,
+        pece_factory,
         # pec_factory,
     ],
 )
