@@ -10,7 +10,10 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.derivatives import CaputoDerivative, Side
-from pycaputo.fode import FractionalDifferentialEquationMethod
+from pycaputo.fode import (
+    FractionalDifferentialEquationMethod,
+    make_predict_time_step_fixed,
+)
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, set_recommended_matplotlib
 
@@ -18,11 +21,40 @@ logger = get_logger("pycaputo.test_caputo")
 set_recommended_matplotlib()
 
 
+# {{{ test_predict_time_step_graded
+
+
+def test_predict_time_step_graded() -> None:
+    from pycaputo.fode import make_predict_time_step_graded
+
+    maxit = 100
+    tspan = (-1.5, 3.0)
+    r = 3
+    predict_time_step = make_predict_time_step_graded(tspan, maxit, r)
+
+    n = np.arange(maxit)
+    t_ref = tspan[0] + (n / maxit) ** r * (tspan[1] - tspan[0])
+
+    t = np.empty_like(t_ref)
+    dummy = np.empty(3)
+
+    t[0] = tspan[0]
+    for i in range(1, maxit):
+        dt = predict_time_step(t[i - 1], dummy)
+        t[i] = t[i - 1] + dt
+
+    error = la.norm(t - t_ref) / la.norm(t_ref)
+    logger.info("error: %.12e", error)
+    assert error < 1.0e-15
+
+
+# }}}
+
+
 # {{{ test_caputo_fode
 
 
-def fode_time_step(t: float, y: Array, *, dt: float) -> float:
-    return dt
+# {{{ solution
 
 
 def fode_source(t: float, y: Array, *, alpha: float) -> Array:
@@ -33,6 +65,9 @@ def fode_source(t: float, y: Array, *, alpha: float) -> Array:
 
 def fode_source_jac(t: float, y: Array, *, alpha: float) -> Array:
     return -np.ones_like(y)
+
+
+# }}}
 
 
 def fode_solution(t: float) -> Array:
@@ -48,7 +83,7 @@ def forward_euler_factory(alpha: float, n: int) -> FractionalDifferentialEquatio
 
     return CaputoForwardEulerMethod(
         d=CaputoDerivative(order=alpha, side=Side.Left),
-        predict_time_step=partial(fode_time_step, dt=dt),
+        predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
         y0=(y0,),
@@ -66,7 +101,7 @@ def backward_euler_factory(
 
     return CaputoCrankNicolsonMethod(
         d=CaputoDerivative(order=alpha, side=Side.Left),
-        predict_time_step=partial(fode_time_step, dt=dt),
+        predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
         y0=(y0,),
@@ -87,7 +122,7 @@ def crank_nicolson_factory(
 
     return CaputoCrankNicolsonMethod(
         d=CaputoDerivative(order=alpha, side=Side.Left),
-        predict_time_step=partial(fode_time_step, dt=dt),
+        predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
         y0=(y0,),
@@ -142,7 +177,7 @@ def test_caputo_fode(
     eoc = replace(eoc, order=m.order)
     logger.info("\n%s", eoc)
 
-    if not visualize:
+    if visualize:
         t = np.array(ts)
         y = np.array(ys).squeeze()
         y_ref = np.array([fode_solution(ti) for ti in t]).squeeze()

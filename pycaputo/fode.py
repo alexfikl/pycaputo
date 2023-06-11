@@ -278,6 +278,68 @@ def advance(
 
 # }}}
 
+# {{{ utils
+
+
+def make_predict_time_step_fixed(dt: float) -> ScalarStateFunction:
+    """
+    :returns: a callable returning a fixed time step *dt*.
+    """
+
+    if dt < 0:
+        raise ValueError(f"Time step should be positive: {dt}")
+
+    def predict_time_step(t: float, y: Array) -> float:
+        return dt
+
+    return predict_time_step
+
+
+def make_predict_time_step_graded(
+    tspan: tuple[float, float], maxit: int, r: int
+) -> ScalarStateFunction:
+    r"""Construct a time step that is smaller around the initial time.
+
+    This graded grid of time steps is described in [Garrappa2015b]_. It
+    essentially takes the form
+
+    .. math::
+
+        \Delta t_n = \frac{T - t_0}{N^r} ((n + 1)^r - n^r),
+
+    where the time interval is :math:`[t_0, T]` and :math:`N` time steps are
+    taken. This graded grid can give full second-order convergence for certain
+    methods such as the Predictor-Corrector method (e.g. implemented by
+    :class:`CaputoPECEMethod`).
+
+    :arg tspan: time interval :math:`[t_0, T]`.
+    :arg maxit: maximum number of iterations to take in the interval.
+    :arg r: a grading exponent that controls the clustering of points at :math:`t_0`.
+
+    :returns: a callable returning a graded time step.
+    """
+    if maxit <= 0:
+        raise ValueError(f"Negative number of iterations not allowed: {maxit}")
+
+    if r < 1:
+        raise ValueError(f"Gradient exponent must be >= 1: {r}")
+
+    if tspan[0] > tspan[1]:
+        raise ValueError(f"Invalid time interval: {tspan}")
+
+    h = (tspan[1] - tspan[0]) / maxit**r
+
+    def predict_time_step(t: float, y: Array) -> float:
+        # FIXME: this works, but seems a bit overkill just to get the iteration
+        n = round(((t - tspan[0]) / h) ** (1 / r))
+
+        return float(h * ((n + 1) ** r - n**r))
+
+    return predict_time_step
+
+
+# }}}
+
 
 # {{{ Caputo
 

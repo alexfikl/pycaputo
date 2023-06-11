@@ -21,6 +21,12 @@ References
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
     `DOI <https://doi.org/10.1137/140971191>`__.
 
+.. [Garrappa2015b] R. Garrappa,
+    *Trapezoidal Methods for Fractional Differential Equations: Theore[ftical
+    and Computational Aspects*,
+    Mathematics and Computers in Simulation, Vol. 110, pp. 96--112, 2015,
+    `DOI <https://doi.org/10.1016/j.matcom.2013.09.012>`__.
+
 .. [Stynes2017] M. Stynes, E. O'Riordan, J. L. Gracia,
     *Error Analysis of a Finite Difference Method on Graded Meshes for a
     Time-Fractional Diffusion Equation*,
