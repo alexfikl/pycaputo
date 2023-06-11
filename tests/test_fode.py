@@ -132,12 +132,50 @@ def crank_nicolson_factory(
     )
 
 
+def pece_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
+    y0 = fode_solution(0.0)
+    tspan = (0.0, 1.0)
+    dt = (tspan[1] - tspan[0]) / n
+
+    from pycaputo.fode import CaputoPECEMethod
+
+    return CaputoPECEMethod(
+        d=CaputoDerivative(order=alpha, side=Side.Left),
+        predict_time_step=make_predict_time_step_fixed(dt),
+        source=partial(fode_source, alpha=alpha),
+        tspan=tspan,
+        y0=(y0,),
+        # pece
+        corrector_iterations=1,
+    )
+
+
+def pec_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
+    y0 = fode_solution(0.0)
+    tspan = (0.0, 1.0)
+    dt = (tspan[1] - tspan[0]) / n
+
+    from pycaputo.fode import CaputoPECMethod
+
+    return CaputoPECMethod(
+        d=CaputoDerivative(order=alpha, side=Side.Left),
+        predict_time_step=make_predict_time_step_fixed(dt),
+        source=partial(fode_source, alpha=alpha),
+        tspan=tspan,
+        y0=(y0,),
+        # pec
+        corrector_iterations=1,
+    )
+
+
 @pytest.mark.parametrize(
     "factory",
     [
         forward_euler_factory,
         backward_euler_factory,
         crank_nicolson_factory,
+        # pece_factory,
+        # pec_factory,
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])

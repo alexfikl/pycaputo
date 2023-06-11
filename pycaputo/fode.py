@@ -552,25 +552,54 @@ def _advance_caputo_crank_nicolson(
 
 @dataclass(frozen=True)
 class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
-    """The Predictor-Corrector discretization of the Caputo derivative.
+    r"""The Predictor-Corrector discretization of the Caputo derivative.
 
-    This method is described in [Diethelm2002]_ in its simplest case with a
-    single corrector step, which effectively gives the so-called
-    Predict-Evaluate-Correct-Evaluate (PECE) scheme. The corrector step can
-    be repeated any number of times to give the :math:`PE(CE)^k` methods
-    (see :attr:`corrector_iterations`).
-
-    The Predict-Evaluate-Correct (PEC) family of methods is also implemented
-    (see :attr:`use_pece` flag). This is essentially the same method, but saves
-    on an evaluation of the right-hand side term.
+    In their classic forms (see e.g. [Diethelm2002]_), these are methods of
+    order :math:`1 + \alpha` with good stability properties. In general, the
+    corrector step can be repeated multiple times to achieve convergence
+    using :attr:`corrector_iterations`. In the limit of :math:`k \to \infty`,
+    it is equivalent to a Adams-Moulton method solved by fixed point iteration.
     """
 
     #: Number of repetitions of the corrector step.
     corrector_iterations: int
 
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.corrector_iterations < 1:
+                raise ValueError(
+                    "More than one corrector iteration is required:"
+                    f" {self.corrector_iterations}"
+                )
+
     @property
     def order(self) -> float:
         return 1.0 + self.d.order
+
+
+@dataclass(frozen=True)
+class CaputoPECEMethod(CaputoPredictorCorrectorMethod):
+    """The Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
+    Caputo Derivative.
+
+    This method is described in [Diethelm2002]_ in its simplest case with a
+    single corrector step, which effectively gives the so-called PECE scheme.
+    The corrector step can be repeated any number of times to give the
+    :math:`PE(CE)^k` methods (see
+    :attr:`CaputoPredictorCorrectorMethod.corrector_iterations`).
+    """
+
+
+@dataclass(frozen=True)
+class CaputoPECMethod(CaputoPredictorCorrectorMethod):
+    """The Predict-Evaluate-Correct (PEC) discretization of the Caputo derivative.
+
+    This is a predictor-corrector similar to :class:`CaputoPECEMethod`, where
+    the previous evaluation of the predictor is used to avoid an additional
+    right-hand side call. Like the PECE method, the corrector step can be
+    repeated multiple times for improved error results.
+    """
 
 
 @advance.register(CaputoPredictorCorrectorMethod)
@@ -589,6 +618,9 @@ def _advance_caputo_predictor_corrector(
 
     n = len(history)
     alpha = m.d.order
+    ts = history.ts
+    gamma1 = gamma(1 + alpha)
+    gamma2 = gamma(2 + alpha)
 
     # add initial conditions
     y0 = np.zeros_like(y)
@@ -596,28 +628,56 @@ def _advance_caputo_predictor_corrector(
         y0 += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
 
     # predictor step (forward Euler)
-    ts = history.ts
     yp = np.copy(y0)
+    omega_e = np.empty(n)
     for k in range(n):
         yk = history[k]
         assert isinstance(yk, SourceHistory)
 
-        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        yp += omega * yk.f
+        omega_e[k] = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma1
+        yp += omega_e[k] * yk.f
 
-    # corrector step (Adams-Bashforth)
-    ynext = np.copy(y0)
+    # corrector step (Adams-Bashforth 2)
+    yexplicit = np.copy(y0)
     for k in range(n - 1):
         yk = history[k]
         assert isinstance(yk, SourceHistory)
 
-        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        ynext += omega * yk.f
+        dt = ts[k + 1] - ts[k]
+        omega = (
+            (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+            - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+            - (t - ts[k]) ** alpha / gamma1
+        )
+        yexplicit += omega * yk.f
 
+        yk = history[k + 1]
+        assert isinstance(yk, SourceHistory)
+        yexplicit += (-omega + omega_e[k]) * yk.f
+
+    k = n - 1
+    yk = history[k]
+    assert isinstance(yk, SourceHistory)
+
+    dt = ts[k + 1] - ts[k]
+    omega = (
+        (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k]) ** alpha / gamma1
+    )
+    yexplicit += omega * yk.f
+
+    # corrector iterations
+    omega = -omega + omega_e[k]
     for _ in range(m.corrector_iterations):
-        yp = ynext
+        fp = m.source(t, yp)
+        yp = yexplicit + omega * fp
 
-    history.append(SourceHistory(t=ts[-1], f=m.source(ts[-1], ynext)))
+    # fp = m.source(t, yp)
+    ynext = yp
+    f = fp if isinstance(m, CaputoPECMethod) else m.source(ts[-1], ynext)
+    history.append(SourceHistory(t=ts[-1], f=f))
+
     return ynext
 
 
