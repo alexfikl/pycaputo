@@ -61,6 +61,11 @@ for event in evolve(stepper):
 
 # {{{ plot
 
+try:
+    import matplotlib  # noqa: F401
+except ImportError as exc:
+    raise SystemExit(0) from exc
+
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()

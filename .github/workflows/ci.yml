@@ -58,4 +58,23 @@ jobs:
         make pip-install
         make test
 
+  examples:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    name: Examples (py-${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.11']
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v3
+    -
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Main Script
+      run: |
+        make pip-install
+        make examples
+
 # vim: set ts=2 sw=2 et:
