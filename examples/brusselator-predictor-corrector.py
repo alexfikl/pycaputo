@@ -67,7 +67,7 @@ set_recommended_matplotlib()
 t = np.array(ts)
 y = np.array(ys).T
 
-with figure("brusselator-predictor-corrector.png") as fig:
+with figure("brusselator-predictor-corrector.svg") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[1], "--", lw=3, label="$y$")
@@ -76,7 +76,7 @@ with figure("brusselator-predictor-corrector.png") as fig:
     ax.set_xlabel("$t$")
     ax.legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
 
-with figure("brusselator-predictor-corrector-cycle.png") as fig:
+with figure("brusselator-predictor-corrector-cycle.svg") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[1], ls="--")

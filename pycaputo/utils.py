@@ -346,8 +346,11 @@ def figure(filename: PathLike | None = None, **kwargs: Any) -> Iterator[Any]:
 def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
     import matplotlib.pyplot as mp
 
-    ext = mp.rcParams["savefig.format"]
-    filename = pathlib.Path(filename).with_suffix(f".{ext}").resolve()
+    filename = pathlib.Path(filename)
+    if not filename.suffix:
+        ext = mp.rcParams["savefig.format"]
+        filename = filename.with_suffix(f".{ext}").resolve()
+
     logger.info("Saving '%s'", filename)
 
     fig.tight_layout()

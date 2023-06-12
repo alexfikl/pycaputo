@@ -3,7 +3,6 @@
 
 import math
 
-import matplotlib.pyplot as mp
 import numpy as np
 
 from pycaputo.utils import Array
@@ -47,21 +46,18 @@ print(
 # {{{ plot
 
 
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import set_recommended_matplotlib, figure
 
 set_recommended_matplotlib()
 
-fig = mp.figure()
-ax = fig.gca()
+with figure("caputo-derivative-l1.svg") as fig:
+    ax = fig.gca()
 
-ax.plot(p.x, df_num, lw=5, label="$L1~ Method$")
-ax.plot(p.x[1:], df_ref[1:], "k--", label="$Exact$")
+    ax.plot(p.x, df_num, lw=5, label="$L1~ Method$")
+    ax.plot(p.x[1:], df_ref[1:], "k--", label="$Exact$")
 
-ax.set_xlabel("$x$")
-ax.set_ylabel(r"$D^\alpha_C[f](x)$")
-ax.legend()
-
-fig.tight_layout()
-fig.savefig("caputo-derivative-l1.png")
+    ax.set_xlabel("$x$")
+    ax.set_ylabel(r"$D^\alpha_C[f](x)$")
+    ax.legend()
 
 # }}}

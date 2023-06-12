@@ -59,7 +59,7 @@ We can then set up a grid and evaluate the derivative at all points
 For the chosen number of points, this gives an error of about :math:`10^{-3}`.
 The resulting approximation can be see below
 
-.. image:: caputo-derivative-l1.png
+.. image:: caputo-derivative-l1.svg
     :width: 75%
     :align: center
     :alt: Approximation of the Caputo derivative using the L1 method
@@ -120,14 +120,14 @@ iterator as follows
 
 The solution as a function of time can be seen below.
 
-.. image:: brusselator-predictor-corrector.png
+.. image:: brusselator-predictor-corrector.svg
     :width: 75%
     :align: center
     :alt: Solution of the Brusselator system using the Predictor-Corrector method.
 
 The limit cycle can be better visualized in phase space as shown below.
 
-.. image:: brusselator-predictor-corrector-cycle.png
+.. image:: brusselator-predictor-corrector-cycle.svg
     :width: 75%
     :align: center
     :alt: Stable limit cycle of the Brusselator system.
