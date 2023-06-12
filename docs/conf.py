@@ -44,12 +44,12 @@ html_theme_options = {
     "repository_url": "https://github.com/alexfikl/pycaputo",
     "repository_branch": "main",
     "icon_links": [
-        # {
-        #     "name": "Release",
-        #     "url": "https://github.com/alexfikl/pycaputo/releases",
-        #     "icon": "https://img.shields.io/github/v/release/alexfikl/pycaputo",
-        #     "type": "url",
-        # },
+        {
+            "name": "Release",
+            "url": "https://github.com/alexfikl/pycaputo/releases",
+            "icon": "https://img.shields.io/github/v/release/alexfikl/pycaputo",
+            "type": "url",
+        },
         {
             "name": "License",
             "url": "https://github.com/alexfikl/pycaputo/tree/main/LICENSES",
