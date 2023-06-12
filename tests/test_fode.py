@@ -164,7 +164,8 @@ def pec_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
         tspan=tspan,
         y0=(y0,),
         # pec
-        corrector_iterations=1,
+        # FIXME: this does not converge to the correct order with one iteration
+        corrector_iterations=2,
     )
 
 
@@ -175,7 +176,7 @@ def pec_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
         backward_euler_factory,
         crank_nicolson_factory,
         pece_factory,
-        # pec_factory,
+        pec_factory,
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
@@ -183,7 +184,7 @@ def test_caputo_fode(
     factory: Callable[[float, int], FractionalDifferentialEquationMethod],
     alpha: float,
     *,
-    visualize: bool = True,
+    visualize: bool = False,
 ) -> None:
     from pycaputo.fode import StepCompleted, StepFailed, evolve
     from pycaputo.utils import EOCRecorder

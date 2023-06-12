@@ -137,7 +137,7 @@ def test_caputo_spectral(
     j_beta: float,
     alpha: float,
     *,
-    visualize: bool = True,
+    visualize: bool = False,
 ) -> None:
     from pycaputo import CaputoDerivative, CaputoSpectralMethod, Side
     from pycaputo.grid import make_jacobi_gauss_lobatto_points

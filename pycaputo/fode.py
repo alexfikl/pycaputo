@@ -555,10 +555,17 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
     r"""The Predictor-Corrector discretization of the Caputo derivative.
 
     In their classic forms (see e.g. [Diethelm2002]_), these are methods of
-    order :math:`1 + \alpha` with good stability properties. In general, the
-    corrector step can be repeated multiple times to achieve convergence
-    using :attr:`corrector_iterations`. In the limit of :math:`k \to \infty`,
-    it is equivalent to a Adams-Moulton method solved by fixed point iteration.
+    order :math:`1 + \alpha` with good stability properties.
+
+    In general, the corrector step can be repeated multiple times to achieve
+    convergence using :attr:`corrector_iterations`. In the limit of
+    :math:`k \to \infty`, it is equivalent to a Adams-Moulton method solved by
+    fixed point iteration.
+
+    Note that using a high number of corrector iterations is not recommended, as
+    the fixed point iteration is not guaranteed to converge, e.g. for very stiff
+    problems. In that case it is better to use an implicit method and, e.g.,
+    a Newton iteration to solve the root finding problem.
     """
 
     #: Number of repetitions of the corrector step.
@@ -683,7 +690,6 @@ def _advance_caputo_predictor_corrector(
         fp = m.source(t, yp)
         yp = yexplicit + omega * fp
 
-    # fp = m.source(t, yp)
     ynext = yp
     f = fp if isinstance(m, CaputoPECMethod) else m.source(ts[-1], ynext)
     history.append(SourceHistory(t=ts[-1], f=f))
