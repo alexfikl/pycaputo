@@ -10,6 +10,7 @@ pycaputo documentation
     algorithms
     misc
     references
+    changelog
 
 .. warning::
 
