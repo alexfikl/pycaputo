@@ -8,7 +8,7 @@ include requirements.txt
 include setup.py
 recursive-include LICENSES *.txt
 
-recursive-include docs *.png
+recursive-include docs *.svg
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs *.txt

@@ -14,7 +14,7 @@ cycler==0.11.0
     # via matplotlib
 differint==1.0.0
     # via pycaputo (pyproject.toml)
-fonttools==4.39.4
+fonttools==4.40.0
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
@@ -54,7 +54,7 @@ pyparsing==3.0.9
     # via matplotlib
 pyproject-hooks==1.0.0
     # via build
-pytest==7.3.1
+pytest==7.3.2
     # via pycaputo (pyproject.toml)
 python-dateutil==2.8.2
     # via matplotlib
