@@ -125,8 +125,7 @@ class CaputoL1Method(CaputoDerivativeMethod):
         return 0 < alpha < 1
 
 
-@weights.register(CaputoL1Method)
-def _weights_l1_method(m: CaputoL1Method, p: Points) -> Iterator[Array]:
+def _weights_l1(m: CaputoL1Method, p: Points) -> Iterator[Array]:
     x, dx = p.x, p.dx
     alpha = m.d.order
     w0 = 1 / math.gamma(2 - alpha)
@@ -155,7 +154,7 @@ def _diff_l1method(m: CaputoL1Method, f: ArrayOrScalarFunction, p: Points) -> Ar
     df = np.empty(p.x.shape, dtype=dfx.dtype)
     df[0] = np.nan
 
-    for n, w in enumerate(weights(m, p)):
+    for n, w in enumerate(_weights_l1(m, p)):
         df[n + 1] = np.sum(w * dfx[: n + 1])
 
     return df
@@ -174,8 +173,7 @@ class CaputoModifiedL1Method(CaputoL1Method):
     """
 
 
-@weights.register(CaputoModifiedL1Method)
-def _weights_modified_l1method(m: CaputoModifiedL1Method, p: Points) -> Iterator[Array]:
+def _weights_modified_l1(m: CaputoModifiedL1Method, p: Points) -> Iterator[Array]:
     if not isinstance(p, UniformMidpoints):
         raise NotImplementedError(
             f"'{type(m).__name__}' does not implement 'weights' for"
@@ -213,7 +211,7 @@ def _diff_modified_l1method(
     df = np.empty(p.x.size)
     df[0] = np.nan
 
-    for n, w in enumerate(weights(m, p)):
+    for n, w in enumerate(_weights_modified_l1(m, p)):
         df[n + 1] = np.sum(w * dfx[: n + 1])
 
     return df
@@ -254,7 +252,7 @@ class CaputoL2Method(CaputoDerivativeMethod):
         return 1 < alpha < 2
 
 
-def l2uweights(alpha: float, i: int | Array, k: int | Array) -> Array:
+def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
     return np.array((i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha))
 
 
@@ -285,7 +283,7 @@ def _diff_l2method(m: CaputoL2Method, f: ArrayOrScalarFunction, p: Points) -> Ar
         ddf[-1] = 2 * fx[-1] - 5 * fx[-2] + 4 * fx[-3] - fx[-4]
 
         for n in range(1, df.size):
-            df[n] = w0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
+            df[n] = w0 * np.sum(_weights_l2(alpha, n, k[:n]) * ddf[:n])
     else:
         raise NotImplementedError(
             f"'{type(m).__name__}' not implemented for '{type(p).__name__}' grids"
@@ -336,7 +334,7 @@ def _diff_uniform_l2cmethod(
         ddf[-1] = 3 * fx[-1] - 7 * fx[-2] + 5 * fx[-3] - fx[-4]
 
         for n in range(1, df.size):
-            df[n] = w0 * np.sum(l2uweights(alpha, n, k[:n]) * ddf[:n])
+            df[n] = w0 * np.sum(_weights_l2(alpha, n, k[:n]) * ddf[:n])
     else:
         raise NotImplementedError(
             f"'{type(m).__name__}' not implemented for '{type(p).__name__}'"
