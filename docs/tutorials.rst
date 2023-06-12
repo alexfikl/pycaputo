@@ -68,4 +68,68 @@ The resulting approximation can be see below
 The complete example can be found in
 :download:`examples/caputo-derivative-l1.py <../examples/caputo-derivative-l1.py>`.
 
+Solving Differential Equations
+------------------------------
+
+In this example, we will look at solving a simple non-linear fractional-order
+ordinary differential equation (FODE). The model we have chosen for this is the
+classic Brusselator system
+
+.. math::
+
+   \begin{cases}
+   D_C^\alpha x = a - (\mu + 1) x + x^2 y, \\
+   D_C^\alpha y = \mu x - x^2 y,
+   \end{cases}
+
+where we take :math:`(a, \mu) = (1, 4)`, an order :math:`\alpha = 0.8`, and
+initial conditions :math:`(x_0, y_0) = (1, 2)`. For these parameters, the
+system has a stable limit cycle, which we can observe (see [Garrappa2015b]_).
+The right-hand side for this system can be implemented as
+
+
+.. literalinclude:: ../examples/brusselator-predictor-corrector.py
+    :lines: 13-19
+    :language: python
+    :linenos:
+
+We can now start setting up our numerical solver based on the standard
+Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
+by :class:`~pycaputo.fode.CaputoPECEMethod`. The solver is then set up as
+
+.. literalinclude:: ../examples/brusselator-predictor-corrector.py
+    :lines: 27-42
+    :language: python
+    :linenos:
+
+We can see here that we have chosen to use a left-sided
+:class:`~pycaputo.derivatives.CaputoDerivative` with an order :math:`\alpha`.
+The solver will use a fixed time step of :math:`10^{-2}` on the interval
+:math:`[0, 50]` to properly observe the limit cycle behavior. For
+Predictor-Corrector schemes, the corrector step can be repeated multiple times,
+but here we choose ``corrector_iterations=1`` to only use a single iteration.
+
+Now that the solver is set up, we can simply evolve the equation time step by
+time step to get all the solutions. This will use the :func:`pycaputo.fode.evolve`
+iterator as follows
+
+.. literalinclude:: ../examples/brusselator-predictor-corrector.py
+    :lines: 44-57
+    :language: python
+    :linenos:
+
+The solution as a function of time can be seen below.
+
+.. image:: brusselator-predictor-corrector.png
+    :width: 75%
+    :align: center
+    :alt: Solution of the Brusselator system using the Predictor-Corrector method.
+
+The limit cycle can be better visualized in phase space as shown below.
+
+.. image:: brusselator-predictor-corrector-cycle.png
+    :width: 75%
+    :align: center
+    :alt: Stable limit cycle of the Brusselator system.
+
 
