@@ -34,7 +34,7 @@ def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     [
         ("RiemannLiouvilleRectangularMethod", "uniform"),
         ("RiemannLiouvilleRectangularMethod", "stynes"),
-        # ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
+        ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
         ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
     ],
 )

@@ -171,17 +171,17 @@ def _quad_rl_trap(
         w0 = w0 * p.dx[0] ** alpha
 
         w = k[:-1] ** (1 + alpha) - (k[:-1] - alpha) * k[1:] ** alpha
-        qf[1:] = fx[0] + w * fx[1:]
+        qf[1:] = w0 * (w * fx[0] + fx[1:])
 
         # NOTE: [Li2020] Equation 3.15
-        for n in range(1, qf.size):
+        for n in range(2, qf.size):
             w = (
-                (n - k[1 : n - 1] + 1) ** (1 + alpha)
-                - 2 * (n - k[1 : n - 1]) ** (1 + alpha)
-                + (n - k[1 : n - 1] - 1) ** (1 + alpha)
+                (n - k[1:n] + 1) ** (1 + alpha)
+                - 2 * (n - k[1:n]) ** (1 + alpha)
+                + (n - k[1:n] - 1) ** (1 + alpha)
             )
 
-            qf[n] += w0 * np.sum(w * fx[1 : n - 1])
+            qf[n] += w0 * np.sum(w * fx[1:n])
     else:
         for n in range(1, qf.size):
             dl, dr = x[n] - x[:n], x[n] - x[1 : n + 1]
