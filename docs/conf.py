@@ -1,6 +1,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
 
+import os
+import sys
+
+# NOTE: seems necessary for readthedocs.org because it doesn't `pip install -e`
+sys.path.insert(0, os.path.abspath(".."))
+
 # {{{ project information
 
 from importlib import metadata
