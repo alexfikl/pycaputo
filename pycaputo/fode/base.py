@@ -11,10 +11,9 @@ from typing import Iterator
 import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
+from pycaputo.fode.history import History
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, CallbackFunction, ScalarStateFunction, StateFunction
-
-from .history import History
 
 logger = get_logger(__name__)
 

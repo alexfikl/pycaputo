@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-from .base import (
+from pycaputo.fode.base import (
     Event,
     FractionalDifferentialEquationMethod,
     StepCompleted,
@@ -12,7 +12,7 @@ from .base import (
     make_predict_time_step_fixed,
     make_predict_time_step_graded,
 )
-from .caputo import (
+from pycaputo.fode.caputo import (
     CaputoCrankNicolsonMethod,
     CaputoDifferentialEquationMethod,
     CaputoForwardEulerMethod,
@@ -20,7 +20,7 @@ from .caputo import (
     CaputoPECMethod,
     CaputoPredictorCorrectorMethod,
 )
-from .history import History, SourceHistory, StateHistory
+from pycaputo.fode.history import History, SourceHistory, StateHistory
 
 __all__ = (
     "CaputoCrankNicolsonMethod",

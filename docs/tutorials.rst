@@ -132,4 +132,5 @@ The limit cycle can be better visualized in phase space as shown below.
     :align: center
     :alt: Stable limit cycle of the Brusselator system.
 
-
+The complete example can be found in
+:download:`examples/brusselator-predictor-corrector.py <../examples/brusselator-predictor-corrector.py>`.

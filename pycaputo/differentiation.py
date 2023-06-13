@@ -44,28 +44,6 @@ class DerivativeMethod(ABC):
 
 
 @singledispatch
-def weights(m: DerivativeMethod, p: Points, n: int | None = None) -> Iterator[Array]:
-    r"""Evaluates the weights used in the derivative approximation.
-
-    In general, a fractional order derivative is a convolution with a given
-    kernel (e.g. a :math:`\log` kernel for the
-    :class:`~pycaputo.derivatives.HadamardDerivative`) and can be written as
-
-    .. math::
-
-        D^\alpha[f](x_n) = \sum_{k = 0}^n w_{nk} f(x_k),
-
-    where the convolution weights are given by :math:`w_{nk}`. This is not the
-    case for all methods, so this does not need to be implemented.
-
-    :arg n: if given, gives the weights for only for :math:`w_{nk}`.
-    :returns: weights for computing the derivative approximations at each point
-        in *p* except at :math:`x_0`.
-    """
-    raise NotImplementedError(f"Weights for method '{type(m).__name__}'")
-
-
-@singledispatch
 def diff(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
     """Evaluate the fractional derivative of *f* at *x*.
 
@@ -105,7 +83,8 @@ class CaputoL1Method(CaputoDerivativeMethod):
     non-uniform grids. Note that it cannot compute the derivative at the
     starting point, i.e. :math:`D_C^\alpha[f](a)` is undefined.
 
-    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})`.
+    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})` and supports
+    arbitrary grids.
     """
 
     if __debug__:
@@ -169,7 +148,8 @@ class CaputoModifiedL1Method(CaputoL1Method):
     grids. Note that it cannot compute the derivative at the starting point, i.e.
     :math:`D_C^\alpha[f](a)` is undefined.
 
-    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})`.
+    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})` and requires
+    a special grid constructed by :func:`~pycaputo.grid.make_uniform_midpoints`.
     """
 
 
@@ -232,7 +212,8 @@ class CaputoL2Method(CaputoDerivativeMethod):
     it cannot compute the derivative at the starting point, i.e.
     :math:`D_C^\alpha[f](a)` is undefined.
 
-    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})`.
+    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})` and supports
+    only uniform grids.
     """
 
     if __debug__:
@@ -301,7 +282,8 @@ class CaputoL2CMethod(CaputoL2Method):
     it cannot compute the derivative at the starting point, i.e.
     :math:`D_C^\alpha[f](a)` is undefined.
 
-    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})`.
+    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})` and supports
+    only uniform grids.
     """
 
     @property
@@ -367,6 +349,10 @@ class CaputoSpectralMethod(CaputoDerivativeMethod):
     Then, :math:`w^\alpha_{jk}` are a set of weights and :math:`\hat{f}_k` are
     the modal coefficients. Here, we approximate the function by the Jacobi
     polynomials :math:`P^{(u, v)}`.
+
+    This method is of the order of the Jacobi polynomials and requires
+    a Gauss-Jacobi-Lobatto grid (for the projection :math:`\hat{f}_k`) as
+    constructed by :func:`~pycaputo.grid.make_jacobi_gauss_lobatto_points`.
     """
 
     @property

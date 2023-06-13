@@ -77,19 +77,19 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     be used to evaluate the value at the starting point, i.e.
     :math:`I_{RL}^\alpha[f](a)` is not defined.
 
-    This method is of order :math:`\mathcal{O}(h)`.
+    This method is of order :math:`\mathcal{O}(h)` and supports arbitrary grids.
     """
 
-    #: Weight used in the approximation :math:`w f_k + (1 - w) f_{k + 1}`.
-    weight: float = 0.5
+    #: Weight used in the approximation :math:`\theta f_k + (1 - \theta) f_{k + 1}`.
+    theta: float = 0.5
 
     if __debug__:
 
         def __post_init__(self) -> None:
             super().__post_init__()
-            if not 0.0 <= self.weight <= 1.0:
+            if not 0.0 <= self.theta <= 1.0:
                 raise ValueError(
-                    f"Weight is expected to be in [0, 1]: weight is '{self.weight}'"
+                    f"Weight is expected to be in [0, 1]: theta is '{self.theta}'"
                 )
 
     @property
@@ -98,7 +98,7 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
 
     @property
     def order(self) -> float:
-        if self.weight == 0.5:
+        if self.theta == 0.5:
             return min(2.0, 1.0 - self.d.order)
 
         return 1.0
@@ -115,7 +115,7 @@ def _quad_rl_rect(
     alpha = -m.d.order
     w0 = 1 / math.gamma(1 + alpha)
 
-    fc = m.weight * fx[:-1] + (1 - m.weight) * fx[1:]
+    fc = m.theta * fx[:-1] + (1 - m.theta) * fx[1:]
 
     # compute integral
     qf = np.empty_like(fx)
@@ -137,7 +137,7 @@ class RiemannLiouvilleTrapezoidalMethod(RiemannLiouvilleMethod):
     evaluate the value at the starting point, i.e.
     :math:`I_{RL}^\alpha[f](a)` is not defined.
 
-    This method is of order :math:`\mathcal{O}(h^2)`.
+    This method is of order :math:`\mathcal{O}(h^2)` and supports arbitrary grids.
     """
 
     @property
@@ -211,6 +211,10 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
     Then, :math:`w^\alpha_{jk}` are a set of weights and :math:`\hat{f}_k` are
     the modal coefficients. Here, we approximate the function by the Jacobi
     polynomials :math:`P^{(u, v)}`.
+
+    This method is of the order of the Jacobi polynomials and requires
+    a Gauss-Jacobi-Lobatto grid (for the projection :math:`\hat{f}_k`) as
+    constructed by :func:`~pycaputo.grid.make_jacobi_gauss_lobatto_points`.
     """
 
     @property
