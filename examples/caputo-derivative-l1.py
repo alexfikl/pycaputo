@@ -23,12 +23,14 @@ def df(x: Array, alpha: float) -> Array:
     )
 
 
-from pycaputo import CaputoDerivative, CaputoL1Method, Side
+from pycaputo.derivatives import CaputoDerivative, Side
 
 d = CaputoDerivative(order=0.9, side=Side.Left)
+
+from pycaputo.differentiation import CaputoL1Method, diff
+
 method = CaputoL1Method(d)
 
-from pycaputo import diff
 from pycaputo.grid import make_uniform_points
 
 p = make_uniform_points(256, a=0.0, b=1.0)

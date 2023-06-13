@@ -433,8 +433,6 @@ def make_method_from_name(
     :arg alpha: the order of the fractional derivative. Not all methods support
         all orders, so this choice may be invalid.
     """
-    name = f"{name}Method"
-
     if name not in REGISTERED_METHODS:
         raise ValueError(
             "Unknown differentiation method '{}'. Known methods are '{}'".format(
@@ -451,7 +449,12 @@ def make_method_from_name(
     return method
 
 
-def guess_method_for_order(alpha: float, p: Points) -> DerivativeMethod:
+def guess_method_for_order(
+    p: Points,
+    alpha: float,
+    *,
+    side: Side = Side.Left,
+) -> DerivativeMethod:
     """Construct a :class:`DerivativeMethod` for the given order
     *alpha* and points *p*.
 
@@ -463,8 +466,8 @@ def guess_method_for_order(alpha: float, p: Points) -> DerivativeMethod:
     """
     from pycaputo.grid import JacobiGaussLobattoPoints, UniformMidpoints, UniformPoints
 
-    d = CaputoDerivative(alpha=alpha, side=Side.Left)
-    m = None
+    d = CaputoDerivative(order=alpha, side=side)
+    m: DerivativeMethod | None = None
 
     if isinstance(p, JacobiGaussLobattoPoints):
         m = CaputoSpectralMethod(d)

@@ -67,7 +67,7 @@ def test_caputo_lmethods(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo import make_diff_from_name
+    from pycaputo.differentiation import make_method_from_name
     from pycaputo.grid import make_points_from_name
 
     if name in ("CaputoL2Method", "CaputoL2CMethod"):
@@ -75,7 +75,7 @@ def test_caputo_lmethods(
 
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = make_diff_from_name(name, alpha)
+    meth = make_method_from_name(name, alpha)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -139,11 +139,15 @@ def test_caputo_spectral(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo import CaputoDerivative, CaputoSpectralMethod, Side
+    from pycaputo.derivatives import CaputoDerivative, Side
+    from pycaputo.differentiation import CaputoSpectralMethod
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
+
+    d = CaputoDerivative(alpha, side=Side.Left)
+    meth = CaputoSpectralMethod(d)
+
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = CaputoSpectralMethod(d=CaputoDerivative(alpha, side=Side.Left))
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -296,13 +300,15 @@ def test_caputo_vs_differint(
 ) -> None:
     pytest.importorskip("differint")
 
-    from pycaputo import make_diff_from_name
+    from pycaputo.differentiation import CaputoDerivativeMethod, make_method_from_name
 
     if name in ("CaputoL2Method", "CaputoL2CMethod"):
         alpha += 1
 
-    meth = make_diff_from_name(name, alpha)
-    differint_meth = cls(d=meth.d)  # type: ignore[attr-defined]
+    meth = make_method_from_name(name, alpha)
+    assert isinstance(meth, CaputoDerivativeMethod)
+
+    differint_meth = cls(d=meth.d)
 
     from pycaputo.grid import make_points_from_name
 

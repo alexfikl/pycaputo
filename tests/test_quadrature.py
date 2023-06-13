@@ -46,11 +46,11 @@ def test_riemann_liouville_quad(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo import make_quad_from_name, quad
     from pycaputo.grid import make_points_from_name
+    from pycaputo.quadrature import make_method_from_name, quad
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = make_quad_from_name(name, -alpha)
+    meth = make_method_from_name(name, -alpha)
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
@@ -112,17 +112,15 @@ def test_riemann_liouville_quad_spectral(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo import (
-        RiemannLiouvilleDerivative,
-        RiemannLiouvilleSpectralMethod,
-        Side,
-        quad,
-    )
+    from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
-    from pycaputo.utils import EOCRecorder, savefig
+    from pycaputo.quadrature import RiemannLiouvilleSpectralMethod, quad
 
     d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
     meth = RiemannLiouvilleSpectralMethod(d=d)
+
+    from pycaputo.utils import EOCRecorder, savefig
+
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:

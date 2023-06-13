@@ -12,7 +12,7 @@ import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ScalarFunction
+from pycaputo.utils import Array, ArrayOrScalarFunction
 
 # {{{ interface
 
@@ -33,7 +33,7 @@ class QuadratureMethod(ABC):
 
 
 @singledispatch
-def quad(m: QuadratureMethod, f: ScalarFunction, x: Points) -> Array:
+def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, x: Points) -> Array:
     """Evaluate the fractional integral of *f* using the points *x*.
 
     :arg m: method used to evaluate the integral.
@@ -107,11 +107,11 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
 @quad.register(RiemannLiouvilleRectangularMethod)
 def _quad_rl_rect(
     m: RiemannLiouvilleRectangularMethod,
-    f: ScalarFunction,
+    f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
     x = p.x
-    fx = f(x)
+    fx = f(x) if callable(f) else f
     alpha = -m.d.order
     w0 = 1 / math.gamma(1 + alpha)
 
@@ -152,13 +152,13 @@ class RiemannLiouvilleTrapezoidalMethod(RiemannLiouvilleMethod):
 @quad.register(RiemannLiouvilleTrapezoidalMethod)
 def _quad_rl_trap(
     m: RiemannLiouvilleTrapezoidalMethod,
-    f: ScalarFunction,
+    f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
     from pycaputo.grid import UniformPoints
 
     x = p.x
-    fx = f(x)
+    fx = f(x) if callable(f) else f
     alpha = -m.d.order
     w0 = 1 / math.gamma(2 + alpha)
 
@@ -229,7 +229,7 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
 @quad.register(RiemannLiouvilleSpectralMethod)
 def _quad_rl_spec(
     m: RiemannLiouvilleSpectralMethod,
-    f: ScalarFunction,
+    f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
     from pycaputo.grid import JacobiGaussLobattoPoints
@@ -242,7 +242,8 @@ def _quad_rl_spec(
     from pycaputo.jacobi import jacobi_project, jacobi_riemann_liouville_integral
 
     # NOTE: Equation 3.63 [Li2020]
-    fhat = jacobi_project(f(p.x), p)
+    fx = f(p.x) if callable(f) else f
+    fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)
     for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, -m.d.order)):
@@ -264,12 +265,39 @@ REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
 }
 
 
-def make_quad_from_name(
+def register_method(
     name: str,
-    order: float,
+    method: type[QuadratureMethod],
+    *,
+    force: bool = False,
+) -> None:
+    """Register a new integral approximation method.
+
+    :arg name: a canonical name for the method.
+    :arg method: a class that will be used to construct the method.
+    :arg force: if *True*, any existing methods will be overwritten.
+    """
+
+    if not force and name in REGISTERED_METHODS:
+        raise ValueError(
+            f"A method by the name '{name}' is already registered. Use 'force=True' to"
+            " overwrite it."
+        )
+
+    REGISTERED_METHODS[name] = method
+
+
+def make_method_from_name(
+    name: str,
+    alpha: float,
     *,
     side: Side = Side.Left,
 ) -> QuadratureMethod:
+    """Instantiate a :class:`QuadratureMethod` given the name *name*.
+
+    :arg alpha: the order of the fractional integral. Not all methods support
+        all orders, so this choice may be invalid.
+    """
     if name not in REGISTERED_METHODS:
         raise ValueError(
             "Unknown differentiation method '{}'. Known methods are '{}'".format(
@@ -277,8 +305,42 @@ def make_quad_from_name(
             )
         )
 
-    d = RiemannLiouvilleDerivative(order=order, side=side)
+    d = RiemannLiouvilleDerivative(order=alpha, side=side)
     return REGISTERED_METHODS[name](d)  # type: ignore[call-arg]
+
+
+def guess_method_for_order(
+    p: Points,
+    alpha: float,
+    *,
+    side: Side = Side.Left,
+) -> QuadratureMethod:
+    """Construct a :class:`QuadratureMethod` for the given order
+    *alpha* and points *p*.
+
+    Note that in general not all methods support arbitrary sets of points, so
+    specialized methods must be chosen.
+
+    :arg alpha: the order of the fractional integral.
+    :arg p: a set of points on which to evaluate the fractional integral.
+    """
+    from pycaputo.grid import JacobiGaussLobattoPoints
+
+    d = RiemannLiouvilleDerivative(order=alpha, side=side)
+    m: QuadratureMethod | None = None
+
+    if isinstance(p, JacobiGaussLobattoPoints):
+        m = RiemannLiouvilleSpectralMethod(d)
+    else:
+        m = RiemannLiouvilleTrapezoidalMethod(d)
+
+    if m is None:
+        raise ValueError(
+            "Cannot determine an adequate method for "
+            f"alpha = {alpha} and '{type(p).__name__}'."
+        )
+
+    return m
 
 
 # }}}
