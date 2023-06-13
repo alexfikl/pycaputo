@@ -98,7 +98,7 @@ Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
 by :class:`~pycaputo.fode.CaputoPECEMethod`. The solver is then set up as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 27-42
+    :lines: 27-41
     :language: python
     :linenos:
 
@@ -114,7 +114,7 @@ time step to get all the solutions. This will use the :func:`pycaputo.fode.evolv
 iterator as follows
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 44-57
+    :lines: 43-56
     :language: python
     :linenos:
 

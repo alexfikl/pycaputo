@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from functools import singledispatch
+from functools import cached_property, singledispatch
 from typing import Iterator
 
 import numpy as np
@@ -149,8 +149,8 @@ class FractionalDifferentialEquationMethod(ABC):
     will required additional initial data.
     """
 
-    #: The fractional operator used for the derivative.
-    d: FractionalOperator
+    #: The fractional operator order used for the derivative.
+    alpha: float
     #: A callable used to predict the time step.
     predict_time_step: ScalarStateFunction
 
@@ -170,6 +170,11 @@ class FractionalDifferentialEquationMethod(ABC):
     @abstractmethod
     def order(self) -> float:
         """Expected order of convergence of the method."""
+
+    @property
+    @abstractmethod
+    def d(self) -> FractionalOperator:
+        """The fractional operator used by this method."""
 
 
 @singledispatch
@@ -350,6 +355,12 @@ class CaputoDifferentialEquationMethod(FractionalDifferentialEquationMethod):
     equations (FODE) with the Caputo derivative.
     """
 
+    @cached_property
+    def d(self) -> FractionalOperator:
+        from pycaputo.derivatives import CaputoDerivative, Side
+
+        return CaputoDerivative(self.order, side=Side.Left)
+
 
 @make_initial_condition.register(CaputoDifferentialEquationMethod)
 def _make_initial_condition_caputo(
@@ -387,7 +398,7 @@ def _advance_caputo_forward_euler(
     from math import gamma
 
     n = len(history)
-    alpha = m.d.order
+    alpha = m.alpha
 
     # add initial conditions
     ynext = np.zeros_like(y)
@@ -501,7 +512,7 @@ def _advance_caputo_crank_nicolson(
     from math import gamma
 
     n = len(history)
-    alpha = m.d.order
+    alpha = m.alpha
 
     # add initial conditions
     fnext = np.zeros_like(y)
@@ -624,7 +635,7 @@ def _advance_caputo_predictor_corrector(
     from math import gamma
 
     n = len(history)
-    alpha = m.d.order
+    alpha = m.alpha
     ts = history.ts
     gamma1 = gamma(1 + alpha)
     gamma2 = gamma(2 + alpha)

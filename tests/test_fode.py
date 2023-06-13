@@ -9,7 +9,6 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.fode import (
     FractionalDifferentialEquationMethod,
     make_predict_time_step_fixed,
@@ -82,7 +81,7 @@ def forward_euler_factory(alpha: float, n: int) -> FractionalDifferentialEquatio
     from pycaputo.fode import CaputoForwardEulerMethod
 
     return CaputoForwardEulerMethod(
-        d=CaputoDerivative(order=alpha, side=Side.Left),
+        alpha=alpha,
         predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
@@ -100,7 +99,7 @@ def backward_euler_factory(
     from pycaputo.fode import CaputoCrankNicolsonMethod
 
     return CaputoCrankNicolsonMethod(
-        d=CaputoDerivative(order=alpha, side=Side.Left),
+        alpha=alpha,
         predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
@@ -121,7 +120,7 @@ def crank_nicolson_factory(
     from pycaputo.fode import CaputoCrankNicolsonMethod
 
     return CaputoCrankNicolsonMethod(
-        d=CaputoDerivative(order=alpha, side=Side.Left),
+        alpha=alpha,
         predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
@@ -140,7 +139,7 @@ def pece_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
     from pycaputo.fode import CaputoPECEMethod
 
     return CaputoPECEMethod(
-        d=CaputoDerivative(order=alpha, side=Side.Left),
+        alpha=alpha,
         predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
@@ -158,7 +157,7 @@ def pec_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
     from pycaputo.fode import CaputoPECMethod
 
     return CaputoPECMethod(
-        d=CaputoDerivative(order=alpha, side=Side.Left),
+        alpha=alpha,
         predict_time_step=make_predict_time_step_fixed(dt),
         source=partial(fode_source, alpha=alpha),
         tspan=tspan,
@@ -213,7 +212,7 @@ def test_caputo_fode(
 
     from dataclasses import replace
 
-    eoc = replace(eoc, order=m.order)
+    eoc = replace(eoc, order=m.alpha)
     logger.info("\n%s", eoc)
 
     if visualize:
@@ -233,7 +232,7 @@ def test_caputo_fode(
             ax.set_xlabel("$t$")
             ax.set_ylabel("$y$")
 
-    assert eoc.estimated_order > m.order - 0.25
+    assert eoc.estimated_order > m.alpha - 0.25
 
 
 # }}}

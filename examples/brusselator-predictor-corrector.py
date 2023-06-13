@@ -24,7 +24,6 @@ def brusselator(t: float, y: Array, *, a: float, mu: float) -> Array:
 
 # {{{ solve
 
-from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.fode import CaputoPECEMethod, make_predict_time_step_fixed
 
 alpha = 0.8
@@ -33,7 +32,7 @@ mu = 4.0
 y0 = np.array([1.0, 2.0])
 
 stepper = CaputoPECEMethod(
-    d=CaputoDerivative(order=alpha, side=Side.Left),
+    alpha=alpha,
     predict_time_step=make_predict_time_step_fixed(1.0e-2),
     source=partial(brusselator, a=a, mu=mu),
     tspan=(0, 50),
