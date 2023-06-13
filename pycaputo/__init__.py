@@ -1,57 +1,29 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from pycaputo.grid import Points
+from pycaputo.utils import Array, ArrayOrScalarFunction
 
-from pycaputo.derivatives import (
-    CaputoDerivative,
-    FractionalOperator,
-    GrunwaldLetnikovDerivative,
-    HadamardDerivative,
-    RiemannLiouvilleDerivative,
-    Side,
-)
-from pycaputo.differentiation import (
-    CaputoL1Method,
-    CaputoL2CMethod,
-    CaputoL2Method,
-    CaputoModifiedL1Method,
-    CaputoSpectralMethod,
-    DerivativeMethod,
-    diff,
-    make_diff_from_name,
-)
-from pycaputo.quadrature import (
-    QuadratureMethod,
-    RiemannLiouvilleMethod,
-    RiemannLiouvilleRectangularMethod,
-    RiemannLiouvilleSpectralMethod,
-    RiemannLiouvilleTrapezoidalMethod,
-    make_quad_from_name,
-    quad,
-)
-from pycaputo.utils import ScalarFunction
 
-__all__ = (
-    "CaputoDerivative",
-    "CaputoL1Method",
-    "CaputoL2CMethod",
-    "CaputoL2Method",
-    "CaputoModifiedL1Method",
-    "CaputoSpectralMethod",
-    "DerivativeMethod",
-    "FractionalOperator",
-    "GrunwaldLetnikovDerivative",
-    "HadamardDerivative",
-    "QuadratureMethod",
-    "RiemannLiouvilleDerivative",
-    "RiemannLiouvilleMethod",
-    "RiemannLiouvilleRectangularMethod",
-    "RiemannLiouvilleSpectralMethod",
-    "RiemannLiouvilleTrapezoidalMethod",
-    "ScalarFunction",
-    "Side",
-    "diff",
-    "make_diff_from_name",
-    "make_quad_from_name",
-    "quad",
-)
+def diff(
+    f: ArrayOrScalarFunction,
+    p: Points,
+    alpha: float,
+    *,
+    method: str | None = None,
+) -> Array:
+    """Compute the fractional-order derivative of *f* at the points *p*.
+
+    :arg f: an
+    """
+    import pycaputo.differentiation as pyd
+
+    if method is None:
+        m = pyd.guess_method_for_order(p, alpha)
+    else:
+        m = pyd.make_method_from_name(method, alpha)
+
+    return pyd.diff(m, f, p)
+
+
+__all__ = ("diff", "quad")
