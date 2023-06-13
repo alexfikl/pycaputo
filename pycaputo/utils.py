@@ -28,9 +28,9 @@ if TYPE_CHECKING:
     Array: TypeAlias = np.ndarray[Any, Any]
     Scalar: TypeAlias = Union[np.generic, Array]
 else:
-    #: Array type for :class:`numpy.ndarray`.
+    #: Array type alias for :class:`numpy.ndarray`.
     Array: TypeAlias = np.ndarray
-    #: Scalar type (generally a value convertible to a :class:`float`).
+    #: Scalar type alias (generally a value convertible to a :class:`float`).
     Scalar: TypeAlias = Union[np.generic, Array]
 
 

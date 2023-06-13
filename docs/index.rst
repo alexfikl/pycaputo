@@ -6,8 +6,10 @@ pycaputo documentation
     :hidden:
 
     tutorials
-    derivative
-    algorithms
+    operator
+    quadrature
+    differentiation
+    fode
     misc
     references
     changelog

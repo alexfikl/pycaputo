@@ -32,7 +32,7 @@ mu = 4.0
 y0 = np.array([1.0, 2.0])
 
 stepper = CaputoPECEMethod(
-    alpha=alpha,
+    derivative_order=alpha,
     predict_time_step=make_predict_time_step_fixed(1.0e-2),
     source=partial(brusselator, a=a, mu=mu),
     tspan=(0, 50),
