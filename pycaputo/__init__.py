@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 from pycaputo.grid import Points
 from pycaputo.utils import Array, ArrayOrScalarFunction
 
