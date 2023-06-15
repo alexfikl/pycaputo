@@ -267,6 +267,28 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
     def order(self) -> float:
         return 1.0 + self.d.order
 
+    @classmethod
+    def corrector_iterations_from_order(
+        cls, alpha: float, *, is_d_c2: bool = True
+    ) -> int:
+        r"""Guess an optimal number of corrector iterations.
+
+        A detailed analysis in [Garrappa2010]_ has shown that the Predictor-Corrector
+        method can achieve a maximum convergence order of 2 with a well-chosen
+        number of iterations.
+
+        :arg alpha: fractional order of the Caputo derivative.
+        :arg is_d_c2: if *True* assume that :math:`D_C^\alpha[y] \in \mathcal{C}^2`,
+            otherwise assume that :math:`y \in \mathcal{C}^2`. If neither of
+            these is assumptions is true a maximum order of :math:`1 + \alpha`
+            can be achieved regardlss of the number of iterations.
+
+        :returns: a recommended number of corrector iterations.
+        """
+        from math import ceil
+
+        return ceil(1 / alpha) if is_d_c2 else ceil(1 / alpha - 1)
+
 
 @dataclass(frozen=True)
 class CaputoPECEMethod(CaputoPredictorCorrectorMethod):

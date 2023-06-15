@@ -16,6 +16,11 @@ References
     *Spectral Methods - Algorithms, Analysis and Applications*,
     Springer, 2011.
 
+.. [Garrappa2010] R. Garrappa,
+    *On Linear Stability of Predictor-Corrector Algorithms for Fractional Differential Equations*,
+    International Journal of Computer Mathematics, Vol. 87, pp. 2281--2290, 2010,
+    `DOI <https://doi.org/10.1080/00207160802624331>`__.
+
 .. [Garrappa2015] R. Garrappa,
     *Numerical Evaluation of Two and Three Parameter Mittag-Leffler Functions*,
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
