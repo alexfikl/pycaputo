@@ -32,6 +32,10 @@ References
     Mathematics and Computers in Simulation, Vol. 110, pp. 96--112, 2015,
     `DOI <https://doi.org/10.1016/j.matcom.2013.09.012>`__.
 
+.. [Li2015] C. Li, F. Zeng,
+    *Numerical Methods for Fractional Calculus*,
+    Taylor & Francis Group, 2015.
+
 .. [Stynes2017] M. Stynes, E. O'Riordan, J. L. Gracia,
     *Error Analysis of a Finite Difference Method on Graded Meshes for a
     Time-Fractional Diffusion Equation*,

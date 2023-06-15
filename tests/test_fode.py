@@ -202,7 +202,7 @@ def test_caputo_fode(
                 ts.append(event.t)
                 ys.append(event.y)
 
-        dt = m.predict_time_step(ts[-1], ys[-1])
+        dt = np.max(np.diff(np.array(ts)))
 
         y_ref = fode_solution(ts[-1])
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
@@ -212,7 +212,7 @@ def test_caputo_fode(
 
     from dataclasses import replace
 
-    eoc = replace(eoc, order=m.derivative_order)
+    eoc = replace(eoc, order=m.order)
     logger.info("\n%s", eoc)
 
     if visualize:
@@ -232,7 +232,7 @@ def test_caputo_fode(
             ax.set_xlabel("$t$")
             ax.set_ylabel("$y$")
 
-    assert eoc.estimated_order > m.derivative_order - 0.25
+    assert eoc.estimated_order > m.order - 0.25
 
 
 # }}}
