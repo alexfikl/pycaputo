@@ -267,6 +267,19 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
     def order(self) -> float:
         return 1.0 + self.d.order
 
+
+@dataclass(frozen=True)
+class CaputoPECEMethod(CaputoPredictorCorrectorMethod):
+    """The Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
+    Caputo derivative.
+
+    This method is described in [Diethelm2002]_ in its simplest case with a
+    single corrector step, which effectively gives the so-called PECE scheme.
+    The corrector step can be repeated any number of times to give the
+    :math:`PE(CE)^k` methods (see
+    :attr:`CaputoPredictorCorrectorMethod.corrector_iterations`).
+    """
+
     @classmethod
     def corrector_iterations_from_order(
         cls, alpha: float, *, is_d_c2: bool = True
@@ -277,7 +290,7 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
         method can achieve a maximum convergence order of 2 with a well-chosen
         number of iterations.
 
-        :arg alpha: fractional order of the Caputo derivative.
+        :arg alpha: fractional order of the Caputo derivative assumed in :math:`(0, 1)`.
         :arg is_d_c2: if *True* assume that :math:`D_C^\alpha[y] \in \mathcal{C}^2`,
             otherwise assume that :math:`y \in \mathcal{C}^2`. If neither of
             these is assumptions is true a maximum order of :math:`1 + \alpha`
@@ -288,19 +301,6 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
         from math import ceil
 
         return ceil(1 / alpha) if is_d_c2 else ceil(1 / alpha - 1)
-
-
-@dataclass(frozen=True)
-class CaputoPECEMethod(CaputoPredictorCorrectorMethod):
-    """The Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
-    Caputo Derivative.
-
-    This method is described in [Diethelm2002]_ in its simplest case with a
-    single corrector step, which effectively gives the so-called PECE scheme.
-    The corrector step can be repeated any number of times to give the
-    :math:`PE(CE)^k` methods (see
-    :attr:`CaputoPredictorCorrectorMethod.corrector_iterations`).
-    """
 
 
 @dataclass(frozen=True)
@@ -403,5 +403,38 @@ def _advance_caputo_predictor_corrector(
 
 
 # }}}
+
+
+# {{{ modified Predictor-Corrector
+
+
+@dataclass(frozen=True)
+class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
+    """A modified Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
+    Caputo derivative.
+
+    This method is described in [Garrappa2010]_ as a modification to the standard
+    :class:`CaputoPECEMethod` with improved performance due to reusing the
+    convolution weights.
+
+    Note that this method has an improved order behaviour, as it achieves
+    second-order with a single corrector iteration, but a smaller stability
+    region.
+    """
+
+
+@advance.register(CaputoModifiedPECEMethod)
+def _advance_caputo_predictor_corrector(
+    m: CaputoModifiedPECEMethod,
+    history: History,
+    t: float,
+    y: Array,
+) -> Array:
+    history.ts.append(t)
+    if not history:
+        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        return y
+
+    raise NotImplementedError()
 
 # }}}

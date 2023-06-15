@@ -27,7 +27,7 @@ References
     `DOI <https://doi.org/10.1137/140971191>`__.
 
 .. [Garrappa2015b] R. Garrappa,
-    *Trapezoidal Methods for Fractional Differential Equations: Theore[ftical
+    *Trapezoidal Methods for Fractional Differential Equations: Theoretical
     and Computational Aspects*,
     Mathematics and Computers in Simulation, Vol. 110, pp. 96--112, 2015,
     `DOI <https://doi.org/10.1016/j.matcom.2013.09.012>`__.
