@@ -113,7 +113,7 @@ def fode_factory(
 
         return cls(
             derivative_order=alpha,
-            predict_time_step=fode.make_predict_time_step_fixed(dt),
+            predict_time_step=dt,
             source=partial(garrappa2009_source, alpha=alpha),
             tspan=tspan,
             y0=(y0,),

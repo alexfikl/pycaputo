@@ -139,7 +139,7 @@ class FractionalDifferentialEquationMethod(ABC):
     #: The fractional derivative order used for the derivative.
     derivative_order: float
     #: A callable used to predict the time step.
-    predict_time_step: ScalarStateFunction
+    predict_time_step: float | ScalarStateFunction
 
     #: Right-hand side source term.
     source: StateFunction
@@ -149,6 +149,11 @@ class FractionalDifferentialEquationMethod(ABC):
     tspan: tuple[float, float | None]
     #: Values used to reconstruct the required initial conditions.
     y0: tuple[Array, ...]
+
+    @property
+    def is_constant(self) -> bool:
+        """A flag for whether the method uses a constant time step."""
+        return not callable(self.predict_time_step)
 
     @property
     def name(self) -> str:
@@ -201,6 +206,11 @@ def evolve(
     if history is None:
         history = History()
 
+    if callable(m.predict_time_step):
+        predict_time_step = m.predict_time_step
+    else:
+        predict_time_step = make_predict_time_step_fixed(m.predict_time_step)
+
     n = 0
     t, tfinal = m.tspan
     y = make_initial_condition(m, t, m.y0)
@@ -225,7 +235,7 @@ def evolve(
 
         # next time step
         try:
-            dt = m.predict_time_step(t, y)
+            dt = predict_time_step(t, y)
 
             if not np.isfinite(dt):
                 raise ValueError(f"Invalid time step at iteration {n}: {dt!r}")
