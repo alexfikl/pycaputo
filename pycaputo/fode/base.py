@@ -33,7 +33,7 @@ def make_predict_time_step_fixed(dt: float) -> ScalarStateFunction:
 
 
 def make_predict_time_step_graded(
-    tspan: tuple[float, float], maxit: int, r: int
+    tspan: tuple[float, float], maxit: int, r: int = 2
 ) -> ScalarStateFunction:
     r"""Construct a time step that is smaller around the initial time.
 

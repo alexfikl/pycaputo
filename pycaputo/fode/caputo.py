@@ -31,7 +31,7 @@ class CaputoDifferentialEquationMethod(FractionalDifferentialEquationMethod):
     def d(self) -> FractionalOperator:
         from pycaputo.derivatives import CaputoDerivative, Side
 
-        return CaputoDerivative(self.order, side=Side.Left)
+        return CaputoDerivative(self.derivative_order, side=Side.Left)
 
 
 @make_initial_condition.register(CaputoDifferentialEquationMethod)
@@ -158,15 +158,28 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
 
         import scipy.optimize as so
 
-        result = so.root(
-            func,
-            y0,
-            jac=jac if self.source_jac is not None else None,
-            method="lm",
-            options={"ftol": 1.0e-10},
-        )
+        if y0.size == 1:
+            result = so.root_scalar(
+                f=lambda y: func(y).squeeze(),
+                x0=y0,
+                fprime=(
+                    (lambda y: jac(y).squeeze())
+                    if self.source_jac is not None
+                    else None
+                ),
+                # method="newton",
+            )
+            solution = np.array(result.root)
+        else:
+            result = so.root(
+                func,
+                y0,
+                jac=jac if self.source_jac is not None else None,
+                # method="hybr",
+            )
+            solution = np.array(result.x)
 
-        return np.array(result.x)
+        return solution
 
 
 @advance.register(CaputoCrankNicolsonMethod)
@@ -424,7 +437,7 @@ class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
 
 
 @advance.register(CaputoModifiedPECEMethod)
-def _advance_caputo_predictor_corrector(
+def _advance_caputo_modified_pece(
     m: CaputoModifiedPECEMethod,
     history: History,
     t: float,
@@ -436,5 +449,6 @@ def _advance_caputo_predictor_corrector(
         return y
 
     raise NotImplementedError()
+
 
 # }}}
