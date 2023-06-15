@@ -3,16 +3,13 @@
 
 import pathlib
 from functools import partial
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo.fode import (
-    FractionalDifferentialEquationMethod,
-    make_predict_time_step_fixed,
-)
+from pycaputo import fode
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, set_recommended_matplotlib
 
@@ -56,6 +53,10 @@ def test_predict_time_step_graded() -> None:
 # {{{ solution
 
 
+def fode_solution(t: float) -> Array:
+    return np.array([t**2])
+
+
 def fode_source(t: float, y: Array, *, alpha: float) -> Array:
     from math import gamma
 
@@ -69,118 +70,48 @@ def fode_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 # }}}
 
 
-def fode_solution(t: float) -> Array:
-    return np.array([t**2])
-
-
-def forward_euler_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
+def fode_factory(
+    cls: type[fode.FractionalDifferentialEquationMethod], **kwargs: Any
+) -> Callable[[float, int], fode.FractionalDifferentialEquationMethod]:
     y0 = fode_solution(0.0)
     tspan = (0.0, 1.0)
-    dt = (tspan[1] - tspan[0]) / n
 
-    from pycaputo.fode import CaputoForwardEulerMethod
+    def wrapper(alpha: float, n: int) -> fode.FractionalDifferentialEquationMethod:
+        dt = (tspan[1] - tspan[0]) / n
 
-    return CaputoForwardEulerMethod(
-        derivative_order=alpha,
-        predict_time_step=make_predict_time_step_fixed(dt),
-        source=partial(fode_source, alpha=alpha),
-        tspan=tspan,
-        y0=(y0,),
-    )
+        if "source_jac" in kwargs:
+            kwargs["source_jac"] = partial(kwargs["source_jac"], alpha=alpha)
 
+        return cls(
+            derivative_order=alpha,
+            predict_time_step=fode.make_predict_time_step_fixed(dt),
+            source=partial(fode_source, alpha=alpha),
+            tspan=tspan,
+            y0=(y0,),
+            **kwargs,
+        )
 
-def backward_euler_factory(
-    alpha: float, n: int
-) -> FractionalDifferentialEquationMethod:
-    y0 = fode_solution(0.0)
-    tspan = (0.0, 1.0)
-    dt = (tspan[1] - tspan[0]) / n
-
-    from pycaputo.fode import CaputoCrankNicolsonMethod
-
-    return CaputoCrankNicolsonMethod(
-        derivative_order=alpha,
-        predict_time_step=make_predict_time_step_fixed(dt),
-        source=partial(fode_source, alpha=alpha),
-        tspan=tspan,
-        y0=(y0,),
-        # cr
-        source_jac=partial(fode_source_jac, alpha=alpha),
-        theta=0.0,
-    )
-
-
-def crank_nicolson_factory(
-    alpha: float, n: int
-) -> FractionalDifferentialEquationMethod:
-    y0 = fode_solution(0.0)
-    tspan = (0.0, 1.0)
-    dt = (tspan[1] - tspan[0]) / n
-
-    from pycaputo.fode import CaputoCrankNicolsonMethod
-
-    return CaputoCrankNicolsonMethod(
-        derivative_order=alpha,
-        predict_time_step=make_predict_time_step_fixed(dt),
-        source=partial(fode_source, alpha=alpha),
-        tspan=tspan,
-        y0=(y0,),
-        # cr
-        source_jac=partial(fode_source_jac, alpha=alpha),
-        theta=0.5,
-    )
-
-
-def pece_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
-    y0 = fode_solution(0.0)
-    tspan = (0.0, 1.0)
-    dt = (tspan[1] - tspan[0]) / n
-
-    from pycaputo.fode import CaputoPECEMethod
-
-    return CaputoPECEMethod(
-        derivative_order=alpha,
-        predict_time_step=make_predict_time_step_fixed(dt),
-        source=partial(fode_source, alpha=alpha),
-        tspan=tspan,
-        y0=(y0,),
-        # pece
-        corrector_iterations=1,
-    )
-
-
-def pec_factory(alpha: float, n: int) -> FractionalDifferentialEquationMethod:
-    y0 = fode_solution(0.0)
-    tspan = (0.0, 1.0)
-    dt = (tspan[1] - tspan[0]) / n
-
-    from pycaputo.fode import CaputoPECMethod
-
-    return CaputoPECMethod(
-        derivative_order=alpha,
-        predict_time_step=make_predict_time_step_fixed(dt),
-        source=partial(fode_source, alpha=alpha),
-        tspan=tspan,
-        y0=(y0,),
-        # pec
-        # FIXME: this does not converge to the correct order with one iteration
-        corrector_iterations=2,
-    )
+    return wrapper
 
 
 @pytest.mark.parametrize(
     "factory",
     [
-        forward_euler_factory,
-        backward_euler_factory,
-        crank_nicolson_factory,
-        pece_factory,
-        pec_factory,
+        fode_factory(fode.CaputoForwardEulerMethod),
+        fode_factory(
+            fode.CaputoCrankNicolsonMethod, theta=0.0, source_jac=fode_source_jac
+        ),
+        fode_factory(
+            fode.CaputoCrankNicolsonMethod, theta=0.5, source_jac=fode_source_jac
+        ),
+        fode_factory(fode.CaputoPECEMethod, corrector_iterations=1),
+        # FIXME: this does not converge to the correct order with one iteration
+        fode_factory(fode.CaputoPECMethod, corrector_iterations=2),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
 def test_caputo_fode(
-    factory: Callable[[float, int], FractionalDifferentialEquationMethod],
+    factory: Callable[[float, int], fode.FractionalDifferentialEquationMethod],
     alpha: float,
     *,
     visualize: bool = False,
