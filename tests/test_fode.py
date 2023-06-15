@@ -50,20 +50,47 @@ def test_predict_time_step_graded() -> None:
 # {{{ test_caputo_fode
 
 
-# {{{ solution
+# {{{ solution: Section 3.3.1, Example 2 [Li2015]
 
 
-def fode_solution(t: float) -> Array:
+def li2015_solution(t: float) -> Array:
+    return np.array([t**5 - 3 * t**4 + 2 * t**3])
+
+
+def li2015_source(t: float, y: Array, *, alpha: float) -> Array:
+    from math import gamma
+
+    f = (
+        120 / gamma(6 - alpha) * t ** (5 - alpha)
+        - 72 / gamma(5 - alpha) * t ** (4 - alpha)
+        + 12 / gamma(4 - alpha) * t ** (3 - alpha)
+        + (t**5 - 3 * t**4 + 2 * t**3) ** 2
+    )
+
+    return np.array([-y[0] ** 2 + f], dtype=y.dtype)
+
+
+def li2015_source_jac(t: float, y: Array, *, alpha: float) -> Array:
+    return np.array([[-2 * y[0]]])
+
+
+# }}}
+
+
+# {{{ solution: Equation 27 from [Garrappa2009]
+
+
+def garrapa2009_solution(t: float) -> Array:
     return np.array([t**2])
 
 
-def fode_source(t: float, y: Array, *, alpha: float) -> Array:
+def garrappa2009_source(t: float, y: Array, *, alpha: float) -> Array:
     from math import gamma
 
     return np.array(t**2 - y + 2 * t ** (2 - alpha) / gamma(3 - alpha))
 
 
-def fode_source_jac(t: float, y: Array, *, alpha: float) -> Array:
+def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
     return -np.ones_like(y)
 
 
@@ -72,8 +99,8 @@ def fode_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 
 def fode_factory(
     cls: type[fode.FractionalDifferentialEquationMethod], **kwargs: Any
-) -> Callable[[float, int], fode.FractionalDifferentialEquationMethod]:
-    y0 = fode_solution(0.0)
+) -> Any:
+    y0 = garrapa2009_solution(0.0)
     tspan = (0.0, 1.0)
 
     def wrapper(alpha: float, n: int) -> fode.FractionalDifferentialEquationMethod:
@@ -85,7 +112,7 @@ def fode_factory(
         return cls(
             derivative_order=alpha,
             predict_time_step=fode.make_predict_time_step_fixed(dt),
-            source=partial(fode_source, alpha=alpha),
+            source=partial(garrappa2009_source, alpha=alpha),
             tspan=tspan,
             y0=(y0,),
             **kwargs,
@@ -99,10 +126,14 @@ def fode_factory(
     [
         fode_factory(fode.CaputoForwardEulerMethod),
         fode_factory(
-            fode.CaputoCrankNicolsonMethod, theta=0.0, source_jac=fode_source_jac
+            fode.CaputoCrankNicolsonMethod,
+            theta=0.0,
+            source_jac=garrappa2009_source_jac,
         ),
         fode_factory(
-            fode.CaputoCrankNicolsonMethod, theta=0.5, source_jac=fode_source_jac
+            fode.CaputoCrankNicolsonMethod,
+            theta=0.5,
+            source_jac=garrappa2009_source_jac,
         ),
         fode_factory(fode.CaputoPECEMethod, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
@@ -135,7 +166,7 @@ def test_caputo_fode(
 
         dt = np.max(np.diff(np.array(ts)))
 
-        y_ref = fode_solution(ts[-1])
+        y_ref = garrapa2009_solution(ts[-1])
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
         logger.info("dt %.5f error %.12e", dt, error)
 
@@ -149,7 +180,7 @@ def test_caputo_fode(
     if visualize:
         t = np.array(ts)
         y = np.array(ys).squeeze()
-        y_ref = np.array([fode_solution(ti) for ti in t]).squeeze()
+        y_ref = np.array([garrapa2009_solution(ti) for ti in t]).squeeze()
 
         from pycaputo.utils import figure
 
