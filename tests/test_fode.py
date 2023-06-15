@@ -91,7 +91,7 @@ def fode_factory(
             **kwargs,
         )
 
-    return wrapper
+    return pytest.param(wrapper, id=cls.__name__)
 
 
 @pytest.mark.parametrize(
