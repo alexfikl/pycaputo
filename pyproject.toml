@@ -126,6 +126,7 @@ module = [
     "matplotlib.*",
     "scipy.*",
     "SciencePlots.*",
+    "scienceplots.*",
 ]
 ignore_missing_imports = true
 
