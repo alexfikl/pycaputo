@@ -278,7 +278,11 @@ def check_usetex(*, s: bool) -> bool:
     return True
 
 
-def set_recommended_matplotlib(use_tex: bool | None = None) -> None:
+def set_recommended_matplotlib(
+    *,
+    use_tex: bool | None = None,
+    dark: bool = False,
+) -> None:
     try:
         import matplotlib.pyplot as mp
     except ImportError:
@@ -288,7 +292,11 @@ def set_recommended_matplotlib(use_tex: bool | None = None) -> None:
         use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)
 
     defaults = {
-        "figure": {"figsize": (8, 8), "dpi": 300, "constrained_layout": {"use": True}},
+        "figure": {
+            "figsize": (8, 8),
+            "dpi": 300,
+            "constrained_layout": {"use": True},
+        },
         "text": {"usetex": use_tex},
         "legend": {"fontsize": 32},
         "lines": {"linewidth": 2, "markersize": 10},
@@ -311,16 +319,22 @@ def set_recommended_matplotlib(use_tex: bool | None = None) -> None:
     from contextlib import suppress
 
     with suppress(ImportError):
+        import scienceplots  # noqa: F401
+
+    with suppress(ImportError):
         import SciencePlots  # noqa: F401
 
     if "science" in mp.style.library:
-        mp.style.use(["science", "ieee"])
+        if dark:
+            mp.style.use(["science", "ieee", "dark_background"])
+        else:
+            mp.style.use(["science", "ieee"])
     elif "seaborn-v0_8" in mp.style.library:
         # NOTE: matplotlib v3.6 deprecated all the seaborn styles
-        mp.style.use("seaborn-v0_8-white")
+        mp.style.use("seaborn-v0_8-dark" if dark else "seaborn-v0_8-white")
     elif "seaborn" in mp.style.library:
         # NOTE: for older versions of matplotlib
-        mp.style.use("seaborn-white")
+        mp.style.use("seaborn-dark" if dark else "seaborn-white")
 
     for group, params in defaults.items():
         with suppress(KeyError):
