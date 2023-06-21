@@ -26,13 +26,13 @@ matplotlib==3.7.1
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.3.0
+mypy==1.4.0
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-natsort==8.3.1
+natsort==8.4.0
     # via pyproject-fmt
-numpy==1.24.3
+numpy==1.25.0
     # via
     #   contourpy
     #   differint
@@ -53,9 +53,9 @@ pluggy==1.0.0
     # via pytest
 pygments==2.15.1
     # via rich
-pyparsing==3.0.9
+pyparsing==3.1.0
     # via matplotlib
-pyproject-fmt==0.12.0
+pyproject-fmt==0.12.1
     # via pycaputo (pyproject.toml)
 pyproject-hooks==1.0.0
     # via build
@@ -65,7 +65,7 @@ python-dateutil==2.8.2
     # via matplotlib
 rich==13.4.2
     # via pycaputo (pyproject.toml)
-ruff==0.0.272
+ruff==0.0.274
     # via pycaputo (pyproject.toml)
 scipy==1.10.1
     # via pycaputo (pyproject.toml)
