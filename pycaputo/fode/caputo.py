@@ -154,7 +154,7 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
 
         def jac(y: Array) -> Array:
             assert self.source_jac is not None
-            return np.array(1 - c * self.source_jac(t, y))
+            return np.array(np.eye(y.size) - c * self.source_jac(t, y))
 
         import scipy.optimize as so
 
@@ -175,8 +175,11 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
                 func,
                 y0,
                 jac=jac if self.source_jac is not None else None,
-                # method="hybr",
+                # NOTE: the default hybr does not use derivatives, so use lm instead
+                # FIXME: will need to maybe benchmark these a bit?
+                method="lm",
             )
+
             solution = np.array(result.x)
 
         return solution
