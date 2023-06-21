@@ -102,7 +102,7 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
 
     The Crank-Nicolson method is a convex combination of the forward Euler
     and the backward Euler method. This implementation uses a parameter
-    :attr:`theta` to interpolate between the two.
+    :attr:`theta` to interpolate between the two (see Section 3.3 in [Li2015]_).
 
     Note that for :math:`\theta = 0` we get the forward Euler method, which
     is first order, for :math:`\theta = 1` we get the backward Euler method,
@@ -115,6 +115,9 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
     #: of :math:`\theta = 1/2` gives the standard Crank-Nicolson method.
     theta: float
 
+    #: Jacobian of :attr:`~pycaputo.fode.FractionalDifferentialEquationMethod.source`.
+    #: By default, implicit methods use :mod:`scipy` for their root finding,
+    #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
     source_jac: StateFunction | None
 
     if __debug__:
@@ -130,15 +133,23 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
         return (1.0 + self.d.order) if self.theta == 0.5 else 1.0
 
     def solve(self, t: float, y0: Array, c: float, r: Array) -> Array:
-        """Solves an implicit update formula.
+        r"""Solves an implicit update formula.
 
-        This function will solve an equation of the form
+        This function will meant to solve implicit equations of the form
 
         .. math::
 
-            y - c * f(t, y) = r
+            y_{n + 1} = \sum_{k = 0}^{n + 1} c_k f(t_k, y_k).
 
-        for the solution :math:`y`. This is specific to first-order FODEs.
+        Rearranging the implicit terms, we can write
+
+        .. math::
+
+            y_{n + 1} - c_{n + 1} f(t_{n + 1}, y_{n + 1}) = r_n,
+
+        and solve for the solution :math:`y^{n + 1}`, where :math:`r_n`
+        contains all the explicit terms. This is done by a root finding algorithm
+        provided by :func:`scipy.optimize.root`.
 
         :arg t: time at which the solution *y* is evaluated.
         :arg y: unknown solution at time *t*.
