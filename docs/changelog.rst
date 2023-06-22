@@ -1,6 +1,27 @@
 Changelog
 =========
 
+pycaputo 0.2 (TBD)
+------------------
+
+Features
+^^^^^^^^
+
+* Bumped minimum Python version to 3.9 (to match latest Numpy).
+* Added an example with the fractional Lorenz system.
+* Support setting a constant for
+  :meth:`~pycaputo.fode.FractionalDifferentialEquationMethod.predict_time_step`.
+* Add a guess for the number of corrector iterations
+  for :class:`~pycaputo.fode.CaputoPECEMethod` from [Garrappa2010]_.
+
+Fixes
+^^^^^
+
+* Fix :class:`~pycaputo.quad.RiemannLiouvilleTrapezoidalMethod` on uniform grids.
+* Fix Jacobian construction for :class:`~pycaputo.fode.CaputoWeightedEulerMethod`
+  which gave incorrect results for systems of equations.
+* Add dark variants of plots to the documentation for nicer results.
+
 pycaputo 0.1 (June 12, 2023)
 ----------------------------
 
