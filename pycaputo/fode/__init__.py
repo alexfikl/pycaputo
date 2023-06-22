@@ -13,17 +13,17 @@ from pycaputo.fode.base import (
     make_predict_time_step_graded,
 )
 from pycaputo.fode.caputo import (
-    CaputoCrankNicolsonMethod,
     CaputoDifferentialEquationMethod,
     CaputoForwardEulerMethod,
     CaputoPECEMethod,
     CaputoPECMethod,
     CaputoPredictorCorrectorMethod,
+    CaputoWeightedEulerMethod,
 )
 from pycaputo.fode.history import History, SourceHistory, StateHistory
 
 __all__ = (
-    "CaputoCrankNicolsonMethod",
+    "CaputoWeightedEulerMethod",
     "CaputoDifferentialEquationMethod",
     "CaputoForwardEulerMethod",
     "CaputoPredictorCorrectorMethod",

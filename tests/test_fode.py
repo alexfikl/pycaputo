@@ -128,12 +128,12 @@ def fode_factory(
     [
         fode_factory(fode.CaputoForwardEulerMethod),
         fode_factory(
-            fode.CaputoCrankNicolsonMethod,
+            fode.CaputoWeightedEulerMethod,
             theta=0.0,
             source_jac=garrappa2009_source_jac,
         ),
         fode_factory(
-            fode.CaputoCrankNicolsonMethod,
+            fode.CaputoWeightedEulerMethod,
             theta=0.5,
             source_jac=garrappa2009_source_jac,
         ),

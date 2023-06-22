@@ -93,14 +93,14 @@ def _advance_caputo_forward_euler(
 # }}}
 
 
-# {{{ Crank-Nicolson
+# {{{ weighted Euler
 
 
 @dataclass(frozen=True)
-class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
-    r"""The Crank-Nicolson discretization of the Caputo derivative.
+class CaputoWeightedEulerMethod(CaputoDifferentialEquationMethod):
+    r"""The weighted Euler discretization of the Caputo derivative.
 
-    The Crank-Nicolson method is a convex combination of the forward Euler
+    The weighted Euler method is a convex combination of the forward Euler
     and the backward Euler method. This implementation uses a parameter
     :attr:`theta` to interpolate between the two (see Section 3.3 in [Li2015]_).
 
@@ -196,9 +196,9 @@ class CaputoCrankNicolsonMethod(CaputoDifferentialEquationMethod):
         return solution
 
 
-@advance.register(CaputoCrankNicolsonMethod)
-def _advance_caputo_crank_nicolson(
-    m: CaputoCrankNicolsonMethod,
+@advance.register(CaputoWeightedEulerMethod)
+def _advance_caputo_weighted_euler(
+    m: CaputoWeightedEulerMethod,
     history: History,
     t: float,
     y: Array,
