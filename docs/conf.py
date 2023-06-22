@@ -3,9 +3,11 @@
 
 import os
 import sys
+from docutils import nodes
 
 # NOTE: seems necessary for readthedocs.org because it doesn't `pip install -e`
 sys.path.insert(0, os.path.abspath(".."))
+
 
 # {{{ project information
 
@@ -17,6 +19,36 @@ author = m["Author-email"]
 copyright = f"2023 {author}"  # noqa: A001
 version = m["Version"]
 release = version
+
+# }}}
+
+# {{{ github roles
+
+
+def autolink(pattern: str):
+    def role(name, rawtext, text, lineno, inliner, options=None, context=None):
+        if options is None:
+            options = {}
+
+        if context is None:
+            context = []
+
+        url = pattern.format(number=text)
+        node = nodes.reference(rawtext, f"#{text}", refuri=url, **options)
+        return [node], []
+
+    return role
+
+
+def setup(app) -> None:
+    (tmp_url,) = (
+        v for k, v in m.items() if k.startswith("Project-URL") and "Repository" in v
+    )
+    project_url = tmp_url.split(" ")[-1]
+
+    app.add_role("ghpr", autolink(f"{project_url}/pull/{{number}}"))
+    app.add_role("ghissue", autolink(f"{project_url}/issues/{{number}}"))
+
 
 # }}}
 

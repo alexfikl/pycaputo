@@ -33,7 +33,8 @@ Caputo Derivative FODEs
 
 .. autoclass:: CaputoDifferentialEquationMethod
 .. autoclass:: CaputoForwardEulerMethod
-.. autoclass:: CaputoCrankNicolsonMethod
+.. autoclass:: CaputoWeightedEulerMethod
 .. autoclass:: CaputoPredictorCorrectorMethod
 .. autoclass:: CaputoPECEMethod
 .. autoclass:: CaputoPECMethod
+.. autoclass:: CaputoModifiedPECEMethod

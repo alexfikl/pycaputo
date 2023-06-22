@@ -15,6 +15,7 @@ from pycaputo.fode.base import (
 from pycaputo.fode.caputo import (
     CaputoDifferentialEquationMethod,
     CaputoForwardEulerMethod,
+    CaputoModifiedPECEMethod,
     CaputoPECEMethod,
     CaputoPECMethod,
     CaputoPredictorCorrectorMethod,
@@ -29,6 +30,7 @@ __all__ = (
     "CaputoPredictorCorrectorMethod",
     "CaputoPECEMethod",
     "CaputoPECMethod",
+    "CaputoModifiedPECEMethod",
     "Event",
     "FractionalDifferentialEquationMethod",
     "History",
