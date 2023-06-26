@@ -55,6 +55,33 @@ class CaputoForwardEulerMethod(CaputoDifferentialEquationMethod):
         return 1.0
 
 
+def _update_caputo_initial_condition(
+    dy: Array, t: float, y0: tuple[Array, ...]
+) -> Array:
+    from math import gamma
+
+    for k, y0k in enumerate(y0):
+        dy += t**k / gamma(k + 1) * y0k
+
+    return dy
+
+
+def _update_caputo_forward_euler(dy: Array, history: History, alpha: float) -> Array:
+    from math import gamma
+
+    n = len(history)
+    dt = history.ts[-1] - np.array(history.ts)
+
+    for k in range(n):
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
+
+        omega = (dt[k] ** alpha - dt[k + 1] ** alpha) / gamma(1 + alpha)
+        dy += omega * yk.f
+
+    return dy
+
+
 @advance.register(CaputoForwardEulerMethod)
 def _advance_caputo_forward_euler(
     m: CaputoForwardEulerMethod,
@@ -67,27 +94,14 @@ def _advance_caputo_forward_euler(
         history.append(SourceHistory(t=t, f=m.source(t, y)))
         return y
 
-    from math import gamma
-
-    n = len(history)
     alpha = m.derivative_order
 
-    # add initial conditions
-    ynext = np.zeros_like(y)
-    for k, y0k in enumerate(m.y0):
-        ynext += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
+    dy = np.zeros_like(y)
+    dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
+    dy = _update_caputo_forward_euler(dy, history, alpha)
 
-    # add history term
-    ts = history.ts
-    for k in range(n):
-        yk = history[k]
-        assert isinstance(yk, SourceHistory)
-
-        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-        ynext += omega * yk.f
-
-    history.append(SourceHistory(t=ts[-1], f=m.source(ts[-1], ynext)))
-    return ynext
+    history.append(SourceHistory(t=t, f=m.source(t, dy)))
+    return dy
 
 
 # }}}
@@ -215,8 +229,7 @@ def _advance_caputo_weighted_euler(
 
     # add initial conditions
     fnext = np.zeros_like(y)
-    for k, y0k in enumerate(m.y0):
-        fnext += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
+    fnext = _update_caputo_initial_condition(fnext, t - m.tspan[0], m.y0)
 
     # compute explicit memory term
     ts = history.ts
@@ -341,6 +354,60 @@ class CaputoPECMethod(CaputoPredictorCorrectorMethod):
     """
 
 
+def _update_caputo_adams_bashforth2(
+    dy: Array, yp: Array, history: History, alpha: float
+) -> tuple[Array, float]:
+    from math import gamma
+
+    n = len(history)
+    gamma1 = gamma(1 + alpha)
+    gamma2 = gamma(2 + alpha)
+
+    ts = np.array(history.ts)
+    dt = np.diff(ts)
+    ts = history.ts[-1] - ts
+
+    for k in range(n - 1):
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
+
+        omega = (
+            ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+            - ts[k] ** (alpha + 1) / gamma2 / dt[k]
+            + ts[k] ** alpha / gamma1
+        )
+        dy += omega * yk.f
+
+        yk = history[k + 1]
+        assert isinstance(yk, SourceHistory)
+
+        omega = (
+            ts[k] ** (alpha + 1) / gamma2 / dt[k]
+            - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+            - ts[k + 1] ** alpha / gamma1
+        )
+        dy += omega * yk.f
+
+    k = n - 1
+    yk = history[k]
+    assert isinstance(yk, SourceHistory)
+
+    omega = (
+        ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+        - ts[k] ** (alpha + 1) / gamma2 / dt[k]
+        + ts[k] ** alpha / gamma1
+    )
+    dy += omega * yk.f
+
+    omega = (
+        ts[k] ** (alpha + 1) / gamma2 / dt[k]
+        - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+        - ts[k + 1] ** alpha / gamma1
+    )
+
+    return dy, omega
+
+
 @advance.register(CaputoPredictorCorrectorMethod)
 def _advance_caputo_predictor_corrector(
     m: CaputoPredictorCorrectorMethod,
@@ -353,78 +420,28 @@ def _advance_caputo_predictor_corrector(
         history.append(SourceHistory(t=t, f=m.source(t, y)))
         return y
 
-    from math import gamma
-
-    n = len(history)
     alpha = m.derivative_order
-    ts = history.ts
-    gamma1 = gamma(1 + alpha)
-    gamma2 = gamma(2 + alpha)
 
     # add initial conditions
     y0 = np.zeros_like(y)
-    for k, y0k in enumerate(m.y0):
-        y0 += (t - m.tspan[0]) ** k / gamma(k + 1) * y0k
+    y0 = _update_caputo_initial_condition(y0, t - m.tspan[0], m.y0)
 
     # predictor step (forward Euler)
     yp = np.copy(y0)
-    omega_e = np.empty(n)
-    for k in range(n):
-        yk = history[k]
-        assert isinstance(yk, SourceHistory)
-
-        omega_e[k] = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma1
-        yp += omega_e[k] * yk.f
+    yp = _update_caputo_forward_euler(yp, history, alpha)
 
     # corrector step (Adams-Bashforth 2)
     yexplicit = np.copy(y0)
-    for k in range(n - 1):
-        yk = history[k]
-        assert isinstance(yk, SourceHistory)
-
-        dt = ts[k + 1] - ts[k]
-        omega = (
-            (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-            - (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-            + (t - ts[k]) ** alpha / gamma1
-        )
-        yexplicit += omega * yk.f
-
-        yk = history[k + 1]
-        assert isinstance(yk, SourceHistory)
-
-        omega = (
-            (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-            - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-            - (t - ts[k + 1]) ** alpha / gamma1
-        )
-        yexplicit += omega * yk.f
-
-    k = n - 1
-    yk = history[k]
-    assert isinstance(yk, SourceHistory)
-
-    dt = ts[k + 1] - ts[k]
-    omega = (
-        (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-        + (t - ts[k]) ** alpha / gamma1
-    )
-    yexplicit += omega * yk.f
+    yexplicit, omega = _update_caputo_adams_bashforth2(yexplicit, yp, history, alpha)
 
     # corrector iterations
-    omega = (
-        (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k + 1]) ** alpha / gamma1
-    )
     for _ in range(m.corrector_iterations):
         fp = m.source(t, yp)
         yp = yexplicit + omega * fp
 
     ynext = yp
-    f = fp if isinstance(m, CaputoPECMethod) else m.source(ts[-1], ynext)
-    history.append(SourceHistory(t=ts[-1], f=f))
+    f = fp if isinstance(m, CaputoPECMethod) else m.source(t, ynext)
+    history.append(SourceHistory(t=t, f=f))
 
     return ynext
 
