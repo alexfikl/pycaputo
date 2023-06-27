@@ -151,7 +151,7 @@ def test_caputo_fode(
     visualize: bool = False,
 ) -> None:
     from pycaputo.fode import StepCompleted, StepFailed, evolve
-    from pycaputo.utils import EOCRecorder
+    from pycaputo.utils import BlockTimer, EOCRecorder
 
     eoc = EOCRecorder()
     if not callable(factory):
@@ -161,20 +161,21 @@ def test_caputo_fode(
     for n in [32, 64, 128, 256, 512]:
         m = factory(alpha, n)
 
-        ts = []
-        ys = []
-        for event in evolve(m, verbose=True):
-            if isinstance(event, StepFailed):
-                raise ValueError("Step update failed")
-            elif isinstance(event, StepCompleted):
-                ts.append(event.t)
-                ys.append(event.y)
+        with BlockTimer(name=m.name) as bt:
+            ts = []
+            ys = []
+            for event in evolve(m, verbose=True):
+                if isinstance(event, StepFailed):
+                    raise ValueError("Step update failed")
+                elif isinstance(event, StepCompleted):
+                    ts.append(event.t)
+                    ys.append(event.y)
 
         dt = np.max(np.diff(np.array(ts)))
 
         y_ref = garrapa2009_solution(ts[-1])
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
-        logger.info("dt %.5f error %.12e", dt, error)
+        logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
 
         eoc.add_data_point(dt, error)
 

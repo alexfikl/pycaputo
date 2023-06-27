@@ -483,10 +483,6 @@ class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
     a smaller stability region.
     """
 
-    @property
-    def order(self) -> float:
-        return 2.0
-
 
 @advance.register(CaputoModifiedPECEMethod)
 def _advance_caputo_modified_pece(

@@ -5,9 +5,20 @@ from __future__ import annotations
 
 import os
 import pathlib
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Iterable, Iterator, Protocol, TypeVar, Union
+from types import TracebackType
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    Protocol,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 from typing_extensions import TypeAlias
@@ -369,6 +380,92 @@ def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
 
     fig.tight_layout()
     fig.savefig(filename, **kwargs)
+
+
+# }}}
+
+# {{{ timing
+
+
+@dataclass(frozen=True)
+class TimingResult:
+    walltime: float
+    mean: float
+    std: float
+
+    def __str__(self) -> str:
+        return f"{self.mean:.5f}s ± {self.std:.3f}"
+
+
+def timeit(
+    stmt: Callable[[], Any],
+    *,
+    repeat: int = 32,
+    number: int = 1,
+    skip: int = 1,
+) -> TimingResult:
+    """Run *stmt* using :func:`timeit.repeat`.
+
+    :returns: a :class:`TimeResult` with statistics about the runs.
+    """
+
+    import timeit as _timeit
+
+    r = _timeit.repeat(stmt=stmt, repeat=repeat + 1, number=number)
+    rs = np.array(r[skip:])
+
+    return TimingResult(
+        walltime=np.min(rs),
+        mean=np.mean(rs),
+        std=np.std(rs, ddof=1),
+    )
+
+
+@dataclass
+class BlockTimer:
+    """A context manager for timing blocks of code.
+
+    .. code:: python
+
+        with BlockTimer("my-code-block") as bt:
+            # do some code
+
+        print(bt)
+    """
+
+    #: An identifier used to differentiate the timer.
+    name: str = "block"
+
+    #: Total wall time, obtained from :func:`time.perf_counter`
+    t_wall: float = field(init=False)
+    t_wall_start: float = field(init=False)
+
+    #: Total process time, obtained from :func:`time.process_time`.
+    t_proc: float = field(init=False)
+    t_proc_start: float = field(init=False)
+
+    @property
+    def t_cpu(self) -> float:
+        """Total CPU time, obtained from ``t_proc / t_wall``."""
+        return self.t_proc / self.t_wall
+
+    def __enter__(self) -> BlockTimer:
+        self.t_wall_start = time.perf_counter()
+        self.t_proc_start = time.process_time()
+
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        self.t_wall = time.perf_counter() - self.t_wall_start
+        self.t_proc = time.process_time() - self.t_proc_start
+
+    def __str__(self) -> str:
+        return f"{self.name}: {self.t_wall:.3e}s wall, {self.t_cpu:.3f}x cpu"
 
 
 # }}}
