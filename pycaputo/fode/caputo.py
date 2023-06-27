@@ -66,11 +66,18 @@ def _update_caputo_initial_condition(
     return dy
 
 
-def _update_caputo_forward_euler(dy: Array, history: History, alpha: float) -> Array:
+def _update_caputo_forward_euler(
+    dy: Array,
+    history: History,
+    alpha: float,
+    *,
+    n: int | None = None,
+) -> Array:
     from math import gamma
 
-    n = len(history)
+    n = len(history) if n is None else n
     dt = history.ts[-1] - np.array(history.ts)
+    assert n is not None
 
     for k in range(n):
         yk = history[k]
@@ -355,13 +362,20 @@ class CaputoPECMethod(CaputoPredictorCorrectorMethod):
 
 
 def _update_caputo_adams_bashforth2(
-    dy: Array, yp: Array, history: History, alpha: float
+    dy: Array,
+    history: History,
+    alpha: float,
+    *,
+    n: int | None = None,
 ) -> tuple[Array, float]:
     from math import gamma
 
-    n = len(history)
+    is_n = n is not None
+    n = len(history) if n is None else n
+
     gamma1 = gamma(1 + alpha)
     gamma2 = gamma(2 + alpha)
+    assert n is not None
 
     ts = np.array(history.ts)
     dt = np.diff(ts)
@@ -388,17 +402,20 @@ def _update_caputo_adams_bashforth2(
         )
         dy += omega * yk.f
 
-    k = n - 1
-    yk = history[k]
-    assert isinstance(yk, SourceHistory)
+    if not is_n and n == len(history):
+        k = n - 1
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
 
-    omega = (
-        ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
-        - ts[k] ** (alpha + 1) / gamma2 / dt[k]
-        + ts[k] ** alpha / gamma1
-    )
-    dy += omega * yk.f
+        omega = (
+            ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+            - ts[k] ** (alpha + 1) / gamma2 / dt[k]
+            + ts[k] ** alpha / gamma1
+        )
+        dy += omega * yk.f
 
+    # NOTE: always compute the weight for the last step in the history
+    k = len(history) - 1
     omega = (
         ts[k] ** (alpha + 1) / gamma2 / dt[k]
         - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
@@ -432,7 +449,7 @@ def _advance_caputo_predictor_corrector(
 
     # corrector step (Adams-Bashforth 2)
     yexplicit = np.copy(y0)
-    yexplicit, omega = _update_caputo_adams_bashforth2(yexplicit, yp, history, alpha)
+    yexplicit, omega = _update_caputo_adams_bashforth2(yexplicit, history, alpha)
 
     # corrector iterations
     for _ in range(m.corrector_iterations):
@@ -454,17 +471,21 @@ def _advance_caputo_predictor_corrector(
 
 @dataclass(frozen=True)
 class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
-    """A modified Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
+    r"""A modified Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
     Caputo derivative.
 
     This method is described in [Garrappa2010]_ as a modification to the standard
     :class:`CaputoPECEMethod` with improved performance due to reusing the
     convolution weights.
 
-    Note that this method has an improved order behaviour, as it achieves
-    second-order with a single corrector iteration, but a smaller stability
-    region.
+    Note that this method has an improved order, i.e. it achieves
+    second-order with a single corrector iteration for all :math:`\alpha`, but
+    a smaller stability region.
     """
+
+    @property
+    def order(self) -> float:
+        return 2.0
 
 
 @advance.register(CaputoModifiedPECEMethod)
@@ -479,7 +500,73 @@ def _advance_caputo_modified_pece(
         history.append(SourceHistory(t=t, f=m.source(t, y)))
         return y
 
-    raise NotImplementedError()
+    from math import gamma
+
+    n = len(history)
+    alpha = m.derivative_order
+    gamma2 = gamma(2 + alpha)
+    gamma1 = gamma(1 + alpha)
+    ts = history.ts
+
+    # compute common terms
+    dy = np.zeros_like(y)
+    dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
+
+    if n == 1:
+        yp = _update_caputo_forward_euler(dy, history, alpha)
+    else:
+        dy, _ = _update_caputo_adams_bashforth2(dy, history, alpha, n=n)
+
+        # compute predictor
+        yp = np.copy(dy)
+
+        k = n - 1
+        yk = history[k - 1]
+        assert isinstance(yk, SourceHistory)
+
+        # fmt: off
+        omega = (
+            (t - ts[k]) ** (alpha + 1) / gamma2 / (ts[k] - ts[k - 1])
+            + (t - ts[k]) ** alpha / gamma1
+            )
+        yp += omega * yk.f
+        # fmt: on
+
+        yk = history[k]
+        assert isinstance(yk, SourceHistory)
+
+        omega = -((t - ts[k]) ** (alpha + 1)) / gamma2 / (ts[k] - ts[k - 1])
+        yp += omega * yk.f
+
+    # compute corrector
+    ynext = np.copy(dy)
+
+    k = n - 1
+    yk = history[k]
+    assert isinstance(yk, SourceHistory)
+
+    dt = ts[k + 1] - ts[k]
+    omega = (
+        (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+        + (t - ts[k]) ** alpha / gamma1
+    )
+    ynext += omega * yk.f
+
+    # corrector iterations
+    omega = (
+        (t - ts[k]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
+        - (t - ts[k + 1]) ** alpha / gamma1
+    )
+    for _ in range(m.corrector_iterations):
+        fp = m.source(t, yp)
+        yp = ynext + omega * fp
+
+    ynext = yp
+    history.append(SourceHistory(t=t, f=m.source(t, ynext)))
+
+    return ynext
 
 
 # }}}

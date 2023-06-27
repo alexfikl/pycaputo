@@ -140,6 +140,7 @@ def fode_factory(
         fode_factory(fode.CaputoPECEMethod, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
         fode_factory(fode.CaputoPECMethod, corrector_iterations=2),
+        fode_factory(fode.CaputoModifiedPECEMethod, corrector_iterations=1),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
@@ -153,6 +154,9 @@ def test_caputo_fode(
     from pycaputo.utils import EOCRecorder
 
     eoc = EOCRecorder()
+    if not callable(factory):
+        # NOTE: this is a pytest.param and we take out the callable
+        factory = factory.values[0]
 
     for n in [32, 64, 128, 256, 512]:
         m = factory(alpha, n)
