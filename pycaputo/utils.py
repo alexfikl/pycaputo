@@ -389,8 +389,13 @@ def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
 
 @dataclass(frozen=True)
 class TimingResult:
+    """Statistics for a set of runs (see :func:`timeit`)."""
+
+    #: Minimum walltime for a set of runs.
     walltime: float
+    #: Mean walltime for a set of runs.
     mean: float
+    #: Standard derivation for a set of runs.
     std: float
 
     def __str__(self) -> str:
@@ -402,11 +407,17 @@ def timeit(
     *,
     repeat: int = 32,
     number: int = 1,
-    skip: int = 1,
+    skip: int = 0,
 ) -> TimingResult:
     """Run *stmt* using :func:`timeit.repeat`.
 
-    :returns: a :class:`TimeResult` with statistics about the runs.
+    :arg repeat: number of times to call :func:`timeit.timeit` (inside of
+        :func:`timeit.repeat`).
+    :arg number: number of times to run the *stmt* in each call to
+        :func:`timeit.timeit`.
+    :arg skip: number of leading calls from *repeat* to skip, e.g. to
+        avoid measuring an initial cache hit.
+    :returns: a :class:`TimingResult` with statistics about the runs.
     """
 
     import timeit as _timeit
@@ -436,11 +447,13 @@ class BlockTimer:
     #: An identifier used to differentiate the timer.
     name: str = "block"
 
-    #: Total wall time, obtained from :func:`time.perf_counter`
+    #: Total wall time (set after ``__exit__``), obtained from
+    #: :func:`time.perf_counter`.
     t_wall: float = field(init=False)
     t_wall_start: float = field(init=False)
 
-    #: Total process time, obtained from :func:`time.process_time`.
+    #: Total process time (set after ``__exit__``), obtained from
+    #: :func:`time.process_time`.
     t_proc: float = field(init=False)
     t_proc_start: float = field(init=False)
 
