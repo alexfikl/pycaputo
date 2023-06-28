@@ -42,21 +42,24 @@ def _update_caputo_initial_condition(
 def _update_caputo_forward_euler(
     dy: Array,
     history: VariableProductIntegrationHistory,
-    alpha: float,
+    alpha: float | tuple[float, ...],
     *,
     n: int | None = None,
 ) -> Array:
     from math import gamma
 
+    if not isinstance(alpha, tuple):
+        alpha = (alpha,)
+
     n = len(history) if n is None else n
-    dt = history.ts[-1] - np.array(history.ts)
+    ts = history.ts[-1] - np.array(history.ts)
     assert n is not None
 
-    for k in range(n):
-        yk = history[k]
-        omega = (dt[k] ** alpha - dt[k + 1] ** alpha) / gamma(1 + alpha)
+    gamma1 = np.array([gamma(1 + a) for a in alpha]).reshape(-1, 1)
+    alphar = np.array(alpha).reshape(-1, 1)
 
-        dy += omega * yk.f
+    omega = (ts[:-1] ** alphar - ts[1:] ** alphar) / gamma1
+    dy += sum(w * yk.f for w, yk in zip(omega.T, history.history))
 
     return dy
 
@@ -73,7 +76,7 @@ def _advance_caputo_forward_euler(
         history.append(t, m.source(t, y))
         return y
 
-    (alpha,) = m.derivative_order
+    alpha = m.derivative_order
 
     dy = np.zeros_like(y)
     dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)

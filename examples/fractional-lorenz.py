@@ -35,24 +35,25 @@ def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> 
 
 # {{{ solve
 
-from pycaputo.fode import CaputoWeightedEulerMethod
+from pycaputo.fode import CaputoForwardEulerMethod
 
+# NOTE: order example taken from https://doi.org/10.1016/j.chaos.2009.03.016
+alpha = (0.985, 0.99, 0.99)
 # NOTE: the (sigma, rho, beta) parameters are the classic Lorenz attractor
 # parameters and we take alpha ~ 1 to obtain something similar here
-alpha = 0.995
 sigma = 10.0
 rho = 28.0
 beta = 8.0 / 3.0
 y0 = np.array([-2.0, 1.0, -1.0])
 
-stepper = CaputoWeightedEulerMethod(
-    derivative_order=(alpha,),
+stepper = CaputoForwardEulerMethod(
+    derivative_order=alpha,
     predict_time_step=1.0e-2,
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
-    source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
+    # source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
     tspan=(0, 75),
     y0=(y0,),
-    theta=0.5,
+    # theta=0.5,
 )
 
 from pycaputo.fode import StepCompleted, evolve
