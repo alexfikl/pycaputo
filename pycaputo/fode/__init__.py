@@ -13,7 +13,6 @@ from pycaputo.fode.base import (
     make_predict_time_step_graded,
 )
 from pycaputo.fode.caputo import (
-    CaputoDifferentialEquationMethod,
     CaputoForwardEulerMethod,
     CaputoModifiedPECEMethod,
     CaputoPECEMethod,
@@ -21,23 +20,37 @@ from pycaputo.fode.caputo import (
     CaputoPredictorCorrectorMethod,
     CaputoWeightedEulerMethod,
 )
-from pycaputo.fode.history import History, SourceHistory, StateHistory
+from pycaputo.fode.history import (
+    FixedSizeHistory,
+    History,
+    ProductIntegrationState,
+    State,
+    VariableProductIntegrationHistory,
+)
+from pycaputo.fode.product_integration import (
+    CaputoProductIntegrationMethod,
+    ProductIntegrationMethod,
+)
 
 __all__ = (
-    "CaputoWeightedEulerMethod",
     "CaputoDifferentialEquationMethod",
     "CaputoForwardEulerMethod",
-    "CaputoPredictorCorrectorMethod",
+    "CaputoModifiedPECEMethod",
     "CaputoPECEMethod",
     "CaputoPECMethod",
-    "CaputoModifiedPECEMethod",
+    "CaputoPredictorCorrectorMethod",
+    "CaputoProductIntegrationMethod",
+    "CaputoWeightedEulerMethod",
     "Event",
+    "FixedSizeHistory",
     "FractionalDifferentialEquationMethod",
     "History",
-    "SourceHistory",
-    "StateHistory",
+    "ProductIntegrationMethod",
+    "ProductIntegrationState",
+    "State",
     "StepCompleted",
     "StepFailed",
+    "VariableProductIntegrationHistory",
     "advance",
     "evolve",
     "make_initial_condition",

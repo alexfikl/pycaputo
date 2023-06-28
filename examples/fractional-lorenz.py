@@ -46,7 +46,7 @@ beta = 8.0 / 3.0
 y0 = np.array([-2.0, 1.0, -1.0])
 
 stepper = CaputoWeightedEulerMethod(
-    derivative_order=alpha,
+    derivative_order=(alpha,),
     predict_time_step=1.0e-2,
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
     source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),

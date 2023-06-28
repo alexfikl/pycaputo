@@ -4,50 +4,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import cached_property
 
 import numpy as np
 
-from pycaputo.derivatives import FractionalOperator
-from pycaputo.fode.base import (
-    FractionalDifferentialEquationMethod,
-    advance,
-    make_initial_condition,
-)
-from pycaputo.fode.history import History, SourceHistory
+from pycaputo.fode.base import advance
+from pycaputo.fode.history import VariableProductIntegrationHistory
+from pycaputo.fode.product_integration import CaputoProductIntegrationMethod
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, StateFunction
 
 logger = get_logger(__name__)
 
 
-@dataclass(frozen=True)
-class CaputoDifferentialEquationMethod(FractionalDifferentialEquationMethod):
-    r"""A generic method used to solve fractional ordinary differential
-    equations (FODE) with the Caputo derivative.
-    """
-
-    @cached_property
-    def d(self) -> FractionalOperator:
-        from pycaputo.derivatives import CaputoDerivative, Side
-
-        return CaputoDerivative(self.derivative_order, side=Side.Left)
-
-
-@make_initial_condition.register(CaputoDifferentialEquationMethod)
-def _make_initial_condition_caputo(
-    m: CaputoDifferentialEquationMethod,
-    t: float,
-    y0: tuple[Array, ...],
-) -> Array:
-    return y0[0]
-
-
 # {{{ forward Euler
 
 
 @dataclass(frozen=True)
-class CaputoForwardEulerMethod(CaputoDifferentialEquationMethod):
+class CaputoForwardEulerMethod(CaputoProductIntegrationMethod):
     """The first-order forward Euler discretization of the Caputo derivative."""
 
     @property
@@ -68,7 +41,7 @@ def _update_caputo_initial_condition(
 
 def _update_caputo_forward_euler(
     dy: Array,
-    history: History,
+    history: VariableProductIntegrationHistory,
     alpha: float,
     *,
     n: int | None = None,
@@ -81,9 +54,8 @@ def _update_caputo_forward_euler(
 
     for k in range(n):
         yk = history[k]
-        assert isinstance(yk, SourceHistory)
-
         omega = (dt[k] ** alpha - dt[k + 1] ** alpha) / gamma(1 + alpha)
+
         dy += omega * yk.f
 
     return dy
@@ -92,22 +64,22 @@ def _update_caputo_forward_euler(
 @advance.register(CaputoForwardEulerMethod)
 def _advance_caputo_forward_euler(
     m: CaputoForwardEulerMethod,
-    history: History,
+    history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
 ) -> Array:
     history.ts.append(t)
     if not history:
-        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        history.append(t, m.source(t, y))
         return y
 
-    alpha = m.derivative_order
+    (alpha,) = m.derivative_order
 
     dy = np.zeros_like(y)
     dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
     dy = _update_caputo_forward_euler(dy, history, alpha)
 
-    history.append(SourceHistory(t=t, f=m.source(t, dy)))
+    history.append(t, m.source(t, dy))
     return dy
 
 
@@ -118,7 +90,7 @@ def _advance_caputo_forward_euler(
 
 
 @dataclass(frozen=True)
-class CaputoWeightedEulerMethod(CaputoDifferentialEquationMethod):
+class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
     r"""The weighted Euler discretization of the Caputo derivative.
 
     The weighted Euler method is a convex combination of the forward Euler
@@ -151,7 +123,8 @@ class CaputoWeightedEulerMethod(CaputoDifferentialEquationMethod):
 
     @property
     def order(self) -> float:
-        return (1.0 + self.d.order) if self.theta == 0.5 else 1.0
+        alpha = min(self.derivative_order)
+        return (1.0 + alpha) if self.theta == 0.5 else 1.0
 
     def solve(self, t: float, y0: Array, c: float, r: Array) -> Array:
         r"""Solves an implicit update formula.
@@ -220,19 +193,19 @@ class CaputoWeightedEulerMethod(CaputoDifferentialEquationMethod):
 @advance.register(CaputoWeightedEulerMethod)
 def _advance_caputo_weighted_euler(
     m: CaputoWeightedEulerMethod,
-    history: History,
+    history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
 ) -> Array:
     history.ts.append(t)
     if not history:
-        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        history.append(t, m.source(t, y))
         return y
 
     from math import gamma
 
     n = len(history)
-    alpha = m.derivative_order
+    (alpha,) = m.derivative_order
 
     # add initial conditions
     fnext = np.zeros_like(y)
@@ -246,13 +219,11 @@ def _advance_caputo_weighted_euler(
         # add forward term
         if m.theta != 0.0:
             yk = history[k]
-            assert isinstance(yk, SourceHistory)
             fnext += omega * m.theta * yk.f
 
         # add backward term
         if m.theta != 1.0:
             yk = history[k + 1]
-            assert isinstance(yk, SourceHistory)
             fnext += omega * (1 - m.theta) * yk.f
 
     # add last forward
@@ -261,7 +232,6 @@ def _advance_caputo_weighted_euler(
 
     if m.theta != 0.0:
         yk = history[k]
-        assert isinstance(yk, SourceHistory)
         fnext += omega * m.theta * yk.f
 
     # solve implicit equation
@@ -270,7 +240,7 @@ def _advance_caputo_weighted_euler(
     else:
         ynext = fnext
 
-    history.append(SourceHistory(t=ts[-1], f=m.source(ts[-1], ynext)))
+    history.append(ts[-1], m.source(ts[-1], ynext))
     return ynext
 
 
@@ -281,7 +251,7 @@ def _advance_caputo_weighted_euler(
 
 
 @dataclass(frozen=True)
-class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
+class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod):
     r"""The Predictor-Corrector discretization of the Caputo derivative.
 
     In their classic forms (see e.g. [Diethelm2002]_), these are methods of
@@ -312,7 +282,8 @@ class CaputoPredictorCorrectorMethod(CaputoDifferentialEquationMethod):
 
     @property
     def order(self) -> float:
-        return 1.0 + self.d.order
+        alpha = min(self.derivative_order)
+        return 1.0 + alpha
 
 
 @dataclass(frozen=True)
@@ -363,7 +334,7 @@ class CaputoPECMethod(CaputoPredictorCorrectorMethod):
 
 def _update_caputo_adams_bashforth2(
     dy: Array,
-    history: History,
+    history: VariableProductIntegrationHistory,
     alpha: float,
     *,
     n: int | None = None,
@@ -383,7 +354,6 @@ def _update_caputo_adams_bashforth2(
 
     for k in range(n - 1):
         yk = history[k]
-        assert isinstance(yk, SourceHistory)
 
         omega = (
             ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
@@ -393,7 +363,6 @@ def _update_caputo_adams_bashforth2(
         dy += omega * yk.f
 
         yk = history[k + 1]
-        assert isinstance(yk, SourceHistory)
 
         omega = (
             ts[k] ** (alpha + 1) / gamma2 / dt[k]
@@ -405,7 +374,6 @@ def _update_caputo_adams_bashforth2(
     if not is_n and n == len(history):
         k = n - 1
         yk = history[k]
-        assert isinstance(yk, SourceHistory)
 
         omega = (
             ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
@@ -428,16 +396,16 @@ def _update_caputo_adams_bashforth2(
 @advance.register(CaputoPredictorCorrectorMethod)
 def _advance_caputo_predictor_corrector(
     m: CaputoPredictorCorrectorMethod,
-    history: History,
+    history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
 ) -> Array:
     history.ts.append(t)
     if not history:
-        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        history.append(t, m.source(t, y))
         return y
 
-    alpha = m.derivative_order
+    (alpha,) = m.derivative_order
 
     # add initial conditions
     y0 = np.zeros_like(y)
@@ -458,7 +426,7 @@ def _advance_caputo_predictor_corrector(
 
     ynext = yp
     f = fp if isinstance(m, CaputoPECMethod) else m.source(t, ynext)
-    history.append(SourceHistory(t=t, f=f))
+    history.append(t, f)
 
     return ynext
 
@@ -487,19 +455,19 @@ class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
 @advance.register(CaputoModifiedPECEMethod)
 def _advance_caputo_modified_pece(
     m: CaputoModifiedPECEMethod,
-    history: History,
+    history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
 ) -> Array:
     history.ts.append(t)
     if not history:
-        history.append(SourceHistory(t=t, f=m.source(t, y)))
+        history.append(t, m.source(t, y))
         return y
 
     from math import gamma
 
     n = len(history)
-    alpha = m.derivative_order
+    (alpha,) = m.derivative_order
     gamma2 = gamma(2 + alpha)
     gamma1 = gamma(1 + alpha)
     ts = history.ts
@@ -518,7 +486,6 @@ def _advance_caputo_modified_pece(
 
         k = n - 1
         yk = history[k - 1]
-        assert isinstance(yk, SourceHistory)
 
         # fmt: off
         omega = (
@@ -529,7 +496,6 @@ def _advance_caputo_modified_pece(
         # fmt: on
 
         yk = history[k]
-        assert isinstance(yk, SourceHistory)
 
         omega = -((t - ts[k]) ** (alpha + 1)) / gamma2 / (ts[k] - ts[k - 1])
         yp += omega * yk.f
@@ -539,7 +505,6 @@ def _advance_caputo_modified_pece(
 
     k = n - 1
     yk = history[k]
-    assert isinstance(yk, SourceHistory)
 
     dt = ts[k + 1] - ts[k]
     omega = (
@@ -560,7 +525,7 @@ def _advance_caputo_modified_pece(
         yp = ynext + omega * fp
 
     ynext = yp
-    history.append(SourceHistory(t=t, f=m.source(t, ynext)))
+    history.append(t, m.source(t, ynext))
 
     return ynext
 

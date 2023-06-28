@@ -112,7 +112,7 @@ def fode_factory(
             kwargs["source_jac"] = partial(kwargs["source_jac"], alpha=alpha)
 
         return cls(
-            derivative_order=alpha,
+            derivative_order=(alpha,),
             predict_time_step=dt,
             source=partial(garrappa2009_source, alpha=alpha),
             tspan=tspan,

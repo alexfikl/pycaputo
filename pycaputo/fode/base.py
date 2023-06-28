@@ -5,10 +5,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import singledispatch
+from functools import cached_property, singledispatch
 from typing import Iterator
-
-import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.fode.history import History
@@ -137,7 +135,7 @@ class FractionalDifferentialEquationMethod(ABC):
     """
 
     #: The fractional derivative order used for the derivative.
-    derivative_order: float
+    derivative_order: tuple[float, ...]
     #: A callable used to predict the time step.
     predict_time_step: float | ScalarStateFunction
 
@@ -150,8 +148,31 @@ class FractionalDifferentialEquationMethod(ABC):
     #: Values used to reconstruct the required initial conditions.
     y0: tuple[Array, ...]
 
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if not self.y0:
+                raise ValueError("No initial conditions given")
+
+            shape = self.y0[0]
+            if not all(y0.shape == shape for y0 in self.y0[1:]):
+                raise ValueError("Initial conditions have different shapes")
+
+            from math import ceil
+
+            m = ceil(self.largest_derivative_order)
+            if m != len(self.y0):
+                raise ValueError(
+                    "Incorrect number of initial conditions: "
+                    f"got {len(self.y0)}, but expected {m} arrays"
+                )
+
+    @cached_property
+    def largest_derivative_order(self) -> float:
+        return max(self.derivative_order)
+
     @property
-    def is_constant(self) -> bool:
+    def is_constant_time_step(self) -> bool:
         """A flag for whether the method uses a constant time step."""
         return not callable(self.predict_time_step)
 
@@ -167,17 +188,8 @@ class FractionalDifferentialEquationMethod(ABC):
 
     @property
     @abstractmethod
-    def d(self) -> FractionalOperator:
-        """The fractional operator used by this method."""
-
-
-@singledispatch
-def make_initial_condition(
-    m: FractionalDifferentialEquationMethod,
-    t: float,
-    y0: tuple[Array, ...],
-) -> Array:
-    raise NotImplementedError(f"initial condition for '{type(m).__name__}'")
+    def d(self) -> tuple[FractionalOperator, ...]:
+        """The fractional operators used by this method."""
 
 
 @singledispatch
@@ -202,64 +214,7 @@ def evolve(
     :returns: an :class:`Event` (usually a :class:`StepCompleted`) containing
         the solution at a time :math:`t`.
     """
-
-    if history is None:
-        history = History()
-
-    if callable(m.predict_time_step):
-        predict_time_step = m.predict_time_step
-    else:
-        predict_time_step = make_predict_time_step_fixed(m.predict_time_step)
-
-    n = 0
-    t, tfinal = m.tspan
-    y = make_initial_condition(m, t, m.y0)
-
-    # NOTE: called to update the history
-    y = advance(m, history, t, y)
-
-    yield StepCompleted(t=t, iteration=n, dt=0.0, y=y)
-
-    while True:
-        if callback is not None and callback(t, y):
-            break
-
-        if tfinal is not None and t >= tfinal:
-            break
-
-        if maxit is not None and n >= maxit:
-            break
-
-        # next iteration
-        n += 1
-
-        # next time step
-        try:
-            dt = predict_time_step(t, y)
-
-            if not np.isfinite(dt):
-                raise ValueError(f"Invalid time step at iteration {n}: {dt!r}")
-        except Exception as exc:
-            if verbose:
-                logger.error("Failed to predict time step.", exc_info=exc)
-
-            yield StepFailed(t=t, iteration=n)
-
-        if tfinal is not None:
-            # NOTE: adding eps to ensure that t >= tfinal is true
-            dt = min(dt, tfinal - t) + float(5 * np.finfo(y.dtype).eps)
-
-        t += dt
-
-        # advance
-        try:
-            y = advance(m, history, t, y)
-            yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
-        except Exception as exc:
-            if verbose:
-                logger.error("Failed to advance time step.", exc_info=exc)
-
-            yield StepFailed(t=t, iteration=n)
+    raise NotImplementedError(f"'evolve' functionality for '{type(m).__name__}'")
 
 
 @singledispatch
@@ -278,6 +233,12 @@ def advance(
     :returns: value of :math:`y_{n + 1}` at time :math:`t_{n + 1}`.
     """
     raise NotImplementedError(f"'advance' functionality for '{type(m).__name__}'")
+
+
+@singledispatch
+def make_initial_condition(m: FractionalDifferentialEquationMethod) -> Array:
+    """Construct an initial condition for the method *m*."""
+    raise NotImplementedError(type(m).__name__)
 
 
 # }}}

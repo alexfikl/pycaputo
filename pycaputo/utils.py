@@ -409,7 +409,6 @@ class TimingResult:
             std=np.std(rs, ddof=1),
         )
 
-
     def __str__(self) -> str:
         return f"{self.mean:.5f}s ± {self.std:.3f}"
 
