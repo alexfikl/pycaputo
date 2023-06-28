@@ -398,6 +398,18 @@ class TimingResult:
     #: Standard derivation for a set of runs.
     std: float
 
+    @classmethod
+    def from_results(cls, results: list[float]) -> TimingResult:
+        """Gather statistics from a set of runs."""
+        rs = np.array(results)
+
+        return TimingResult(
+            walltime=np.min(rs),
+            mean=np.mean(rs),
+            std=np.std(rs, ddof=1),
+        )
+
+
     def __str__(self) -> str:
         return f"{self.mean:.5f}s ± {self.std:.3f}"
 
@@ -423,13 +435,7 @@ def timeit(
     import timeit as _timeit
 
     r = _timeit.repeat(stmt=stmt, repeat=repeat + 1, number=number)
-    rs = np.array(r[skip:])
-
-    return TimingResult(
-        walltime=np.min(rs),
-        mean=np.mean(rs),
-        std=np.std(rs, ddof=1),
-    )
+    return TimingResult.from_results(r[skip:])
 
 
 @dataclass
