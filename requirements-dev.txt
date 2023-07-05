@@ -26,7 +26,7 @@ matplotlib==3.7.1
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.4.0
+mypy==1.4.1
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
@@ -45,29 +45,29 @@ packaging==23.1
     #   matplotlib
     #   pyproject-fmt
     #   pytest
-pillow==9.5.0
+pillow==10.0.0
     # via matplotlib
-pip-tools==6.13.0
+pip-tools==6.14.0
     # via pycaputo (pyproject.toml)
-pluggy==1.0.0
+pluggy==1.2.0
     # via pytest
 pygments==2.15.1
     # via rich
 pyparsing==3.1.0
     # via matplotlib
-pyproject-fmt==0.12.1
+pyproject-fmt==0.13.0
     # via pycaputo (pyproject.toml)
 pyproject-hooks==1.0.0
     # via build
-pytest==7.3.2
+pytest==7.4.0
     # via pycaputo (pyproject.toml)
 python-dateutil==2.8.2
     # via matplotlib
 rich==13.4.2
     # via pycaputo (pyproject.toml)
-ruff==0.0.274
+ruff==0.0.277
     # via pycaputo (pyproject.toml)
-scipy==1.10.1
+scipy==1.11.1
     # via pycaputo (pyproject.toml)
 six==1.16.0
     # via python-dateutil
@@ -75,7 +75,7 @@ tomlkit==0.11.8
     # via pyproject-fmt
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml)
-typing-extensions==4.6.3
+typing-extensions==4.7.1
     # via
     #   mypy
     #   pycaputo (pyproject.toml)
