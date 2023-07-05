@@ -1,6 +1,11 @@
 References
 ==========
 
+.. [Lubich1986] C. Lubich,
+    *Discretized Fractional Calculus*,
+    SIAM Journal on Mathematical Analysis, Vol. 17, pp. 704--719, 1986,
+    `DOI <https://doi.org/10.1137/0517050>`__.
+
 .. [Diethelm2002] K. Diethelm, N. J. Ford, A. D. Freed,
     *A Predictor-Corrector Approach for the Numerical Solution of
     Fractional Differential Equations*,
