@@ -255,6 +255,113 @@ def _quad_rl_spec(
 # }}}
 
 
+# {{{
+
+
+@dataclass(frozen=True)
+class RiemannLiouvilleConvolutionMethod(RiemannLiouvilleMethod):
+    r"""Riemann-Liouville integral approximation using the convolution quadratures
+    of [Lubich1986]_.
+
+    This method is described in detail in [Lubich1986]_ and allows approximations
+    of the form
+
+    .. math::
+
+        I^\alpha[f](x_j) =
+            \Delta x^\alpha \sum_{i = 0}^j w_{j - i} f_i
+            + \Delta x^\alpha \sum_{i = 0}^s \omega_{ji} f_i
+
+    where :math:`w_j` are referred to as the convolution weights and
+    :math:`\omega_{ji}` are referred to as the starting weights. The starting
+    weights are used to guaranteed high-order behavior around the origin.
+
+    These quadrature methods are modelled on the Backward Differencing Formulas
+    (BDF) and only support orders up to :math:`6`.
+
+    This quadrature method only supports on uniform grids.
+    """
+
+    #: The order of the convolution quadrature method. Only orders up to 6 are
+    #: currently supported, see
+    #: :func:`~pycaputo.generating_functions.lubich_bdf_weights` for additional
+    #: details.
+    quad_order: int
+    #: An exponent used in constructing the starting weights of the quadrature.
+    #: Negative values will allow for certain singularities at the origin, while
+    #: a default of :math:`\beta = 1` will benefit a smooth function. Setting
+    #: this to ``float("inf")`` will disable the starting weights.
+    beta: float
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if not 1 <= self.quad_order <= 6:
+                raise ValueError(
+                    f"Only orders 1 <= q <= 6 are supported: {self.quad_order}"
+                )
+
+            if self.beta.is_integer() and self.beta <= 0:
+                raise ValueError(
+                    f"Values of beta in 0, -1, ... are not supported: {self.beta}"
+                )
+
+    @property
+    def name(self) -> str:
+        return "RLConv"
+
+    @property
+    def order(self) -> int:
+        return self.quad_order
+
+
+@quad.register(RiemannLiouvilleConvolutionMethod)
+def _quad_rl_conv(
+    m: RiemannLiouvilleConvolutionMethod,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    from pycaputo.grid import UniformPoints
+
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"Only uniforms points are supported: '{type(p).__name__}'")
+
+    from pycaputo.generating_functions import (
+        lubich_bdf_starting_weights,
+        lubich_bdf_starting_weights_count,
+        lubich_bdf_weights,
+    )
+
+    fx = f(p.x) if callable(f) else f
+    alpha = -m.d.order
+    dxa = p.dx[0] ** alpha
+
+    qf = np.empty_like(fx)
+    qf[0] = np.nan
+
+    w = lubich_bdf_weights(alpha, m.quad_order, p.n)
+
+    if np.isfinite(m.beta):
+        s = lubich_bdf_starting_weights_count(m.quad_order, alpha)
+        omegas = lubich_bdf_starting_weights(w, s, alpha, beta=m.beta)
+
+        for n, omega in enumerate(omegas):
+            qc = np.sum(w[: n + s][::-1] * fx[: n + s])
+            qs = np.sum(omega * fx[: s + 1])
+
+            qf[n + s] = dxa * (qc + qs)
+    else:
+        for n in range(1, qf.size):
+            qf[n] = dxa * np.sum(w[: n + s][::-1] * fx[: n + s])
+
+    return qf
+
+
+# }}}
+
+
 # {{{ make
 
 
@@ -262,6 +369,7 @@ REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
     "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
     "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
     "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,
+    "RiemannLiouvilleConvolutionMethod": RiemannLiouvilleConvolutionMethod,
 }
 
 
