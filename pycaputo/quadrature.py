@@ -341,7 +341,7 @@ def _quad_rl_conv(
     qf = np.empty_like(fx)
     qf[0] = np.nan
 
-    w = lubich_bdf_weights(alpha, m.quad_order, p.n)
+    w = lubich_bdf_weights(-alpha, m.quad_order, p.n)
 
     if np.isfinite(m.beta):
         s = lubich_bdf_starting_weights_count(m.quad_order, alpha)
@@ -354,7 +354,7 @@ def _quad_rl_conv(
             qf[n + s] = dxa * (qc + qs)
     else:
         for n in range(1, qf.size):
-            qf[n] = dxa * np.sum(w[: n + s][::-1] * fx[: n + s])
+            qf[n] = dxa * np.sum(w[:n][::-1] * fx[:n])
 
     return qf
 
