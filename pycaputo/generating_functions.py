@@ -103,7 +103,7 @@ def lubich_bdf_weights(alpha: float, order: int, n: int) -> Array:
 
 
 def lubich_bdf_starting_weights(
-    w: Array, s: int, alpha: float, *, beta: float = 1.0
+    w: Array, s: int, alpha: float, *, beta: float = 1.0, atol: float | None = None
 ) -> Iterator[Array]:
     r"""Constructs starting weights for a given set of weights *w* from [Lubich1986]_.
 
@@ -135,6 +135,8 @@ def lubich_bdf_starting_weights(
     :arg s: number of starting weights.
     :arg alpha: order of the fractional derivative to approximate.
     :arg beta: order of the singularity at the origin.
+    :arg atol: absolute tolerance used for the GMRES solver. If *None*, an
+        exact LU-based solver is used instead.
 
     :returns: the starting weights for every point :math:`x_m` starting with
         :math:`m \ge s`.
@@ -146,6 +148,7 @@ def lubich_bdf_starting_weights(
     if beta.is_integer() and beta <= 0:
         raise ValueError(f"Values of beta in 0, -1, ... are not supported: {beta}")
 
+    from scipy.linalg import lu_factor, lu_solve
     from scipy.sparse.linalg import gmres
     from scipy.special import gamma
 
@@ -155,13 +158,20 @@ def lubich_bdf_starting_weights(
     A = j**q
     assert A.shape == (s, s)
 
+    if atol is None:
+        lu, p = lu_factor(A)
+
     for k in range(s, w.size):
         b = (
             gamma(q + 1) / gamma(q + alpha + 1) * k ** (q + alpha)
             - A @ w[k - s : k][::-1]
         )
 
-        omega, _ = gmres(A, b)
+        if atol is None:
+            omega = lu_solve((lu, p), b)
+        else:
+            omega, _ = gmres(A, b, atol=atol)
+
         yield omega
 
 
