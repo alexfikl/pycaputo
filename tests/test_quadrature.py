@@ -2,12 +2,14 @@
 # SPDX-License-Identifier: MIT
 
 import pathlib
+from typing import Callable
 
 import numpy as np
 import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
+from pycaputo.quadrature import QuadratureMethod
 from pycaputo.utils import Array, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_quadrature")
@@ -29,6 +31,17 @@ def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     )
 
 
+def make_rl_conv_factory(order: int) -> Callable[[float], QuadratureMethod]:
+    from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
+    from pycaputo.quadrature import RiemannLiouvilleConvolutionMethod
+
+    def wrapper(alpha: float) -> RiemannLiouvilleConvolutionMethod:
+        d = RiemannLiouvilleDerivative(order=alpha, side=Side.Left)
+        return RiemannLiouvilleConvolutionMethod(d=d, quad_order=order, beta=np.inf)
+
+    return wrapper
+
+
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
@@ -36,11 +49,17 @@ def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
         ("RiemannLiouvilleRectangularMethod", "stynes"),
         ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
         ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
+        (make_rl_conv_factory(1), "uniform"),
+        # (make_rl_conv_factory(2), "uniform"),
+        # (make_rl_conv_factory(3), "uniform"),
+        # (make_rl_conv_factory(4), "uniform"),
+        # (make_rl_conv_factory(5), "uniform"),
+        # (make_rl_conv_factory(6), "uniform"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.25, 2.5, 7.75])
 def test_riemann_liouville_quad(
-    name: str,
+    factory: str | Callable[[float], QuadratureMethod],
     grid_type: str,
     alpha: float,
     *,
@@ -50,7 +69,11 @@ def test_riemann_liouville_quad(
     from pycaputo.quadrature import make_method_from_name, quad
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = make_method_from_name(name, -alpha)
+    if callable(factory):
+        meth = factory(-alpha)
+    else:
+        meth = make_method_from_name(factory, -alpha)
+
     eoc = EOCRecorder(order=meth.order)
 
     if visualize:
