@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import pathlib
 from typing import Callable
 
@@ -43,7 +45,7 @@ def make_rl_conv_factory(order: int) -> Callable[[float], QuadratureMethod]:
 
 
 @pytest.mark.parametrize(
-    ("name", "grid_type"),
+    ("factory", "grid_type"),
     [
         ("RiemannLiouvilleRectangularMethod", "uniform"),
         ("RiemannLiouvilleRectangularMethod", "stynes"),
