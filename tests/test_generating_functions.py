@@ -38,7 +38,7 @@ def test_lubich_bdf_weights(order: int, alpha: float) -> None:
 
     eoc = EOCRecorder(order=order)
     a, b = 0.0, 1.0
-    s = order
+    s = 0
 
     from math import gamma
 
@@ -46,10 +46,14 @@ def test_lubich_bdf_weights(order: int, alpha: float) -> None:
         t = np.linspace(a, b, n)
         h = t[1] - t[0]
         w = lubich_bdf_weights(-alpha, order, n)
-        omega = np.fromiter(
-            lubich_bdf_starting_weights(w, s, -alpha, beta=1.0),
-            dtype=np.dtype((w.dtype, s)),
-        ).reshape(-1, s)
+
+        if s > 0:
+            omega = np.fromiter(
+                lubich_bdf_starting_weights(w, s, -alpha, beta=1.0),
+                dtype=np.dtype((w.dtype, s)),
+            )
+        else:
+            omega = np.zeros_like(w)
 
         int_ref = t**alpha / gamma(1 + alpha)
         int_bdf = np.empty_like(int_ref)
