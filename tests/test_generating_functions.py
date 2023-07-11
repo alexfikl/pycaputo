@@ -39,7 +39,7 @@ def test_lubich_bdf_weights(
         h = t[1] - t[0]
         w = lubich_bdf_weights(-alpha, order, n)
         omega = np.fromiter(
-            lubich_bdf_starting_weights(w, s, -alpha, beta=-1.0),
+            lubich_bdf_starting_weights(w, s, -alpha, beta=1.0),
             dtype=np.dtype((w.dtype, s)),
         ).reshape(-1, s)
 
