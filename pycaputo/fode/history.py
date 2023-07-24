@@ -47,7 +47,7 @@ class History(ABC):
     @abstractmethod
     def __getitem__(self, k: int) -> State:
         """
-        :returns: a :class:`StateHistory` from the *k*-th checkpoint.
+        :returns: a compound :class:`State` from the *k*-th checkpoint.
         """
 
     @abstractmethod

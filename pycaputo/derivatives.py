@@ -28,8 +28,8 @@ class FractionalOperator:
     """
 
     #: Order of the fractional operator, as real number
-    # :math:`\alpha \in \mathbb{R}`. A positive number would denote a derivative,
-    # while a negative number would denote a fractional integral instead.
+    #: :math:`\alpha \in \mathbb{R}`. A positive number would denote a derivative,
+    #: while a negative number would denote a fractional integral instead.
     order: float
 
     @property

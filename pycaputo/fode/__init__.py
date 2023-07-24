@@ -22,6 +22,7 @@ from pycaputo.fode.caputo import (
 )
 from pycaputo.fode.history import (
     FixedSizeHistory,
+    FixedState,
     History,
     ProductIntegrationState,
     State,
@@ -43,6 +44,7 @@ __all__ = (
     "CaputoWeightedEulerMethod",
     "Event",
     "FixedSizeHistory",
+    "FixedState",
     "FractionalDifferentialEquationMethod",
     "History",
     "ProductIntegrationMethod",

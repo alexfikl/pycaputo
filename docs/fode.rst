@@ -8,9 +8,14 @@ Single-Term Fractional Ordinary Differential Equations
 History Handling
 ----------------
 
-.. autoclass:: StateHistory
-.. autoclass:: SourceHistory
+.. autoclass:: State
 .. autoclass:: History
+
+.. autoclass:: ProductIntegrationState
+.. autoclass:: VariableProductIntegrationHistory
+
+.. autoclass:: FixedState
+.. autoclass:: FixedSizeHistory
 
 Interface
 ---------
@@ -20,10 +25,11 @@ Interface
 .. autoclass:: StepCompleted
 
 .. autoclass:: FractionalDifferentialEquationMethod
+.. autoclass:: ProductIntegrationMethod
 
-.. autofunction:: make_initial_condition
 .. autofunction:: evolve
 .. autofunction:: advance
+.. autofunction:: make_initial_condition
 
 .. autofunction:: make_predict_time_step_fixed
 .. autofunction:: make_predict_time_step_graded
@@ -31,7 +37,8 @@ Interface
 Caputo Derivative FODEs
 =======================
 
-.. autoclass:: CaputoDifferentialEquationMethod
+.. autoclass:: CaputoProductIntegrationMethod
+
 .. autoclass:: CaputoForwardEulerMethod
 .. autoclass:: CaputoWeightedEulerMethod
 .. autoclass:: CaputoPredictorCorrectorMethod

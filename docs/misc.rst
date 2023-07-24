@@ -16,6 +16,11 @@ Jacobi Polynomials
 
 .. automodule:: pycaputo.jacobi
 
+Generating Functions
+--------------------
+
+.. automodule:: pycaputo.generating_functions
+
 Logging
 -------
 
