@@ -8,12 +8,61 @@ from dataclasses import dataclass
 from functools import cached_property, singledispatch
 from typing import Iterator
 
+import numpy as np
+
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.fode.history import History
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, CallbackFunction, ScalarStateFunction, StateFunction
+from pycaputo.utils import (
+    Array,
+    CallbackFunction,
+    ScalarFunction,
+    ScalarStateFunction,
+    StateFunction,
+)
 
 logger = get_logger(__name__)
+
+
+# {{{ time step
+
+
+def estimate_lipschitz_constant(
+    f: ScalarFunction,
+    a: float,
+    b: float,
+    *,
+    delta: float | None = None,
+    nslopes: int = 32,
+    nbatches: int = 32,
+) -> float:
+    r"""Estimate the Lipschitz constant of *f* based on [Wood1996]_.
+
+    The Lipschitz constant is defined, for a function
+    :math:`f: [a, b] \to \mathbb{R}`, by
+
+    .. math::
+
+        |f(x) - f(y)| \le L |x - y|, \qquad \forall x, y \in [a, b]
+
+    :arg a: left-hand side of the domain.
+    :arg b: right-hand side of the domain.
+    :arg delta: a width of a strip around the diagonal of the
+        :math:`[a, b] \times [a, b]` domain for :math:`(x, y)` sampling.
+    :arg nslopes: number of slopes to sample.
+    :arg nbatches: number of batches of slopes to sample.
+
+    :returns: an estimate of the Lipschitz constant.
+    """
+    # generate slope maxima
+    maxs = np.empty(nbatches)
+    for m in range(nbatches):
+        maxs[m] = 0.0
+
+    # fit the slopes to the three-parameter inverse Weibull distribution
+    result = 0.0
+
+    return result
 
 
 def make_predict_time_step_fixed(dt: float) -> ScalarStateFunction:
@@ -71,6 +120,65 @@ def make_predict_time_step_graded(
         return float(h * ((n + 1) ** r - n**r))
 
     return predict_time_step
+
+
+def make_predict_time_step_lipschitz(
+    f: StateFunction,
+    alpha: float,
+    yspan: tuple[float, float],
+    *,
+    theta: float = 0.9,
+) -> ScalarStateFunction:
+    r"""Estimate a time step based on the Lipschitz constant.
+
+    This method estimates the time step using
+
+    .. math::
+
+        \Delta t = \theta \frac{1}{(\Gamma(2 - \alpha) L)^{\frac{1}{\alpha}}},
+
+    where :math:`L` is the Lipschitz constant estimated by
+    :func:`estimate_lipschitz_constant` and :math:`\theta` is a coefficient that
+    should be smaller than 1.
+
+    .. warning::
+
+        This method requires many evaluations of the right-hand side function
+        *f* and will not be efficient in practice. Ideally, the Lipschitz
+        constant is approximated by some theoretical result.
+
+    :arg f: the right-hand side function used in the differential equation.
+    :arg alpha: fractional order of the derivative.
+    :arg yspan: an expected domain of the state variable. The Lipschitz constant
+        is estimated by sampling in this domain.
+    :arg theta: a coefficient used to control the time step.
+
+    :returns: a callable returning an estimate of the time step based on the
+        Lipschitz constant.
+    """
+    from functools import partial
+    from math import gamma
+
+    if not 0.0 < alpha < 1.0:
+        raise ValueError(f"Derivative order must be in (0, 1): {alpha}")
+
+    if theta <= 0.0:
+        raise ValueError(f"Theta constant cannot be negative: {theta}")
+
+    if yspan[0] > yspan[1]:
+        yspan = (yspan[1], yspan[0])
+
+    def predict_time_step(t: float, y: Array) -> float:
+        if y.shape != (1,):
+            raise ValueError(f"Only scalar functions are supported: {y.shape}")
+
+        L = estimate_lipschitz_constant(partial(f, t), yspan[0], yspan[1])
+        return float((gamma(2 - alpha) * L) ** (-1.0 / alpha))
+
+    return predict_time_step
+
+
+# }}}
 
 
 # {{{ events

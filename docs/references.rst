@@ -6,6 +6,11 @@ References
     SIAM Journal on Mathematical Analysis, Vol. 17, pp. 704--719, 1986,
     `DOI <https://doi.org/10.1137/0517050>`__.
 
+.. [Wood1996] G. R. Wood, B. P. Zhang,
+    *Estimation of the Lipschitz Constant of a Function*,
+    Journal of Global Optimization, Vol. 8, 1996,
+    `DOI <https://doi.org/10.1007/bf00229304>`__.
+
 .. [Diethelm2002] K. Diethelm, N. J. Ford, A. D. Freed,
     *A Predictor-Corrector Approach for the Numerical Solution of
     Fractional Differential Equations*,
