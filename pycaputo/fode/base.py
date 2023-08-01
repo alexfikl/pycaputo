@@ -8,61 +8,15 @@ from dataclasses import dataclass
 from functools import cached_property, singledispatch
 from typing import Iterator
 
-import numpy as np
-
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.fode.history import History
 from pycaputo.logging import get_logger
-from pycaputo.utils import (
-    Array,
-    CallbackFunction,
-    ScalarFunction,
-    ScalarStateFunction,
-    StateFunction,
-)
+from pycaputo.utils import Array, CallbackFunction, ScalarStateFunction, StateFunction
 
 logger = get_logger(__name__)
 
 
 # {{{ time step
-
-
-def estimate_lipschitz_constant(
-    f: ScalarFunction,
-    a: float,
-    b: float,
-    *,
-    delta: float | None = None,
-    nslopes: int = 32,
-    nbatches: int = 32,
-) -> float:
-    r"""Estimate the Lipschitz constant of *f* based on [Wood1996]_.
-
-    The Lipschitz constant is defined, for a function
-    :math:`f: [a, b] \to \mathbb{R}`, by
-
-    .. math::
-
-        |f(x) - f(y)| \le L |x - y|, \qquad \forall x, y \in [a, b]
-
-    :arg a: left-hand side of the domain.
-    :arg b: right-hand side of the domain.
-    :arg delta: a width of a strip around the diagonal of the
-        :math:`[a, b] \times [a, b]` domain for :math:`(x, y)` sampling.
-    :arg nslopes: number of slopes to sample.
-    :arg nbatches: number of batches of slopes to sample.
-
-    :returns: an estimate of the Lipschitz constant.
-    """
-    # generate slope maxima
-    maxs = np.empty(nbatches)
-    for m in range(nbatches):
-        maxs[m] = 0.0
-
-    # fit the slopes to the three-parameter inverse Weibull distribution
-    result = 0.0
-
-    return result
 
 
 def make_predict_time_step_fixed(dt: float) -> ScalarStateFunction:
@@ -167,6 +121,8 @@ def make_predict_time_step_lipschitz(
 
     if yspan[0] > yspan[1]:
         yspan = (yspan[1], yspan[0])
+
+    from pycaputo.lipschitz import estimate_lipschitz_constant
 
     def predict_time_step(t: float, y: Array) -> float:
         if y.shape != (1,):
