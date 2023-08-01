@@ -6,6 +6,21 @@ from __future__ import annotations
 import logging
 import os
 
+import rich
+
+
+def stringify_table(table: rich.table.Table) -> str:
+    """Stringify a rich table."""
+    import io
+
+    from rich.console import Console
+
+    file = io.StringIO()
+    console = Console(file=file)
+    console.print(table)
+
+    return str(file.getvalue())
+
 
 def get_logger(
     module: str,

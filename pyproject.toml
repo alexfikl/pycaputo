@@ -98,6 +98,7 @@ ignore = [
     "E402",     # module-import-not-at-top-of-file
     "I001",     # unsorted-imports
     "N806",     # non-lowercase-variable-in-function
+    "N803",     # non-lowercase-argument
     "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
