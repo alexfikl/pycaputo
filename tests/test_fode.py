@@ -15,7 +15,7 @@ from pycaputo import fode
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_caputo")
+logger = get_logger("pycaputo.test_fode")
 set_recommended_matplotlib()
 
 
