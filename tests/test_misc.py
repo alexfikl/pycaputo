@@ -69,7 +69,7 @@ def f_wood_2(x: Array) -> Array:
 
 
 def f_wood_3(x: Array) -> Array:
-    return -np.array(np.sum([np.sin((i + 1) * x + i) for i in range(1, 6)]))
+    return -np.array(sum(np.sin((i + 1) * x + i) for i in range(1, 6)))
 
 
 @pytest.mark.parametrize(
@@ -94,7 +94,6 @@ def test_estimate_lischitz_constant(
 
     from rich.table import Table
 
-    rng = np.random.default_rng(seed=42)
     table = Table(f"L = {L}", *[f"m = {m}" for m in nbatches])
     lipschitz_approx = np.empty(len(nbatches))
 
@@ -102,6 +101,7 @@ def test_estimate_lischitz_constant(
 
     for n in nslopes:
         for i, m in enumerate(nbatches):
+            rng = np.random.default_rng(seed=42)
             lipschitz_approx[i] = estimate_lipschitz_constant(
                 f,
                 a,
@@ -111,7 +111,17 @@ def test_estimate_lischitz_constant(
                 nbatches=m,
                 rng=rng,
             )
-            logger.info("n %3d m %3d L %.5e Lapprox %.5e", n, m, L, lipschitz_approx[i])
+
+            error = abs(L - lipschitz_approx[i]) / abs(L)
+            logger.info(
+                "n %3d m %3d L %.5e Lapprox %.5e error %.5e",
+                n,
+                m,
+                L,
+                lipschitz_approx[i],
+                error,
+            )
+            assert error < 6.0e-2
 
         table.add_row(f"n = {n}", *[f"{Lapprox:.5e}" for Lapprox in lipschitz_approx])
 

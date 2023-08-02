@@ -3,9 +3,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
+import scipy.stats
 
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ScalarFunction
@@ -14,52 +13,6 @@ logger = get_logger(__name__)
 
 
 # {{{ estimate_lipschitz_constant
-
-
-@dataclass
-class InverseWeibullCumulativeDistributionFunction:
-    r"""Evaluates a three-parameter family of inverse Weibull distributions.
-
-    .. math::
-
-        F(x) =
-        \begin{cases}
-        \displaystyle
-        \exp \left(-\frac{(u - x)^w}{v}\right), & \quad x < u, \\
-        1, & x > u.
-        \end{cases}
-    """
-
-    #: Location parameter.
-    u: float
-    #: Scale parameter.
-    v: float
-    #: Shape parameter.
-    w: float
-
-    def __call__(self, x: Array) -> Array:
-        return self.evaluate(x)
-
-    def evaluate(self, x: Array) -> Array:
-        """Evaluate the CDF at the given points."""
-        return np.where(x < self.u, np.exp(-((self.u - x) ** self.w) / self.v), 1)
-
-    def jac(self, x: Array) -> Array:
-        """Evaluate the Jacobian of the CDF with respect to the parameters.
-
-        :arg x: points at which to evaluate the CDF.
-        :returns: an array of shape ``(3, x.size)``.
-        """
-
-        u, v, w = self.u, self.v, self.w
-        cdf = self.evaluate(x)
-        return np.stack(
-            [
-                np.where(x < u, -w * (u - x) ** (w - 1) / v * cdf, 0.0),
-                np.where(x < u, (u - x) ** w / v**2 * cdf, 0.0),
-                np.where(x < u, -((u - x) ** w) * np.log(u - x) / v * cdf, 0.0),
-            ]
-        )
 
 
 def uniform_diagonal_sample(
@@ -134,55 +87,23 @@ def uniform_sample_maximum_slopes(
     smax = np.empty(nbatches)
     for m in range(nbatches):
         x, y = uniform_diagonal_sample(a, b, nslopes, delta=delta, rng=rng)
-        s = np.abs(f(x) - f(y)) / (np.abs(x - y) + 1.0e-7)
+        s = np.abs(f(x) - f(y)) / (np.abs(x - y) + 1.0e-15)
 
         smax[m] = np.max(s)
 
     return smax
 
 
-def fit_inverse_weibull(
-    x: Array, *, verbose: bool = False
-) -> InverseWeibullCumulativeDistributionFunction:
-    """Fits an inverse Weibull distribution to the CDF of *x*.
+def fit_reverse_weibull(x: Array) -> scipy.stats.weibull_max:
+    """Fits a reverse Weibull distribution to the CDF of *x*.
 
-    See :class:`InverseWeibullCumulativeDistributionFunction` for details on the
-    functions involved.
+    See :class:`scipy.stats.weibull_max` for details on the distribution.
 
     :returns: the distribution with the optimal parameters.
     """
-
-    import scipy.optimize
-    import scipy.stats
-
-    x = np.sort(x)
-    empirical_cdf = scipy.stats.ecdf(x).cdf.probabilities
-
-    def f_opt(p: Array) -> Array:
-        F = InverseWeibullCumulativeDistributionFunction(*p)
-        return np.array(empirical_cdf - F.evaluate(x))
-
-    def f_opt_jac(p: Array) -> Array:
-        F = InverseWeibullCumulativeDistributionFunction(*p)
-        return F.jac(x)
-
-    # NOTE: 0: location parameter u, 1: scale parameter v, 2: shape parameter w
-    x0 = np.array([np.median(x), 0.1, 1.0])
-    result = scipy.optimize.least_squares(
-        f_opt,
-        x0,
-        # jac=f_opt_jac,
-        method="lm",
-        verbose=verbose,
-    )
-
-    if verbose:
-        logger.info("Convergence:%s\n%s", result.x, result)
-
-    if not result.success:
-        raise RuntimeError("Unable to determine constant")
-
-    return InverseWeibullCumulativeDistributionFunction(*result.x)
+    # NOTE: MLE seems to work better than MM
+    c, loc, scale = scipy.stats.weibull_max.fit(x, method="MLE")
+    return scipy.stats.weibull_max(c=c, loc=loc, scale=scale)
 
 
 def estimate_lipschitz_constant(
@@ -223,14 +144,10 @@ def estimate_lipschitz_constant(
         nbatches=nbatches,
         rng=rng,
     )
-    try:
-        cdf = fit_inverse_weibull(smax)
+    cdf = fit_reverse_weibull(smax)
 
-        # NOTE: the estimate for the Lipschitz constant is the location parameter
-        return cdf.u
-    except RuntimeError:
-        logger.error("Unable to determine constant.")
-        return float(np.max(smax))
+    # NOTE: the estimate for the Lipschitz constant is the location parameter
+    return float(cdf.kwds["loc"])
 
 
 # }}}
