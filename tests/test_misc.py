@@ -76,8 +76,8 @@ def f_wood_3(x: Array) -> Array:
     ("f", "L", "a", "b"),
     [
         (f_wood_1, 1.0, -1.0, 1.0),
-        (f_wood_2, 1.67, 3.14, 20.4),
-        (f_wood_3, 67, -10.0, 10.0),
+        (f_wood_2, 1.67, 3.1, 20.4),
+        (f_wood_3, 19.2, -10.0, 10.0),
     ],
 )
 def test_estimate_lischitz_constant(
