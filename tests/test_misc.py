@@ -77,6 +77,7 @@ def f_wood_3(x: Array) -> Array:
     [
         (f_wood_1, 1.0, -1.0, 1.0),
         (f_wood_2, 1.67, 3.1, 20.4),
+        # NOTE: Wood1996 says this function has L = 67, but that's not true
         (f_wood_3, 19.2, -10.0, 10.0),
     ],
 )

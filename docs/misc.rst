@@ -21,6 +21,11 @@ Generating Functions
 
 .. automodule:: pycaputo.generating_functions
 
+Lipschitz Constant Estimation
+-----------------------------
+
+.. automodule:: pycaputo.lipschitz
+
 Logging
 -------
 
