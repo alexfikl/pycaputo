@@ -94,10 +94,10 @@ def uniform_sample_maximum_slopes(
     return smax
 
 
-def fit_reverse_weibull(x: Array) -> scipy.stats.weibull_max:
+def fit_reverse_weibull(x: Array) -> scipy.stats.rv_continuous:
     """Fits a reverse Weibull distribution to the CDF of *x*.
 
-    See :class:`scipy.stats.weibull_max` for details on the distribution.
+    See :data:`scipy.stats.weibull_max` for details on the distribution.
 
     :returns: the distribution with the optimal parameters.
     """
@@ -124,6 +124,13 @@ def estimate_lipschitz_constant(
     .. math::
 
         |f(x) - f(y)| \le L |x - y|, \qquad \forall x, y \in [a, b]
+
+    .. warning::
+
+        The current implementation of this function seems to underpredict the
+        Lipschitz constant, unlike the results from [Wood1996]_. This is likely
+        a consequence of the method used to fit the data to the Weibull
+        distribution.
 
     :arg a: left-hand side of the domain.
     :arg b: right-hand side of the domain.

@@ -45,3 +45,7 @@ Caputo Derivative FODEs
 .. autoclass:: CaputoPECEMethod
 .. autoclass:: CaputoPECMethod
 .. autoclass:: CaputoModifiedPECEMethod
+
+.. class:: Array
+
+   See :class:`pycaputo.utils.Array`.
