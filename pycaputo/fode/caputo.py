@@ -126,7 +126,24 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
         alpha = min(self.derivative_order)
         return (1.0 + alpha) if self.theta == 0.5 else 1.0
 
-    def solve(self, t: float, y0: Array, c: float, r: Array) -> Array:
+    # NOTE: `_kwargs_root` and `_kwargs_root_scalar` are meant to be overwritten
+    # for testing purposes or some specific application (undocumented for now).
+
+    def _kwargs_root_scalar(self) -> dict[str, object]:
+        """
+        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
+        """
+        return {}
+
+    def _kwargs_root(self) -> dict[str, object]:
+        """
+        :returns: additional keyword arguments for :func:`scipy.optimize.root`.
+        """
+        # NOTE: the default hybr does not use derivatives, so use lm instead
+        # FIXME: will need to maybe benchmark these a bit?
+        return {"method": "lm"}
+
+    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         r"""Solves an implicit update formula.
 
         This function will meant to solve implicit equations of the form
@@ -172,7 +189,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
                     if self.source_jac is not None
                     else None
                 ),
-                # method="newton",
+                **self._kwargs_root_scalar(),
             )
             solution = np.array(result.root)
         else:
@@ -180,9 +197,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
                 func,
                 y0,
                 jac=jac if self.source_jac is not None else None,
-                # NOTE: the default hybr does not use derivatives, so use lm instead
-                # FIXME: will need to maybe benchmark these a bit?
-                method="lm",
+                **self._kwargs_root(),
             )
 
             solution = np.array(result.x)
