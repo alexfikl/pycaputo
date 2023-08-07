@@ -93,12 +93,11 @@ class VariableProductIntegrationHistory(History):
         return len(self.history)
 
     def __getitem__(self, k: int) -> ProductIntegrationState:
-        nhistory = len(self)
-        if k == -1:
-            k = nhistory - 1
+        nhistory = len(self.history)
+        k = (k + nhistory) if k < 0 else k
 
         if not 0 <= k < nhistory:
-            raise IndexError(f"history index out of range: 0 <= {k} < {nhistory}")
+            raise IndexError(f"History index out of range: 0 <= {k} < {nhistory}")
 
         return self.history[k]
 
