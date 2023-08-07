@@ -16,6 +16,18 @@ from pycaputo.utils import Array, StateFunction
 logger = get_logger(__name__)
 
 
+def _update_caputo_initial_condition(
+    dy: Array, t: float, y0: tuple[Array, ...]
+) -> Array:
+    """Adds the appropriate initial conditions to *dy*."""
+    from math import gamma
+
+    for k, y0k in enumerate(y0):
+        dy += t**k / gamma(k + 1) * y0k
+
+    return dy
+
+
 # {{{ forward Euler
 
 
@@ -28,38 +40,23 @@ class CaputoForwardEulerMethod(CaputoProductIntegrationMethod):
         return 1.0
 
 
-def _update_caputo_initial_condition(
-    dy: Array, t: float, y0: tuple[Array, ...]
-) -> Array:
-    from math import gamma
-
-    for k, y0k in enumerate(y0):
-        dy += t**k / gamma(k + 1) * y0k
-
-    return dy
-
-
 def _update_caputo_forward_euler(
     dy: Array,
     history: VariableProductIntegrationHistory,
-    alpha: float | tuple[float, ...],
-    *,
-    n: int | None = None,
+    alpha: tuple[float, ...],
+    n: int,
 ) -> Array:
+    """Adds the Forward Euler right-hand side to *dy*."""
     from math import gamma
 
-    if not isinstance(alpha, tuple):
-        alpha = (alpha,)
-
-    n = len(history) if n is None else n
-    ts = history.ts[-1] - np.array(history.ts)
-    assert n is not None
+    assert 0 < n <= len(history)
+    ts = history.ts[-1] - np.array(history.ts[:n + 1])
 
     gamma1 = np.array([gamma(1 + a) for a in alpha]).reshape(-1, 1)
     alphar = np.array(alpha).reshape(-1, 1)
 
     omega = (ts[:-1] ** alphar - ts[1:] ** alphar) / gamma1
-    dy += sum(w * yk.f for w, yk in zip(omega.T, history.history))
+    dy += sum(w * yk.f for w, yk in zip(omega.T, history.history[:n + 1]))
 
     return dy
 
@@ -80,7 +77,7 @@ def _advance_caputo_forward_euler(
 
     dy = np.zeros_like(y)
     dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
-    dy = _update_caputo_forward_euler(dy, history, alpha)
+    dy = _update_caputo_forward_euler(dy, history, alpha, len(history))
 
     history.append(t, m.source(t, dy))
     return dy
@@ -416,7 +413,7 @@ def _advance_caputo_predictor_corrector(
 
     # predictor step (forward Euler)
     yp = np.copy(y0)
-    yp = _update_caputo_forward_euler(yp, history, alpha)
+    yp = _update_caputo_forward_euler(yp, history, m.derivative_order, len(history))
 
     # corrector step (Adams-Bashforth 2)
     yexplicit = np.copy(y0)
@@ -480,7 +477,7 @@ def _advance_caputo_modified_pece(
     dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
 
     if n == 1:
-        yp = _update_caputo_forward_euler(dy, history, alpha)
+        yp = _update_caputo_forward_euler(dy, history, m.derivative_order, len(history))
     else:
         dy, _ = _update_caputo_adams_bashforth2(dy, history, alpha, n=n)
 
