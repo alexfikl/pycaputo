@@ -18,6 +18,52 @@ from pycaputo.utils import Array, set_recommended_matplotlib
 logger = get_logger("pycaputo.test_fode")
 set_recommended_matplotlib()
 
+# {{{ solution: Section 3.3.1, Example 2 [Li2015]
+
+
+def li2015_solution(t: float) -> Array:
+    return np.array([t**5 - 3 * t**4 + 2 * t**3])
+
+
+def li2015_source(t: float, y: Array, *, alpha: float) -> Array:
+    from math import gamma
+
+    f = (
+        120 / gamma(6 - alpha) * t ** (5 - alpha)
+        - 72 / gamma(5 - alpha) * t ** (4 - alpha)
+        + 12 / gamma(4 - alpha) * t ** (3 - alpha)
+        + (t**5 - 3 * t**4 + 2 * t**3) ** 2
+    )
+
+    return np.array([-y[0] ** 2 + f], dtype=y.dtype)
+
+
+def li2015_source_jac(t: float, y: Array, *, alpha: float) -> Array:
+    return np.array([[-2 * y[0]]])
+
+
+# }}}
+
+
+# {{{ solution: Equation 27 from [Garrappa2009]
+
+
+def garrappa2009_solution(t: float) -> Array:
+    return np.array([t**2])
+
+
+def garrappa2009_source(t: float, y: Array, *, alpha: float) -> Array:
+    from math import gamma
+
+    return np.array(t**2 - y + 2 * t ** (2 - alpha) / gamma(3 - alpha))
+
+
+def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
+    return -np.ones_like(y)
+
+
+# }}}
+
 
 # {{{ test_predict_time_step_graded
 
@@ -52,69 +98,45 @@ def test_predict_time_step_graded() -> None:
 # {{{ test_caputo_fode
 
 
-# {{{ solution: Section 3.3.1, Example 2 [Li2015]
-
-
-def li2015_solution(t: float) -> Array:
-    return np.array([t**5 - 3 * t**4 + 2 * t**3])
-
-
-def li2015_source(t: float, y: Array, *, alpha: float) -> Array:
-    from math import gamma
-
-    f = (
-        120 / gamma(6 - alpha) * t ** (5 - alpha)
-        - 72 / gamma(5 - alpha) * t ** (4 - alpha)
-        + 12 / gamma(4 - alpha) * t ** (3 - alpha)
-        + (t**5 - 3 * t**4 + 2 * t**3) ** 2
-    )
-
-    return np.array([-y[0] ** 2 + f], dtype=y.dtype)
-
-
-def li2015_source_jac(t: float, y: Array, *, alpha: float) -> Array:
-    return np.array([[-2 * y[0]]])
-
-
-# }}}
-
-
-# {{{ solution: Equation 27 from [Garrappa2009]
-
-
-def garrapa2009_solution(t: float) -> Array:
-    return np.array([t**2])
-
-
-def garrappa2009_source(t: float, y: Array, *, alpha: float) -> Array:
-    from math import gamma
-
-    return np.array(t**2 - y + 2 * t ** (2 - alpha) / gamma(3 - alpha))
-
-
-def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
-    return -np.ones_like(y)
-
-
-# }}}
-
-
 def fode_factory(
     cls: type[fode.FractionalDifferentialEquationMethod], **kwargs: Any
 ) -> Any:
-    y0 = garrapa2009_solution(0.0)
+    nterms = kwargs.pop("nterms", 1)
+    y0 = np.concatenate([garrappa2009_solution(0.0) for _ in range(nterms)])
     tspan = (0.0, 1.0)
 
-    def wrapper(alpha: float, n: int) -> fode.FractionalDifferentialEquationMethod:
+    from dataclasses import fields
+
+    has_source_jac = "source_jac" in {f.name for f in fields(cls)}
+
+    def source(t: float, y: Array, *, alpha: tuple[float, ...]) -> Array:
+        r = np.stack(
+            [garrappa2009_source(t, y[i], alpha=alpha[i]) for i in range(nterms)]
+        )
+        return r.squeeze()
+
+    def source_jac(t: float, y: Array, *, alpha: tuple[float, ...]) -> Array:
+        r = np.stack(
+            [garrappa2009_source_jac(t, y[i], alpha=alpha[i]) for i in range(nterms)]
+        )
+        return r.squeeze()
+
+    def wrapper(
+        alpha: float | tuple[float, ...], n: int
+    ) -> fode.FractionalDifferentialEquationMethod:
+        if not isinstance(alpha, tuple):
+            alpha = (alpha,)
+
+        assert len(alpha) == nterms
         dt = (tspan[1] - tspan[0]) / n
 
-        if "source_jac" in kwargs:
-            kwargs["source_jac"] = partial(kwargs["source_jac"], alpha=alpha)
+        if has_source_jac:
+            kwargs["source_jac"] = partial(source_jac, alpha=alpha)
 
         return cls(
-            derivative_order=(alpha,),
+            derivative_order=alpha,
             predict_time_step=dt,
-            source=partial(garrappa2009_source, alpha=alpha),
+            source=partial(source, alpha=alpha),
             tspan=tspan,
             y0=(y0,),
             **kwargs,
@@ -130,12 +152,10 @@ def fode_factory(
         fode_factory(
             fode.CaputoWeightedEulerMethod,
             theta=0.0,
-            source_jac=garrappa2009_source_jac,
         ),
         fode_factory(
             fode.CaputoWeightedEulerMethod,
             theta=0.5,
-            source_jac=garrappa2009_source_jac,
         ),
         fode_factory(fode.CaputoPECEMethod, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
@@ -173,7 +193,7 @@ def test_caputo_fode(
 
         dt = np.max(np.diff(np.array(ts)))
 
-        y_ref = garrapa2009_solution(ts[-1])
+        y_ref = garrappa2009_solution(ts[-1])
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
         logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
 
@@ -187,7 +207,7 @@ def test_caputo_fode(
     if visualize:
         t = np.array(ts)
         y = np.array(ys).squeeze()
-        y_ref = np.array([garrapa2009_solution(ti) for ti in t]).squeeze()
+        y_ref = np.array([garrappa2009_solution(ti) for ti in t]).squeeze()
 
         from pycaputo.utils import figure
 
@@ -206,6 +226,65 @@ def test_caputo_fode(
 
 # }}}
 
+
+# {{{ test_caputo_fode_system
+
+
+@pytest.mark.parametrize(
+    "factory",
+    [
+        fode_factory(fode.CaputoForwardEulerMethod, nterms=3),
+        fode_factory(
+            fode.CaputoWeightedEulerMethod,
+            theta=0.5,
+            nterms=3,
+        ),
+    ],
+)
+def test_caputo_fode_system(
+    factory: Callable[[float, int], fode.FractionalDifferentialEquationMethod],
+    *,
+    visualize: bool = False,
+) -> None:
+    from pycaputo.fode import StepCompleted, StepFailed, evolve
+    from pycaputo.utils import BlockTimer, EOCRecorder
+
+    eoc = EOCRecorder()
+    if not callable(factory):
+        # NOTE: this is a pytest.param and we take out the callable
+        factory = factory.values[0]
+
+    alpha = (0.8, 0.7, 0.9)
+    for n in [32, 64, 128, 256, 512]:
+        m = factory(alpha, n)
+
+        with BlockTimer(name=m.name) as bt:
+            ts = []
+            ys = []
+            for event in evolve(m, verbose=True):
+                if isinstance(event, StepFailed):
+                    raise ValueError("Step update failed")
+                elif isinstance(event, StepCompleted):
+                    ts.append(event.t)
+                    ys.append(event.y)
+
+        dt = np.max(np.diff(np.array(ts)))
+
+        y_ref = garrappa2009_solution(ts[-1])
+        error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
+        logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
+
+        eoc.add_data_point(dt, error)
+
+    from dataclasses import replace
+
+    eoc = replace(eoc, order=m.order)
+    logger.info("\n%s", eoc)
+
+    assert eoc.estimated_order > m.order - 0.25
+
+
+# }}}
 
 if __name__ == "__main__":
     import sys
