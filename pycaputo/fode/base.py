@@ -153,6 +153,8 @@ class StepFailed(Event):
     t: float
     #: Current iteration.
     iteration: int
+    #: A reason on why the step failed (if available).
+    reason: str
 
 
 @dataclass(frozen=True)

@@ -142,6 +142,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
             return np.array(y - c * self.source(t, y) - r)
 
         def jac(y: Array) -> Array:
+            assert self.source_jac is not None
             return 1 - c * self.source_jac(t, y)
 
         result = so.root_scalar(
@@ -168,7 +169,10 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
             return np.array(y - c * self.source(t, y) - r, dtype=y0.dtype)
 
         def jac(y: Array) -> Array:
-            return np.eye(y.size, dtype=y0.dtype) - np.diag(c) @ self.source_jac(t, y)
+            assert self.source_jac is not None
+            return np.array(
+                np.eye(y.size, dtype=y0.dtype) - np.diag(c) @ self.source_jac(t, y)
+            )
 
         result = so.root(
             func,

@@ -184,7 +184,7 @@ def test_caputo_fode(
         with BlockTimer(name=m.name) as bt:
             ts = []
             ys = []
-            for event in evolve(m, verbose=True):
+            for event in evolve(m):
                 if isinstance(event, StepFailed):
                     raise ValueError("Step update failed")
                 elif isinstance(event, StepCompleted):
@@ -242,7 +242,9 @@ def test_caputo_fode(
     ],
 )
 def test_caputo_fode_system(
-    factory: Callable[[float, int], fode.FractionalDifferentialEquationMethod],
+    factory: Callable[
+        [tuple[float, ...], int], fode.FractionalDifferentialEquationMethod
+    ],
     *,
     visualize: bool = False,
 ) -> None:
@@ -261,7 +263,7 @@ def test_caputo_fode_system(
         with BlockTimer(name=m.name) as bt:
             ts = []
             ys = []
-            for event in evolve(m, verbose=True):
+            for event in evolve(m):
                 if isinstance(event, StepFailed):
                     raise ValueError("Step update failed")
                 elif isinstance(event, StepCompleted):

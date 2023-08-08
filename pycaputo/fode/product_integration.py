@@ -41,7 +41,7 @@ def _evolve_pi(
     callback: CallbackFunction | None = None,
     history: History | None = None,
     maxit: int | None = None,
-    verbose: bool = True,
+    raise_on_fail: bool = False,
 ) -> Iterator[Event]:
     from pycaputo.fode.base import (
         StepCompleted,
@@ -85,14 +85,19 @@ def _evolve_pi(
         # next time step
         try:
             dt = predict_time_step(t, y)
-
-            if not np.isfinite(dt):
-                raise ValueError(f"Invalid time step at iteration {n}: {dt!r}")
         except Exception as exc:
-            if verbose:
-                logger.error("Failed to predict time step.", exc_info=exc)
+            logger.error("Failed to predict time step.", exc_info=exc)
+            if raise_on_fail:
+                raise exc
 
-            yield StepFailed(t=t, iteration=n)
+            yield StepFailed(t=t, iteration=n, reason=str(exc))
+
+        if not np.isfinite(dt):
+            logger.error("Predicted time step is not finite: %g", dt)
+            if raise_on_fail:
+                raise ValueError(f"Predicted time step is not finite: {dt}")
+
+            yield StepFailed(t=t, iteration=n, reason="time step is not finite")
 
         if tfinal is not None:
             # NOTE: adding eps to ensure that t >= tfinal is true
@@ -103,18 +108,21 @@ def _evolve_pi(
         # advance
         try:
             y = advance(m, history, t, y)
-            if not np.all(np.isfinite(y)):
-                if verbose:
-                    logger.error("Failed to update solution: %s", y)
-
-                yield StepFailed(t=t, iteration=n)
-            else:
-                yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
         except Exception as exc:
-            if verbose:
-                logger.error("Failed to advance time step.", exc_info=exc)
+            logger.error("Failed to advance solution.", exc_info=exc)
+            if raise_on_fail:
+                raise exc
 
-            yield StepFailed(t=t, iteration=n)
+            yield StepFailed(t=t, iteration=n, reason=str(exc))
+
+        if not np.all(np.isfinite(y)):
+            logger.error("Failed to update solution: %s", y)
+            if raise_on_fail:
+                raise ValueError(f"Predicted solution is not finite: {y}")
+
+            yield StepFailed(t=t, iteration=n, reason="solution is not finite")
+        else:
+            yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
 
 
 # }}}
