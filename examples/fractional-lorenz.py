@@ -53,7 +53,7 @@ stepper = CaputoWeightedEulerMethod(
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
     source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
     y0=(y0,),
-    theta=1.0,
+    theta=0.5,
 )
 
 from pycaputo.fode import StepCompleted, evolve
