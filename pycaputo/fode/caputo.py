@@ -50,13 +50,13 @@ def _update_caputo_forward_euler(
     from math import gamma
 
     assert 0 < n <= len(history)
-    ts = history.ts[-1] - np.array(history.ts[:n + 1])
+    ts = history.ts[-1] - np.array(history.ts[: n + 1])
 
     gamma1 = np.array([gamma(1 + a) for a in alpha]).reshape(-1, 1)
     alphar = np.array(alpha).reshape(-1, 1)
 
     omega = (ts[:-1] ** alphar - ts[1:] ** alphar) / gamma1
-    dy += sum(w * yk.f for w, yk in zip(omega.T, history.history[:n + 1]))
+    dy += sum(w * yk.f for w, yk in zip(omega.T, history.history[: n + 1]))
 
     return dy
 
@@ -135,13 +135,49 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
         """
         return {}
 
+    def _solve_scalar(self, t: float, y0: Array, c: Array, r: Array) -> Array:
+        import scipy.optimize as so
+
+        def func(y: Array) -> Array:
+            return np.array(y - c * self.source(t, y) - r)
+
+        def jac(y: Array) -> Array:
+            return 1 - c * self.source_jac(t, y)
+
+        result = so.root_scalar(
+            f=func,
+            x0=y0,
+            fprime=jac if self.source_jac is not None else None,
+            **self._kwargs_root_scalar(),
+        )
+
+        return np.array(result.root)
+
     def _kwargs_root(self) -> dict[str, object]:
         """
         :returns: additional keyword arguments for :func:`scipy.optimize.root`.
         """
         # NOTE: the default hybr does not use derivatives, so use lm instead
         # FIXME: will need to maybe benchmark these a bit?
-        return {"method": "lm"}
+        return {"method": "lm" if self.source_jac else None}
+
+    def _solve_system(self, t: float, y0: Array, c: Array, r: Array) -> Array:
+        import scipy.optimize as so
+
+        def func(y: Array) -> Array:
+            return np.array(y - c * self.source(t, y) - r, dtype=y0.dtype)
+
+        def jac(y: Array) -> Array:
+            return np.eye(y.size, dtype=y0.dtype) - np.diag(c) @ self.source_jac(t, y)
+
+        result = so.root(
+            func,
+            y0,
+            jac=jac if self.source_jac is not None else None,
+            **self._kwargs_root(),
+        )
+
+        return np.array(result.x)
 
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         r"""Solves an implicit update formula.
@@ -170,39 +206,46 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
 
         :returns: solution :math:`y^*` of the above root finding problem.
         """
-
-        def func(y: Array) -> Array:
-            return np.array(y - c * self.source(t, y) - r)
-
-        def jac(y: Array) -> Array:
-            assert self.source_jac is not None
-            return np.array(np.eye(y.size) - c * self.source_jac(t, y))
-
-        import scipy.optimize as so
-
         if y0.size == 1:
-            result = so.root_scalar(
-                f=lambda y: func(y).squeeze(),
-                x0=y0,
-                fprime=(
-                    (lambda y: jac(y).squeeze())
-                    if self.source_jac is not None
-                    else None
-                ),
-                **self._kwargs_root_scalar(),
-            )
-            solution = np.array(result.root)
+            return self._solve_scalar(t, y0, c, r)
         else:
-            result = so.root(
-                func,
-                y0,
-                jac=jac if self.source_jac is not None else None,
-                **self._kwargs_root(),
-            )
+            return self._solve_system(t, y0, c, r)
 
-            solution = np.array(result.x)
 
-        return solution
+def _update_caputo_weighted_euler(
+    dy: Array,
+    history: VariableProductIntegrationHistory,
+    alpha: tuple[float, ...],
+    theta: float,
+    n: int,
+) -> tuple[Array, Array]:
+    """Adds the weighted Euler right-hand side to *dy*."""
+    from math import gamma
+
+    # NOTE: this is implicit so we never want to compute the last term
+    assert 0 <= n <= len(history)
+    ts = history.ts[-1] - np.array(history.ts[: n + 1])
+
+    gamma1 = np.array([gamma(1 + a) for a in alpha]).reshape(-1, 1)
+    alphar = np.array(alpha).reshape(-1, 1)
+
+    # add explicit terms
+    omega = ((ts[:-1] ** alphar - ts[1:] ** alphar) / gamma1).T
+    if theta != 0.0:
+        ys = history.history[: n - 1]
+        dy += sum(theta * w * yk.f for w, yk in zip(omega, ys))
+
+    if theta != 1.0:
+        ys = history.history[1:n]
+        dy += sum((1 - theta) * w * yk.f for w, yk in zip(omega, ys))
+
+    # add last forward
+    omega = omega[-1, :].squeeze().copy()
+    if theta != 0.0:
+        yk = history[n - 1]
+        dy += omega * theta * yk.f
+
+    return dy, omega
 
 
 @advance.register(CaputoWeightedEulerMethod)
@@ -217,45 +260,21 @@ def _advance_caputo_weighted_euler(
         history.append(t, m.source(t, y))
         return y
 
-    from math import gamma
-
     n = len(history)
-    (alpha,) = m.derivative_order
+    alpha = m.derivative_order
 
-    # add initial conditions
+    # add explicit terms
     fnext = np.zeros_like(y)
     fnext = _update_caputo_initial_condition(fnext, t - m.tspan[0], m.y0)
-
-    # compute explicit memory term
-    ts = history.ts
-    for k in range(n - 1):
-        omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-
-        # add forward term
-        if m.theta != 0.0:
-            yk = history[k]
-            fnext += omega * m.theta * yk.f
-
-        # add backward term
-        if m.theta != 1.0:
-            yk = history[k + 1]
-            fnext += omega * (1 - m.theta) * yk.f
-
-    # add last forward
-    k = n - 1
-    omega = ((t - ts[k]) ** alpha - (t - ts[k + 1]) ** alpha) / gamma(1 + alpha)
-
-    if m.theta != 0.0:
-        yk = history[k]
-        fnext += omega * m.theta * yk.f
+    fnext, omega = _update_caputo_weighted_euler(fnext, history, alpha, m.theta, n)
 
     # solve implicit equation
-    if m.theta != 1.0:
-        ynext = m.solve(ts[-1], y, omega * (1 - m.theta), fnext)
+    if m.theta != 1.0:  # noqa: SIM108
+        ynext = m.solve(t, y, omega * (1 - m.theta), fnext)
     else:
         ynext = fnext
 
-    history.append(ts[-1], m.source(ts[-1], ynext))
+    history.append(t, m.source(t, ynext))
     return ynext
 
 
