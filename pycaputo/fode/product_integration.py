@@ -103,13 +103,18 @@ def _evolve_pi(
         # advance
         try:
             y = advance(m, history, t, y)
-            yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
+            if not np.all(np.isfinite(y)):
+                if verbose:
+                    logger.error("Failed to update solution: %s", y)
+
+                yield StepFailed(t=t, iteration=n)
+            else:
+                yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
         except Exception as exc:
             if verbose:
                 logger.error("Failed to advance time step.", exc_info=exc)
 
             yield StepFailed(t=t, iteration=n)
-
 
 # }}}
 
