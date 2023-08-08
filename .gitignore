@@ -39,5 +39,7 @@ __pycache__
 # binary
 *.h5
 *.png
+*.svg
+!docs/*.svg
 *.mp4
 *.pymon

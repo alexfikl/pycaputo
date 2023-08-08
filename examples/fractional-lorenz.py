@@ -21,6 +21,7 @@ def lorenz(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> Arra
 
 
 def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> Array:
+    # J_{ij} = d f_i / d y_j
     return np.array(
         [
             [-sigma, sigma, 0],
@@ -35,7 +36,7 @@ def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> 
 
 # {{{ solve
 
-from pycaputo.fode import CaputoForwardEulerMethod
+from pycaputo.fode import CaputoWeightedEulerMethod
 
 # NOTE: order example taken from https://doi.org/10.1016/j.chaos.2009.03.016
 alpha = (0.985, 0.99, 0.99)
@@ -46,14 +47,14 @@ rho = 28.0
 beta = 8.0 / 3.0
 y0 = np.array([-2.0, 1.0, -1.0])
 
-stepper = CaputoForwardEulerMethod(
+stepper = CaputoWeightedEulerMethod(
     derivative_order=alpha,
     predict_time_step=1.0e-2,
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
-    # source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
+    source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
     tspan=(0, 75),
     y0=(y0,),
-    # theta=0.5,
+    theta=1.0,
 )
 
 from pycaputo.fode import StepCompleted, evolve
