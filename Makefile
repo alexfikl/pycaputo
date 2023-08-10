@@ -41,6 +41,7 @@ reuse:			## Check REUSE license compliance
 codespell:		## Run codespell over the source code and documentation
 	@codespell --summary \
 		--skip _build \
+		--uri-ignore-words-list '*' \
 		--ignore-words .codespell-ignore \
 		pycaputo tests examples docs
 .PHONY: codespell

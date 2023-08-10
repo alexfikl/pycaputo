@@ -40,7 +40,7 @@ cdf_ref = ss.weibull_max(c=c, loc=loc, scale=scale)
 cdf_empirical = ss.ecdf(smax).cdf
 
 print(
-    "Optimal paramters: c {c:.12e} loc {loc:.12e} scale {scale:.12e}".format(
+    "Optimal parameters: c {c:.12e} loc {loc:.12e} scale {scale:.12e}".format(
         **cdf_opt.kwds
     )
 )
