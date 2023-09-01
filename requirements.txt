@@ -12,11 +12,11 @@ numpy==1.25.2
     # via
     #   pycaputo (pyproject.toml)
     #   scipy
-pygments==2.15.1
+pygments==2.16.1
     # via rich
 rich==13.5.2
     # via pycaputo (pyproject.toml)
-scipy==1.11.1
+scipy==1.11.2
     # via pycaputo (pyproject.toml)
 typing-extensions==4.7.1
     # via pycaputo (pyproject.toml)
