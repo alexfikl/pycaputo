@@ -18,7 +18,7 @@ jobs:
     name: Linting (ruff)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     -
       uses: actions/setup-python@v4
       with:
@@ -33,7 +33,7 @@ jobs:
     name: Annotations (mypy)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     -
       uses: actions/setup-python@v4
       with:
@@ -52,7 +52,7 @@ jobs:
         python-version: ['3.9', '3.10', '3.11']
       fail-fast: false
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     -
       uses: actions/setup-python@v4
       with:
@@ -67,7 +67,7 @@ jobs:
     name: Examples
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     -
       uses: actions/setup-python@v4
       with:
