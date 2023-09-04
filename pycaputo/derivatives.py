@@ -32,6 +32,10 @@ class FractionalOperator:
     #: while a negative number would denote a fractional integral, as supported.
     order: float
 
+    @property
+    def n(self) -> int:
+        raise NotImplementedError
+
 
 @dataclass(frozen=True)
 class RiemannLiouvilleDerivative(FractionalOperator):
@@ -43,7 +47,7 @@ class RiemannLiouvilleDerivative(FractionalOperator):
 
     .. math::
 
-        D_{RL}^\alpha_-[f](x) = \frac{1}{\Gamma(n - \alpha)}
+        D_{RL}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
             \frac{\mathrm{d}^n}{\mathrm{d} x^n} \int_a^x
             \frac{f(s)}{(x - s)^{\alpha + 1 - n}} \,\mathrm{d}s,
 
@@ -51,7 +55,7 @@ class RiemannLiouvilleDerivative(FractionalOperator):
     :math:`[x, b]` with a factor of :math:`(-1)^n`.
     """
 
-    #: Side on which to compute the derivative
+    #: Side on which to compute the derivative.
     side: Side
 
     @property
@@ -80,7 +84,7 @@ class CaputoDerivative(FractionalOperator):
     Riemann-Liouville integral.
     """
 
-    #: Side on which to compute the derivative
+    #: Side on which to compute the derivative.
     side: Side
 
     @property
@@ -109,7 +113,7 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
     where :math:`N(h) = (x - a) / h`. The upper derivative is similarly defined.
     """
 
-    #: Side on which to compute the derivative
+    #: Side on which to compute the derivative.
     side: Side
 
     @property
@@ -135,5 +139,5 @@ class HadamardDerivative(FractionalOperator):
             \int_a^x (\log x - \log s)^{2 + n - \alpha} \frac{f(s)}{s} \,\mathrm{d}s.
     """
 
-    #: Side on which to compute the derivative
+    #: Side on which to compute the derivative.
     side: Side
