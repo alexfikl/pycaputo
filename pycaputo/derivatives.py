@@ -27,36 +27,39 @@ class FractionalOperator:
     For a recent review of these operators see [SalesTeodoro2019]_.
     """
 
-    #: Order of the fractional operator, as real number
+    #: Order of the fractional operator, as a real number
     #: :math:`\alpha \in \mathbb{R}`. A positive number would denote a derivative,
-    #: while a negative number would denote a fractional integral instead.
+    #: while a negative number would denote a fractional integral, as supported.
     order: float
-
-    @property
-    def n(self) -> int:
-        return math.ceil(self.order)
 
 
 @dataclass(frozen=True)
 class RiemannLiouvilleDerivative(FractionalOperator):
     r"""Riemann-Liouville fractional order derivative.
 
-    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{Z}`,
+    For an order :math:`n - 1 \le \alpha < n`, where :math:`n \in \mathbb{Z}`,
     the lower Riemann-Liouville fractional derivative of a function
     :math:`f: [a, b] \to \mathbb{R}` is given by (see e.g. [Li2020]_)
 
     .. math::
 
-        D_{RL}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
+        D_{RL}^\alpha_-[f](x) = \frac{1}{\Gamma(n - \alpha)}
             \frac{\mathrm{d}^n}{\mathrm{d} x^n} \int_a^x
             \frac{f(s)}{(x - s)^{\alpha + 1 - n}} \,\mathrm{d}s,
 
     while the upper Riemann-Liouville fractional derivative is integrated on
-    :math:`[x, b]`.
+    :math:`[x, b]` with a factor of :math:`(-1)^n`.
     """
 
     #: Side on which to compute the derivative
     side: Side
+
+    @property
+    def n(self) -> int:
+        r"""Integer part of the :attr:`~FractionalOperator.order`, i.e.
+        :math:`n - 1 \le \text{order} < n`.
+        """
+        return math.floor(self.order + 1)
 
 
 @dataclass(frozen=True)
@@ -80,12 +83,19 @@ class CaputoDerivative(FractionalOperator):
     #: Side on which to compute the derivative
     side: Side
 
+    @property
+    def n(self) -> int:
+        r"""Integer part of the :attr:`~FractionalOperator.order`, i.e.
+        :math:`n - 1 < \text{order} \le n`.
+        """
+        return math.ceil(self.order)
+
 
 @dataclass(frozen=True)
 class GrunwaldLetnikovDerivative(FractionalOperator):
     r"""Grünwald-Letnikov fractional order derivative.
 
-    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{Z}`,
+    For an order :math:`n - 1 \le \alpha < n`, where :math:`n \in \mathbb{Z}`,
     the lower Grünwald-Letnikov fractional derivative of a function
     :math:`f: [a, b] \to \mathbb{R}` is given by (see e.g. [SalesTeodoro2019]_)
 
@@ -102,6 +112,13 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
     #: Side on which to compute the derivative
     side: Side
 
+    @property
+    def n(self) -> int:
+        r"""Integer part of the :attr:`~FractionalOperator.order`, i.e.
+        :math:`n - 1 \le \text{order} < n`.
+        """
+        return math.floor(self.order + 1)
+
 
 @dataclass(frozen=True)
 class HadamardDerivative(FractionalOperator):
@@ -117,3 +134,6 @@ class HadamardDerivative(FractionalOperator):
             \frac{\mathrm{d}^n}{\mathrm{d} x^n}
             \int_a^x (\log x - \log s)^{2 + n - \alpha} \frac{f(s)}{s} \,\mathrm{d}s.
     """
+
+    #: Side on which to compute the derivative
+    side: Side
