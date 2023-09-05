@@ -38,6 +38,11 @@ class Points:
         """Distance between points."""
         return np.diff(self.x)
 
+    @cached_property
+    def xm(self) -> Array:
+        """Array of midpoints."""
+        return np.array(self.x[1:] + self.x[:-1]) / 2
+
 
 def make_stretched_points(
     n: int, a: float = 0.0, b: float = 1.0, strength: float = 4.0

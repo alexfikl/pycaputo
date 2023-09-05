@@ -68,11 +68,14 @@ class RiemannLiouvilleMethod(QuadratureMethod):
                 )
 
 
+# {{{ Rectangular
+
+
 @dataclass(frozen=True)
 class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using the rectangular formula.
 
-    The rectangular formula is derived in Section 3.1 I from [Li2020]_. It
+    The rectangular formula is derived in Section 3.1.(I) from [Li2020]_. It
     uses a piecewise constant approximation on each subinterval and cannot
     be used to evaluate the value at the starting point, i.e.
     :math:`I_{RL}^\alpha[f](a)` is not defined.
@@ -128,11 +131,17 @@ def _quad_rl_rect(
     return qf
 
 
+# }}}
+
+
+# {{{ Trapezoidal
+
+
 @dataclass(frozen=True)
 class RiemannLiouvilleTrapezoidalMethod(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using the trapezoidal formula.
 
-    The rectangular formula is derived in Section 3.1 II from [Li2020]_. It
+    The trapezoidal formula is derived in Section 3.1.(II) from [Li2020]_. It
     uses a linear approximation on each subinterval and cannot be used to
     evaluate the value at the starting point, i.e.
     :math:`I_{RL}^\alpha[f](a)` is not defined.
@@ -183,6 +192,7 @@ def _quad_rl_trap(
 
             qf[n] += w0 * np.sum(w * fx[1:n])
     else:
+        # NOTE: this expressions match the Mathematica result
         for n in range(1, qf.size):
             dl, dr = x[n] - x[:n], x[n] - x[1 : n + 1]
             wl = dr ** (1 + alpha) + dl**alpha * (alpha * p.dx[:n] - dr)
@@ -191,6 +201,106 @@ def _quad_rl_trap(
             qf[n] = w0 * np.sum((wl * fx[:n] + wr * fx[1 : n + 1]) / p.dx[:n])
 
     return qf
+
+
+# }}}
+
+
+# {{{ Simpson's rule
+
+
+@dataclass(frozen=True)
+class RiemannLiouvilleSimpsonMethod(RiemannLiouvilleMethod):
+    r"""Riemann-Liouville integral approximation using Simpson's method.
+
+    This method is described in more detail in Section 3.3.(III) of [Li2020]_. It
+    uses a quadratic approximation on each subinterval and cannot be used to
+    evaluate the value at the starting point, i.e.
+    :math:`I_{RL}^\alpha[f](a)` is not defined.
+
+    This method is of order :math:`\mathcal{O}(h^3)` and supports uniform grids.
+    """
+
+    @property
+    def name(self) -> str:
+        return "RLSimpson"
+
+    @property
+    def order(self) -> float:
+        return 3.0
+
+
+@quad.register(RiemannLiouvilleSimpsonMethod)
+def _quad_rl_simpson(
+    m: RiemannLiouvilleSimpsonMethod,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    from pycaputo.grid import UniformPoints
+
+    if not callable(f):
+        raise TypeError(f"Input 'f' needs to be a callable: {type(f).__name__}")
+
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
+
+    fx = f(p.x)
+    fm = f(p.xm)
+
+    alpha = -m.d.order
+    w0 = p.dx[0] ** alpha / math.gamma(3 + alpha)
+    indices = np.arange(fx.size)
+
+    # compute integral
+    qf = np.empty_like(fx)
+    qf[0] = np.nan
+
+    # NOTE: [Li2020] Equation 3.19 and 3.20
+    n = indices[1:]
+    w = (
+        4.0 * (n ** (2 + alpha) - (n - 1) ** (2 + alpha))
+        - (2 + alpha) * (3 * n ** (1 + alpha) + (n - 1) ** (1 + alpha))
+        + (2 + alpha) * (1 + alpha) * n**alpha
+    )
+    what = 4.0 * (
+        (2 + alpha) * (n ** (1 + alpha) + (n - 1) ** (1 + alpha))
+        - 2 * (n ** (2 + alpha) - (n - 1) ** (2 + alpha))
+    )
+    # add k == 0 and k == n cases so we don't have to care about them
+    qf[1:] = (w * fx[0] + what * fm[0]) + (2 - alpha) * fx[1:]
+
+    # add 1 <= k <= n - 1 cases
+    for n in range(2, qf.size):  # type: ignore[assignment]
+        k = indices[1:n]
+        # fmt: off
+        w = (
+            4 * (
+                (n + 1 - k) ** (2 + alpha)
+                - (n - 1 - k) ** (2 + alpha))
+            - (2 + alpha) * (
+                (n + 1 - k) ** (1 + alpha)
+                + 6 * (n - k) ** (1 + alpha)
+                + (n - 1 - k) ** (1 + alpha))
+            )
+        what = 4.0 * (
+            (2 + alpha) * (
+                (n - k) ** (1 + alpha)
+                + (n - 1 - k) ** (1 + alpha))
+            - 2 * (
+                (n - k) ** (2 + alpha)
+                - (n - 1 - k) ** (2 + alpha))
+        )
+        # fmt: on
+
+        qf[n] += np.sum(w * fx[1:n]) + np.sum(what * fm[1:n])
+
+    return np.array(w0 * qf)
+
+
+# }}}
+
+
+# {{{ Spectral -- Jacobi polynomials
 
 
 @dataclass(frozen=True)
@@ -251,6 +361,8 @@ def _quad_rl_spec(
 
     return df
 
+
+# }}}
 
 # }}}
 
@@ -368,6 +480,7 @@ def _quad_rl_conv(
 REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
     "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
     "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
+    "RiemannLiouvilleSimpsonMethod": RiemannLiouvilleSimpsonMethod,
     "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,
     "RiemannLiouvilleConvolutionMethod": RiemannLiouvilleConvolutionMethod,
 }

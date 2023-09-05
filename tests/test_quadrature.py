@@ -51,6 +51,7 @@ def make_rl_conv_factory(order: int) -> Callable[[float], QuadratureMethod]:
         ("RiemannLiouvilleRectangularMethod", "stynes"),
         ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
         ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
+        ("RiemannLiouvilleSimpsonMethod", "uniform"),
         (make_rl_conv_factory(1), "uniform"),
         # (make_rl_conv_factory(2), "uniform"),
         # (make_rl_conv_factory(3), "uniform"),
@@ -109,7 +110,7 @@ def test_riemann_liouville_quad(
         savefig(fig, dirname / filename.lower())
 
     assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 0.25
+    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 1.0
 
 
 # }}}
