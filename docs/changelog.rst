@@ -4,15 +4,27 @@ Changelog
 pycaputo 0.2 (TBD)
 ------------------
 
+Dependency changes
+^^^^^^^^^^^^^^^^^^
+
+* Bumped minimum Python version to 3.9 (to match latest Numpy).
+
 Features
 ^^^^^^^^
 
-* Bumped minimum Python version to 3.9 (to match latest Numpy).
 * Added an example with the fractional Lorenz system (:ghpr:`13`).
 * Support setting a constant for
   :meth:`~pycaputo.fode.FractionalDifferentialEquationMethod.predict_time_step`.
 * Add a guess for the number of corrector iterations
   for :class:`~pycaputo.fode.CaputoPECEMethod` from [Garrappa2010]_.
+* Implement :class:`~pycaputo.quadrature.RiemannLiouvilleSimpsonMethod`, a
+  standard 3rd order method.
+* Implement :class:`~pycaputo.quadrature.RiemannLiouvilleCubicHermiteMethod`, a
+  standard 4th order method.
+* Support different fractional orders for FODE systems in
+  :class:`~pycaputo.fode.CaputoForwardEulerMethod`,
+  :class:`~pycaputo.fode.CaputoWeightedEulerMethod` and others.
+* Add approximation for the Lipschitz contant.
 
 Fixes
 ^^^^^
