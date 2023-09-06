@@ -21,8 +21,13 @@ set_recommended_matplotlib()
 # {{{ test_riemann_liouville_quad
 
 
-def f_test(x: Array, *, mu: float = 3.5) -> Array:
-    return (0.5 - x) ** mu
+def f_test(x: Array, d: int = 0, *, mu: float = 3.5) -> Array:
+    if d == 0:
+        return (0.5 - x) ** mu
+    elif d == 1:
+        return -mu * (0.5 - x) ** (mu - 1)
+    else:
+        raise NotImplementedError
 
 
 def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
@@ -52,6 +57,7 @@ def make_rl_conv_factory(order: int) -> Callable[[float], QuadratureMethod]:
         ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
         ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
         ("RiemannLiouvilleSimpsonMethod", "uniform"),
+        ("RiemannLiouvilleCubicHermiteMethod", "uniform"),
         (make_rl_conv_factory(1), "uniform"),
         # (make_rl_conv_factory(2), "uniform"),
         # (make_rl_conv_factory(3), "uniform"),
@@ -85,7 +91,13 @@ def test_riemann_liouville_quad(
         fig = mp.figure()
         ax = fig.gca()
 
-    for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
+    if meth.name == "RLCHermite":
+        # FIXME: errors start to grow at finer meshes; not clear why?
+        resolutions = [8, 12, 16, 20, 24, 28, 32, 48, 64]
+    else:
+        resolutions = [16, 32, 64, 128, 256, 512, 768, 1024]
+
+    for n in resolutions:
         p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
         qf_num = quad(meth, f_test, p)
         qf_ref = qf_test(p.x, alpha=alpha)

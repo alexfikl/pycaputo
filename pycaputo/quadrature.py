@@ -12,7 +12,7 @@ import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.utils import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
 
 # {{{ interface
 
@@ -37,7 +37,10 @@ def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, x: Points) -> Array:
     """Evaluate the fractional integral of *f* using the points *x*.
 
     :arg m: method used to evaluate the integral.
-    :arg f: a simple function for which to evaluate the integral.
+    :arg f: a simple function for which to evaluate the integral. If the
+        method requires higher-order derivatives (e.g. for Hermite interpolation),
+        this function can also be a
+        :class:`~pycaputo.utils.DifferentiableScalarFunction`.
     :arg x: an array of points at which to evaluate the integral.
     """
 
@@ -56,7 +59,7 @@ def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, x: Points) -> Array:
 class RiemannLiouvilleMethod(QuadratureMethod):
     """Quadrature method for the Riemann-Liouville integral."""
 
-    #: Description of the integral that is integrated.
+    #: Description of the integral that is approximated.
     d: RiemannLiouvilleDerivative
 
     if __debug__:
@@ -68,7 +71,7 @@ class RiemannLiouvilleMethod(QuadratureMethod):
                 )
 
 
-# {{{ Rectangular
+# {{{ RiemannLiouvilleRectangularMethod
 
 
 @dataclass(frozen=True)
@@ -134,7 +137,7 @@ def _quad_rl_rect(
 # }}}
 
 
-# {{{ Trapezoidal
+# {{{ RiemannLiouvilleTrapezoidalMethod
 
 
 @dataclass(frozen=True)
@@ -206,7 +209,7 @@ def _quad_rl_trap(
 # }}}
 
 
-# {{{ Simpson's rule
+# {{{ RiemannLiouvilleSimpsonMethod
 
 
 @dataclass(frozen=True)
@@ -299,8 +302,95 @@ def _quad_rl_simpson(
 
 # }}}
 
+# {{{ RiemannLiouvilleCubicHermiteMethod
 
-# {{{ Spectral -- Jacobi polynomials
+
+@dataclass(frozen=True)
+class RiemannLiouvilleCubicHermiteMethod(RiemannLiouvilleMethod):
+    r"""Riemann-Liouville integral approximation using a cubic Hermite interpolant.
+
+    This method is described in more detail in Section 3.3.(B) of [Li2020]_. It
+    uses a cubic approximation on each subinterval and cannot be used to
+    evaluate the value at the starting point, i.e.
+    :math:`I_{RL}^\alpha[f](a)` is not defined.
+
+    Note that Hermite interpolants require derivative values at the grid points.
+
+    This method is of order :math:`\mathcal{O}(h^4)` and supports uniform grids.
+    """
+
+    @property
+    def name(self) -> str:
+        return "RLCHermite"
+
+    @property
+    def order(self) -> float:
+        return 4.0
+
+
+@quad.register(RiemannLiouvilleCubicHermiteMethod)
+def _quad_rl_cubic_hermite(
+    m: RiemannLiouvilleCubicHermiteMethod,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    from pycaputo.grid import UniformPoints
+
+    if not isinstance(f, DifferentiableScalarFunction):
+        raise TypeError(f"Input 'f' needs to be a callable: {type(f).__name__}")
+
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
+
+    fx = f(p.x, d=0)
+    fp = f(p.x, d=1)
+
+    alpha = -m.d.order
+    h = p.dx[0]
+    w0 = h**alpha / math.gamma(4 + alpha)
+    indices = np.arange(fx.size)
+
+    # compute integral
+    qf = np.empty_like(fx)
+    qf[0] = np.nan
+
+    # NOTE: [Li2020] Equation 3.29 and 3.30
+    n = indices[1:]
+    w = n**alpha * (
+        12 * n**3 - 6 * (3 + alpha) * n**2 + (1 + alpha) * (2 + alpha) * (3 + alpha)
+    ) - 6 * (n - 1) ** (2 + alpha) * (1 + 2 * n + alpha)
+    what = n ** (1 + alpha) * (
+        6 * n**2 - 4 * (3 + alpha) * n + (2 + alpha) * (3 + alpha)
+    ) - 2 * (n - 1) ** (2 + alpha) * (3 * n + alpha)
+    qf[1:] = (
+        w * fx[0]
+        + what * h * fp[0]
+        + 6.0 * (1 + alpha) * fx[1:]
+        - 2 * alpha * h * fp[1:]
+    )
+
+    for n in range(2, qf.size):  # type: ignore[assignment]
+        k = indices[1:n]
+        # fmt: off
+        w = 6 * (
+                4 * (n - k) ** (3 + alpha)
+                + (n - k - 1) ** (2 + alpha) * (2 * k - 2 * n - 1 - alpha)
+                + (n - k + 1) ** (2 + alpha) * (2 * k - 2 * n + 1 + alpha))
+        what = (
+            2 * (n - k - 1) ** (2 + alpha) * (3 * k - 3 * n - alpha)
+            - (n - k) ** (2 + alpha) * (8 * alpha + 24)
+            - 2 * (n - k + 1) ** (2 + alpha) * (3 * k - 3 * n + alpha))
+        # fmt: on
+
+        qf[n] += np.sum(w * fx[1:n]) + h * np.sum(what * fp[1:n])
+
+    return np.array(w0 * qf)
+
+
+# }}}
+
+
+# {{{ RiemannLiouvilleSpectralMethod: Jacobi polynomials
 
 
 @dataclass(frozen=True)
@@ -364,10 +454,8 @@ def _quad_rl_spec(
 
 # }}}
 
-# }}}
 
-
-# {{{
+# {{{ RiemannLiouvilleConvolutionMethod: Lubich
 
 
 @dataclass(frozen=True)
@@ -473,16 +561,19 @@ def _quad_rl_conv(
 
 # }}}
 
+# }}}
+
 
 # {{{ make
 
 
 REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
+    "RiemannLiouvilleConvolutionMethod": RiemannLiouvilleConvolutionMethod,
+    "RiemannLiouvilleCubicHermiteMethod": RiemannLiouvilleCubicHermiteMethod,
     "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
-    "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
     "RiemannLiouvilleSimpsonMethod": RiemannLiouvilleSimpsonMethod,
     "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,
-    "RiemannLiouvilleConvolutionMethod": RiemannLiouvilleConvolutionMethod,
+    "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
 }
 
 

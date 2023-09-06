@@ -18,6 +18,7 @@ from typing import (
     Protocol,
     TypeVar,
     Union,
+    runtime_checkable,
 )
 
 import numpy as np
@@ -102,7 +103,23 @@ class CallbackFunction(Protocol):
         """
 
 
-ArrayOrScalarFunction = Union[Array, ScalarFunction]
+@runtime_checkable
+class DifferentiableScalarFunction(Protocol):
+    """A :class:`ScalarFunction` that can also compute its integer order derivatives.
+
+    By default no derivatives are implemented, so subclasses can handle any such
+    cases.
+    """
+
+    def __call__(self, x: Array, d: int = 0) -> Array:
+        """Evaluate the function or any of its derivatives.
+
+        :arg x: a scalar or array at which to evaluate the function.
+        :arg d: order of the derivative.
+        """
+
+
+ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
 
 # }}}
 
