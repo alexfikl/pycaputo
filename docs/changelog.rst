@@ -24,7 +24,7 @@ Features
 * Support different fractional orders for FODE systems in
   :class:`~pycaputo.fode.CaputoForwardEulerMethod`,
   :class:`~pycaputo.fode.CaputoWeightedEulerMethod` and others.
-* Add approximation for the Lipschitz contant.
+* Add approximation for the Lipschitz constant.
 
 Fixes
 ^^^^^

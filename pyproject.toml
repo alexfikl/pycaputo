@@ -67,8 +67,10 @@ requires = [
 packages = ["pycaputo"]
 
 [tool.black]
+safe = true
+preview = true
 line-length = 88
-target-version = ['py38']
+target-version = ['py39', 'py310', 'py311']
 exclude='\.eggs|\.git|\.mypy_cache|build|dist|\.pytest_cache|\.pytype'
 
 [tool.ruff]
@@ -117,6 +119,8 @@ multiline-quotes = "double"
 profile = "black"
 
 [tool.mypy]
+strict = true
+hide_error_codes = false
 warn_unused_ignores = true
 plugins = "numpy.typing.mypy_plugin"
 

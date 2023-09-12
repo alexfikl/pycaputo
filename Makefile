@@ -10,16 +10,20 @@ help: 			## Show this help
 
 # {{{ linting
 
-fmt: black		## Run all formatting scripts
+format: black	## Run all formatting scripts
 	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
 	$(PYTHON) -m isort pycaputo tests examples
+.PHONY: format
+
+fmt: format
 .PHONY: fmt
 
 black:			## Run black over the source code
-	$(PYTHON) -m black \
-		--safe --target-version py38 --preview \
-		pycaputo tests examples docs
+	$(PYTHON) -m black pycaputo tests examples docs
 .PHONY: black
+
+lint: ruff mypy reuse codespell manifest	## Run all linting scripts
+.PHONY: lint
 
 ruff:			## Run ruff checks over the source code
 	ruff check pycaputo tests examples
@@ -27,9 +31,7 @@ ruff:			## Run ruff checks over the source code
 .PHONY: ruff
 
 mypy:			## Run mypy checks over the source code
-	$(PYTHON) -m mypy \
-		--strict --show-error-codes \
-		pycaputo tests examples
+	$(PYTHON) -m mypy pycaputo tests examples
 	@echo -e "\e[1;32mmypy clean!\e[0m"
 .PHONY: mypy
 
