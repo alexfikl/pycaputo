@@ -30,6 +30,7 @@ Links
 
 Other known libraries for fractional calculus
 
+* `Diffusive-Representation <https://github.com/fmonteghetti/Diffusive-Representation>`__ (MATLAB)
 * `FLMM2 <https://www.mathworks.com/matlabcentral/fileexchange/47081-flmm2>`__ (MATLAB)
 * `differint <https://github.com/differint/differint>`__ (Python)
 * `FractionalDiffEq.jl <https://github.com/SciFracX/FractionalDiffEq.jl>`__ (Julia)
