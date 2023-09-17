@@ -13,6 +13,13 @@ from pycaputo.differentiation.caputo import (
     CaputoModifiedL1Method,
     CaputoSpectralMethod,
 )
+from pycaputo.differentiation.riemann_liouville import (
+    RiemannLiouvilleDerivativeMethod,
+    RiemannLiouvilleFromCaputoDerivativeMethod,
+    RiemannLiouvilleL1Method,
+    RiemannLiouvilleL2CMethod,
+    RiemannLiouvilleL2Method,
+)
 from pycaputo.grid import Points
 
 
@@ -96,4 +103,9 @@ __all__ = (
     "CaputoL2Method",
     "CaputoModifiedL1Method",
     "CaputoSpectralMethod",
+    "RiemannLiouvilleDerivativeMethod",
+    "RiemannLiouvilleFromCaputoDerivativeMethod",
+    "RiemannLiouvilleL1Method",
+    "RiemannLiouvilleL2CMethod",
+    "RiemannLiouvilleL2Method",
 )
