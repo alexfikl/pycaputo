@@ -4,71 +4,27 @@
 from __future__ import annotations
 
 import math
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import singledispatch
 from typing import Iterator
 
 import numpy as np
 
-from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.derivatives import CaputoDerivative
 from pycaputo.grid import Points, UniformMidpoints, UniformPoints
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ArrayOrScalarFunction
 
+from .base import DerivativeMethod, diff
+
 logger = get_logger(__name__)
-
-# {{{ interface
-
-
-@dataclass(frozen=True)
-class DerivativeMethod(ABC):
-    """A generic method used to evaluate a fractional derivative at a set of points."""
-
-    @property
-    def name(self) -> str:
-        """An identifier for the method."""
-        return type(self).__name__.replace("Method", "")
-
-    @property
-    @abstractmethod
-    def order(self) -> float:
-        """Expected order of convergence of the method."""
-
-    def supports(self, alpha: float) -> bool:
-        """
-        :returns: *True* if the method supports computing the fractional
-            order derivative of order *alpha* and *False* otherwise.
-        """
-        return False
-
-
-@singledispatch
-def diff(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
-    """Evaluate the fractional derivative of *f* at *x*.
-
-    Note that not all numerical methods can evaluate the derivative at all
-    points in *x*. For example, the :class:`CaputoL1Method` cannot evaluate the
-    derivative at ``x[0]``.
-
-    :arg m: method used to evaluate the derivative.
-    :arg f: a simple function for which to evaluate the derivative.
-    :arg p: an array of points at which to evaluate the derivative.
-    """
-    raise NotImplementedError(
-        f"Cannot evaluate derivative with method '{type(m).__name__}'"
-    )
 
 
 @dataclass(frozen=True)
 class CaputoDerivativeMethod(DerivativeMethod):
     """A method used to evaluate a :class:`~pycaputo.derivatives.CaputoDerivative`."""
 
-    #: The type of the Caputo derivative.
+    #: A Caputo derivative to discretize.
     d: CaputoDerivative
-
-
-# }}}
 
 
 # {{{ Caputo L1 Method
@@ -86,15 +42,6 @@ class CaputoL1Method(CaputoDerivativeMethod):
     This method is of order :math:`\mathcal{O}(h^{2 - \alpha})` and supports
     arbitrary grids.
     """
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            if not self.supports(self.d.order):
-                raise ValueError(
-                    f"'{type(self).__name__}' supports orders in (0, 1): "
-                    f"got order '{self.d.order}'"
-                )
 
     @property
     def order(self) -> float:
@@ -216,15 +163,6 @@ class CaputoL2Method(CaputoDerivativeMethod):
     only uniform grids.
     """
 
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            if not self.supports(self.d.order):
-                raise ValueError(
-                    f"'{type(self).__name__}' supports orders in (1, 2): "
-                    f"got order '{self.d.order}'"
-                )
-
     @property
     def order(self) -> float:
         return 1
@@ -271,6 +209,12 @@ def _diff_l2method(m: CaputoL2Method, f: ArrayOrScalarFunction, p: Points) -> Ar
         )
 
     return df
+
+
+# }}}
+
+
+# {{{ CaputoL2CMethod
 
 
 @dataclass(frozen=True)
@@ -327,8 +271,7 @@ def _diff_uniform_l2cmethod(
 
 # }}}
 
-
-# {{{ Caputo Spectral Method
+# {{{ CaputoSpectralMethod
 
 
 @dataclass(frozen=True)
@@ -363,6 +306,9 @@ class CaputoSpectralMethod(CaputoDerivativeMethod):
     def order(self) -> float:
         return np.inf
 
+    def supports(self, alpha: float) -> bool:
+        return 0 < alpha < np.inf
+
 
 @diff.register(CaputoSpectralMethod)
 def _diff_jacobi(m: CaputoSpectralMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
@@ -384,108 +330,6 @@ def _diff_jacobi(m: CaputoSpectralMethod, f: ArrayOrScalarFunction, p: Points) -
         df += fhat[n] * Dhat
 
     return df
-
-
-# }}}
-
-# {{{ make
-
-
-REGISTERED_METHODS: dict[str, type[DerivativeMethod]] = {
-    "CaputoL1Method": CaputoL1Method,
-    "CaputoL2CMethod": CaputoL2CMethod,
-    "CaputoL2Method": CaputoL2Method,
-    "CaputoModifiedL1Method": CaputoModifiedL1Method,
-    "CaputoSpectralMethod": CaputoSpectralMethod,
-}
-
-
-def register_method(
-    name: str,
-    method: type[DerivativeMethod],
-    *,
-    force: bool = False,
-) -> None:
-    """Register a new derivative approximation method.
-
-    :arg name: a canonical name for the method.
-    :arg method: a class that will be used to construct the method.
-    :arg force: if *True*, any existing methods will be overwritten.
-    """
-
-    if not force and name in REGISTERED_METHODS:
-        raise ValueError(
-            f"A method by the name '{name}' is already registered. Use 'force=True' to"
-            " overwrite it."
-        )
-
-    REGISTERED_METHODS[name] = method
-
-
-def make_method_from_name(
-    name: str,
-    alpha: float,
-    *,
-    side: Side = Side.Left,
-) -> DerivativeMethod:
-    """Instantiate a :class:`DerivativeMethod` given the name *name*.
-
-    :arg alpha: the order of the fractional derivative. Not all methods support
-        all orders, so this choice may be invalid.
-    """
-    if name not in REGISTERED_METHODS:
-        raise ValueError(
-            "Unknown differentiation method '{}'. Known methods are '{}'".format(
-                name, "', '".join(REGISTERED_METHODS)
-            )
-        )
-
-    d = CaputoDerivative(order=alpha, side=side)
-    method = REGISTERED_METHODS[name](d)  # type: ignore[call-arg]
-
-    if not method.supports(alpha):
-        raise ValueError(f"Method '{name}' does not support derivative order '{alpha}'")
-
-    return method
-
-
-def guess_method_for_order(
-    p: Points,
-    alpha: float,
-    *,
-    side: Side = Side.Left,
-) -> DerivativeMethod:
-    """Construct a :class:`DerivativeMethod` for the given order
-    *alpha* and points *p*.
-
-    Note that in general not all methods support arbitrary sets of points, so
-    specialized methods must be chosen.
-
-    :arg alpha: the order of the fractional derivative.
-    :arg p: a set of points on which to evaluate the fractional derivative.
-    """
-    from pycaputo.grid import JacobiGaussLobattoPoints, UniformMidpoints, UniformPoints
-
-    d = CaputoDerivative(order=alpha, side=side)
-    m: DerivativeMethod | None = None
-
-    if isinstance(p, JacobiGaussLobattoPoints):
-        m = CaputoSpectralMethod(d)
-    elif 0 < alpha < 1:
-        if isinstance(p, UniformMidpoints):
-            m = CaputoModifiedL1Method(d)
-        else:
-            m = CaputoL1Method(d)
-    elif 1 < alpha < 2 and isinstance(p, UniformPoints):
-        m = CaputoL2CMethod(d)
-
-    if m is None:
-        raise ValueError(
-            "Cannot determine an adequate method for "
-            f"alpha = {alpha} and '{type(p).__name__}'."
-        )
-
-    return m
 
 
 # }}}

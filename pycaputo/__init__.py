@@ -27,7 +27,7 @@ def diff(
     import pycaputo.differentiation as pyd
 
     if method is None:
-        m = pyd.guess_method_for_order(p, alpha)
+        m = pyd.guess_method_for_derivative(p, alpha)
     else:
         m = pyd.make_method_from_name(method, alpha)
 
