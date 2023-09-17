@@ -112,15 +112,15 @@ def guess_method_for_order(
 
 
 __all__ = (
+    "DerivativeMethod",
+    "diff",
+    "register_method",
+    "guess_method_for_order",
+    "make_method_from_name",
     "CaputoDerivativeMethod",
     "CaputoL1Method",
     "CaputoL2CMethod",
     "CaputoL2Method",
     "CaputoModifiedL1Method",
     "CaputoSpectralMethod",
-    "DerivativeMethod",
-    "diff",
-    "guess_method_for_order",
-    "make_method_from_name",
-    "register_method",
 )

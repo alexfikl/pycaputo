@@ -112,6 +112,10 @@ def guess_method_for_order(
 
 __all__ = (
     "QuadratureMethod",
+    "quad",
+    "register_method",
+    "make_method_from_name",
+    "guess_method_for_order",
     "RiemannLiouvilleConvolutionMethod",
     "RiemannLiouvilleCubicHermiteMethod",
     "RiemannLiouvilleMethod",
@@ -119,8 +123,4 @@ __all__ = (
     "RiemannLiouvilleSimpsonMethod",
     "RiemannLiouvilleSpectralMethod",
     "RiemannLiouvilleTrapezoidalMethod",
-    "quad",
-    "register_method",
-    "make_method_from_name",
-    "guess_method_for_order",
 )
