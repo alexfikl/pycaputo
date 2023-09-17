@@ -4,55 +4,15 @@
 from __future__ import annotations
 
 import math
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import singledispatch
 
 import numpy as np
 
-from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
+from pycaputo.derivatives import RiemannLiouvilleDerivative
 from pycaputo.grid import Points
 from pycaputo.utils import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
 
-# {{{ interface
-
-
-@dataclass(frozen=True)
-class QuadratureMethod(ABC):
-    """A generic method used to evaluate a fractional integral."""
-
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        """An identifier for the quadrature method."""
-
-    @property
-    @abstractmethod
-    def order(self) -> float:
-        """Expected order of convergence of the method."""
-
-
-@singledispatch
-def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, x: Points) -> Array:
-    """Evaluate the fractional integral of *f* using the points *x*.
-
-    :arg m: method used to evaluate the integral.
-    :arg f: a simple function for which to evaluate the integral. If the
-        method requires higher-order derivatives (e.g. for Hermite interpolation),
-        this function can also be a
-        :class:`~pycaputo.utils.DifferentiableScalarFunction`.
-    :arg x: an array of points at which to evaluate the integral.
-    """
-
-    raise NotImplementedError(
-        f"Cannot evaluate integral with method '{type(m).__name__}'"
-    )
-
-
-# }}}
-
-
-# {{{ RiemannLiouvilleMethod
+from .base import QuadratureMethod, quad
 
 
 @dataclass(frozen=True)
@@ -65,9 +25,10 @@ class RiemannLiouvilleMethod(QuadratureMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            if self.d.order >= 0:
-                raise ValueError(
-                    f"Integral requires a negative order: order is '{self.d.order}'"
+            super().__post_init__()
+            if not isinstance(self.d, RiemannLiouvilleDerivative):
+                raise TypeError(
+                    f"Expected a Riemann-Liouville integral: '{type(self.d).__name__}'"
                 )
 
 
@@ -301,6 +262,7 @@ def _quad_rl_simpson(
 
 
 # }}}
+
 
 # {{{ RiemannLiouvilleCubicHermiteMethod
 
@@ -557,102 +519,6 @@ def _quad_rl_conv(
             qf[n] = dxa * np.sum(w[:n][::-1] * fx[:n])
 
     return qf
-
-
-# }}}
-
-# }}}
-
-
-# {{{ make
-
-
-REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
-    "RiemannLiouvilleConvolutionMethod": RiemannLiouvilleConvolutionMethod,
-    "RiemannLiouvilleCubicHermiteMethod": RiemannLiouvilleCubicHermiteMethod,
-    "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
-    "RiemannLiouvilleSimpsonMethod": RiemannLiouvilleSimpsonMethod,
-    "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,
-    "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
-}
-
-
-def register_method(
-    name: str,
-    method: type[QuadratureMethod],
-    *,
-    force: bool = False,
-) -> None:
-    """Register a new integral approximation method.
-
-    :arg name: a canonical name for the method.
-    :arg method: a class that will be used to construct the method.
-    :arg force: if *True*, any existing methods will be overwritten.
-    """
-
-    if not force and name in REGISTERED_METHODS:
-        raise ValueError(
-            f"A method by the name '{name}' is already registered. Use 'force=True' to"
-            " overwrite it."
-        )
-
-    REGISTERED_METHODS[name] = method
-
-
-def make_method_from_name(
-    name: str,
-    alpha: float,
-    *,
-    side: Side = Side.Left,
-) -> QuadratureMethod:
-    """Instantiate a :class:`QuadratureMethod` given the name *name*.
-
-    :arg alpha: the order of the fractional integral. Not all methods support
-        all orders, so this choice may be invalid.
-    """
-    if name not in REGISTERED_METHODS:
-        raise ValueError(
-            "Unknown differentiation method '{}'. Known methods are '{}'".format(
-                name, "', '".join(REGISTERED_METHODS)
-            )
-        )
-
-    d = RiemannLiouvilleDerivative(order=alpha, side=side)
-    return REGISTERED_METHODS[name](d)  # type: ignore[call-arg]
-
-
-def guess_method_for_order(
-    p: Points,
-    alpha: float,
-    *,
-    side: Side = Side.Left,
-) -> QuadratureMethod:
-    """Construct a :class:`QuadratureMethod` for the given order
-    *alpha* and points *p*.
-
-    Note that in general not all methods support arbitrary sets of points, so
-    specialized methods must be chosen.
-
-    :arg alpha: the order of the fractional integral.
-    :arg p: a set of points on which to evaluate the fractional integral.
-    """
-    from pycaputo.grid import JacobiGaussLobattoPoints
-
-    d = RiemannLiouvilleDerivative(order=alpha, side=side)
-    m: QuadratureMethod | None = None
-
-    if isinstance(p, JacobiGaussLobattoPoints):
-        m = RiemannLiouvilleSpectralMethod(d)
-    else:
-        m = RiemannLiouvilleTrapezoidalMethod(d)
-
-    if m is None:
-        raise ValueError(
-            "Cannot determine an adequate method for "
-            f"alpha = {alpha} and '{type(p).__name__}'."
-        )
-
-    return m
 
 
 # }}}

@@ -29,7 +29,7 @@ class DerivativeMethod(ABC):
 
     @property
     def name(self) -> str:
-        """An identifier for the method."""
+        """An identifier for the differentiation method."""
         return type(self).__name__.replace("Method", "")
 
     @property

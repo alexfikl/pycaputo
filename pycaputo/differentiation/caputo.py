@@ -26,6 +26,15 @@ class CaputoDerivativeMethod(DerivativeMethod):
     #: A Caputo derivative to discretize.
     d: CaputoDerivative
 
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if not isinstance(self.d, CaputoDerivative):
+                raise TypeError(
+                    f"Expected a Caputo derivative: '{type(self.d).__name__}'"
+                )
+
 
 # {{{ Caputo L1 Method
 

@@ -3,34 +3,36 @@
 
 from __future__ import annotations
 
-from pycaputo.derivatives import CaputoDerivative, FractionalOperator, Side
-from pycaputo.differentiation.base import DerivativeMethod, diff
-from pycaputo.differentiation.caputo import (
-    CaputoDerivativeMethod,
-    CaputoL1Method,
-    CaputoL2CMethod,
-    CaputoL2Method,
-    CaputoModifiedL1Method,
-    CaputoSpectralMethod,
-)
+from pycaputo.derivatives import FractionalOperator, RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
+from pycaputo.quadrature.base import QuadratureMethod, quad
+from pycaputo.quadrature.riemann_liouville import (
+    RiemannLiouvilleConvolutionMethod,
+    RiemannLiouvilleCubicHermiteMethod,
+    RiemannLiouvilleMethod,
+    RiemannLiouvilleRectangularMethod,
+    RiemannLiouvilleSimpsonMethod,
+    RiemannLiouvilleSpectralMethod,
+    RiemannLiouvilleTrapezoidalMethod,
+)
 
-REGISTERED_METHODS: dict[str, type[DerivativeMethod]] = {
-    "CaputoL1Method": CaputoL1Method,
-    "CaputoL2CMethod": CaputoL2CMethod,
-    "CaputoL2Method": CaputoL2Method,
-    "CaputoModifiedL1Method": CaputoModifiedL1Method,
-    "CaputoSpectralMethod": CaputoSpectralMethod,
+REGISTERED_METHODS: dict[str, type[QuadratureMethod]] = {
+    "RiemannLiouvilleConvolutionMethod": RiemannLiouvilleConvolutionMethod,
+    "RiemannLiouvilleCubicHermiteMethod": RiemannLiouvilleCubicHermiteMethod,
+    "RiemannLiouvilleRectangularMethod": RiemannLiouvilleRectangularMethod,
+    "RiemannLiouvilleSimpsonMethod": RiemannLiouvilleSimpsonMethod,
+    "RiemannLiouvilleSpectralMethod": RiemannLiouvilleSpectralMethod,
+    "RiemannLiouvilleTrapezoidalMethod": RiemannLiouvilleTrapezoidalMethod,
 }
 
 
 def register_method(
     name: str,
-    method: type[DerivativeMethod],
+    method: type[QuadratureMethod],
     *,
     force: bool = False,
 ) -> None:
-    """Register a new derivative approximation method.
+    """Register a new integral approximation method.
 
     :arg name: a canonical name for the method.
     :arg method: a class that will be used to construct the method.
@@ -49,21 +51,22 @@ def register_method(
 def make_method_from_name(
     name: str,
     d: float | FractionalOperator,
-) -> DerivativeMethod:
-    """Instantiate a :class:`DerivativeMethod` given the name *name*.
+) -> QuadratureMethod:
+    """Instantiate a :class:`QuadratureMethod` given the name *name*.
 
     :arg d: a fractional operator that should be discretized by the method. If
         the method does not support this operator, it can fail.
     """
+
     if name not in REGISTERED_METHODS:
         raise ValueError(
-            "Unknown differentiation method '{}'. Known methods are '{}'".format(
+            "Unknown quadrature method '{}'. Known methods are '{}'".format(
                 name, "', '".join(REGISTERED_METHODS)
             )
         )
 
     if not isinstance(d, FractionalOperator):
-        d = CaputoDerivative(order=d, side=Side.Left)
+        d = RiemannLiouvilleDerivative(order=d, side=Side.Left)
 
     return REGISTERED_METHODS[name](d)
 
@@ -71,9 +74,9 @@ def make_method_from_name(
 def guess_method_for_order(
     p: Points,
     d: float | FractionalOperator,
-) -> DerivativeMethod:
-    """Construct a :class:`DerivativeMethod` for the given points *p* and
-    derivative *d*.
+) -> QuadratureMethod:
+    """Construct a :class:`QuadratureMethod` for the given points *p* and
+    integral *d*.
 
     Note that in general not all methods support arbitrary sets of points or
     arbitrary orders, so specialized methods must be chosen. This function is
@@ -84,22 +87,18 @@ def guess_method_for_order(
     :arg p: a set of points on which to evaluate the fractional operator.
     :arg d: a fractional operator to discretize.
     """
-    from pycaputo.grid import JacobiGaussLobattoPoints, UniformMidpoints, UniformPoints
+    from pycaputo.grid import JacobiGaussLobattoPoints
 
-    m: DerivativeMethod | None = None
     if not isinstance(d, FractionalOperator):
-        d = CaputoDerivative(order=d, side=Side.Left)
+        d = RiemannLiouvilleDerivative(order=d, side=Side.Left)
 
-    if isinstance(d, CaputoDerivative):
+    m: QuadratureMethod | None = None
+
+    if isinstance(d, RiemannLiouvilleDerivative):
         if isinstance(p, JacobiGaussLobattoPoints):
-            m = CaputoSpectralMethod(d)
-        elif 0 < d.order < 1:
-            if isinstance(p, UniformMidpoints):
-                m = CaputoModifiedL1Method(d)
-            else:
-                m = CaputoL1Method(d)
-        elif 1 < d.order < 2 and isinstance(p, UniformPoints):
-            m = CaputoL2CMethod(d)
+            m = RiemannLiouvilleSpectralMethod(d)
+        else:
+            m = RiemannLiouvilleTrapezoidalMethod(d)
 
     if m is None:
         raise ValueError(
@@ -112,15 +111,16 @@ def guess_method_for_order(
 
 
 __all__ = (
-    "CaputoDerivativeMethod",
-    "CaputoL1Method",
-    "CaputoL2CMethod",
-    "CaputoL2Method",
-    "CaputoModifiedL1Method",
-    "CaputoSpectralMethod",
-    "DerivativeMethod",
-    "diff",
-    "guess_method_for_order",
-    "make_method_from_name",
+    "QuadratureMethod",
+    "RiemannLiouvilleConvolutionMethod",
+    "RiemannLiouvilleCubicHermiteMethod",
+    "RiemannLiouvilleMethod",
+    "RiemannLiouvilleRectangularMethod",
+    "RiemannLiouvilleSimpsonMethod",
+    "RiemannLiouvilleSpectralMethod",
+    "RiemannLiouvilleTrapezoidalMethod",
+    "quad",
     "register_method",
+    "make_method_from_name",
+    "guess_method_for_order",
 )
