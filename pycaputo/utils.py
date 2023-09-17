@@ -139,6 +139,11 @@ class EOCRecorder:
     #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
     history: list[tuple[float, float]] = field(default_factory=list, repr=False)
 
+    def add_data_points(self, h: Array, error: Array) -> None:
+        """Add multiple data points using :meth:`add_data_point`."""
+        for h_i, e_i in zip(h, error):
+            self.add_data_point(h_i, e_i)
+
     def add_data_point(self, h: Any, error: Any) -> None:
         """Add a data point to the estimation.
 
