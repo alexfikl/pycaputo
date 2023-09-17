@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative
-from pycaputo.differentiation import DerivativeMethod, diff, register_method
+from pycaputo.differentiation import DerivativeMethod, diff, make_method_from_name
 from pycaputo.grid import Points
 from pycaputo.utils import Array, ArrayOrScalarFunction
 
@@ -37,4 +37,4 @@ def _diff_rl(
     return np.zeros_like(fx)
 
 
-register_method("RLdiff", RiemannLiouvilleDerivativeMethod)
+m = make_method_from_name("RiemannLiouvilleDerivativeMethod", 0.5)

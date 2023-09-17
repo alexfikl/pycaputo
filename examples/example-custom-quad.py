@@ -7,7 +7,7 @@ import numpy as np
 
 from pycaputo.derivatives import HadamardDerivative
 from pycaputo.grid import Points
-from pycaputo.quadrature import QuadratureMethod, quad, register_method
+from pycaputo.quadrature import QuadratureMethod, make_method_from_name, quad
 from pycaputo.utils import Array, ArrayOrScalarFunction
 
 
@@ -34,4 +34,4 @@ def _quad_hadamard(
     return np.zeros_like(fx)
 
 
-register_method("Hadamard", HadamardQuadratureMethod)
+m = make_method_from_name("HadamardQuadratureMethod", -1.5)

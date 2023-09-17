@@ -46,13 +46,6 @@ registering it with the :func:`~functools.singledispatch` mechanism as
     :language: python
     :linenos:
 
-Finally, we can register it for :func:`pycaputo.diff` using
-
-.. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 40-40
-    :language: python
-    :linenos:
-
 The complete example can be found in
 :download:`examples/example-custom-diff.py <../examples/example-custom-diff.py>`.
 

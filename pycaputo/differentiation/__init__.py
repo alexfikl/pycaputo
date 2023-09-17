@@ -15,36 +15,6 @@ from pycaputo.differentiation.caputo import (
 )
 from pycaputo.grid import Points
 
-REGISTERED_METHODS: dict[str, type[DerivativeMethod]] = {
-    "CaputoL1Method": CaputoL1Method,
-    "CaputoL2CMethod": CaputoL2CMethod,
-    "CaputoL2Method": CaputoL2Method,
-    "CaputoModifiedL1Method": CaputoModifiedL1Method,
-    "CaputoSpectralMethod": CaputoSpectralMethod,
-}
-
-
-def register_method(
-    name: str,
-    method: type[DerivativeMethod],
-    *,
-    force: bool = False,
-) -> None:
-    """Register a new derivative approximation method.
-
-    :arg name: a canonical name for the method.
-    :arg method: a class that will be used to construct the method.
-    :arg force: if *True*, any existing methods will be overwritten.
-    """
-
-    if not force and name in REGISTERED_METHODS:
-        raise ValueError(
-            f"A method by the name '{name}' is already registered. Use 'force=True' to"
-            " overwrite it."
-        )
-
-    REGISTERED_METHODS[name] = method
-
 
 def make_method_from_name(
     name: str,
@@ -55,17 +25,21 @@ def make_method_from_name(
     :arg d: a fractional operator that should be discretized by the method. If
         the method does not support this operator, it can fail.
     """
-    if name not in REGISTERED_METHODS:
+
+    methods: dict[str, type[DerivativeMethod]] = {
+        cls.__name__: cls for cls in diff.registry
+    }
+    if name not in methods:
         raise ValueError(
             "Unknown differentiation method '{}'. Known methods are '{}'".format(
-                name, "', '".join(REGISTERED_METHODS)
+                name, "', '".join(methods)
             )
         )
 
     if not isinstance(d, FractionalOperator):
         d = CaputoDerivative(order=d, side=Side.Left)
 
-    return REGISTERED_METHODS[name](d)
+    return methods[name](d)
 
 
 def guess_method_for_order(
@@ -114,7 +88,6 @@ def guess_method_for_order(
 __all__ = (
     "DerivativeMethod",
     "diff",
-    "register_method",
     "guess_method_for_order",
     "make_method_from_name",
     "CaputoDerivativeMethod",
