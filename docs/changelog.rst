@@ -21,6 +21,9 @@ Features
   standard 3rd order method.
 * Implement :class:`~pycaputo.quadrature.RiemannLiouvilleCubicHermiteMethod`, a
   standard 4th order method.
+* Implement differentiation methods for the Riemann-Liouville derivatives based
+  on the Caputo derivative in
+  :class:`~pycaputo.differentiation.RiemannLiouvilleFromCaputoDerivativeMethod`.
 * Support different fractional orders for FODE systems in
   :class:`~pycaputo.fode.CaputoForwardEulerMethod`,
   :class:`~pycaputo.fode.CaputoWeightedEulerMethod` and others.
