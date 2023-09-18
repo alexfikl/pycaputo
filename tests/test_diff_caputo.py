@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import pathlib
 from dataclasses import dataclass
-from typing import Type
 
 import numpy as np
 import numpy.linalg as la
@@ -293,7 +294,7 @@ def _diff_differint_l2c(
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
 def test_caputo_vs_differint(
     name: str,
-    cls: Type[CaputoDerivativeMethod],
+    cls: type[CaputoDerivativeMethod],
     alpha: float,
     *,
     visualize: bool = False,

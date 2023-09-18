@@ -137,7 +137,10 @@ def _diff_rl_from_caputo(
     df = diff(m.caputo, fx, p)
     df[1:] += fx[0] / (x[1:] - x[0]) ** alpha / math.gamma(1 - alpha)
 
-    if 1.0 < alpha <= 2.0:
+    if 0.0 < alpha <= 1.0:
+        # NOTE: handled above
+        pass
+    elif 1.0 < alpha <= 2.0:
         # NOTE: this is a 3rd order approximation of the derivative at f(a)
         # that works on non-uniform grids too (derived by Mathematica)
         # fmt: off
