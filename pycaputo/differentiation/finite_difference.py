@@ -60,7 +60,7 @@ class Stencil:
         return determine_stencil_truncation_error(self)
 
 
-def apply_stencil(s: Stencil, f: Array, h: float = 1.0) -> Array:
+def apply_derivative(s: Stencil, f: Array, h: float = 1.0) -> Array:
     """Apply the stencil to a function *f* and a step size *h*.
 
     Note that only interior points are correctly computed. Any boundary
@@ -102,6 +102,20 @@ def determine_stencil_truncation_error(
         c = s.coeffs @ indices**i / math.factorial(i)
 
     return Truncation(i - s.derivative, c)
+
+
+def modified_wavenumber(s: Stencil, k: Array) -> Array:
+    """Compute the modified wavenumber of the stencil *s* at each number *k*.
+
+    :arg k: wavenumber at which to compute the derivative.
+    """
+    km = np.empty(k.shape, dtype=np.complex128)
+
+    for n in range(k.shape[0]):
+        exp = np.exp(1.0j * s.indices * k[n])
+        km[n] = np.sum(s.coeffs * exp)
+
+    return km
 
 
 def make_taylor_approximation(
