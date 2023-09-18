@@ -14,7 +14,7 @@ from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ScalarFunction, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_caputo")
+logger = get_logger("pycaputo.test_diff_caputo")
 set_recommended_matplotlib()
 
 # {{{ test_caputo_lmethods

@@ -14,7 +14,7 @@ from pycaputo.logging import get_logger
 from pycaputo.quadrature import QuadratureMethod
 from pycaputo.utils import Array, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_quadrature")
+logger = get_logger("pycaputo.test_quad_riemann_liouville")
 set_recommended_matplotlib()
 
 
