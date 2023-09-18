@@ -40,6 +40,15 @@ def autolink(pattern: str):
     return role
 
 
+def add_dataclass_annotation(app, name, obj, options, bases):
+    from dataclasses import is_dataclass
+
+    if is_dataclass(obj):
+        # NOTE: this needs to be a string because `dataclass` is a function, not
+        # a class, so Sphinx gets confused when it tries to insert it into the docs
+        bases.append(":func:`dataclasses.dataclass`")
+
+
 def setup(app) -> None:
     (tmp_url,) = (
         v for k, v in m.items() if k.startswith("Project-URL") and "Repository" in v
@@ -48,6 +57,7 @@ def setup(app) -> None:
 
     app.add_role("ghpr", autolink(f"{project_url}/pull/{{number}}"))
     app.add_role("ghissue", autolink(f"{project_url}/issues/{{number}}"))
+    app.connect("autodoc-process-bases", add_dataclass_annotation)
 
 
 # }}}
