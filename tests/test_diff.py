@@ -8,7 +8,7 @@ import pathlib
 import numpy as np
 
 from pycaputo.differentiation.finite_difference import (
-    Stencil,
+    DiffStencil,
     apply_derivative,
     determine_stencil_truncation_error,
     make_taylor_approximation,
@@ -23,7 +23,7 @@ set_recommended_matplotlib()
 # {{{ test_finite_difference_taylor
 
 
-def finite_difference_convergence(d: Stencil) -> EOCRecorder:
+def finite_difference_convergence(d: DiffStencil) -> EOCRecorder:
     eoc = EOCRecorder()
 
     s = np.s_[abs(d.offsets[0]) + 1 : -abs(d.offsets[-1]) - 1]
@@ -133,7 +133,7 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
         [-0.02651995, 0.18941314, -0.79926643, 0.0, 0.79926643, -0.18941314, 0.02651995]
     )
     offsets = np.arange(-3, 4)
-    s = Stencil(derivative=1, coeffs=a, offsets=offsets)
+    s = DiffStencil(derivative=1, coeffs=a, offsets=offsets)
 
     order, c = determine_stencil_truncation_error(s, atol=1.0e-6)
     assert order == 4

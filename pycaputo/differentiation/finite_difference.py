@@ -23,7 +23,7 @@ class Truncation(NamedTuple):
 
 
 @dataclass(frozen=True)
-class Stencil:
+class DiffStencil:
     r"""Approximation of a derivative by finite difference on a uniform grid.
 
     .. math::
@@ -60,7 +60,7 @@ class Stencil:
         return determine_stencil_truncation_error(self)
 
 
-def apply_derivative(s: Stencil, f: Array, h: float = 1.0) -> Array:
+def apply_derivative(s: DiffStencil, f: Array, h: float = 1.0) -> Array:
     """Apply the stencil to a function *f* and a step size *h*.
 
     Note that only interior points are correctly computed. Any boundary
@@ -73,7 +73,7 @@ def apply_derivative(s: Stencil, f: Array, h: float = 1.0) -> Array:
 
 
 def determine_stencil_truncation_error(
-    s: Stencil,
+    s: DiffStencil,
     *,
     atol: float | None = None,
 ) -> Truncation:
@@ -104,7 +104,7 @@ def determine_stencil_truncation_error(
     return Truncation(i - s.derivative, c)
 
 
-def modified_wavenumber(s: Stencil, k: Array) -> Array:
+def modified_wavenumber(s: DiffStencil, k: Array) -> Array:
     """Compute the modified wavenumber of the stencil *s* at each number *k*.
 
     :arg k: wavenumber at which to compute the derivative.
@@ -123,7 +123,7 @@ def make_taylor_approximation(
     bounds: tuple[int, int],
     *,
     dtype: np.dtype[Any] | None = None,
-) -> Stencil:
+) -> DiffStencil:
     r"""Determine a finite difference stencil by solving a linear system from the
     Taylor expansion.
 
@@ -143,8 +143,8 @@ def make_taylor_approximation(
     if bounds[0] > bounds[1]:
         bounds = (bounds[1], bounds[0])
 
-    if bounds[0] >= 0 or bounds[1] <= 0:
-        raise ValueError(f"Bounds must be (smaller, bigger): {bounds}")
+    if bounds[0] > 0 or bounds[1] < 0:
+        raise ValueError(f"Bounds must be (smaller <= 0, bigger >= 0): {bounds}")
 
     if dtype is None:
         dtype = np.dtype(np.float64)
@@ -162,7 +162,7 @@ def make_taylor_approximation(
     x = np.linalg.solve(A, b)
     assert np.allclose(np.sum(x), 0.0)
 
-    return Stencil(
+    return DiffStencil(
         derivative=derivative,
         coeffs=x,
         offsets=offsets,
