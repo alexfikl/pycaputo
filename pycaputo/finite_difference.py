@@ -14,7 +14,7 @@ from pycaputo.utils import Array
 
 
 class Truncation(NamedTuple):
-    """A representation of the truncation error of a :class:`Stencil`."""
+    """A representation of the truncation error of a :class:`DiffStencil`."""
 
     #: Order of the approximation.
     order: int
@@ -66,7 +66,7 @@ def apply_derivative(s: DiffStencil, f: Array, h: float = 1.0) -> Array:
     Note that only interior points are correctly computed. Any boundary
     points will contain invalid values.
 
-    :returns: the stencil applies to the function *f*.
+    :returns: the stencil applied to the function *f*.
     """
     a = s.padded_coeffs.astype(f.dtype)
     return np.convolve(f, a, mode="same") / h**s.derivative
@@ -86,7 +86,9 @@ def determine_stencil_truncation_error(
         = c \frac{\mathrm{d}^p\, f}{\mathrm{d}\, x^p}(x_m),
 
     where :math:`c` is the expected truncation error coefficient and :math:`p`
-    is the order of the approximation.
+    is the order of the approximation. Note that we just find the first :math:`c`
+    that is sufficiently close to zero, but the truncation error also depends on
+    the function :math:`f`, whose higher order derivatives can cancel.
 
     :arg atol: absolute tolerance to check whether the coefficient :math:`c`
         is sufficiently close to zero.

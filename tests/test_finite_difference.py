@@ -7,7 +7,7 @@ import pathlib
 
 import numpy as np
 
-from pycaputo.differentiation.finite_difference import (
+from pycaputo.finite_difference import (
     DiffStencil,
     apply_derivative,
     determine_stencil_truncation_error,
@@ -17,7 +17,7 @@ from pycaputo.differentiation.finite_difference import (
 from pycaputo.logging import get_logger
 from pycaputo.utils import EOCRecorder, savefig, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_diff")
+logger = get_logger("pycaputo.test_finite_difference")
 set_recommended_matplotlib()
 
 # {{{ test_finite_difference_taylor

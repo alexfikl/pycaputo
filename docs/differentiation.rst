@@ -55,9 +55,3 @@ API Reference
 .. autofunction:: pycaputo.diff
 
 .. automodule:: pycaputo.differentiation
-
-Integer-order Approximations
-----------------------------
-
-.. automodule:: pycaputo.differentiation.finite_difference
-

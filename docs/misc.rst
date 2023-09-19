@@ -16,6 +16,12 @@ Jacobi Polynomials
 
 .. automodule:: pycaputo.jacobi
 
+
+Finite Difference Approximations
+--------------------------------
+
+.. automodule:: pycaputo.finite_difference
+
 Generating Functions
 --------------------
 
