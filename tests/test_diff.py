@@ -26,7 +26,7 @@ set_recommended_matplotlib()
 def finite_difference_convergence(d: Stencil) -> EOCRecorder:
     eoc = EOCRecorder()
 
-    s = np.s_[abs(d.indices[0]) + 1 : -abs(d.indices[-1]) - 1]
+    s = np.s_[abs(d.offsets[0]) + 1 : -abs(d.offsets[-1]) - 1]
     for n in [32, 64, 128, 256, 512]:
         theta = np.linspace(0.0, 2.0 * np.pi, n, dtype=d.coeffs.dtype)
         h = theta[1] - theta[0]
@@ -132,8 +132,8 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
     a = np.array(
         [-0.02651995, 0.18941314, -0.79926643, 0.0, 0.79926643, -0.18941314, 0.02651995]
     )
-    indices = np.arange(-3, 4)
-    s = Stencil(derivative=1, coeffs=a, indices=indices)
+    offsets = np.arange(-3, 4)
+    s = Stencil(derivative=1, coeffs=a, offsets=offsets)
 
     order, c = determine_stencil_truncation_error(s, atol=1.0e-6)
     assert order == 4

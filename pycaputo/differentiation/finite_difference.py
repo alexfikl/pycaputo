@@ -28,10 +28,10 @@ class Stencil:
 
     .. math::
 
-        \frac{\mathrm{d}^n\, f}{\mathrm{d}\, x^n}
-        \approx \frac{1}{h^n} \sum_{i \in \text{indices}} a_i f_i
+        \frac{\mathrm{d}^n\, f}{\mathrm{d}\, x^n}(x_m)
+        \approx \frac{1}{h^n} \sum_{k \in \text{offsets}} a_k f_{m + k}
 
-    where :math:`a_i` are the given coefficients :attr:`coeffs` and :math:`f_i`
+    where :math:`a_k` are the given coefficients :attr:`coeffs` and :math:`f_m`
     are the point function evaluations. The approximation is to an order and
     truncation error can be retrieved from :attr:`trunc`.
     """
@@ -40,17 +40,17 @@ class Stencil:
     derivative: int
     #: Coefficients used in the stencil.
     coeffs: Array
-    #: Indices around the centered :math:`0` used in the stencil.
-    indices: Array
+    #: Offsets around the centered :math:`0` used in the stencil.
+    offsets: Array
 
     @cached_property
     def padded_coeffs(self) -> Array:
         """Padded coefficients that are symmetric around the :math:`0`
         index and can be easily applied as a convolution.
         """
-        n = np.max(np.abs(self.indices))
+        n = np.max(np.abs(self.offsets))
         coeffs = np.zeros(2 * n + 1, dtype=self.coeffs.dtype)
-        coeffs[n + self.indices] = self.coeffs
+        coeffs[n + self.offsets] = self.coeffs
 
         return coeffs
 
@@ -81,9 +81,9 @@ def determine_stencil_truncation_error(
 
     .. math::
 
-        \frac{\mathrm{d}^n\, f}{\mathrm{d}\, x^n}
-        - \sum_{i \in \text{indices}} \frac{a_i}{h^n} f_i
-        = c \frac{\mathrm{d}^p\, f}{\mathrm{d}\, x^p},
+        \frac{\mathrm{d}^n\, f}{\mathrm{d}\, x^n}(x_m)
+        - \frac{1}{h^n} \sum_{k \in \text{offsets}} a_k f_{m + k}
+        = c \frac{\mathrm{d}^p\, f}{\mathrm{d}\, x^p}(x_m),
 
     where :math:`c` is the expected truncation error coefficient and :math:`p`
     is the order of the approximation.
@@ -96,10 +96,10 @@ def determine_stencil_truncation_error(
 
     c = 0.0
     i = s.derivative
-    indices = s.indices.astype(s.coeffs.dtype)
+    offsets = s.offsets.astype(s.coeffs.dtype)
     while i < 64 and np.allclose(c, 0.0, atol=atol, rtol=0.0):
         i += 1
-        c = s.coeffs @ indices**i / math.factorial(i)
+        c = s.coeffs @ offsets**i / math.factorial(i)
 
     return Truncation(i - s.derivative, c)
 
@@ -112,7 +112,7 @@ def modified_wavenumber(s: Stencil, k: Array) -> Array:
     km = np.empty(k.shape, dtype=np.complex128)
 
     for n in range(k.shape[0]):
-        exp = np.exp(1.0j * s.indices * k[n])
+        exp = np.exp(1.0j * s.offsets * k[n])
         km[n] = np.sum(s.coeffs * exp)
 
     return km
@@ -151,11 +151,11 @@ def make_taylor_approximation(
     dtype = np.dtype(dtype)
 
     # construct the system
-    indices = np.arange(bounds[0], bounds[1] + 1)
+    offsets = np.arange(bounds[0], bounds[1] + 1)
     A = np.array(
-        [indices**i / math.factorial(i) for i in range(indices.size)], dtype=dtype
+        [offsets**i / math.factorial(i) for i in range(offsets.size)], dtype=dtype
     )
-    b = np.zeros(indices.shape, dtype=dtype)
+    b = np.zeros(offsets.shape, dtype=dtype)
     b[derivative] = 1.0
 
     # determine coefficients
@@ -165,5 +165,5 @@ def make_taylor_approximation(
     return Stencil(
         derivative=derivative,
         coeffs=x,
-        indices=indices,
+        offsets=offsets,
     )
