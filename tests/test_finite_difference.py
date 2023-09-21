@@ -15,7 +15,7 @@ from pycaputo.finite_difference import (
     modified_wavenumber,
 )
 from pycaputo.logging import get_logger
-from pycaputo.utils import EOCRecorder, savefig, set_recommended_matplotlib
+from pycaputo.utils import savefig, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_finite_difference")
 set_recommended_matplotlib()
@@ -23,7 +23,9 @@ set_recommended_matplotlib()
 # {{{ test_finite_difference_taylor
 
 
-def finite_difference_convergence(d: DiffStencil) -> EOCRecorder:
+def finite_difference_convergence(d: DiffStencil) -> float:
+    from pycaputo.utils import EOCRecorder
+
     eoc = EOCRecorder()
 
     s = np.s_[abs(d.offsets[0]) + 1 : -abs(d.offsets[-1]) - 1]
@@ -40,7 +42,8 @@ def finite_difference_convergence(d: DiffStencil) -> EOCRecorder:
         error = np.linalg.norm(df_dx[s] - num_df_dx[s]) / np.linalg.norm(df_dx[s])
         eoc.add_data_point(h, error)
 
-    return eoc
+    logger.info("\n%s", eoc)
+    return eoc.estimated_order
 
 
 def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
@@ -102,9 +105,8 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
         assert np.allclose(s.trunc.error, coefficient)
         assert s.trunc.order == order
 
-        eoc = finite_difference_convergence(s)
-        logger.info("\n%s", eoc)
-        assert eoc.estimated_order >= order - 0.25
+        estimated_order = finite_difference_convergence(s)
+        assert estimated_order >= order - 0.25
 
         if visualize:
             part = np.real if s.derivative % 2 == 0 else np.imag
