@@ -6,7 +6,7 @@ from __future__ import annotations
 import os
 import pathlib
 import time
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from types import TracebackType
 from typing import (
@@ -291,24 +291,24 @@ def check_usetex(*, s: bool) -> bool:
     except ImportError:
         return False
 
-    if matplotlib.__version__ < "3.6.0":
-        return bool(matplotlib.checkdep_usetex(s))
+    try:
+        return bool(matplotlib.checkdep_usetex(s))  # type: ignore[attr-defined]
+    except AttributeError:
+        # NOTE: simplified version from matplotlib
+        # https://github.com/matplotlib/matplotlib/blob/ec85e725b4b117d2729c9c4f720f31cf8739211f/lib/matplotlib/__init__.py#L439=L456
 
-    # NOTE: simplified version from matplotlib
-    # https://github.com/matplotlib/matplotlib/blob/ec85e725b4b117d2729c9c4f720f31cf8739211f/lib/matplotlib/__init__.py#L439=L456
+        import shutil
 
-    import shutil
+        if not shutil.which("tex"):
+            return False
 
-    if not shutil.which("tex"):
-        return False
+        if not shutil.which("dvipng"):
+            return False
 
-    if not shutil.which("dvipng"):
-        return False
+        if not shutil.which("gs"):
+            return False
 
-    if not shutil.which("gs"):
-        return False
-
-    return True
+        return True
 
 
 def set_recommended_matplotlib(
@@ -324,7 +324,7 @@ def set_recommended_matplotlib(
     if use_tex is None:
         use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)
 
-    defaults = {
+    defaults: dict[str, dict[str, Any]] = {
         "figure": {
             "figsize": (8, 8),
             "dpi": 300,
@@ -348,8 +348,6 @@ def set_recommended_matplotlib(
         "xtick.minor": {"size": 4.0},
         "ytick.minor": {"size": 4.0},
     }
-
-    from contextlib import suppress
 
     with suppress(ImportError):
         import scienceplots  # noqa: F401
@@ -385,7 +383,7 @@ def figure(filename: PathLike | None = None, **kwargs: Any) -> Iterator[Any]:
         if filename is not None:
             savefig(fig, filename, **kwargs)
         else:
-            mp.show()
+            mp.show()   # type: ignore[no-untyped-call]
 
         mp.close(fig)
 

@@ -121,8 +121,8 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
 
             ax.set_xlabel("$k h$")
             ax.set_ylabel(r"$\tilde{k} h$")
-            ax.set_xlim([0.0, np.pi])
-            ax.set_ylim([0.0, sign * np.pi**s.derivative])
+            ax.set_xlim(0.0, float(np.pi))
+            ax.set_ylim(0.0, float(sign * np.pi**s.derivative))
 
             dirname = pathlib.Path(__file__).parent
             filename = f"test_diff_fd_{s.derivative}_{s.trunc.order}"

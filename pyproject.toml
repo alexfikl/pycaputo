@@ -127,7 +127,6 @@ plugins = "numpy.typing.mypy_plugin"
 [[tool.mypy.overrides]]
 module = [
     "differint.*",
-    "matplotlib.*",
     "scipy.*",
     "SciencePlots.*",
     "scienceplots.*",
