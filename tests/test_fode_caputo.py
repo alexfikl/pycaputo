@@ -65,31 +65,31 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 # }}}
 
 
-# {{{ test_predict_time_step_graded
+# {{{ test_graded_time_span
 
 
-def test_predict_time_step_graded() -> None:
-    from pycaputo.fode import make_predict_time_step_graded
+def test_graded_time_span() -> None:
+    from pycaputo.fode import GradedTimeSpan
 
-    maxit = 100
-    tspan = (-1.5, 3.0)
+    nsteps = 100
+    tstart, tfinal = (-1.5, 3.0)
     r = 3
-    predict_time_step = make_predict_time_step_graded(tspan, maxit, r)
+    tspan = GradedTimeSpan(tstart, tfinal, nsteps=nsteps, r=r)
 
-    n = np.arange(maxit)
-    t_ref = tspan[0] + (n / maxit) ** r * (tspan[1] - tspan[0])
+    n = np.arange(nsteps)
+    t_ref = tstart + (n / nsteps) ** r * (tfinal - tstart)
 
     t = np.empty_like(t_ref)
     dummy = np.empty(3)
 
-    t[0] = tspan[0]
-    for i in range(1, maxit):
-        dt = predict_time_step(t[i - 1], dummy)
+    t[0] = tstart
+    for i in range(1, nsteps):
+        dt = tspan.get_next_time_step(i - 1, t[i - 1], dummy)
         t[i] = t[i - 1] + dt
 
     error = la.norm(t - t_ref) / la.norm(t_ref)
     logger.info("error: %.12e", error)
-    assert error < 1.0e-15
+    assert error < 1.0e-13
 
 
 # }}}
@@ -135,9 +135,8 @@ def fode_factory(
 
         return cls(
             derivative_order=alpha,
-            predict_time_step=dt,
+            tspan=fode.FixedTimeSpan.from_data(dt, tstart=tspan[0], tfinal=tspan[1]),
             source=partial(source, alpha=alpha),
-            tspan=tspan,
             y0=(y0,),
             **kwargs,
         )

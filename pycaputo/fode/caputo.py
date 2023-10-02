@@ -76,7 +76,7 @@ def _advance_caputo_forward_euler(
     alpha = m.derivative_order
 
     dy = np.zeros_like(y)
-    dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
+    dy = _update_caputo_initial_condition(dy, t - m.tspan.tstart, m.y0)
     dy = _update_caputo_forward_euler(dy, history, alpha, len(history))
 
     history.append(t, m.source(t, dy))
@@ -269,7 +269,7 @@ def _advance_caputo_weighted_euler(
 
     # add explicit terms
     fnext = np.zeros_like(y)
-    fnext = _update_caputo_initial_condition(fnext, t - m.tspan[0], m.y0)
+    fnext = _update_caputo_initial_condition(fnext, t - m.tspan.tstart, m.y0)
     fnext, omega = _update_caputo_weighted_euler(fnext, history, alpha, m.theta, n)
 
     # solve implicit equation
@@ -447,7 +447,7 @@ def _advance_caputo_predictor_corrector(
 
     # add initial conditions
     y0 = np.zeros_like(y)
-    y0 = _update_caputo_initial_condition(y0, t - m.tspan[0], m.y0)
+    y0 = _update_caputo_initial_condition(y0, t - m.tspan.tstart, m.y0)
 
     # predictor step (forward Euler)
     yp = np.copy(y0)
@@ -512,7 +512,7 @@ def _advance_caputo_modified_pece(
 
     # compute common terms
     dy = np.zeros_like(y)
-    dy = _update_caputo_initial_condition(dy, t - m.tspan[0], m.y0)
+    dy = _update_caputo_initial_condition(dy, t - m.tspan.tstart, m.y0)
 
     if n == 1:
         yp = _update_caputo_forward_euler(dy, history, m.derivative_order, len(history))

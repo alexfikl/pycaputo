@@ -3,14 +3,18 @@
 
 from pycaputo.fode.base import (
     Event,
+    FixedLipschitzTimeSpan,
+    FixedTimeSpan,
     FractionalDifferentialEquationMethod,
+    GradedTimeSpan,
+    LipschitzTimeSpan,
     StepCompleted,
+    StepEstimateError,
     StepFailed,
+    TimeSpan,
     advance,
     evolve,
     make_initial_condition,
-    make_predict_time_step_fixed,
-    make_predict_time_step_graded,
 )
 from pycaputo.fode.caputo import (
     CaputoForwardEulerMethod,
@@ -47,6 +51,12 @@ __all__ = (
     "FixedState",
     "FractionalDifferentialEquationMethod",
     "History",
+    "StepEstimateError",
+    "TimeSpan",
+    "FixedTimeSpan",
+    "FixedLipschitzTimeSpan",
+    "GradedTimeSpan",
+    "LipschitzTimeSpan",
     "ProductIntegrationMethod",
     "ProductIntegrationState",
     "State",
@@ -56,6 +66,4 @@ __all__ = (
     "advance",
     "evolve",
     "make_initial_condition",
-    "make_predict_time_step_fixed",
-    "make_predict_time_step_graded",
 )

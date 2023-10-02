@@ -5,13 +5,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import cached_property, singledispatch
+from functools import cached_property, partial, singledispatch
 from typing import Iterator
+
+import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.fode.history import History
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, CallbackFunction, ScalarStateFunction, StateFunction
+from pycaputo.utils import Array, CallbackFunction, StateFunction
 
 logger = get_logger(__name__)
 
@@ -19,119 +21,244 @@ logger = get_logger(__name__)
 # {{{ time step
 
 
-def make_predict_time_step_fixed(dt: float) -> ScalarStateFunction:
-    """
-    :returns: a callable returning a fixed time step *dt*.
-    """
+class StepEstimateError(RuntimeError):
+    """An exception raised when a time step estimate has failed."""
 
-    if dt < 0:
-        raise ValueError(f"Time step should be positive: {dt}")
 
-    def predict_time_step(t: float, y: Array) -> float:
+@dataclass(frozen=True)
+class TimeSpan(ABC):
+    """A description of a discrete time interval."""
+
+    #: Start of the time interval.
+    tstart: float
+    #: End of the time interval (leave *None* for infinite time stepping).
+    tfinal: float | None
+    #: Number of time steps (leave *None* for infinite time stepping).
+    nsteps: int | None
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.tfinal is not None and self.tstart > self.tfinal:
+                raise ValueError("Invalid time interval: 'tstart' > 'tfinal'")
+
+            if self.nsteps is not None and self.nsteps <= 0:
+                raise ValueError(
+                    f"Number of iterations must be positive: {self.nsteps}"
+                )
+
+    def finished(self, n: int, t: float) -> bool:
+        """Check if the evolution should finish at iteration *n* and time *t*."""
+        if self.tfinal is not None and t >= self.tfinal:
+            return True
+
+        if self.nsteps is not None and n >= self.nsteps:
+            return True
+
+        return False
+
+    @abstractmethod
+    def get_next_time_step_raw(self, n: int, t: float, y: Array) -> float:
+        """Get a raw estimate of the time step at the given state values.
+
+        This function is meant to be implemented by subclasses, but
+        :meth:`~pycaputo.fode.TimeSpan.get_next_time_step` should be used to
+        ensure a consistent time stepping.
+        """
+
+    def get_next_time_step(self, n: int, t: float, y: Array) -> float:
+        r"""Get an estimate of the time step at the given state values.
+
+        :arg n: current iteration.
+        :arg t: starting time, i.e. the time step is estimated for the interval
+            :math:`[t, t + \Delta t]`.
+        :arg y: state value at the time *t*.
+        :returns: an estimate for the time step :math:`\Delta t`.
+        :raises StepEstimateError: When the next time step cannot be estimated
+            or is not finite.
+        """
+        try:
+            dt = self.get_next_time_step_raw(n, t, y)
+        except Exception as exc:
+            raise StepEstimateError("Failed to get next time step") from exc
+
+        if not np.isfinite(dt):
+            raise StepEstimateError(f"Time step is not finite: {dt}")
+
+        # add eps to ensure that t >= tfinal is true
+        if self.tfinal is not None:
+            eps = float(5.0 * np.finfo(y.dtype).eps)
+            dt = min(dt, self.tfinal - t) + eps
+
+        # TODO: Would be nice to have some smoothing over time steps so that
+        # they don't vary too much here, but that may be unwanted?
+
         return dt
 
-    return predict_time_step
+
+@dataclass(frozen=True)
+class FixedTimeSpan(TimeSpan):
+    """A :class:`TimeSpan` with a fixed time step."""
+
+    #: The fixed time step that should be used.
+    dt: float
+
+    def get_next_time_step_raw(self, n: int, t: float, y: Array) -> float:
+        """See :meth:`pycaputo.fode.TimeSpan.get_next_time_step_raw`."""
+        return self.dt
+
+    @classmethod
+    def from_data(
+        cls,
+        dt: float,
+        tstart: float = 0.0,
+        tfinal: float | None = None,
+        nsteps: int | None = None,
+    ) -> FixedTimeSpan:
+        """Create a consistent time span with a fixed time step.
+
+        This ensures that the following relation holds:
+        ``tfinal = tstart + nsteps * dt`` for all given values. This can be
+        achieved by small modifications to either *nsteps* or *dt*.
+
+        :arg dt: desired time step (chosen time step may be slightly smaller).
+        :arg tstart: start of the time span.
+        :arg tfinal: end of the time span, which is not required.
+        :arg nsteps: number of time steps in the span, which is not required.
+        """
+
+        if tfinal is not None:
+            nsteps = int((tfinal - tstart) / dt) + 1
+            dt = (tfinal - tstart) / nsteps
+        elif nsteps is not None:
+            tfinal = tstart + nsteps * dt
+        else:
+            # nsteps and tfinal are None, so nothing we can do here
+            pass
+
+        return cls(tstart=tstart, tfinal=tfinal, nsteps=nsteps, dt=dt)
 
 
-def make_predict_time_step_graded(
-    tspan: tuple[float, float], maxit: int, r: int = 2
-) -> ScalarStateFunction:
-    r"""Construct a time step that is smaller around the initial time.
+@dataclass(frozen=True)
+class GradedTimeSpan(TimeSpan):
+    r"""A :class:`TimeSpan` with a variable graded time step.
 
     This graded grid of time steps is described in [Garrappa2015b]_. It
     essentially takes the form
 
     .. math::
 
-        \Delta t_n = \frac{T - t_0}{N^r} ((n + 1)^r - n^r),
+        \Delta t_n = \frac{t_f - t_s}{N^r} ((n + 1)^r - n^r),
 
-    where the time interval is :math:`[t_0, T]` and :math:`N` time steps are
+    where the time interval is :math:`[t_s, t_f]` and :math:`N` time steps are
     taken. This graded grid can give full second-order convergence for certain
     methods such as the Predictor-Corrector method (e.g. implemented by
     :class:`~pycaputo.fode.CaputoPECEMethod`).
-
-    :arg tspan: time interval :math:`[t_0, T]`.
-    :arg maxit: maximum number of iterations to take in the interval.
-    :arg r: a grading exponent that controls the clustering of points at :math:`t_0`.
-
-    :returns: a callable returning a graded time step.
     """
-    if maxit <= 0:
-        raise ValueError(f"Negative number of iterations not allowed: {maxit}")
 
-    if r < 1:
-        raise ValueError(f"Gradient exponent must be >= 1: {r}")
+    #: A grading exponent that controls the clustering of points at :math:`t_s`.
+    r: int
 
-    if tspan[0] > tspan[1]:
-        raise ValueError(f"Invalid time interval: {tspan}")
+    if __debug__:
 
-    h = (tspan[1] - tspan[0]) / maxit**r
+        def __post_init__(self) -> None:
+            if self.tfinal is None:
+                raise ValueError("'tfinal' must be given for the graded estimate.")
 
-    def predict_time_step(t: float, y: Array) -> float:
-        # FIXME: this works, but seems a bit overkill just to get the iteration
-        n = round(((t - tspan[0]) / h) ** (1 / r))
+            if self.nsteps is None:
+                raise ValueError("'nsteps' must be given for the graded estimate")
 
-        return float(h * ((n + 1) ** r - n**r))
+            super().__post_init__()
+            if self.r < 1:
+                raise ValueError(f"Exponent must be >= 1: {self.r}")
 
-    return predict_time_step
+    def get_next_time_step_raw(self, n: int, t: float, y: Array) -> float:
+        """See :meth:`pycaputo.fode.TimeSpan.get_next_time_step_raw`."""
+        assert self.tfinal is not None
+        assert self.nsteps is not None
+
+        h = (self.tfinal - self.tstart) / self.nsteps**self.r
+        return float(h * ((n + 1) ** self.r - n**self.r))
 
 
-def make_predict_time_step_lipschitz(
-    f: StateFunction,
-    alpha: float,
-    yspan: tuple[float, float],
-    *,
-    theta: float = 0.9,
-) -> ScalarStateFunction:
-    r"""Estimate a time step based on the Lipschitz constant.
+@dataclass(frozen=True)
+class FixedLipschitzTimeSpan(TimeSpan):
+    r"""A :class:`TimeSpan` that uses the Lipschitz constant to estimate the time step.
 
-    This method estimates the time step using
+    This method estimates the time step using (Theorem 2.5 from [Baleanu2012]_)
 
     .. math::
 
-        \Delta t = \theta \frac{1}{(\Gamma(2 - \alpha) L)^{\frac{1}{\alpha}}},
+        \Delta t = \frac{1}{(\Gamma(2 - \alpha) L)^{\frac{1}{\alpha}}},
 
-    where :math:`L` is the Lipschitz constant estimated by
-    :func:`estimate_lipschitz_constant` and :math:`\theta` is a coefficient that
-    should be smaller than 1.
+    where :math:`L` is the Lipschitz constant estimated by :attr:`lipschitz_constant`.
+    Note that this is essentially a fixed time step estimate.
+    """
+
+    #: An estimate of the Lipschitz contants of the right-hand side :math:`f(t, y)`
+    #: for all times :math:`t \in [t_s, t_f]`.
+    lipschitz_constant: float
+    #: Fractional order of the derivative.
+    alpha: float
+
+    def get_next_time_step_raw(self, n: int, t: float, y: Array) -> float:
+        """See :meth:`pycaputo.fode.TimeSpan.get_next_time_step_raw`."""
+        if y.shape != (1,):
+            raise ValueError(f"Only scalar functions are supported: {y.shape}")
+
+        from math import gamma
+
+        L = self.lipschitz_constant
+        return float((gamma(2 - self.alpha) * L) ** (-1.0 / self.alpha))
+
+
+@dataclass(frozen=True)
+class LipschitzTimeSpan(TimeSpan):
+    r"""A :class:`TimeSpan` that uses the Lipschitz constant to estimate the time step.
+
+    This uses the same logic as :class:`FixedLipschitzTimeSpan`, but computes the
+    Lipschitz constant using the estimate from
+    :func:`~pycaputo.lipschitz.estimate_lipschitz_constant` at each time :math:`t`.
 
     .. warning::
 
         This method requires many evaluations of the right-hand side function
         *f* and will not be efficient in practice. Ideally, the Lipschitz
         constant is approximated by some theoretical result.
-
-    :arg f: the right-hand side function used in the differential equation.
-    :arg alpha: fractional order of the derivative.
-    :arg yspan: an expected domain of the state variable. The Lipschitz constant
-        is estimated by sampling in this domain.
-    :arg theta: a coefficient used to control the time step.
-
-    :returns: a callable returning an estimate of the time step based on the
-        Lipschitz constant.
     """
-    from functools import partial
-    from math import gamma
 
-    if not 0.0 < alpha < 1.0:
-        raise ValueError(f"Derivative order must be in (0, 1): {alpha}")
+    #: The right-hand side function used in the differential equation.
+    f: StateFunction
+    #: Fractional order of the derivative.
+    alpha: float
+    #: An expected domain of the state variable. The Lipschitz constant is
+    #: estimated by sampling in this domain.
+    yspan: tuple[float, float]
 
-    if theta <= 0.0:
-        raise ValueError(f"Theta constant cannot be negative: {theta}")
+    if __debug__:
 
-    if yspan[0] > yspan[1]:
-        yspan = (yspan[1], yspan[0])
+        def __post_init__(self) -> None:
+            super().__post_init__()
 
-    from pycaputo.lipschitz import estimate_lipschitz_constant
+            if not 0.0 < self.alpha < 1.0:
+                raise ValueError(f"Derivative order must be in (0, 1): {self.alpha}")
 
-    def predict_time_step(t: float, y: Array) -> float:
+            if self.yspan[0] >= self.yspan[1]:
+                raise ValueError("Invalid yspan interval: ystart > yfinal")
+
+    def get_next_time_step_raw(self, n: int, t: float, y: Array) -> float:
+        """See :meth:`pycaputo.fode.TimeSpan.get_next_time_step_raw`."""
         if y.shape != (1,):
             raise ValueError(f"Only scalar functions are supported: {y.shape}")
 
-        L = estimate_lipschitz_constant(partial(f, t), yspan[0], yspan[1])
-        return float((gamma(2 - alpha) * L) ** (-1.0 / alpha))
+        from math import gamma
 
-    return predict_time_step
+        from pycaputo.lipschitz import estimate_lipschitz_constant
+
+        L = estimate_lipschitz_constant(
+            partial(self.f, t), self.yspan[0], self.yspan[1]
+        )
+        return float((gamma(2 - self.alpha) * L) ** (-1.0 / self.alpha))
 
 
 # }}}
@@ -202,15 +329,11 @@ class FractionalDifferentialEquationMethod(ABC):
 
     #: The fractional derivative order used for the derivative.
     derivative_order: tuple[float, ...]
-    #: A callable used to predict the time step.
-    predict_time_step: float | ScalarStateFunction
+    #: An instance describing the discrete time span being simulated.
+    tspan: TimeSpan
 
     #: Right-hand side source term.
     source: StateFunction
-    #: The initial and final times of the simulation. The final time can be
-    #: *None* if evolving the equation to an unknown final time, e.g. by
-    #: setting *maxit* in :func:`evolve`.
-    tspan: tuple[float, float | None]
     #: Values used to reconstruct the required initial conditions.
     y0: tuple[Array, ...]
 
@@ -238,11 +361,6 @@ class FractionalDifferentialEquationMethod(ABC):
         return max(self.derivative_order)
 
     @property
-    def is_constant_time_step(self) -> bool:
-        """A flag for whether the method uses a constant time step."""
-        return not callable(self.predict_time_step)
-
-    @property
     def name(self) -> str:
         """An identifier for the method."""
         return type(self).__name__.replace("Method", "")
@@ -264,7 +382,6 @@ def evolve(
     *,
     callback: CallbackFunction | None = None,
     history: History | None = None,
-    maxit: int | None = None,
     verbose: bool = True,
 ) -> Iterator[Event]:
     """Evolve the fractional-order ordinary differential equation in time.
@@ -274,7 +391,6 @@ def evolve(
     :arg y0: initial conditions for the FODE.
     :arg history: a :class:`History` instance that handles checkpointing the
         necessary state history for the method *m*.
-    :arg maxit: the maximum number of iterations.
     :arg verbose: print additional iteration details.
 
     :returns: an :class:`Event` (usually a :class:`StepCompleted`) containing
@@ -292,7 +408,7 @@ def advance(
 ) -> Array:
     """Advance the solution *y* by to the time *t*.
 
-    This function takes ``(history[t_0, ... t_n], t_{n + 1}, y_n)`` and is
+    This function takes ``(history[t_s, ... t_n], t_{n + 1}, y_n)`` and is
     expected to update the history with values at :math:`t_{n + 1}`. The time
     steps can be recalculated from the history if necessary.
 

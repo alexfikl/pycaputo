@@ -17,12 +17,26 @@ History Handling
 .. autoclass:: FixedState
 .. autoclass:: FixedSizeHistory
 
-Interface
----------
+Time Interval Handling
+----------------------
+
+.. exception:: StepEstimateError
+
+.. autoclass:: TimeSpan
+.. autoclass:: FixedTimeSpan
+.. autoclass:: GradedTimeSpan
+.. autoclass:: FixedLipschitzTimeSpan
+.. autoclass:: LipschitzTimeSpan
+
+Time Stepping Events
+--------------------
 
 .. autoclass:: Event
 .. autoclass:: StepFailed
 .. autoclass:: StepCompleted
+
+Time Stepping Interface
+-----------------------
 
 .. autoclass:: FractionalDifferentialEquationMethod
 .. autoclass:: ProductIntegrationMethod
@@ -30,9 +44,6 @@ Interface
 .. autofunction:: evolve
 .. autofunction:: advance
 .. autofunction:: make_initial_condition
-
-.. autofunction:: make_predict_time_step_fixed
-.. autofunction:: make_predict_time_step_graded
 
 Caputo Derivative FODEs
 =======================

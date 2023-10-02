@@ -13,8 +13,6 @@ Features
 ^^^^^^^^
 
 * Added an example with the fractional Lorenz system (:ghpr:`13`).
-* Support setting a constant for
-  :meth:`~pycaputo.fode.FractionalDifferentialEquationMethod.predict_time_step`.
 * Add a guess for the number of corrector iterations
   for :class:`~pycaputo.fode.CaputoPECEMethod` from [Garrappa2010]_.
 * Implement :class:`~pycaputo.quadrature.RiemannLiouvilleSimpsonMethod`, a
