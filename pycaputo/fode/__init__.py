@@ -13,6 +13,7 @@ from pycaputo.fode.base import (
     TimeSpan,
     advance,
     evolve,
+    solve,
     make_initial_condition,
 )
 from pycaputo.fode.caputo import (
@@ -31,6 +32,7 @@ from pycaputo.fode.history import (
     State,
     VariableProductIntegrationHistory,
 )
+from pycaputo.fode.integrate_and_fire import CaputoIntegrateFireL1Method
 from pycaputo.fode.product_integration import (
     CaputoProductIntegrationMethod,
     ProductIntegrationMethod,
@@ -45,6 +47,7 @@ __all__ = (
     "CaputoPredictorCorrectorMethod",
     "CaputoProductIntegrationMethod",
     "CaputoWeightedEulerMethod",
+    "CaputoIntegrateFireL1Method",
     "Event",
     "FixedSizeHistory",
     "FixedState",
@@ -63,5 +66,6 @@ __all__ = (
     "VariableProductIntegrationHistory",
     "advance",
     "evolve",
+    "solve",
     "make_initial_condition",
 )

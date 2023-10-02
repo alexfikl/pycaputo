@@ -44,6 +44,8 @@ Time Stepping Interface
 .. autofunction:: advance
 .. autofunction:: make_initial_condition
 
+.. autofunction:: solve
+
 Caputo Derivative FODEs
 =======================
 
@@ -55,6 +57,11 @@ Caputo Derivative FODEs
 .. autoclass:: CaputoPECEMethod
 .. autoclass:: CaputoPECMethod
 .. autoclass:: CaputoModifiedPECEMethod
+
+Integrate and Fire FODEs
+========================
+
+.. autoclass:: CaputoIntegrateFireL1Method
 
 .. class:: Array
 

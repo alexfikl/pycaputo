@@ -126,94 +126,39 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
         alpha = min(self.derivative_order)
         return (1.0 + alpha) if self.theta == 0.5 else 1.0
 
-    # NOTE: `_kwargs_root` and `_kwargs_root_scalar` are meant to be overwritten
-    # for testing purposes or some specific application (undocumented for now).
+    # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
+    # some specific application (undocumented for now).
 
-    def _kwargs_root_scalar(self) -> dict[str, object]:
+    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
         """
         :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
+            or :func:`scipy.optimize.root`.
         """
-        return {}
-
-    def _solve_scalar(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        import scipy.optimize as so
-
-        def func(y: Array) -> Array:
-            return np.array(y - c * self.source(t, y) - r)
-
-        def jac(y: Array) -> Array:
-            assert self.source_jac is not None
-            return 1 - c * self.source_jac(t, y)
-
-        result = so.root_scalar(
-            f=func,
-            x0=y0,
-            fprime=jac if self.source_jac is not None else None,
-            **self._kwargs_root_scalar(),
-        )
-
-        return np.array(result.root)
-
-    def _kwargs_root(self) -> dict[str, object]:
-        """
-        :returns: additional keyword arguments for :func:`scipy.optimize.root`.
-        """
-        # NOTE: the default hybr does not use derivatives, so use lm instead
-        # FIXME: will need to maybe benchmark these a bit?
-        return {"method": "lm" if self.source_jac else None}
-
-    def _solve_system(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        import scipy.optimize as so
-
-        def func(y: Array) -> Array:
-            return np.array(y - c * self.source(t, y) - r, dtype=y0.dtype)
-
-        def jac(y: Array) -> Array:
-            assert self.source_jac is not None
-            return np.array(
-                np.eye(y.size, dtype=y0.dtype) - np.diag(c) @ self.source_jac(t, y)
-            )
-
-        result = so.root(
-            func,
-            y0,
-            jac=jac if self.source_jac is not None else None,
-            **self._kwargs_root(),
-        )
-
-        return np.array(result.x)
+        if scalar:
+            return {}
+        else:
+            # NOTE: the default hybr does not use derivatives, so use lm instead
+            # FIXME: will need to maybe benchmark these a bit?
+            return {"method": "lm" if self.source_jac else None}
 
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        r"""Solves an implicit update formula.
+        """Wrapper around :func:`pycaputo.fode.solve` to solve the implicit equation.
 
-        This function will meant to solve implicit equations of the form
-
-        .. math::
-
-            y_{n + 1} = \sum_{k = 0}^{n + 1} c_k f(t_k, y_k).
-
-        Rearranging the implicit terms, we can write
-
-        .. math::
-
-            y_{n + 1} - c_{n + 1} f(t_{n + 1}, y_{n + 1}) = r_n,
-
-        and solve for the solution :math:`y^{n + 1}`, where :math:`r_n`
-        contains all the explicit terms. This is done by a root finding algorithm
-        provided by :func:`scipy.optimize.root`.
-
-        :arg t: time at which the solution *y* is evaluated.
-        :arg y: unknown solution at time *t*.
-        :arg c: constant for the source term *f* that corresponds to
-            :attr:`FractionalDifferentialEquationMethod.source`.
-        :arg r: right-hand side term.
-
-        :returns: solution :math:`y^*` of the above root finding problem.
+        This function should be overwritten for specific applications if better
+        solvers are known. For example, many problems can be solved explicitly
+        or approximated to a very good degree to provide a better *y0*.
         """
-        if y0.size == 1:
-            return self._solve_scalar(t, y0, c, r)
-        else:
-            return self._solve_system(t, y0, c, r)
+        from pycaputo.fode.base import solve
+
+        return solve(
+            self.source,
+            self.source_jac,
+            t,
+            y0,
+            c,
+            r,
+            **self._get_kwargs(scalar=y0.size == 1),
+        )
 
 
 def _update_caputo_weighted_euler(

@@ -13,7 +13,6 @@ from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.fode.base import (
     Event,
     FractionalDifferentialEquationMethod,
-    StepEstimateError,
     evolve,
     make_initial_condition,
 )
@@ -43,7 +42,7 @@ def _evolve_pi(
     history: History | None = None,
     raise_on_fail: bool = False,
 ) -> Iterator[Event]:
-    from pycaputo.fode.base import StepCompleted, StepFailed, advance
+    from pycaputo.fode.base import StepCompleted, StepEstimateError, StepFailed, advance
 
     n = 0
     t = m.tspan.tstart
