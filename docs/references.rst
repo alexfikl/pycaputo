@@ -31,6 +31,10 @@ References
     International Journal of Computer Mathematics, Vol. 87, pp. 2281--2290, 2010,
     `DOI <https://doi.org/10.1080/00207160802624331>`__.
 
+.. [Baleanu2012] D. Baleanu, K. Diethelm, E. Scalas, J. J. Trujillo,
+    *Fractional Calculus - Models and Numerical Methods*,
+    World Scientific, 2012.
+
 .. [Garrappa2015] R. Garrappa,
     *Numerical Evaluation of Two and Three Parameter Mittag-Leffler Functions*,
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
