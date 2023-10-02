@@ -25,7 +25,6 @@ Time Interval Handling
 .. autoclass:: TimeSpan
 .. autoclass:: FixedTimeSpan
 .. autoclass:: GradedTimeSpan
-.. autoclass:: FixedLipschitzTimeSpan
 .. autoclass:: LipschitzTimeSpan
 
 Time Stepping Events

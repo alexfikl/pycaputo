@@ -182,7 +182,7 @@ class GradedTimeSpan(TimeSpan):
 
 
 @dataclass(frozen=True)
-class FixedLipschitzTimeSpan(TimeSpan):
+class LipschitzTimeSpan(TimeSpan):
     r"""A :class:`TimeSpan` that uses the Lipschitz constant to estimate the time step.
 
     This method estimates the time step using (Theorem 2.5 from [Baleanu2012]_)
@@ -191,33 +191,7 @@ class FixedLipschitzTimeSpan(TimeSpan):
 
         \Delta t = \frac{1}{(\Gamma(2 - \alpha) L)^{\frac{1}{\alpha}}},
 
-    where :math:`L` is the Lipschitz constant estimated by :attr:`lipschitz_constant`.
-    Note that this is essentially a fixed time step estimate.
-    """
-
-    #: An estimate of the Lipschitz contants of the right-hand side :math:`f(t, y)`
-    #: for all times :math:`t \in [t_s, t_f]`.
-    lipschitz_constant: float
-    #: Fractional order of the derivative.
-    alpha: float
-
-    def get_next_time_step_raw(self, n: int, t: float, y: Array) -> float:
-        """See :meth:`pycaputo.fode.TimeSpan.get_next_time_step_raw`."""
-        if y.shape != (1,):
-            raise ValueError(f"Only scalar functions are supported: {y.shape}")
-
-        from math import gamma
-
-        L = self.lipschitz_constant
-        return float((gamma(2 - self.alpha) * L) ** (-1.0 / self.alpha))
-
-
-@dataclass(frozen=True)
-class LipschitzTimeSpan(TimeSpan):
-    r"""A :class:`TimeSpan` that uses the Lipschitz constant to estimate the time step.
-
-    This uses the same logic as :class:`FixedLipschitzTimeSpan`, but computes the
-    Lipschitz constant using the estimate from
+    where :math:`L` is the Lipschitz constant estimated by
     :func:`~pycaputo.lipschitz.estimate_lipschitz_constant` at each time :math:`t`.
 
     .. warning::
@@ -259,6 +233,31 @@ class LipschitzTimeSpan(TimeSpan):
             partial(self.f, t), self.yspan[0], self.yspan[1]
         )
         return float((gamma(2 - self.alpha) * L) ** (-1.0 / self.alpha))
+
+    @classmethod
+    def as_fixed(
+        cls,
+        lipschitz_constant: float,
+        alpha: float,
+        tstart: float = 0.0,
+        tfinal: float | None = None,
+        nsteps: int | None = None,
+    ) -> FixedTimeSpan:
+        """Estimate a fixed time step based on the Lipschitz constant.
+
+        This directly creates a :class:`FixedTimeSpan` based on the expression
+        for Theorem 2.5 in [Baleanu2012]_. If the *lipschitz_constant* estimate
+        is sufficiently accurate for all time steps, this is significantly
+        faster than recomputing it.
+
+        :arg lipschitz_constant: an estimate for the Lipschitz constant.
+        :arg alpha: the order of the fractional derivative.
+        """
+        from math import gamma
+
+        dt = float((gamma(2 - alpha) * lipschitz_constant) ** (-1.0 / alpha))
+
+        return FixedTimeSpan.from_data(dt, tstart=tstart, tfinal=tfinal, nsteps=nsteps)
 
 
 # }}}

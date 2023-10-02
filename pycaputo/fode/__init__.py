@@ -3,7 +3,6 @@
 
 from pycaputo.fode.base import (
     Event,
-    FixedLipschitzTimeSpan,
     FixedTimeSpan,
     FractionalDifferentialEquationMethod,
     GradedTimeSpan,
@@ -54,7 +53,6 @@ __all__ = (
     "StepEstimateError",
     "TimeSpan",
     "FixedTimeSpan",
-    "FixedLipschitzTimeSpan",
     "GradedTimeSpan",
     "LipschitzTimeSpan",
     "ProductIntegrationMethod",
