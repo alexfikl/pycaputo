@@ -13,8 +13,8 @@ from pycaputo.fode.base import (
     TimeSpan,
     advance,
     evolve,
-    solve,
     make_initial_condition,
+    solve,
 )
 from pycaputo.fode.caputo import (
     CaputoForwardEulerMethod,

@@ -90,6 +90,12 @@ class CaputoIntegrateFireL1Method(FractionalDifferentialEquationMethod):
             ]
         )
 
+    @property
+    def order(self) -> float:
+        # FIXME: this is the same as the standard L1 method? Unlikely..
+        alpha = min(self.derivative_order)
+        return 2.0 - alpha
+
     # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
     # some specific application (undocumented for now).
 

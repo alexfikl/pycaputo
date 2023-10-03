@@ -7,7 +7,7 @@ import os
 import pathlib
 import time
 from contextlib import contextmanager, suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, is_dataclass
 from types import TracebackType
 from typing import (
     TYPE_CHECKING,
@@ -15,6 +15,7 @@ from typing import (
     Callable,
     Iterable,
     Iterator,
+    NamedTuple,
     Protocol,
     TypeVar,
     Union,
@@ -37,6 +38,8 @@ T = TypeVar("T")
 PathLike = Union[pathlib.Path, str]
 
 if TYPE_CHECKING:
+    from _typeshed import DataclassInstance
+
     Array: TypeAlias = np.ndarray[Any, Any]
     Scalar: TypeAlias = Union[np.generic, Array]
 else:
@@ -504,6 +507,88 @@ class BlockTimer:
 
     def __str__(self) -> str:
         return f"{self.name}: {self.t_wall:.3e}s wall, {self.t_cpu:.3f}x cpu"
+
+
+# }}}
+
+
+# {{{ dataclasses
+
+
+def dc_asdict(dc: DataclassInstance, *, init_only: bool = True) -> dict[str, Any]:
+    """
+    :returns: a shallow copy of the fields in the dataclass *dc*.
+    """
+    if not is_dataclass(dc):
+        raise TypeError("input 'dc' is not a dataclass")
+
+    return dict(dc_items(dc, init_only=init_only))
+
+
+def dc_items(
+    dc: DataclassInstance, *, init_only: bool = True
+) -> Iterator[tuple[str, Any]]:
+    """
+    :arg init_only: if *False*, all the fields of the dataclass are returned,
+        even those with ``init=False``.
+    :returns: tuples of the form ``(field, value)`` with the fields from the
+        dataclass.
+    """
+    if not is_dataclass(dc):
+        raise TypeError("input 'dc' is not a dataclass")
+
+    from dataclasses import fields
+
+    for f in fields(dc):
+        if not init_only or f.init:
+            yield f.name, getattr(dc, f.name)
+
+
+def dc_stringify(dc: DataclassInstance | NamedTuple | dict[str, Any]) -> str:
+    """Stringify a dataclass, namedtuple or dictionary in a fancy way.
+
+    :returns: a string containing two columns with the object attributes and
+        values shown in a nice way.
+    """
+    if is_dataclass(dc):
+        assert not isinstance(dc, type)
+        fields = dc_asdict(dc)
+    elif isinstance(dc, tuple) and hasattr(dc, "_asdict"):
+        fields = dc._asdict()
+    elif isinstance(dc, dict):
+        fields = dc
+    else:
+        raise TypeError(f"unrecognized type: '{type(dc).__name__}'")
+
+    width = len(max(fields, key=len))
+    fmt = f"{{:{width}}} : {{}}"
+
+    def stringify(v: Any) -> str:
+        sv = repr(v)
+        if len(sv) > 128:
+            sv = f"{type(v).__name__}<...>"
+
+        return sv
+
+    instance_attrs = sorted(
+        {k: stringify(v) for k, v in fields.items() if k != "name"}.items()
+    )
+
+    header_attrs = []
+    if not isinstance(dc, dict):
+        header_attrs.append(("class", type(dc).__name__))
+    if "name" in fields:
+        header_attrs.append(("name", fields["name"]))
+    if not header_attrs:
+        header_attrs.append(("attribute", "value"))
+    header_attrs.append(("-" * width, "-" * width))
+
+    return "\n".join(
+        [
+            "\t{}".format("\n\t".join(fmt.format(k, v) for k, v in header_attrs)),
+            "\t{}".format("\n\t".join(fmt.format(k, v) for k, v in instance_attrs)),
+        ]
+    )
 
 
 # }}}
