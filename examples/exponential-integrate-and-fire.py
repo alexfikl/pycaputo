@@ -166,9 +166,30 @@ def ad_ex_reset(t: float, y: Array, *, p: AdEx) -> Array:
 
 @dataclass(frozen=True)
 class AdExMethod(CaputoIntegrateFireL1Method):
+    #: Parameters for the AdEx model.
+    p: AdEx
+
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        # TODO
-        Vstar = wstar = 0.0
+        # NOTE: small rename to match write-up
+        h = c
+        MV, Mw = r
+        I, el, tau_w, a, *_ = self.p  # noqa: E741
+
+        # w coefficients: w = c0 V + c1
+        c0 = a * h / (tau_w + h)
+        c1 = (tau_w * Mw - a * h * el) / (h + tau_w)
+
+        # V coefficients: d0 V + d1 = d2 exp(V)
+        d0 = 1 + h * (1 + c0)
+        d1 = -h * (I + el - c1) + MV
+        d2 = h
+
+        # solve
+        from scipy.special import lambertw
+
+        dstar = -d2 / d0 * np.exp(d1 / d0)
+        Vstar = -d1 / d0 - lambertw(dstar)
+        wstar = c0 * Vstar + c1
 
         return np.array([Vstar, wstar])
 
