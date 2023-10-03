@@ -233,6 +233,7 @@ y0 = np.array(
 )
 
 m = AdExMethod(
+    p=p,
     derivative_order=alpha,
     tspan=FixedTimeSpan.from_data(dt, tstart=tstart, tfinal=tfinal),
     source=partial(ad_ex, p=p),
