@@ -171,18 +171,18 @@ class AdExMethod(CaputoIntegrateFireL1Method):
 
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         # NOTE: small rename to match write-up
-        h = c
+        hV, hw = c
         MV, Mw = r
         I, el, tau_w, a, *_ = self.p  # noqa: E741
 
         # w coefficients: w = c0 V + c1
-        c0 = a * h / (tau_w + h)
-        c1 = (tau_w * Mw - a * h * el) / (h + tau_w)
+        c0 = a * hw / (tau_w + hw)
+        c1 = (tau_w * Mw - a * hw * el) / (hw + tau_w)
 
         # V coefficients: d0 V + d1 = d2 exp(V)
-        d0 = 1 + h * (1 + c0)
-        d1 = -h * (I + el - c1) + MV
-        d2 = h
+        d0 = 1 + hV * (1 + c0)
+        d1 = -hV * (I + el - c1) + MV
+        d2 = hV
 
         # solve
         from scipy.special import lambertw
