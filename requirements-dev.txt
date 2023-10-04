@@ -10,11 +10,11 @@ click==8.1.7
     # via pip-tools
 contourpy==1.1.1
     # via matplotlib
-cycler==0.11.0
+cycler==0.12.0
     # via matplotlib
 differint==1.0.0
     # via pycaputo (pyproject.toml)
-fonttools==4.42.1
+fonttools==4.43.0
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
@@ -39,7 +39,7 @@ numpy==1.26.0
     #   matplotlib
     #   pycaputo (pyproject.toml)
     #   scipy
-packaging==23.1
+packaging==23.2
     # via
     #   build
     #   matplotlib
@@ -55,7 +55,7 @@ pygments==2.16.1
     # via rich
 pyparsing==3.1.1
     # via matplotlib
-pyproject-fmt==1.1.0
+pyproject-fmt==1.2.0
     # via pycaputo (pyproject.toml)
 pyproject-hooks==1.0.0
     # via build
@@ -63,11 +63,11 @@ pytest==7.4.2
     # via pycaputo (pyproject.toml)
 python-dateutil==2.8.2
     # via matplotlib
-rich==13.5.3
+rich==13.6.0
     # via pycaputo (pyproject.toml)
-ruff==0.0.290
+ruff==0.0.292
     # via pycaputo (pyproject.toml)
-scipy==1.11.2
+scipy==1.11.3
     # via pycaputo (pyproject.toml)
 six==1.16.0
     # via python-dateutil
