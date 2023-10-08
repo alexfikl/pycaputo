@@ -77,7 +77,7 @@ def determine_truncation_error(offsets: Array, x: float, h: float = 1.0) -> floa
         f(x) - \sum_{k \in \text{offsets}} \ell_k(x) f_{m + k} =
         c \frac{\mathrm{d}^n f}{\mathrm{d} x^n}(\xi),
 
-    where the constant :math:`c` is approxiated as the truncation error. The
+    where the constant :math:`c` is approximated as the truncation error. The
     Error itself also depends on the derivatives of :math:`f` at a undetermined
     point :math:`\xi` in the interpolation interval.
 

@@ -59,7 +59,7 @@ def make_stretched_points(
     where :math:`A` is the *strength* and :math:`x_c = 1/2` for the midpoint.
 
     :arg n: number of points in :math:`[a, b]`.
-    :arg strength: a positive number that constrols the clustering of points at
+    :arg strength: a positive number that controls the clustering of points at
         the midpoint, i.e. a larger number denotes more points.
     """
     x = np.linspace(0, 1, n)
