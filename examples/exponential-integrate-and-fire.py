@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
+#
 # SPDX-License-Identifier: MIT
 
 # This model is taken from [Naud2008] with the same parameters
@@ -71,12 +72,16 @@ class AdExDim(NamedTuple):
             }
         )
 
-    def nondimensional(self) -> AdEx:
+    def nondimensional(self, alpha: tuple[float, float]) -> AdEx:
+        """Determine non-dimensional parameters for a given order."""
+        a1 = 1.0 if alpha[0] == 1.0 else (1.0 / (alpha[0] - 1))
+        a2 = 1.0 if alpha[1] == 1.0 else (alpha[1] - 1 / a1)
+
         return AdEx(
-            t=self.gl / self.c,
+            t=(self.gl / self.c) ** a1,
             current=self.current / (self.delta_t * self.gl),
             el=(self.el - self.vt) / self.delta_t,
-            tau_w=self.c * self.tau_w / self.gl,
+            tau_w=(self.c / self.gl) ** a2 * self.tau_w,
             a=self.a / self.gl,
             v_peak=(self.v_peak - self.vt) / self.delta_t,
             v_reset=(self.v_reset - self.vt) / self.delta_t,
@@ -199,6 +204,14 @@ class AdExMethod(CaputoIntegrateFireL1Method):
 
 # {{{ setup
 
+# Fractional derivative order
+alpha = (0.9, 0.9)
+# simulation time span (non-dimensional)
+tstart = 0.0
+tfinal = 50.0
+# simulation time step (non-dimensional)
+dt = 1.0e-2
+
 # NOTE: parameters taken from Table 1, Figure 4h in [Naud2008]
 pd = AdExDim(
     c=100,
@@ -213,15 +226,7 @@ pd = AdExDim(
     v_reset=-48,
     w_b=30,
 )
-p = pd.nondimensional()
-
-# simulation time span (non-dimensional)
-tstart = 0.0
-tfinal = 50.0
-# simulation time step (non-dimensional)
-dt = 1.0e-2
-# Fractional derivative order
-alpha = (0.9, 0.9)
+p = pd.nondimensional(alpha)
 
 # initial condition
 rng = np.random.default_rng(seed=None)
