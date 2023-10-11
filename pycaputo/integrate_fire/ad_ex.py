@@ -108,7 +108,7 @@ class AdEx(NamedTuple):
     def from_dimensional(cls, dim: AdExDim, alpha: float | tuple[float, float]) -> AdEx:
         """Construct non-dimensional parameters for the AdEx model.
 
-        :arg dim: a set of dimensional parameters with the apropriate units.
+        :arg dim: a set of dimensional parameters with the appropriate units.
         :arg alpha: the order of the fractional derivatives for two model
             components :math:`(V, w)`. These can be the same if the two variables
             use the same order.
@@ -320,10 +320,20 @@ class AdExModel:
     #: Non-dimensional parameters for the model.
     param: AdEx
 
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if not isinstance(self.param, AdEx):
+                raise TypeError(
+                    f"Invalid parameter type: '{type(self.param).__name__}'"
+                )
+
     def source(self, t: float, y: Array) -> Array:
-        r"""Evaluation of the right-hand side source terms at :math:`(t, \mathbf{y})`."""
+        r"""Evaluation of the right-hand side source terms at
+        :math:`(t, \mathbf{y})`.
+        """
         V, w = y
-        I, el, tau_w, a, *_ = self.param  # noqa: E741
+        _, _, I, el, tau_w, a, *_ = self.param  # noqa: E741
 
         return np.array(
             [
@@ -335,7 +345,7 @@ class AdExModel:
     def source_jac(self, t: float, y: Array) -> Array:
         r"""Evaluation of the right-hand side Jacobian at :math:`(t, \mathbf{y})`."""
         V, w = y
-        I, el, tau_w, a, *_ = self.param  # noqa: E741
+        _, _, I, el, tau_w, a, *_ = self.param  # noqa: E741
 
         # J_{ij} = d f_i / d y_j
         return np.array(
@@ -351,7 +361,7 @@ class AdExModel:
 
         :returns: a delta from the current solution to the threshold, i.e.
             :math:`V - V_{peak}`. If the return value is positive, the threshold
-            was hit and a spike/reset should have occured.
+            was hit and a spike/reset should have occurred.
         """
         V, _ = y
         return float(V - self.param.v_peak)
@@ -402,34 +412,38 @@ def get_lambert_time_step(ad_ex: AdEx) -> float | None:
     return float((h / gamma(2 - alpha)) ** (1 / alpha))
 
 
+def ad_ex_solve(ad_ex: AdExModel, t: float, y0: Array, c: Array, r: Array) -> Array:
+    # NOTE: small rename to match write-up
+    hV, hw = c
+    rV, rw = r
+    _, _, I, el, tau_w, a, *_ = ad_ex.param  # noqa: E741
+
+    # w coefficients: w = c0 V + c1
+    c0 = a * hw / (tau_w + hw)
+    c1 = (tau_w * rw - a * hw * el) / (hw + tau_w)
+
+    # V coefficients: d0 V + d1 = d2 exp(V)
+    d0 = 1 + hV * (1 + c0)
+    d1 = -hV * (I + el - c1) + rV
+    d2 = hV
+
+    # solve
+    from scipy.special import lambertw
+
+    dstar = -d2 / d0 * np.exp(d1 / d0)
+    Vstar = -d1 / d0 - lambertw(dstar)
+    wstar = c0 * Vstar + c1
+
+    return np.array([Vstar, wstar])
+
+
 @dataclass(frozen=True)
 class AdExIntegrateFireL1Method(CaputoIntegrateFireL1Method):
     #: Parameters for the AdEx model.
     ad_ex: AdExModel
 
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        # NOTE: small rename to match write-up
-        hV, hw = c
-        rV, rw = r
-        _, _, I, el, tau_w, a, *_ = self.ad_ex.param  # noqa: E741
-
-        # w coefficients: w = c0 V + c1
-        c0 = a * hw / (tau_w + hw)
-        c1 = (tau_w * rw - a * hw * el) / (hw + tau_w)
-
-        # V coefficients: d0 V + d1 = d2 exp(V)
-        d0 = 1 + hV * (1 + c0)
-        d1 = -hV * (I + el - c1) + rV
-        d2 = hV
-
-        # solve
-        from scipy.special import lambertw
-
-        dstar = -d2 / d0 * np.exp(d1 / d0)
-        Vstar = -d1 / d0 - lambertw(dstar)
-        wstar = c0 * Vstar + c1
-
-        return np.array([Vstar, wstar])
+        return ad_ex_solve(self.ad_ex, t, y0, c, r)
 
 
 # }}}
