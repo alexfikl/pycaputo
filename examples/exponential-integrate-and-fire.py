@@ -78,7 +78,7 @@ class AdExDim(NamedTuple):
         a2 = 1.0 if alpha[1] == 1.0 else (alpha[1] - 1 / a1)
 
         return AdEx(
-            t=(self.gl / self.c) ** a1,
+            T=(self.gl / self.c) ** a1,
             current=self.current / (self.delta_t * self.gl),
             el=(self.el - self.vt) / self.delta_t,
             tau_w=(self.c / self.gl) ** a2 * self.tau_w,
@@ -92,8 +92,8 @@ class AdExDim(NamedTuple):
 class AdEx(NamedTuple):
     """A version of :class:`AdExDim` that has been non-dimensionalized."""
 
-    #: Time scale.
-    t: float
+    #: Fractional time scale.
+    T: float
 
     #: Added current :math:`I`.
     current: float
@@ -112,10 +112,18 @@ class AdEx(NamedTuple):
     #: Adaptation current reset offset :math:`b`.
     w_b: float
 
+    def allows_lambert(self) -> bool:
+        h = (
+            -1.0
+            - self.tau_w
+            + np.sqrt(1 - 2.0 * self.tau_w - 4 * self.a * self.tau_w + self.tau_w**2)
+        ) / (2 * (1 + self.a))
+        return h > 0
+
     def __str__(self) -> str:
         return dc_stringify(
             {
-                "t      (time scale)": self.t,
+                "t      (time scale)": self.T,
                 "I      (current)": self.current,
                 "E_L    (effective rest potential)": self.el,
                 "tau_w  (time scale ratio)": self.tau_w,
@@ -123,6 +131,7 @@ class AdEx(NamedTuple):
                 "V_peak (peak potential)": self.v_peak,
                 "V_r    (reset potential)": self.v_reset,
                 "b      (adaptation current offset)": self.w_b,
+                "W      (allows Lambert spikes)": self.allows_lambert(),
             }
         )
 
