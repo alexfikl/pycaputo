@@ -58,11 +58,5 @@ Caputo Derivative FODEs
 .. autoclass:: CaputoPECMethod
 .. autoclass:: CaputoModifiedPECEMethod
 
-Integrate and Fire FODEs
-========================
-
-.. autoclass:: CaputoIntegrateFireL1Method
-
 .. class:: Array
 
-   See :class:`pycaputo.utils.Array`.

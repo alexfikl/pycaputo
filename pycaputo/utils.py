@@ -48,6 +48,9 @@ else:
     #: Scalar type alias (generally a value convertible to a :class:`float`).
     Scalar: TypeAlias = Union[np.generic, Array]
 
+    class DataclassInstance:
+        ...
+
 
 class ScalarFunction(Protocol):
     """A generic callable that can be evaluated at :math:`x`.

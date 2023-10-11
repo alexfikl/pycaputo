@@ -75,3 +75,7 @@ References
     *Theory and numerical approximations of fractional integrals and derivatives*,
     Society for Industrial and Applied Mathematics, 2020.
 
+.. [Naud2008] R. Naud, N. Marcille, C. Clopath, W. Gerstner,
+    *Firing Patterns in the Adaptive Exponential Integrate-and-Fire Model*,
+    Biological Cybernetics, Vol. 99, pp. 335--347, 2008,
+    `DOI <https://doi.org/10.1007/s00422-008-0264-7>`__.

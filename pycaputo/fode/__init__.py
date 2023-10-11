@@ -32,7 +32,6 @@ from pycaputo.fode.history import (
     State,
     VariableProductIntegrationHistory,
 )
-from pycaputo.fode.integrate_and_fire import CaputoIntegrateFireL1Method
 from pycaputo.fode.product_integration import (
     CaputoProductIntegrationMethod,
     ProductIntegrationMethod,
@@ -47,7 +46,6 @@ __all__ = (
     "CaputoPredictorCorrectorMethod",
     "CaputoProductIntegrationMethod",
     "CaputoWeightedEulerMethod",
-    "CaputoIntegrateFireL1Method",
     "Event",
     "FixedSizeHistory",
     "FixedState",

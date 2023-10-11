@@ -46,3 +46,7 @@ Misc
 ----
 
 .. automodule:: pycaputo.utils
+
+.. class:: DataclassInstance
+
+

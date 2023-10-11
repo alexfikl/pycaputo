@@ -10,6 +10,7 @@ pycaputo documentation
     quadrature
     differentiation
     fode
+    integrate_fire
     misc
     references
     changelog
