@@ -285,6 +285,47 @@ def get_ad_ex_parameters(
     return AdEx.from_dimensional(AD_EX_PARAMS[name], alpha)
 
 
+def get_ad_ex_parameters_latex(alpha: float | tuple[float, float]) -> str:
+    from rich.box import Box
+    from rich.table import Table
+
+    box = Box("    \n  &\\\n    \n  &\\\n    \n    \n  &\\\n    \n")
+    t = Table(
+        *[
+            "Name",
+            "$E_L$",
+            "$a$",
+            r"$\tau_w$",
+            "$b$",
+            "$V_r$",
+            "$I$",
+        ],
+        box=box,
+        header_style=None,
+    )
+
+    for name, dim in AD_EX_PARAMS.items():
+        ad_ex = AdEx.from_dimensional(dim, alpha)
+        t.add_row(
+            *[
+                name,
+                f"{ad_ex.el:.3f}",
+                f"{ad_ex.a:.3f}",
+                f"{ad_ex.tau_w:.3f}",
+                f"{ad_ex.b:.3f}",
+                f"{ad_ex.v_reset:.3f}",
+                f"{ad_ex.current:.3f}",
+            ]
+        )
+
+    from rich.console import Console
+
+    c = Console()
+    c.print(t)
+
+    return r"\begin{tabular}{llllll}\toprule\n" + str(t) + r"\n"
+
+
 # }}}
 
 
@@ -382,39 +423,25 @@ class AdExModel:
 # }}}
 
 
-# {{{
+# {{{ Lambert W solver
 
 
-def get_lambert_time_step(ad_ex: AdEx) -> float | None:
-    """Approximate the time step using the Lambert W function.
-
-    :returns: *None* if the method cannot be used and the desired time step
-        update otherwise.
-    """
-    from math import gamma, sqrt
-
-    a, tau_w = ad_ex.a, ad_ex.tau_w
-    delta = 1 - 2 * tau_w - 4 * a * tau_w + tau_w**2
-    if delta <= 0.0:
-        return None
-
-    if a == -1.0:
-        hp = hm = -tau_w / (1 + tau_w)
-    else:
-        hp = (-1.0 - tau_w + sqrt(delta)) / (2 * (1 + a))
-        hm = (-1.0 - tau_w - sqrt(delta)) / (2 * (1 + a))
-
-    h = hp if hp >= 0.0 else (hm if hm >= 0 else None)
-    if h is None:
-        return h
-
-    alpha = max(*ad_ex.alpha)
-    return float((h / gamma(2 - alpha)) ** (1 / alpha))
+class _PotentialCoefficient(NamedTuple):
+    d0: float
+    d1: float
+    d2: float
 
 
-def ad_ex_solve(ad_ex: AdExModel, t: float, y0: Array, c: Array, r: Array) -> Array:
+class _AdaptationCoefficient(NamedTuple):
+    c0: float
+    c1: float
+
+
+def _evaluate_lambert_coefficients(
+    ad_ex: AdExModel, h: Array, r: Array
+) -> tuple[_PotentialCoefficient, _AdaptationCoefficient]:
     # NOTE: small rename to match write-up
-    hV, hw = c
+    hV, hw = h
     rV, rw = r
     _, _, I, el, tau_w, a, *_ = ad_ex.param  # noqa: E741
 
@@ -424,15 +451,45 @@ def ad_ex_solve(ad_ex: AdExModel, t: float, y0: Array, c: Array, r: Array) -> Ar
 
     # V coefficients: d0 V + d1 = d2 exp(V)
     d0 = 1 + hV * (1 + c0)
-    d1 = -hV * (I + el - c1) + rV
+    d1 = -hV * (I + el - c1) - rV
     d2 = hV
 
-    # solve
+    return _PotentialCoefficient(d0, d1, d2), _AdaptationCoefficient(c0, c1)
+
+
+# }}}
+
+
+# {{{ AdExIntegrateFireL1Method
+
+
+def ad_ex_solve(ad_ex: AdExModel, t: float, y0: Array, h: Array, r: Array) -> Array:
+    r"""Solve the implicit equation for the AdEx model.
+
+    This solve an implicit nonlinear equation of the form
+
+    .. math::
+
+        \mathbf{y} - \mathbf{h} \odot \mathbf{f}(t, \mathbf{y}) = \mathbf{r}
+
+    where :math:`\mathbf{f}` is given by the source term of the :class:`AdExModel`.
+    In that case, we can solve the equation explicitly, i.e. without an iterative
+    method, by using the Lambert W function.
+
+    This function can return complex results if the solution is out of range of
+    the Lambert W function. This can happen if the simulation becomes unstable
+    or it is close to a spike and the time step is too large.
+
+    See :func:`pycaputo.fode.solve` for an interative method based on the
+    :func:`scipy.optimize.root`.
+    """
+
     from scipy.special import lambertw
 
-    dstar = -d2 / d0 * np.exp(d1 / d0)
-    Vstar = -d1 / d0 - lambertw(dstar)
-    wstar = c0 * Vstar + c1
+    d, c = _evaluate_lambert_coefficients(ad_ex, h, r)
+    dstar = -d[2] / d[0] * np.exp(-d[1] / d[0])
+    Vstar = -d[1] / d[0] - lambertw(dstar)
+    wstar = c[0] * Vstar + c[1]
 
     return np.array([Vstar, wstar])
 

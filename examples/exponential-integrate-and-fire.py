@@ -18,7 +18,6 @@ from pycaputo.integrate_fire import (
     AdExIntegrateFireL1Method,
     AdExModel,
     get_ad_ex_parameters,
-    get_lambert_time_step,
 )
 from pycaputo.logging import get_logger
 
@@ -62,7 +61,7 @@ m = AdExIntegrateFireL1Method(
 
 logger.info("Dimensional variables:\n%s", pd)
 logger.info("Non-dimensional variables:\n%s", p)
-logger.info("Allows Lambert W spikes: %s", get_lambert_time_step(p) is not None)
+
 # }}}
 
 

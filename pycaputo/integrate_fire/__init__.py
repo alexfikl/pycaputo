@@ -7,7 +7,6 @@ from pycaputo.integrate_fire.ad_ex import (
     AdExIntegrateFireL1Method,
     AdExModel,
     get_ad_ex_parameters,
-    get_lambert_time_step,
 )
 from pycaputo.integrate_fire.base import CaputoIntegrateFireL1Method
 
@@ -18,5 +17,4 @@ __all__ = (
     "get_ad_ex_parameters",
     "AdExModel",
     "AdExIntegrateFireL1Method",
-    "get_lambert_time_step",
 )
