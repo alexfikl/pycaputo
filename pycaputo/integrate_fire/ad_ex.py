@@ -457,6 +457,36 @@ def _evaluate_lambert_coefficients(
     return _PotentialCoefficient(d0, d1, d2), _AdaptationCoefficient(c0, c1)
 
 
+def _find_maximum_time_lambert(ad_ex: AdExModel, t: float, r: Array) -> float:
+    from math import gamma
+
+    def func(tspike: float) -> float:
+        alpha = ad_ex.param.alpha
+        h = np.array(
+            [
+                gamma(2 - alpha[0]) * (tspike - t) ** alpha[0],
+                gamma(2 - alpha[1]) * (tspike - t) ** alpha[1],
+            ]
+        )
+
+        (d0, d1, d2), _ = _evaluate_lambert_coefficients(ad_ex, h, r)
+        return float(d2 / d0 * np.exp(-d1 / d0 + 1.0)) - 1.0
+
+    import scipy.optimize as so
+
+    try:
+        result = so.root_scalar(
+            f=func,
+            x0=1.0e-2,
+            bracket=[0.0, 0.5],
+        )
+        return float(result.root)
+    except ValueError:
+        # FIXME: what's a good return value here? the calling code should have
+        # a `dt = min(dt_min, t_min - t)` to handle any large values
+        return 0.5
+
+
 # }}}
 
 
@@ -480,7 +510,7 @@ def ad_ex_solve(ad_ex: AdExModel, t: float, y0: Array, h: Array, r: Array) -> Ar
     the Lambert W function. This can happen if the simulation becomes unstable
     or it is close to a spike and the time step is too large.
 
-    See :func:`pycaputo.fode.solve` for an interative method based on the
+    See :func:`pycaputo.fode.solve` for an interactive method based on the
     :func:`scipy.optimize.root`.
     """
 

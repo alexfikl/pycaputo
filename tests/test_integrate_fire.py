@@ -104,6 +104,64 @@ def test_ad_ex_lambert_arg(*, visualize: bool = True) -> None:
                 ax.plot([hm, hmin, hp], [func(hm), func(hmin), func(hp)], "ro")
 
 
+def test_ad_ex_lambert_limits(*, visualize: bool = True) -> None:
+    from math import gamma
+
+    from pycaputo.integrate_fire.ad_ex import (
+        AD_EX_PARAMS,
+        AdEx,
+        AdExModel,
+        _evaluate_lambert_coefficients,
+        _find_maximum_time_lambert,
+    )
+
+    alpha = (0.9, 0.4)
+    tn = 0.0
+    dt = 1.0e-2
+
+    def func(ad_ex: AdExModel, tspike: float, r: Array) -> float:
+        h = np.array(
+            [
+                gamma(2 - alpha[0]) * (tspike - tn) ** alpha[0],
+                gamma(2 - alpha[1]) * (tspike - tn) ** alpha[1],
+            ]
+        )
+
+        (d0, d1, d2), _ = _evaluate_lambert_coefficients(ad_ex, h, r)
+        return float(d2 / d0 * np.exp(-d1 / d0 + 1.0))
+
+    rng = np.random.default_rng(seed=42)
+
+    for name, dim in AD_EX_PARAMS.items():
+        param = AdEx.from_dimensional(dim, alpha)
+        ad_ex = AdExModel(param)
+
+        y0 = np.array([rng.uniform(param.v_reset, param.v_peak), rng.uniform()])
+        r = np.array([dt**a / gamma(1 - a) * yi for a, yi in zip(alpha, y0)])
+
+        tspike = tn + np.logspace(-10.0, -0.3, 256)
+        f = np.array([func(ad_ex, t, r) for t in tspike])
+        assert np.any(f < 1.0)
+
+        imax = np.argmax(f > 1.0) - 1
+        logger.info("max tspike: t %.12e f %.12e", tspike[imax - 1], f[imax - 1])
+
+        tspike_opt = _find_maximum_time_lambert(ad_ex, tn, r)
+        logger.info("opt tspike: %.12e", tspike_opt)
+        assert tspike[imax - 1] <= tspike_opt <= 1.0, tspike_opt
+
+        if visualize:
+            from pycaputo.utils import figure
+
+            with figure(dirname / f"test_ad_ex_lambert_limits_{name}") as fig:
+                ax = fig.gca()
+
+                ax.plot(tspike, f)
+                ax.plot(tspike_opt, func(ad_ex, tspike_opt, r), "ro")
+                ax.axhline(0.0, color="k", ls="--")
+                ax.axhline(1.0, color="k", ls="--")
+
+
 # }}}
 
 
