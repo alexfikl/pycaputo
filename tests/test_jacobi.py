@@ -304,14 +304,7 @@ def test_jacobi_caputo_derivative(*, visualize: bool = False) -> None:
         # D7
         4
         * np.sqrt(1 + p.x)
-        * (
-            208 * p.x**5
-            - 104 * p.x**4
-            - 120 * p.x**3
-            + 34 * p.x**2
-            + 22 * p.x
-            - 9
-        )
+        * (208 * p.x**5 - 104 * p.x**4 - 120 * p.x**3 + 34 * p.x**2 + 22 * p.x - 9)
         / gamma(m - alpha),
     ]
 

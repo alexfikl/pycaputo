@@ -404,14 +404,28 @@ def advance(
     history: History,
     t: float,
     y: Array,
-) -> Array:
+) -> tuple[float, Array]:
     """Advance the solution *y* by to the time *t*.
 
-    This function takes ``(history[t_s, ... t_n], t_{n + 1}, y_n)`` and is
-    expected to update the history with values at :math:`t_{n + 1}`. The time
-    steps can be recalculated from the history if necessary.
+    This function takes ``(history[t_s, ... t_n], t_{n + 1}, y_n)`` with the
+    history up to the time :math:`t_n` and the next time step :math:`t_{n + 1}`.
+    If it cannot update the values to :math:`t_{n + 1}`, the returned time will
+    be different than the input *t* and will denote the next time step always
+    satisfying :math:`t_{n + 1} > t_n`. The time steps can be recalculated from
+    the history if necessary.
 
-    :returns: value of :math:`y_{n + 1}` at time :math:`t_{n + 1}`.
+    The implementation of this advancing step is expected to also update the
+    *history* with the returned values. In general, multiple values can be added
+    to the history, if this is appropriate for the algorithm.
+
+    :arg history: the history of all previous time steps.
+    :arg t: a tentative value for :math:`t_{n + 1}` at which the advanced
+        solution should be evaluated.
+    :arg y: the previous solution value, i.e. :math:`y_n` at :math:`t_n`. This
+        value is also part of the history and is only given as a convenience.
+    :returns: a tuple of :math:`(t_{n + 1}, y_{n + 1})` where :math:`y_{n + 1}`
+        is the solution at the time :math:`t_{n + 1}`. This value is returned
+        for convenience, as it was also added to the *history*.
     """
     raise NotImplementedError(f"'advance' functionality for '{type(m).__name__}'")
 

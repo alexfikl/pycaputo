@@ -55,7 +55,7 @@ def _evolve_pi(
         history = VariableProductIntegrationHistory()
 
     # NOTE: called to update the history
-    y = advance(m, history, t, y)
+    t, y = advance(m, history, t, y)
 
     yield StepCompleted(t=t, iteration=n, dt=0.0, y=y)
 
@@ -82,7 +82,7 @@ def _evolve_pi(
 
         # advance
         try:
-            y = advance(m, history, t, y)
+            t, y = advance(m, history, t, y)
         except Exception as exc:
             logger.error("Failed to advance solution.", exc_info=exc)
             if raise_on_fail:

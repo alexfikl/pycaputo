@@ -67,11 +67,11 @@ def _advance_caputo_forward_euler(
     history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
-) -> Array:
+) -> tuple[float, Array]:
     history.ts.append(t)
     if not history:
         history.append(t, m.source(t, y))
-        return y
+        return t, y
 
     alpha = m.derivative_order
 
@@ -80,7 +80,7 @@ def _advance_caputo_forward_euler(
     dy = _update_caputo_forward_euler(dy, history, alpha, len(history))
 
     history.append(t, m.source(t, dy))
-    return dy
+    return t, dy
 
 
 # }}}
@@ -258,11 +258,11 @@ def _advance_caputo_weighted_euler(
     history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
-) -> Array:
+) -> tuple[float, Array]:
     history.ts.append(t)
     if not history:
         history.append(t, m.source(t, y))
-        return y
+        return t, y
 
     n = len(history)
     alpha = m.derivative_order
@@ -279,7 +279,7 @@ def _advance_caputo_weighted_euler(
         ynext = fnext
 
     history.append(t, m.source(t, ynext))
-    return ynext
+    return t, ynext
 
 
 # }}}
@@ -437,11 +437,11 @@ def _advance_caputo_predictor_corrector(
     history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
-) -> Array:
+) -> tuple[float, Array]:
     history.ts.append(t)
     if not history:
         history.append(t, m.source(t, y))
-        return y
+        return t, y
 
     (alpha,) = m.derivative_order
 
@@ -466,7 +466,7 @@ def _advance_caputo_predictor_corrector(
     f = fp if isinstance(m, CaputoPECMethod) else m.source(t, ynext)
     history.append(t, f)
 
-    return ynext
+    return t, ynext
 
 
 # }}}
@@ -496,11 +496,11 @@ def _advance_caputo_modified_pece(
     history: VariableProductIntegrationHistory,
     t: float,
     y: Array,
-) -> Array:
+) -> tuple[float, Array]:
     history.ts.append(t)
     if not history:
         history.append(t, m.source(t, y))
-        return y
+        return t, y
 
     from math import gamma
 
@@ -565,7 +565,7 @@ def _advance_caputo_modified_pece(
     ynext = yp
     history.append(t, m.source(t, ynext))
 
-    return ynext
+    return t, ynext
 
 
 # }}}
