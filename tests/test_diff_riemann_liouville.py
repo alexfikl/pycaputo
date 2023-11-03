@@ -71,7 +71,7 @@ def test_riemann_liouville_lmethods(
     from pycaputo.differentiation import make_method_from_name
     from pycaputo.grid import make_points_from_name
 
-    if name in ("RiemannLiouvilleL2Method", "RiemannLiouvilleL2CMethod"):
+    if name in {"RiemannLiouvilleL2Method", "RiemannLiouvilleL2CMethod"}:
         alpha += 1
 
     from pycaputo.utils import EOCRecorder, savefig

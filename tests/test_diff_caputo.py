@@ -71,7 +71,7 @@ def test_caputo_lmethods(
     from pycaputo.differentiation import make_method_from_name
     from pycaputo.grid import make_points_from_name
 
-    if name in ("CaputoL2Method", "CaputoL2CMethod"):
+    if name in {"CaputoL2Method", "CaputoL2CMethod"}:
         alpha += 1
 
     from pycaputo.utils import EOCRecorder, savefig
@@ -303,7 +303,7 @@ def test_caputo_vs_differint(
 
     from pycaputo.differentiation import CaputoDerivativeMethod, make_method_from_name
 
-    if name in ("CaputoL2Method", "CaputoL2CMethod"):
+    if name in {"CaputoL2Method", "CaputoL2CMethod"}:
         alpha += 1
 
     meth = make_method_from_name(name, alpha)

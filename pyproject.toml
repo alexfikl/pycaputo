@@ -75,6 +75,7 @@ target-version = ['py39', 'py310', 'py311']
 exclude='\.eggs|\.git|\.mypy_cache|build|dist|\.pytest_cache|\.pytype'
 
 [tool.ruff]
+preview = true
 target-version = "py38"
 line-length = 88
 select = [
@@ -98,6 +99,7 @@ select = [
     "W",        # flake8
 ]
 ignore = [
+    "E203",     # whitespace-before-punctuation
     "E402",     # module-import-not-at-top-of-file
     "I001",     # unsorted-imports
     "N806",     # non-lowercase-variable-in-function
@@ -105,6 +107,7 @@ ignore = [
     "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
+    "PLR6301",  # no-self-use
     "PLR2004",  # magic-value-comparison
     "S101",     # assert
     "S102",     # exec-builtin
