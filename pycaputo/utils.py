@@ -383,7 +383,7 @@ def figure(filename: PathLike | None = None, **kwargs: Any) -> Iterator[Any]:
         if filename is not None:
             savefig(fig, filename, **kwargs)
         else:
-            mp.show()  # type: ignore[no-untyped-call]
+            mp.show()
 
         mp.close(fig)
 
