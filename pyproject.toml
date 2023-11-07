@@ -1,3 +1,10 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools>=42",
+    "wheel",
+]
+
 [project]
 name = "pycaputo"
 version = "0.1"
@@ -21,6 +28,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -56,13 +64,6 @@ vis = [
 [project.urls]
 Documentation = "https://pycaputo.readthedocs.io"
 Repository = "https://github.com/alexfikl/pycaputo"
-
-[build-system]
-build-backend = "setuptools.build_meta"
-requires = [
-    "setuptools>=42",
-    "wheel",
-]
 
 [tool.setuptools]
 packages = ["pycaputo"]

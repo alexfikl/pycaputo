@@ -35,6 +35,7 @@ _output
 build
 latex.out
 __pycache__
+dist
 
 # binary
 *.h5
