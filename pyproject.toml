@@ -124,6 +124,13 @@ multiline-quotes = "double"
 [tool.isort]
 profile = "black"
 
+[tool.check-manifest]
+ignore = [
+    "*.yml",
+    "*.yaml",
+    ".ci/*",
+]
+
 [tool.mypy]
 strict = true
 hide_error_codes = false
@@ -138,10 +145,3 @@ module = [
     "scienceplots.*",
 ]
 ignore_missing_imports = true
-
-[tool.check-manifest]
-ignore = [
-    "*.yml",
-    "*.yaml",
-    ".ci/*",
-]
