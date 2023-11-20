@@ -373,10 +373,26 @@ def set_recommended_matplotlib(
 
 
 @contextmanager
-def figure(filename: PathLike | None = None, **kwargs: Any) -> Iterator[Any]:
+def figure(
+    filename: PathLike | None = None,
+    nrows: int = 1,
+    ncols: int = 1,
+    *,
+    projection: str | None = None,
+    figsize: tuple[float, float] | None = None,
+    **kwargs: Any,
+) -> Iterator[Any]:
     import matplotlib.pyplot as mp
 
     fig = mp.figure()
+    for i in range(nrows * ncols):
+        fig.add_subplot(nrows, ncols, i + 1, projection=projection)
+
+    # FIXME: get size of one figure
+    if figsize is None:
+        figsize = (8.0 * ncols, 8.0 * nrows)
+    fig.set_size_inches(*figsize)
+
     try:
         yield fig
     finally:

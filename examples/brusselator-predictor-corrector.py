@@ -24,7 +24,8 @@ def brusselator(t: float, y: Array, *, a: float, mu: float) -> Array:
 
 # {{{ solve
 
-from pycaputo.fode import CaputoPECEMethod, FixedTimeSpan
+from pycaputo.controller import make_fixed_controller
+from pycaputo.fode import CaputoPECEMethod
 
 alpha = 0.8
 a = 1.0
@@ -33,7 +34,7 @@ y0 = np.array([1.0, 2.0])
 
 stepper = CaputoPECEMethod(
     derivative_order=(alpha, alpha),
-    tspan=FixedTimeSpan.from_data(1.0e-2, tstart=0.0, tfinal=50.0),
+    control=make_fixed_controller(1.0e-2, tstart=0.0, tfinal=50.0),
     source=partial(brusselator, a=a, mu=mu),
     y0=(y0,),
     corrector_iterations=1,

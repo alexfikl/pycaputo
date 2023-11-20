@@ -13,16 +13,14 @@ from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.fode.base import (
     Event,
     FractionalDifferentialEquationMethod,
-    StepEstimateError,
     evolve,
     make_initial_condition,
 )
 from pycaputo.history import History
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, CallbackFunction
+from pycaputo.utils import Array
 
 logger = get_logger(__name__)
-
 
 # {{{ ProductIntegrationMethod
 
@@ -39,67 +37,98 @@ class ProductIntegrationMethod(FractionalDifferentialEquationMethod):
 def _evolve_pi(
     m: FractionalDifferentialEquationMethod,
     *,
-    callback: CallbackFunction | None = None,
     history: History | None = None,
-    raise_on_fail: bool = False,
+    dt: float | None = None,
 ) -> Iterator[Event]:
-    from pycaputo.fode.base import StepCompleted, StepFailed, advance
-
-    n = 0
-    t = m.tspan.tstart
-    y = make_initial_condition(m)
-
     if history is None:
         from pycaputo.history import VariableProductIntegrationHistory
 
+        y = m.y0[0]
         history = VariableProductIntegrationHistory.empty(
-            m.tspan.nsteps, m.y0[0].shape, m.y0[0].dtype
+            n=None, shape=y.shape, dtype=y.dtype
         )
 
-    # NOTE: called to update the history
-    t, y = advance(m, history, t, y)
+    from pycaputo.controller import (
+        StepEstimateError,
+        estimate_initial_time_step,
+        evaluate_error_estimate,
+        evaluate_timestep_accept,
+        evaluate_timestep_factor,
+        evaluate_timestep_reject,
+    )
+    from pycaputo.fode.base import (
+        AdvanceFailedError,
+        StepAccepted,
+        StepFailed,
+        StepRejected,
+        advance,
+    )
 
-    yield StepCompleted(t=t, iteration=n, dt=0.0, y=y)
+    # initialize
+    c = m.control
+    n = 0
+    t = c.tstart
 
-    while True:
-        if callback is not None and callback(t, y):
-            break
+    # determine the initial condition
+    y = yprev = make_initial_condition(m)
+    history.append(t, m.source(t, y))
 
-        if m.tspan.finished(n, t):
-            break
+    # determine initial time step
+    if dt is None:
+        dt = estimate_initial_time_step(
+            t, y, m.source, m.smallest_derivative_order, trunc=m.order + 1
+        )
 
-        # next time step
+    yield StepAccepted(
+        t=t, iteration=n, dt=dt, y=y, eest=0.0, q=1.0, trunc=np.zeros_like(y)
+    )
+
+    while not c.finished(n, t):
+        # evolve solution with current estimate of the time step
         try:
-            dt = m.tspan.get_next_time_step(n, t, y)
-        except StepEstimateError as exc:
-            logger.error("Failed to predict time step.", exc_info=exc)
-            if raise_on_fail:
-                raise exc
-
-            yield StepFailed(t=t, iteration=n, reason=str(exc))
-
-        # next iteration
-        n += 1
-        t += dt
-
-        # advance
-        try:
-            t, y = advance(m, history, t, y)
-        except Exception as exc:
+            y, trunc, h = advance(m, history, yprev, dt)
+        except AdvanceFailedError as exc:
             logger.error("Failed to advance solution.", exc_info=exc)
-            if raise_on_fail:
-                raise exc
+            yield StepFailed(t=t, iteration=n, reason="Failed to advance solution")
+            continue
 
-            yield StepFailed(t=t, iteration=n, reason=str(exc))
+        eest = evaluate_error_estimate(c, m, trunc, y, yprev)
+        if not np.isfinite(eest):
+            logger.error("Failed to update solution: %s.", y)
+            yield StepFailed(t=t, iteration=n, reason="Solution is not finite")
+            continue
 
-        if not np.all(np.isfinite(y)):
-            logger.error("Failed to update solution: %s", y)
-            if raise_on_fail:
-                raise ValueError(f"Predicted solution is not finite: {y}")
+        # determine the next time step
+        accepted = eest <= 1.0
+        try:
+            q = evaluate_timestep_factor(c, m, eest)
 
-            yield StepFailed(t=t, iteration=n, reason="solution is not finite")
+            # if accepted move to the next time step
+            tmp_state = {"t": t, "n": n, "y": yprev}
+            if accepted:
+                dtnext = evaluate_timestep_accept(c, m, q, dt, tmp_state)
+            else:
+                dtnext = evaluate_timestep_reject(c, m, q, dt, tmp_state)
+        except StepEstimateError as exc:
+            accepted = False
+            logger.error("Failed to estimate timestep.", exc_info=exc)
+            yield StepFailed(t=t, iteration=n, reason="Failed to estimate timestep")
+
+        if accepted:
+            n += 1
+            t += dt
+            yprev = y
+            history.append(t, h)
+
+            yield StepAccepted(
+                t=t, iteration=n, dt=dt, y=y, eest=eest, q=q, trunc=trunc
+            )
         else:
-            yield StepCompleted(t=t, iteration=n, dt=dt, y=y)
+            yield StepRejected(
+                t=t, iteration=n, dt=dt, y=y, eest=eest, q=q, trunc=trunc
+            )
+
+        dt = dtnext
 
 
 # }}}

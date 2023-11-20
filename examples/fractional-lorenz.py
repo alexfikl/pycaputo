@@ -36,7 +36,8 @@ def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> 
 
 # {{{ solve
 
-from pycaputo.fode import CaputoWeightedEulerMethod, FixedTimeSpan
+from pycaputo.controller import make_fixed_controller
+from pycaputo.fode import CaputoWeightedEulerMethod
 
 # NOTE: order example taken from https://doi.org/10.1016/j.chaos.2009.03.016
 alpha = (0.985, 0.99, 0.99)
@@ -49,7 +50,7 @@ y0 = np.array([-2.0, 1.0, -1.0])
 
 stepper = CaputoWeightedEulerMethod(
     derivative_order=alpha,
-    tspan=FixedTimeSpan.from_data(1.0e-2, tstart=0.0, tfinal=75.0),
+    control=make_fixed_controller(1.0e-2, tstart=0.0, tfinal=75.0),
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
     source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
     y0=(y0,),

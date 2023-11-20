@@ -31,10 +31,6 @@ References
     International Journal of Computer Mathematics, Vol. 87, pp. 2281--2290, 2010,
     `DOI <https://doi.org/10.1080/00207160802624331>`__.
 
-.. [Baleanu2012] D. Baleanu, K. Diethelm, E. Scalas, J. J. Trujillo,
-    *Fractional Calculus - Models and Numerical Methods*,
-    World Scientific, 2012.
-
 .. [Garrappa2015] R. Garrappa,
     *Numerical Evaluation of Two and Three Parameter Mittag-Leffler Functions*,
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
@@ -75,3 +71,15 @@ References
     *Theory and numerical approximations of fractional integrals and derivatives*,
     Society for Industrial and Applied Mathematics, 2020.
 
+.. [Hairer2008] E. Hairer, S. P. Nørsett, G. Wanner,
+    *Solving Ordinary Differential Equations I: Nonstiff Problems*,
+    Springer, 2008.
+
+.. [Hairer2010] E. Hairer, G. Wanner,
+    *Solving Ordinary Differential Equations II - Stiff and Differential-Algebraic Problems*,
+    Springer, 2010.
+
+.. [Jannelli2020] A. Jannelli,
+    *A Novel Adaptive Procedure for Solving Fractional Differential Equations*,
+    Journal of Computational Science, Vol. 47, pp. 101220--101220, 2020,
+    `DOI <https://doi.org/10.1016/j.jocs.2020.101220>`__.

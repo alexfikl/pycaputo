@@ -88,7 +88,11 @@ def make_stretched_points(
 
 
 def make_stynes_points(
-    n: int, a: float = 0.0, b: float = 1.0, gamma: float = 2.0
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    r: float = 3.0,
+    alpha: float | None = None,
 ) -> Points:
     r"""Construct a graded set of points on :math:`[a, b]`.
 
@@ -97,19 +101,26 @@ def make_stynes_points(
 
     .. math::
 
-        \phi(\xi) = \xi^\gamma,
+        \phi(\xi) = \xi^r,
 
-    where the optimal grading :math:`\gamma` is :math:`(2 - \alpha) / \alpha`.
+    where the optimal grading :math:`r` is :math:`(2 - \alpha) / \alpha`.
     Note that, according to [Stynes2017]_, this grading is optimal for the L1
-    method.
+    method, but could be beneficial for other methods as well.
 
     :arg n: number of points in :math:`[a, b]`.
-    :arg gamma: mesh grading -- a larger :math:`\gamma` leads to more clustering
+    :arg alpha: order of the fractional operator. The order is used to choose an
+        optimal grading *r* according to [Stynes2017]_.
+    :arg r: mesh grading -- a larger :math:`r` leads to more clustering
         of points near the origin :math:`a`.
     """
+    if alpha is not None:
+        if 0.0 < alpha <= 1.0:
+            r = (2 - alpha) / alpha
+        else:
+            raise ValueError("Grading estimate is only valid for 'alpha' in (0, 1)")
 
     x = np.linspace(0.0, 1.0, n)
-    return Points(a=a, b=b, x=a + (b - a) * x**gamma)
+    return Points(a=a, b=b, x=a + (b - a) * x**r)
 
 
 # }}}

@@ -2,15 +2,14 @@
 # SPDX-License-Identifier: MIT
 
 from pycaputo.fode.base import (
+    AdvanceFailedError,
+    AdvanceResult,
     Event,
-    FixedTimeSpan,
     FractionalDifferentialEquationMethod,
-    GradedTimeSpan,
-    LipschitzTimeSpan,
+    StepAccepted,
     StepCompleted,
-    StepEstimateError,
     StepFailed,
-    TimeSpan,
+    StepRejected,
     advance,
     evolve,
     make_initial_condition,
@@ -29,6 +28,8 @@ from pycaputo.fode.product_integration import (
 )
 
 __all__ = (
+    "AdvanceFailedError",
+    "AdvanceResult",
     "CaputoDifferentialEquationMethod",
     "CaputoForwardEulerMethod",
     "CaputoModifiedPECEMethod",
@@ -39,14 +40,12 @@ __all__ = (
     "CaputoWeightedEulerMethod",
     "Event",
     "FractionalDifferentialEquationMethod",
-    "StepEstimateError",
-    "TimeSpan",
-    "FixedTimeSpan",
-    "GradedTimeSpan",
-    "LipschitzTimeSpan",
     "ProductIntegrationMethod",
+    "StepAccepted",
     "StepCompleted",
+    "StepEstimateError",
     "StepFailed",
+    "StepRejected",
     "advance",
     "evolve",
     "make_initial_condition",

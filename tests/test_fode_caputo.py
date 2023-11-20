@@ -69,12 +69,13 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 
 
 def test_graded_time_span() -> None:
-    from pycaputo.fode import GradedTimeSpan
+    from pycaputo.controller import evaluate_timestep_accept, make_graded_controller
 
     nsteps = 100
     tstart, tfinal = (-1.5, 3.0)
     r = 3
-    tspan = GradedTimeSpan(tstart, tfinal, nsteps=nsteps, r=r)
+    control = make_graded_controller(tstart=tstart, tfinal=tfinal, nsteps=nsteps, r=r)
+    m = fode_factory(fode.CaputoForwardEulerMethod, wrap=False)(0.5, nsteps)
 
     n = np.arange(nsteps)
     t_ref = tstart + (n / nsteps) ** r * (tfinal - tstart)
@@ -82,9 +83,12 @@ def test_graded_time_span() -> None:
     t = np.empty_like(t_ref)
     dummy = np.empty(3)
 
+    dt = 0.0
     t[0] = tstart
     for i in range(1, nsteps):
-        dt = tspan.get_next_time_step(i - 1, t[i - 1], dummy)
+        dt = evaluate_timestep_accept(
+            control, m, 1.0, dt, {"n": i - 1, "t": t[i - 1], "y": dummy}
+        )
         t[i] = t[i - 1] + dt
 
     error = la.norm(t - t_ref) / la.norm(t_ref)
@@ -99,7 +103,10 @@ def test_graded_time_span() -> None:
 
 
 def fode_factory(
-    cls: type[fode.FractionalDifferentialEquationMethod], **kwargs: Any
+    cls: type[fode.FractionalDifferentialEquationMethod],
+    *,
+    wrap: bool = True,
+    **kwargs: Any,
 ) -> Any:
     nterms = kwargs.pop("nterms", 1)
     y0 = np.concatenate([garrappa2009_solution(0.0) for _ in range(nterms)])
@@ -133,15 +140,20 @@ def fode_factory(
         if has_source_jac:
             kwargs["source_jac"] = partial(source_jac, alpha=alpha)
 
+        from pycaputo.controller import make_fixed_controller
+
         return cls(
             derivative_order=alpha,
-            tspan=fode.FixedTimeSpan.from_data(dt, tstart=tspan[0], tfinal=tspan[1]),
+            control=make_fixed_controller(dt, tstart=tspan[0], tfinal=tspan[1]),
             source=partial(source, alpha=alpha),
             y0=(y0,),
             **kwargs,
         )
 
-    return pytest.param(wrapper, id=cls.__name__)
+    if wrap:
+        return pytest.param(wrapper, id=cls.__name__)
+    else:
+        return wrapper
 
 
 @pytest.mark.parametrize(
@@ -183,7 +195,7 @@ def test_caputo_fode(
         with BlockTimer(name=m.name) as bt:
             ts = []
             ys = []
-            for event in evolve(m, raise_on_fail=True):
+            for event in evolve(m):
                 if isinstance(event, StepFailed):
                     raise ValueError("Step update failed")
                 elif isinstance(event, StepCompleted):
