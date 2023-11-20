@@ -110,6 +110,7 @@ ignore = [
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
     "PLR0914",  # too-many-locals
+    "PLR0915",  # too-many-statements
     "PLR0917",  # too-many-positional
     "PLR6301",  # no-self-use
     "PLR2004",  # magic-value-comparison

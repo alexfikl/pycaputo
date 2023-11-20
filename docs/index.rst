@@ -10,6 +10,7 @@ pycaputo documentation
     quadrature
     differentiation
     history
+    controllers
     fode
     misc
     references
