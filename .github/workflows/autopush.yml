@@ -1,24 +1,24 @@
-name: Gitlab mirror
+name: Gitlab Mirror
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   autopush:
-    name: Automatic push to gitlab.dev.info.ro
+    name: Automatic Push to gitlab.dev.info.uvt.ro
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Main script
+    - name: Main Script
       run: |
         mkdir ~/.ssh
-        echo -e 'Host gitlab.dev.info.ro\n\tStrictHostKeyChecking no\n' >> ~/.ssh/config
+        echo -e 'Host gitlab.dev.info.uvt.ro\n\tStrictHostKeyChecking no\n' >> ~/.ssh/config
         eval $(ssh-agent)
         echo "${GITLAB_DEV_INFO_AUTOPUSH_KEY}" | ssh-add -
 
         git fetch --unshallow
-        git push "git@gitlab.dev.info.ro:alexandru.fikl/$(basename $GITHUB_REPOSITORY).git" main
+        git push "git@gitlab.dev.info.uvt.ro:alexandru.fikl/$(basename $GITHUB_REPOSITORY).git" main
       env:
         GITLAB_DEV_INFO_AUTOPUSH_KEY: ${{ secrets.GITLAB_DEV_INFO_AUTOPUSH_KEY }}
 
