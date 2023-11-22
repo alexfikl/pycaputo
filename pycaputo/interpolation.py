@@ -90,7 +90,9 @@ def determine_truncation_error(offsets: Array, x: float, h: float = 1.0) -> floa
 
 
 def wandering(
-    n: int, wanderer: int | bool | float = 1.0, landscape: int | bool | float = 0.0
+    n: int,
+    wanderer: int | bool | float = 1.0,  # noqa: FBT001
+    landscape: int | bool | float = 0.0,  # noqa: FBT001
 ) -> Iterator[Array]:
     for i in range(n):
         yield np.array([landscape] * i + [wanderer] + [landscape] * (n - i - 1))

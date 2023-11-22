@@ -104,13 +104,12 @@ def _ml_quad_k(
 
     quad = partial(quad, epsabs=eps, epsrel=eps, limit=1000, complex_func=True)
     if a < abs(z) < b:
-        rl, errl = quad(K, a, abs(z) - delta)
-        rr, errr = quad(K, abs(z) + delta, b)
+        rl, _ = quad(K, a, abs(z) - delta)
+        rr, _ = quad(K, abs(z) + delta, b)
 
         r = rl + rr
-        error = errl + errr
     else:
-        r, error = quad(K, a, b)
+        r, _ = quad(K, a, b)
 
     return complex(r)
 
@@ -133,7 +132,7 @@ def _ml_quad_p(
 
     from scipy.integrate import quad
 
-    r, error = quad(
+    r, _ = quad(
         P,
         a,
         b,
