@@ -10,12 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - run: |
-        mkdir ~/.ssh && echo -e 'Host gitlab.dev.info.ro\n\tStrictHostKeyChecking no\n' >> ~/.ssh/config
-        eval $(ssh-agent) && echo "${GITLAB_DEV_INFO_AUTOPUSH_KEY}" | ssh-add -
+    - name: Main script
+      run: |
+        mkdir ~/.ssh
+        echo -e 'Host gitlab.dev.info.ro\n\tStrictHostKeyChecking no\n' >> ~/.ssh/config
+        eval $(ssh-agent)
+        echo "${GITLAB_DEV_INFO_AUTOPUSH_KEY}" | ssh-add -
+
         git fetch --unshallow
         git push "git@gitlab.dev.info.ro:alexandru.fikl/$(basename $GITHUB_REPOSITORY).git" main
-    env:
-      GITLAB_DEV_INFO_AUTOPUSH_KEY: ${{ secrets.GITLAB_DEV_INFO_AUTOPUSH_KEY }}
+      env:
+        GITLAB_DEV_INFO_AUTOPUSH_KEY: ${{ secrets.GITLAB_DEV_INFO_AUTOPUSH_KEY }}
 
 # vim: set ts=2 sw=2 et:
