@@ -1,0 +1,28 @@
+image: 'python:3.12'
+
+before_script:
+  - echo $CI_PROJECT_DIR
+  - python --version
+  - free -h
+  - python -m venv --system-site-packages vendor/python
+  - source vendor/python/bin/activate
+  - make pip-install
+
+ruff:
+  script: |
+    make ruff
+
+mypy:
+  script: |
+    make mypy
+
+pytest:
+  parallel:
+    matrix:
+      - python_version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+  script: |
+    make pytest
+
+examples:
+  script: |
+    make examples
