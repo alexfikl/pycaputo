@@ -26,6 +26,16 @@ here.
     Journal of Vibration and Acoustics, Vol. 124, pp. 321--324, 2002,
     `DOI <https://doi.org/10.1115/1.1448322>`__.
 
+.. [Diethelm2005] K. Diethelm, N. J. Ford, A. D. Freed, Y. Luchko,
+    *Algorithms for the Fractional Calculus: A Selection of Numerical Methods*,
+    Computer Methods in Applied Mechanics and Engineering, Vol. 194, pp. 743-773, 2005,
+    `DOI <https://doi.org/10.1016/j.cma.2004.06.006>`__.
+
+.. [Diethelm2006] K. Diethelm, J. M. Ford, N. J. Ford, M. Weilbeer,
+    *Pitfalls in Fast Numerical Solvers for Fractional Differential Equations*,
+    Journal of Computational and Applied Mathematics, Vol. 186, pp. 482--503, 2006,
+    `DOI <https://doi.org/10.1016/j.cam.2005.03.023>`__.
+
 .. [Diethelm2008] K. Diethelm,
     *An Investigation of Some Nonclassical Methods for the Numerical Approximation of Caputo-Type Fractional Derivatives*,
     Numerical Algorithms, Vol. 47, pp. 361--390, 2008,
