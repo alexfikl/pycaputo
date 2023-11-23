@@ -27,6 +27,11 @@ Literature
     Computer Methods in Applied Mechanics and Engineering, Vol. 194, pp. 743-773, 2005,
     `DOI <https://doi.org/10.1016/j.cma.2004.06.006>`__.
 
+.. [Diethelm2006] K. Diethelm, J. M. Ford, N. J. Ford, M. Weilbeer,
+    *Pitfalls in Fast Numerical Solvers for Fractional Differential Equations*,
+    Journal of Computational and Applied Mathematics, Vol. 186, pp. 482--503, 2006,
+    `DOI <https://doi.org/10.1016/j.cam.2005.03.023>`__.
+
 .. [Diethelm2008] K. Diethelm,
     *An Investigation of Some Nonclassical Methods for the Numerical Approximation of Caputo-Type Fractional Derivatives*,
     Numerical Algorithms, Vol. 47, pp. 361--390, 2008,
