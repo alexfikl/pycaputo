@@ -14,7 +14,7 @@ cycler==0.12.1
     # via matplotlib
 differint==1.0.0
     # via pycaputo (pyproject.toml)
-fonttools==4.45.0
+fonttools==4.45.1
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
@@ -26,7 +26,7 @@ matplotlib==3.8.2
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.7.0
+mypy==1.7.1
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
@@ -55,7 +55,7 @@ pygments==2.17.2
     # via rich
 pyparsing==3.1.1
     # via matplotlib
-pyproject-fmt==1.5.1
+pyproject-fmt==1.5.2
     # via pycaputo (pyproject.toml)
 pyproject-hooks==1.0.0
     # via build
@@ -79,7 +79,7 @@ typing-extensions==4.8.0
     # via
     #   mypy
     #   pycaputo (pyproject.toml)
-wheel==0.41.3
+wheel==0.42.0
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:
