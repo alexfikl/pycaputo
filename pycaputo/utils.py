@@ -52,7 +52,7 @@ class ScalarFunction(Protocol):
     .. automethod:: __call__
     """
 
-    def __call__(self, x: Array) -> Array:
+    def __call__(self, x: Array, /) -> Array:
         """
         :arg x: a scalar or array at which to evaluate the function.
         """
@@ -65,7 +65,7 @@ class StateFunction(Protocol):
     .. automethod:: __call__
     """
 
-    def __call__(self, t: float, y: Array) -> Array:
+    def __call__(self, t: float, y: Array, /) -> Array:
         """
         :arg t: time at which to evaluate the function.
         :arg y: state vector value at which to evaluate the function.
@@ -79,7 +79,7 @@ class ScalarStateFunction(Protocol):
     .. automethod:: __call__
     """
 
-    def __call__(self, t: float, y: Array) -> float:
+    def __call__(self, t: float, y: Array, /) -> float:
         """
         :arg t: time at which to evaluate the function.
         :arg y: state vector value at which to evaluate the function.
@@ -93,7 +93,7 @@ class CallbackFunction(Protocol):
     .. automethod:: __call__
     """
 
-    def __call__(self, t: float, y: Array) -> bool:
+    def __call__(self, t: float, y: Array, /) -> bool:
         """
         :arg t: time at which to evaluate the function.
         :arg y: state vector value at which to evaluate the function.
@@ -111,7 +111,7 @@ class DifferentiableScalarFunction(Protocol):
     cases.
     """
 
-    def __call__(self, x: Array, d: int = 0) -> Array:
+    def __call__(self, x: Array, /, d: int = 0) -> Array:
         """Evaluate the function or any of its derivatives.
 
         :arg x: a scalar or array at which to evaluate the function.
