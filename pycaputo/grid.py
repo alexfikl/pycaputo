@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 
@@ -28,10 +28,23 @@ class Points:
     #: The array of points.
     x: Array
 
+    def __len__(self) -> int:
+        return len(self.x)
+
     @property
-    def n(self) -> int:
-        """Number of points in the collection."""
+    def dtype(self) -> "np.dtype[Any]":
+        """The :class:`numpy.dtype` of the points in the set."""
+        return np.dtype(self.x.dtype)
+
+    @property
+    def size(self) -> int:
+        """The number of points in the set."""
         return self.x.size
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        """The shape of the points array in the set."""
+        return self.x.shape
 
     @cached_property
     def dx(self) -> Array:
@@ -42,6 +55,12 @@ class Points:
     def xm(self) -> Array:
         """Array of midpoints."""
         return np.array(self.x[1:] + self.x[:-1]) / 2
+
+    def translate(self, a: float, b: float) -> Points:
+        """Linearly translate the set of points to the new interval :math:`[a, b]`."""
+        # translate from [a', b'] to [0, 1] to [a, b]
+        x = a + (b - a) / (self.b - self.a) * (self.x - self.a)
+        return replace(self, a=self.a, b=self.b, x=x)
 
 
 def make_stretched_points(
@@ -158,6 +177,15 @@ class JacobiGaussLobattoPoints(Points):
     beta: float
     #: Jacobi-Gauss-Lobatto quadrature weights on :math:`[a, b]`.
     w: Array
+
+    def translate(self, a: float, b: float) -> Points:
+        """Linearly translate the set of points to the new interval :math:`[a, b]`."""
+        # translate from [a', b'] to [0, 1] to [a, b]
+        r = (b - a) / (self.b - self.a)
+        x = a - r * self.a + r * self.x
+        w = r * self.w
+
+        return replace(self, a=a, b=b, x=x, w=w)
 
 
 def make_jacobi_gauss_lobatto_points(

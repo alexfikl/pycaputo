@@ -358,7 +358,7 @@ def jacobi_caputo_derivative(
     for n, Phat in enumerate(
         jacobi_riemann_liouville_integral(pm, m - alpha, weighted=False)
     ):
-        if n + m >= p.n:
+        if n + m >= p.size:
             break
 
         # NOTE: compute D^{u, v, alpha, m}_{n + m} Equation 4.313 [Li2020]

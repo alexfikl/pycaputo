@@ -503,7 +503,7 @@ def _quad_rl_conv(
     qf = np.empty_like(fx)
     qf[0] = np.nan
 
-    w = lubich_bdf_weights(-alpha, m.quad_order, p.n)
+    w = lubich_bdf_weights(-alpha, m.quad_order, p.size)
 
     if np.isfinite(m.beta):
         s = lubich_bdf_starting_weights_count(m.quad_order, alpha)
