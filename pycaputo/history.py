@@ -37,6 +37,13 @@ class History(ABC):
 
     It essentially acts as a queue from which the items cannot be removed. For
     inspiration check out :class:`collections.deque`.
+
+    The object itself is a :class:`~collections.abc.Sequence` and implements the
+    required methods.
+
+    .. automethod:: __bool__
+    .. automethod:: __len__
+    .. automethod:: __getitem__
     """
 
     @abstractmethod
@@ -89,7 +96,7 @@ class InMemoryHistory(History):
     #: An array of shape ``(n,)`` containing the fixed time steps.
     ts: Array = field(repr=False)
 
-    filled: int = field(default=0, init=False)
+    filled: int = field(default=0, repr=False, init=False)
 
     @property
     def capacity(self) -> int:
