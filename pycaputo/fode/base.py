@@ -11,7 +11,7 @@ from typing import Iterator
 import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
-from pycaputo.fode.history import History
+from pycaputo.history import History
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, CallbackFunction, StateFunction
 
@@ -381,15 +381,15 @@ def evolve(
     *,
     callback: CallbackFunction | None = None,
     history: History | None = None,
-    verbose: bool = True,
+    raise_on_fail: bool = True,
 ) -> Iterator[Event]:
     """Evolve the fractional-order ordinary differential equation in time.
 
     :arg m: method used to evolve the FODE.
     :arg f: right-hand side of the FODE.
     :arg y0: initial conditions for the FODE.
-    :arg history: a :class:`History` instance that handles checkpointing the
-        necessary state history for the method *m*.
+    :arg history: a :class:`~pycaputo.history.History` instance that handles
+        checkpointing the necessary state history for the method *m*.
     :arg verbose: print additional iteration details.
 
     :returns: an :class:`Event` (usually a :class:`StepCompleted`) containing

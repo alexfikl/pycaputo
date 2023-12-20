@@ -8,8 +8,8 @@ from dataclasses import dataclass
 import numpy as np
 
 from pycaputo.fode.base import advance
-from pycaputo.fode.history import VariableProductIntegrationHistory
 from pycaputo.fode.product_integration import CaputoProductIntegrationMethod
+from pycaputo.history import VariableProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, StateFunction
 
@@ -17,15 +17,15 @@ logger = get_logger(__name__)
 
 
 def _update_caputo_initial_condition(
-    dy: Array, t: float, y0: tuple[Array, ...]
+    out: Array, t: float, y0: tuple[Array, ...]
 ) -> Array:
     """Adds the appropriate initial conditions to *dy*."""
     from math import gamma
 
     for k, y0k in enumerate(y0):
-        dy += t**k / gamma(k + 1) * y0k
+        out += t**k / gamma(k + 1) * y0k
 
-    return dy
+    return out
 
 
 # {{{ forward Euler
@@ -43,20 +43,20 @@ class CaputoForwardEulerMethod(CaputoProductIntegrationMethod):
 def _update_caputo_forward_euler(
     dy: Array,
     history: VariableProductIntegrationHistory,
-    alpha: tuple[float, ...],
+    alphas: tuple[float, ...],
     n: int,
 ) -> Array:
     """Adds the Forward Euler right-hand side to *dy*."""
     from math import gamma
 
     assert 0 < n <= len(history)
-    ts = history.ts[-1] - np.array(history.ts[: n + 1])
+    ts = history.ts[n] - history.ts[: n + 1]
 
-    gamma1 = np.array([gamma(1 + a) for a in alpha]).reshape(-1, 1)
-    alphar = np.array(alpha).reshape(-1, 1)
+    gamma1 = np.array([gamma(1 + a) for a in alphas]).reshape(-1, 1)
+    alpha = np.array(alphas).reshape(-1, 1)
 
-    omega = (ts[:-1] ** alphar - ts[1:] ** alphar) / gamma1
-    dy += sum(w * yk.f for w, yk in zip(omega.T, history.history[: n + 1]))
+    omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1
+    dy += sum(w * fk for w, fk in zip(omega.T, history.storage[: n + 1]))
 
     return dy
 
@@ -68,7 +68,7 @@ def _advance_caputo_forward_euler(
     t: float,
     y: Array,
 ) -> tuple[float, Array]:
-    history.ts.append(t)
+    history.ts[history.filled] = t
     if not history:
         history.append(t, m.source(t, y))
         return t, y
@@ -219,7 +219,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
 def _update_caputo_weighted_euler(
     dy: Array,
     history: VariableProductIntegrationHistory,
-    alpha: tuple[float, ...],
+    alphas: tuple[float, ...],
     theta: float,
     n: int,
 ) -> tuple[Array, Array]:
@@ -228,26 +228,25 @@ def _update_caputo_weighted_euler(
 
     # NOTE: this is implicit so we never want to compute the last term
     assert 0 <= n <= len(history)
-    ts = history.ts[-1] - np.array(history.ts[: n + 1])
+    ts = history.ts[n] - history.ts[: n + 1]
 
-    gamma1 = np.array([gamma(1 + a) for a in alpha]).reshape(-1, 1)
-    alphar = np.array(alpha).reshape(-1, 1)
+    gamma1 = np.array([gamma(1 + a) for a in alphas]).reshape(-1, 1)
+    alpha = np.array(alphas).reshape(-1, 1)
 
     # add explicit terms
-    omega = ((ts[:-1] ** alphar - ts[1:] ** alphar) / gamma1).T
+    omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1).T
     if theta != 0.0:
-        ys = history.history[: n - 1]
-        dy += sum(theta * w * yk.f for w, yk in zip(omega, ys))
+        fs = history.storage[: n - 1]
+        dy += sum(theta * w * fk for w, fk in zip(omega, fs))
 
     if theta != 1.0:
-        ys = history.history[1:n]
-        dy += sum((1 - theta) * w * yk.f for w, yk in zip(omega, ys))
+        fs = history.storage[1:n]
+        dy += sum((1 - theta) * w * fk for w, fk in zip(omega, fs))
 
     # add last forward
     omega = omega[-1, :].squeeze().copy()
     if theta != 0.0:
-        yk = history[n - 1]
-        dy += omega * theta * yk.f
+        dy += omega * theta * history.storage[n - 1]
 
     return dy, omega
 
@@ -259,7 +258,7 @@ def _advance_caputo_weighted_euler(
     t: float,
     y: Array,
 ) -> tuple[float, Array]:
-    history.ts.append(t)
+    history.ts[history.filled] = t
     if not history:
         history.append(t, m.source(t, y))
         return t, y
@@ -386,39 +385,34 @@ def _update_caputo_adams_bashforth2(
     gamma2 = gamma(2 + alpha)
     assert n is not None
 
-    ts = np.array(history.ts)
+    ts = history.ts[: n + 1]
     dt = np.diff(ts)
-    ts = history.ts[-1] - ts
+    ts = history.ts[n] - ts
 
     for k in range(n - 1):
-        yk = history[k]
-
         omega = (
             ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
             - ts[k] ** (alpha + 1) / gamma2 / dt[k]
             + ts[k] ** alpha / gamma1
         )
-        dy += omega * yk.f
-
-        yk = history[k + 1]
+        dy += omega * history.storage[k]
 
         omega = (
             ts[k] ** (alpha + 1) / gamma2 / dt[k]
             - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
             - ts[k + 1] ** alpha / gamma1
         )
-        dy += omega * yk.f
+        dy += omega * history.storage[k + 1]
 
     if not is_n and n == len(history):
         k = n - 1
-        yk = history[k]
 
         omega = (
             ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
             - ts[k] ** (alpha + 1) / gamma2 / dt[k]
             + ts[k] ** alpha / gamma1
         )
-        dy += omega * yk.f
+        dy += omega * history.storage[k]
 
     # NOTE: always compute the weight for the last step in the history
     k = len(history) - 1
@@ -438,7 +432,7 @@ def _advance_caputo_predictor_corrector(
     t: float,
     y: Array,
 ) -> tuple[float, Array]:
-    history.ts.append(t)
+    history.ts[history.filled] = t
     if not history:
         history.append(t, m.source(t, y))
         return t, y
@@ -497,7 +491,7 @@ def _advance_caputo_modified_pece(
     t: float,
     y: Array,
 ) -> tuple[float, Array]:
-    history.ts.append(t)
+    history.ts[history.filled] = t
     if not history:
         history.append(t, m.source(t, y))
         return t, y
@@ -508,7 +502,10 @@ def _advance_caputo_modified_pece(
     (alpha,) = m.derivative_order
     gamma2 = gamma(2 + alpha)
     gamma1 = gamma(1 + alpha)
-    ts = history.ts
+
+    ts = history.ts[: len(history) + 1]
+    dt = np.diff(ts)
+    ts = history.ts[len(history)] - ts
 
     # compute common terms
     dy = np.zeros_like(y)
@@ -523,40 +520,34 @@ def _advance_caputo_modified_pece(
         yp = np.copy(dy)
 
         k = n - 1
-        yk = history[k - 1]
 
         # fmt: off
         omega = (
-            (t - ts[k]) ** (alpha + 1) / gamma2 / (ts[k] - ts[k - 1])
-            + (t - ts[k]) ** alpha / gamma1
+            ts[k] ** (alpha + 1) / gamma2 / dt[k]
+            + ts[k] ** alpha / gamma1
             )
-        yp += omega * yk.f
+        yp += omega * history.storage[k - 1]
         # fmt: on
 
-        yk = history[k]
-
-        omega = -((t - ts[k]) ** (alpha + 1)) / gamma2 / (ts[k] - ts[k - 1])
-        yp += omega * yk.f
+        omega = -ts[k] ** (alpha + 1) / gamma2 / dt[k]
+        yp += omega * history.storage[k]
 
     # compute corrector
     ynext = np.copy(dy)
 
     k = n - 1
-    yk = history[k]
-
-    dt = ts[k + 1] - ts[k]
     omega = (
-        (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-        + (t - ts[k]) ** alpha / gamma1
+        ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+        - ts[k] ** (alpha + 1) / gamma2 / dt[k]
+        + ts[k] ** alpha / gamma1
     )
-    ynext += omega * yk.f
+    ynext += omega * history.storage[k]
 
     # corrector iterations
     omega = (
-        (t - ts[k]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k + 1]) ** (alpha + 1) / gamma2 / dt
-        - (t - ts[k + 1]) ** alpha / gamma1
+        ts[k] ** (alpha + 1) / gamma2 / dt[k]
+        - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
+        - ts[k + 1] ** alpha / gamma1
     )
     for _ in range(m.corrector_iterations):
         fp = m.source(t, yp)

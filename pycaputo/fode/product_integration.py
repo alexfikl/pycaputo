@@ -17,7 +17,7 @@ from pycaputo.fode.base import (
     evolve,
     make_initial_condition,
 )
-from pycaputo.fode.history import History
+from pycaputo.history import History
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, CallbackFunction
 
@@ -50,9 +50,11 @@ def _evolve_pi(
     y = make_initial_condition(m)
 
     if history is None:
-        from pycaputo.fode.history import VariableProductIntegrationHistory
+        from pycaputo.history import VariableProductIntegrationHistory
 
-        history = VariableProductIntegrationHistory()
+        history = VariableProductIntegrationHistory.empty(
+            m.tspan.nsteps, m.y0[0].shape, m.y0[0].dtype
+        )
 
     # NOTE: called to update the history
     t, y = advance(m, history, t, y)

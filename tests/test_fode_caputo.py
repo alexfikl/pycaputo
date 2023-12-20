@@ -183,7 +183,7 @@ def test_caputo_fode(
         with BlockTimer(name=m.name) as bt:
             ts = []
             ys = []
-            for event in evolve(m):
+            for event in evolve(m, raise_on_fail=True):
                 if isinstance(event, StepFailed):
                     raise ValueError("Step update failed")
                 elif isinstance(event, StepCompleted):

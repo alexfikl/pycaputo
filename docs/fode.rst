@@ -5,18 +5,6 @@ Single-Term Fractional Ordinary Differential Equations
 
 .. currentmodule:: pycaputo.fode
 
-History Handling
-----------------
-
-.. autoclass:: State
-.. autoclass:: History
-
-.. autoclass:: ProductIntegrationState
-.. autoclass:: VariableProductIntegrationHistory
-
-.. autoclass:: FixedState
-.. autoclass:: FixedSizeHistory
-
 Time Interval Handling
 ----------------------
 

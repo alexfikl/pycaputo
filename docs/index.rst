@@ -9,6 +9,7 @@ pycaputo documentation
     operator
     quadrature
     differentiation
+    history
     fode
     misc
     references
