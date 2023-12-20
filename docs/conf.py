@@ -49,6 +49,47 @@ def add_dataclass_annotation(app, name, obj, options, bases):
         bases.append(":func:`dataclasses.dataclass`")
 
 
+def linkcode_resolve(domain, info):
+    url = None
+    if domain != "py" or not info["module"]:
+        return url
+
+    modname = info["module"]
+    objname = info["fullname"]
+
+    mod = sys.modules.get(modname)
+    if not mod:
+        return url
+
+    obj = mod
+    for part in objname.split("."):
+        try:
+            obj = getattr(obj, part)
+        except Exception:
+            return url
+
+    import inspect
+
+    try:
+        filepath = "{}.py".format(os.path.join(*obj.__module__.split(".")))
+    except Exception:
+        return url
+
+    if filepath is None:
+        return url
+
+    try:
+        source, lineno = inspect.getsourcelines(obj)
+    except Exception:
+        return url
+    else:
+        linestart, linestop = lineno, lineno + len(source) - 1
+
+    return "https://github.com/alexfikl/pycaputo/blob/main/{}#L{}-L{}".format(
+        filepath, linestart, linestop
+    )
+
+
 def setup(app) -> None:
     (tmp_url,) = (
         v for k, v in m.items() if k.startswith("Project-URL") and "Repository" in v
@@ -68,7 +109,7 @@ def setup(app) -> None:
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.linkcode",
     "sphinx.ext.mathjax",
 ]
 
