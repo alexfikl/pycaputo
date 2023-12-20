@@ -48,6 +48,10 @@ def add_dataclass_annotation(app, name, obj, options, bases):
         # a class, so Sphinx gets confused when it tries to insert it into the docs
         bases.append(":func:`dataclasses.dataclass`")
 
+    if object in bases:
+        # NOTE: not very helpful to show inheritance from "object"
+        bases.remove(object)
+
 
 def linkcode_resolve(domain, info):
     url = None
