@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass, field, fields
+from typing import Any, Iterable
 
 import numpy as np
 
@@ -26,6 +26,10 @@ class State:
     However, more complex methods can also checkpoint the right-hand side
     evaluations or other intermediary calculations.
     """
+
+    def __iter__(self) -> Iterable[Any]:
+        for f in fields(self):
+            yield getattr(self, f.name)
 
 
 class History(ABC):
@@ -49,17 +53,22 @@ class History(ABC):
 
     @abstractmethod
     def __getitem__(self, k: int) -> State:
-        """
+        """Load a checkpoint from the history.
+
         :returns: a compound :class:`State` from the *k*-th checkpoint.
         """
 
     @abstractmethod
     def clear(self) -> None:
-        """Remove all items from the history."""
+        """Remove all items from the history.
+
+        Note that this will only reset relevant counters in the object. If the
+        history is stored on disk, it will not delete the files.
+        """
 
     @abstractmethod
     def append(self, t: float, y: Array) -> None:
-        """Add a state to the current history."""
+        """Add a checkpoint to the current history."""
 
 
 @dataclass(frozen=True)
