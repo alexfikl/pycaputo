@@ -1,8 +1,8 @@
 Changelog
 =========
 
-pycaputo 0.2 (TBD)
-------------------
+pycaputo 0.2 (December 25, 2023)
+--------------------------------
 
 Dependency changes
 ^^^^^^^^^^^^^^^^^^
@@ -15,6 +15,8 @@ Features
 * Added an example with the fractional Lorenz system (:ghpr:`13`).
 * Add a guess for the number of corrector iterations
   for :class:`~pycaputo.fode.CaputoPECEMethod` from [Garrappa2010]_.
+* Added a modified PECE method from [Garrappa2010]_ in the form of
+  :class:`~pycaputo.fode.CaputoModifiedPECEMethod`.
 * Implement :class:`~pycaputo.quadrature.RiemannLiouvilleSimpsonMethod`, a
   standard 3rd order method.
 * Implement :class:`~pycaputo.quadrature.RiemannLiouvilleCubicHermiteMethod`, a
@@ -25,7 +27,8 @@ Features
 * Support different fractional orders for FODE systems in
   :class:`~pycaputo.fode.CaputoForwardEulerMethod`,
   :class:`~pycaputo.fode.CaputoWeightedEulerMethod` and others.
-* Add approximation for the Lipschitz constant.
+* Add approximation for the Lipschitz constant (:ghpr:`18`).
+* Add a (rather slow) wrapper to compute a fractional gradient (:ghpr:`35`).
 
 Fixes
 ^^^^^
@@ -35,6 +38,7 @@ Fixes
 * Fix Jacobian construction for :class:`~pycaputo.fode.CaputoWeightedEulerMethod`
   which gave incorrect results for systems of equations (:ghissue:`11`).
 * Add dark variants of plots to the documentation for nicer results.
+* Promoto history management to :mod:`pycaputo.history`.
 
 pycaputo 0.1 (June 12, 2023)
 ----------------------------

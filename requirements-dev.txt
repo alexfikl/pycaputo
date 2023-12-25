@@ -14,7 +14,7 @@ cycler==0.12.1
     # via matplotlib
 differint==1.0.0
     # via pycaputo (pyproject.toml)
-fonttools==4.46.0
+fonttools==4.47.0
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
@@ -26,7 +26,7 @@ matplotlib==3.8.2
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.7.1
+mypy==1.8.0
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
@@ -65,7 +65,7 @@ python-dateutil==2.8.2
     # via matplotlib
 rich==13.7.0
     # via pycaputo (pyproject.toml)
-ruff==0.1.7
+ruff==0.1.9
     # via pycaputo (pyproject.toml)
 scipy==1.11.4
     # via pycaputo (pyproject.toml)
