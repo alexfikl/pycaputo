@@ -1,6 +1,24 @@
 Changelog
 =========
 
+pycaputo 0.3 (December 28, 2023)
+--------------------------------
+
+Features
+^^^^^^^^
+
+* Add support for adaptive time stepping (:ghpr:`32`). This functionality is
+  very nice and there isn't much literature on the matter so it will likely
+  need substantial improvements in the future. For the moment, the work of
+  [Jannelli2020] is implement and seems to work reasonably well.
+
+
+Fixes
+^^^^^
+
+* Make all methods use a vector of orders ``alpha`` when solving systems to be
+  more future proof.
+
 pycaputo 0.2 (December 25, 2023)
 --------------------------------
 
