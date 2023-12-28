@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import ceil, gamma
 
 import numpy as np
 
@@ -20,8 +21,6 @@ def _update_caputo_initial_condition(
     out: Array, t: float, y0: tuple[Array, ...]
 ) -> Array:
     """Adds the appropriate initial conditions to *dy*."""
-    from math import gamma
-
     for k, y0k in enumerate(y0):
         out += t**k / gamma(k + 1) * y0k
 
@@ -47,8 +46,6 @@ def _update_caputo_forward_euler(
     n: int,
 ) -> Array:
     """Adds the Forward Euler right-hand side to *dy*."""
-    from math import gamma
-
     assert 0 < n <= len(history)
     ts = history.ts[n] - history.ts[: n + 1]
 
@@ -224,8 +221,6 @@ def _update_caputo_weighted_euler(
     n: int,
 ) -> tuple[Array, Array]:
     """Adds the weighted Euler right-hand side to *dy*."""
-    from math import gamma
-
     # NOTE: this is implicit so we never want to compute the last term
     assert 0 <= n <= len(history)
     ts = history.ts[n] - history.ts[: n + 1]
@@ -353,8 +348,6 @@ class CaputoPECEMethod(CaputoPredictorCorrectorMethod):
 
         :returns: a recommended number of corrector iterations.
         """
-        from math import ceil
-
         return ceil(1 / alpha) if is_d_c2 else ceil(1 / alpha - 1)
 
 
@@ -376,8 +369,6 @@ def _update_caputo_adams_bashforth2(
     *,
     n: int | None = None,
 ) -> tuple[Array, float]:
-    from math import gamma
-
     is_n = n is not None
     n = len(history) if n is None else n
 
@@ -437,7 +428,9 @@ def _advance_caputo_predictor_corrector(
         history.append(t, m.source(t, y))
         return t, y
 
-    (alpha,) = m.derivative_order
+    from pycaputo.utils import single_valued
+
+    alpha = single_valued(m.derivative_order)
 
     # add initial conditions
     y0 = np.zeros_like(y)
@@ -496,10 +489,10 @@ def _advance_caputo_modified_pece(
         history.append(t, m.source(t, y))
         return t, y
 
-    from math import gamma
+    from pycaputo.utils import single_valued
 
     n = len(history)
-    (alpha,) = m.derivative_order
+    alpha = single_valued(m.derivative_order)
     gamma2 = gamma(2 + alpha)
     gamma1 = gamma(1 + alpha)
 

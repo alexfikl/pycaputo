@@ -404,6 +404,7 @@ def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
 
 # }}}
 
+
 # {{{ timing
 
 
@@ -504,6 +505,39 @@ class BlockTimer:
 
     def __str__(self) -> str:
         return f"{self.name}: {self.t_wall:.3e}s wall, {self.t_cpu:.3f}x cpu"
+
+
+# }}}
+
+
+# {{{
+
+
+def single_valued(iterable: Iterable[T], eq: Callable[[T, T], bool] | None = None) -> T:
+    """Retrieve a single value from the *iterable*.
+
+    This function will return the first value from the *iterable* and assert that
+    all other values are equal to it in the sense of the *eq* predicate. Note
+    that the check is not performed when optimizations are turned on (as it is
+    an assert).
+
+    :arg eq: an equality predicate on the elements of *iterable*, defaulting to
+        :func:`operator.eq`.
+    :returns: the first value of *iterable*.
+    """
+    if eq is None:
+        import operator
+
+        eq = operator.eq
+
+    iterable = iter(iterable)
+    try:
+        first = next(iterable)
+    except StopIteration:
+        raise ValueError("Iterable is empty") from None
+
+    assert all(eq(first, other) for other in iterable)
+    return first
 
 
 # }}}

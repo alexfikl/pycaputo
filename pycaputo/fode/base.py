@@ -346,6 +346,8 @@ class FractionalDifferentialEquationMethod(ABC):
             if not all(y0.shape == shape for y0 in self.y0[1:]):
                 raise ValueError("Initial conditions have different shapes")
 
+            if self.y0[0].size != len(self.derivative_order):
+                raise ValueError("Derivative orders must match state size")
             from math import ceil
 
             m = ceil(self.largest_derivative_order)
