@@ -12,7 +12,6 @@ Features
   need substantial improvements in the future. For the moment, the work of
   [Jannelli2020] is implement and seems to work reasonably well.
 
-
 Fixes
 ^^^^^
 
