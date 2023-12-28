@@ -85,15 +85,14 @@ classic Brusselator system
 .. math::
 
    \begin{cases}
-   D_C^\alpha x = a - (\mu + 1) x + x^2 y, \\
-   D_C^\alpha y = \mu x - x^2 y,
+   D_C^\alpha[x](t) = a - (\mu + 1) x + x^2 y, \\
+   D_C^\alpha[y](t) = \mu x - x^2 y,
    \end{cases}
 
 where we take :math:`(a, \mu) = (1, 4)`, an order :math:`\alpha = 0.8`, and
 initial conditions :math:`(x_0, y_0) = (1, 2)`. For these parameters, the
 system has a stable limit cycle, which we can observe (see [Garrappa2015b]_).
 The right-hand side for this system can be implemented as
-
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
     :lines: 13-19
@@ -109,10 +108,9 @@ by :class:`~pycaputo.fode.CaputoPECEMethod`. The solver is then set up as
     :language: python
     :linenos:
 
-We can see here that we have chosen to use a left-sided
-:class:`~pycaputo.derivatives.CaputoDerivative` with an order :math:`\alpha`.
-The solver will use a fixed time step of :math:`10^{-2}` on the interval
-:math:`[0, 50]` to properly observe the limit cycle behavior. For
+We can see here that we have chosen to use a solver for the Caputo derivative
+an order :math:`\alpha`. The solver will use a fixed time step of :math:`10^{-2}`
+on the interval :math:`[0, 50]` to properly observe the limit cycle behavior. For
 Predictor-Corrector schemes, the corrector step can be repeated multiple times,
 but here we choose ``corrector_iterations=1`` to only use a single iteration.
 
@@ -155,3 +153,113 @@ The limit cycle can be better visualized in phase space as shown below.
 
 The complete example can be found in
 :download:`examples/brusselator-predictor-corrector.py <../examples/brusselator-predictor-corrector.py>`.
+
+Adaptive Time Stepping
+----------------------
+
+In this example, we will look at solving a nonlinear fractional-order equation
+using adaptive time stepping (see :mod:`pycaputo.controller`). The model we have
+chosen for this is the classic van der Pol system
+
+.. math::
+
+   \begin{cases}
+   D_C^\alpha[x](t) = y, \\
+   D_C^\alpha[y](t) = \mu (1 - x^2) y - x,
+   \end{cases}
+
+where :math:`\mu = 4`, :math:`\alpha = 0.8` and the initial condition is taken
+to be :math:`(x_0, y_0) = (1, 0)`. As we will see, this is close to a limit
+cycle of the oscillator (see e.g. [Jannelli2020]_). The right-hand side for this
+system is implemented as
+
+.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
+    :lines: 22-29
+    :language: python
+    :linenos:
+
+We can now start setting up our numerical solver based on the standard
+Predictor-Corrector method (PECE) implemented in
+:class:`~pycaputo.fode.CaputoPECEMethod`. The time adaptation is based on the
+results from [Jannelli2020]_ and implemented in
+:class:`~pycaputo.controller.JannelliIntegralController`. The controller is
+set up as follows
+
+.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
+    :lines: 37-49
+    :language: python
+    :linenos:
+
+We can see here that we have chosen a time interval of :math:`[0, 4]` to see
+the start of the limit cycle. We have also used other parameters better described
+in [Jannelli2020]. Briefly, ``qmin`` and ``qmax`` are used to decrease or
+increase the time step by a fixed value, while ``chimin`` and ``chimax`` are
+used to normalize the Jannelli error estimator. Then, we can set up the solver
+itself
+
+.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
+    :lines: 51-60
+    :language: python
+    :linenos:
+
+For the solver we set the desired order ``alpha`` and choose two corrector
+iterations, to be sure that the second-order accuracy is achieved. For an
+adaptive scheme, it is important to also get an estimate for the initial time
+step. This can be done using
+
+.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
+    :lines: 62-69
+    :language: python
+    :linenos:
+
+Having set everything up, we can evolve our equation and gather any relevant data.
+For the adaptive case, we are interested also in showing the behavior of the
+error estimate and the time step in time. Here, we will only gather this information
+for accepted steps.
+
+.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
+    :lines: 87-98
+    :language: python
+    :linenos:
+
+We can now look at the solution and the corresponding time steps below.
+
+.. image:: van-der-pol-adaptive-pece-solution-light.svg
+    :class: only-light
+    :width: 75%
+    :align: center
+    :alt: Adaptive solution of the van der Pol system using the Predictor-Corrector method.
+
+.. image:: van-der-pol-adaptive-pece-solution-dark.svg
+    :class: only-dark
+    :width: 75%
+    :align: center
+    :alt: Adaptive solution of the van der Pol system using the Predictor-Corrector method.
+
+We can see that the method indeed adapts with the solution. This is expected,
+as it depends on :math:`|y_{n + 1} - y_n|`. However, a big downside of the
+Jannelli method is the need to adequately choose the parameters :math:`\chi_{min}`
+and :math:`\chi_{max}` that control when the solution is too large or too small.
+The choice we have made above was made after a bit of trial and error and looking
+a the value of the corresponding error estimator.
+
+Below we have the value of the scalar error estimator and the values of the
+Jannelli error estimator for each component. We can see here that the error is
+generally maintained in :math:`[0, 1]` for all accepted steps, which is
+equivalent to keeping the error in :math:`[\chi_{min}, \chi_{max}]` before
+rescaling.
+
+.. image:: van-der-pol-adaptive-pece-eest-light.svg
+    :class: only-light
+    :width: 75%
+    :align: center
+    :alt: Jannelli error estimator for the van der Pol system.
+
+.. image:: van-der-pol-adaptive-pece-eest-dark.svg
+    :class: only-dark
+    :width: 75%
+    :align: center
+    :alt: Jannelli error estimator for the van der Pol system.
+
+The complete example can be found in
+:download:`examples/van-der-pol-adaptive-pece.py <../examples/van-der-pol-adaptive-pece.py>`.
