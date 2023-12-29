@@ -77,4 +77,28 @@ jobs:
         make pip-install
         make examples
 
+  deploy:
+    needs: [ruff, mypy, pytest, examples]
+    name: PyPI deploy
+    environment: pypi
+    permissions:
+      content: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - id: dist
+      uses: casperdcl/deploy-pypi@v2
+      with:
+        build: true
+        upload: false
+    - if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
 # vim: set ts=2 sw=2 et:
