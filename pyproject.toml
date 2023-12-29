@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = [
-    "setuptools>=42",
+    "setuptools>=61",
     "wheel",
 ]
 
@@ -66,7 +66,7 @@ Documentation = "https://pycaputo.readthedocs.io"
 Repository = "https://github.com/alexfikl/pycaputo"
 
 [tool.setuptools]
-packages = ["pycaputo"]
+packages = { find = { where = ["pycaputo"] } }
 
 [tool.black]
 safe = true
