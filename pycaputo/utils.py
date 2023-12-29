@@ -121,6 +121,13 @@ class DifferentiableScalarFunction(Protocol):
 
 ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
 
+# fmt: off
+BOOLEAN_STATES = {
+    1: True, "1": True, "yes": True, "true": True, "on": True, "y": True,
+    0: False, "0": False, "no": False, "false": False, "off": False, "n": False,
+}
+# fmt: on
+
 # }}}
 
 
@@ -314,8 +321,26 @@ def check_usetex(*, s: bool) -> bool:
 def set_recommended_matplotlib(
     *,
     use_tex: bool | None = None,
-    dark: bool = False,
+    dark: bool | None = None,
+    savefig_format: str | None = None,
 ) -> None:
+    """Set custom :mod:`matplotlib` parameters.
+
+    These are mainly used in the tests and examples to provide a uniform style
+    to the results using `SciencePlots <https://github.com/garrettj403/SciencePlots>`__.
+    For other applications, it is recommended to use local settings (e.g. in
+    `matplotlibrc`).
+
+    :arg use_tex: if *True*, LaTeX labels are enabled. By default, this checks
+        if LaTeX is available on the system and only enables it if possible.
+    :arg dark: if *True*, a dark default theme is selected instead of the
+        default light one (see the ``dark_background`` theme of the ``SciencePlots``
+        package). If *None*, this takes its values from the ``PYCAPUTO_DARK``
+        boolean environment variable.
+    :arg savefig_format: the format used when saving figures. By default, this
+        uses the ``PYCAPUTO_SAVEFIG`` environment variable and falls back to
+        the :mod:`matplotlib` parameter ``savefig.format``.
+    """
     try:
         import matplotlib.pyplot as mp
     except ImportError:
@@ -324,12 +349,22 @@ def set_recommended_matplotlib(
     if use_tex is None:
         use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)
 
+    if dark is None:
+        tmp = os.environ.get("PYCAPUTO_DARK", "off").lower()
+        dark = BOOLEAN_STATES.get(tmp, False)
+
+    if savefig_format is None:
+        savefig_format = os.environ.get(
+            "PYCAPUTO_SAVEFIG", mp.rcParams["savefig.format"]
+        ).lower()
+
     defaults: dict[str, dict[str, Any]] = {
         "figure": {
             "figsize": (8, 8),
             "dpi": 300,
             "constrained_layout": {"use": True},
         },
+        "savefig": {"format": savefig_format},
         "text": {"usetex": use_tex},
         "legend": {"fontsize": 32},
         "lines": {"linewidth": 2, "markersize": 10},
@@ -382,6 +417,18 @@ def figure(
     figsize: tuple[float, float] | None = None,
     **kwargs: Any,
 ) -> Iterator[Any]:
+    """A small wrapper context manager around :class:`matplotlib.figure.Figure`.
+
+    :arg nrows: number of rows of subplots.
+    :arg ncols: number of columns of subplots.
+    :arg projection: a projection for all the axes in this figure, see
+        :mod:`matplotlib.projections`.
+    :arg figsize: the size of the resulting figure, set to
+        ``(L * ncols, L * nrows)`` by default.
+    :arg kwargs: Additional arguments passed to :func:`savefig`.
+    :returns: the :class:`~matplotlib.figure.Figure` that was constructed. On exit
+        from the context manager, the figure is saved to *filename* and closed.
+    """
     import matplotlib.pyplot as mp
 
     fig = mp.figure()
@@ -404,13 +451,25 @@ def figure(
         mp.close(fig)
 
 
-def savefig(fig: Any, filename: PathLike, **kwargs: Any) -> None:
+def savefig(
+    fig: Any, filename: PathLike, *, overwrite: bool = True, **kwargs: Any
+) -> None:
+    """A wrapper around :meth:`~matplotlib.figure.Figure.savefig`.
+
+    :arg filename: a file name where to save the figure. If the file name does
+        not have an extension, the default format from ``savefig.format`` is
+        used.
+    :arg overwrite: if *True*, any existing files are overwritten.
+    """
     import matplotlib.pyplot as mp
 
     filename = pathlib.Path(filename)
     if not filename.suffix:
         ext = mp.rcParams["savefig.format"]
         filename = filename.with_suffix(f".{ext}").resolve()
+
+    if not overwrite and filename.exists():
+        raise FileExistsError(f"Output file '{filename}' already exists")
 
     logger.info("Saving '%s'", filename)
 

@@ -22,10 +22,9 @@ from pycaputo.controller import (
 from pycaputo.derivatives import CaputoDerivative, FractionalOperator, Side
 from pycaputo.fode import FractionalDifferentialEquationMethod
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, figure, set_recommended_matplotlib
+from pycaputo.utils import Array
 
-set_recommended_matplotlib()
-logger = get_logger("adaptive-rk4")
+logger = get_logger("van-der-pol-adaptive")
 
 
 # {{{ van der Pol oscillator
@@ -181,9 +180,18 @@ while not c.finished(n, t):
 # }}}
 
 
-# {{{
+# {{{ plot
 
-with figure(f"example-adaptive-rk4-{name}-phase.png") as fig:
+try:
+    import matplotlib  # noqa: F401
+except ImportError as exc:
+    raise SystemExit(0) from exc
+
+from pycaputo.utils import figure, set_recommended_matplotlib
+
+set_recommended_matplotlib()
+
+with figure(f"example-adaptive-rk4-{name}-phase") as fig:
     ax = fig.gca()
 
     ax.plot(ys[:n, 0], ys[:n, 1], "o", ms=3, fillstyle="none")
@@ -191,7 +199,7 @@ with figure(f"example-adaptive-rk4-{name}-phase.png") as fig:
     ax.set_ylabel("$y$")
     ax.set_aspect("equal")
 
-with figure(f"example-adaptive-rk4-{name}-xy.png") as fig:
+with figure(f"example-adaptive-rk4-{name}-xy") as fig:
     ax = fig.gca()
 
     ax.plot(ts[:n], ys[:n, 0], "o", ms=3, fillstyle="none", label="$x$")
@@ -199,7 +207,7 @@ with figure(f"example-adaptive-rk4-{name}-xy.png") as fig:
     ax.set_aspect(0.5)
     ax.set_xlabel("$t$")
 
-with figure(f"example-adaptive-rk4-{name}-qs.png") as fig:
+with figure(f"example-adaptive-rk4-{name}-qs") as fig:
     ax = fig.gca()
 
     ax.plot(ts[:n], qs[1 : n + 1], "o-", ms=3, label="$q$")
@@ -210,7 +218,7 @@ with figure(f"example-adaptive-rk4-{name}-qs.png") as fig:
     ax.set_xlabel("$t$")
     ax.legend()
 
-with figure(f"example-adaptive-rk4-{name}-dt.png") as fig:
+with figure(f"example-adaptive-rk4-{name}-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(ts[:n], dts[1 : n + 1], "k-")

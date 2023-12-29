@@ -13,8 +13,7 @@ from pycaputo.fode import CaputoPECEMethod
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
-logger = get_logger("adaptive-pece")
-
+logger = get_logger("van-der-pol-adaptive")
 
 # {{{ van der Pol oscillator
 
@@ -125,7 +124,7 @@ t = np.array(ts)
 y = np.array(ys).T
 trunc = np.array(truncs).T
 
-with figure("van-der-pol-adaptive-pece-phase.svg") as fig:
+with figure("van-der-pol-adaptive-pece-phase") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[1], "o", ms=3, fillstyle="none")
@@ -133,25 +132,26 @@ with figure("van-der-pol-adaptive-pece-phase.svg") as fig:
     ax.set_ylabel("$y$")
     # ax.set_aspect("equal")
 
-with figure("van-der-pol-adaptive-pece-solution.svg", nrows=2, figsize=(8, 8)) as fig:
+with figure("van-der-pol-adaptive-pece-solution", nrows=2, figsize=(8, 8)) as fig:
     ax = fig.axes
 
     ax[0].plot(t, y[0], "o-", ms=3, fillstyle="none", label="$x$")
     ax[0].plot(t, y[1], "o-", ms=3, fillstyle="none", label="$y$")
+    ax[0].legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
 
     ax[1].semilogy(t[:-1], np.diff(t), "o-", fillstyle="none", ms=3)
     ax[1].set_xlabel("$t$")
     ax[1].set_ylabel(r"$\Delta t$")
     ax[1].set_ylim([c.dtmin, dt0])
 
-with figure("van-der-pol-adaptive-pece-eest.svg", nrows=2, figsize=(8, 8)) as fig:
+with figure("van-der-pol-adaptive-pece-eest", nrows=2, figsize=(8, 8)) as fig:
     ax = fig.axes
 
     ax[0].plot(t, trunc[0], "o-", ms=3, fillstyle="none")
     ax[0].plot(t, trunc[1], "o-", ms=3, fillstyle="none")
     ax[0].set_ylabel(r"$\tau$")
 
-    ax[1].plot(t, eests, "-", label="$E_{scaled}$")
+    ax[1].plot(t, eests, "-")
     ax[1].axhline(1.0, ls="--", color="k")
     ax[1].axhline(0.0, ls="--", color="k")
     ax[1].set_xlabel("$t$")

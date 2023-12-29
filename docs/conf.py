@@ -186,6 +186,7 @@ autodoc_default_options = {
 # {{{ links
 
 intersphinx_mapping = {
+    "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "python": ("https://docs.python.org/3", None),
     "rich": ("https://rich.readthedocs.io/en/stable", None),

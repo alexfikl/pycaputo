@@ -71,7 +71,7 @@ from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
 
-with figure("caputo-gradient-spectral.svg") as fig:
+with figure("caputo-gradient-spectral") as fig:
     ax = fig.gca()
 
     ax.plot(df_num, lw=5, label="Spectral")

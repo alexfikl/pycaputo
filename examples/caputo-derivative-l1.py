@@ -5,7 +5,10 @@ import math
 
 import numpy as np
 
+from pycaputo.logging import get_logger
 from pycaputo.utils import Array
+
+logger = get_logger("adaptive-pece")
 
 # {{{ evaluate
 
@@ -37,8 +40,8 @@ p = make_uniform_points(256, a=0.0, b=1.0)
 df_num = diff(method, f, p)
 
 df_ref = df(p.x, d.order)
-print(
-    "Relative error: ",
+logger.info(
+    "Relative error: %.12e",
     np.linalg.norm(df_num[1:] - df_ref[1:]) / np.linalg.norm(df_ref[1:]),
 )
 
@@ -56,11 +59,11 @@ from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
 
-with figure("caputo-derivative-l1.svg") as fig:
+with figure("caputo-derivative-l1") as fig:
     ax = fig.gca()
 
-    ax.plot(p.x, df_num, lw=5, label="$L1~ Method$")
-    ax.plot(p.x[1:], df_ref[1:], "k--", label="$Exact$")
+    ax.plot(p.x, df_num, lw=5, label="L1 Method")
+    ax.plot(p.x[1:], df_ref[1:], "k--", label="Exact")
 
     ax.set_xlabel("$x$")
     ax.set_ylabel(r"$D^\alpha_C[f](x)$")

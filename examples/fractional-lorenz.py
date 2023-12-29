@@ -5,7 +5,10 @@ from functools import partial
 
 import numpy as np
 
+from pycaputo.logging import get_logger
 from pycaputo.utils import Array
+
+logger = get_logger("lorenz")
 
 # {{{ Lorenz
 
@@ -67,10 +70,14 @@ for event in evolve(stepper):
     ts.append(event.t)
     ys.append(event.y)
 
-    print(
-        f"[{event.iteration:6d}] "
-        f"t = {event.t:8.5f} energy {np.linalg.norm(event.y):.5e}"
+    logger.info(
+        "[%06d] t = %.5e dt = %.5e energy %.5e",
+        event.iteration,
+        event.t,
+        event.dt,
+        np.linalg.norm(event.y),
     )
+
 
 # }}}
 
@@ -88,21 +95,21 @@ set_recommended_matplotlib()
 t = np.array(ts)
 y = np.array(ys).T
 
-with figure("lorenz-cycle-xy.svg") as fig:
+with figure("lorenz-cycle-xy") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[1], ls="--")
     ax.set_xlabel("$x$")
     ax.set_ylabel("$y$")
 
-with figure("lorenz-cycle-xz.svg") as fig:
+with figure("lorenz-cycle-xz") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[2], ls="--")
     ax.set_xlabel("$x$")
     ax.set_ylabel("$z$")
 
-with figure("lorenz-cycle-yz.svg") as fig:
+with figure("lorenz-cycle-yz") as fig:
     ax = fig.gca()
 
     ax.plot(y[1], y[2], ls="--")

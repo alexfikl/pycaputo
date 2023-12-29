@@ -5,7 +5,10 @@ from functools import partial
 
 import numpy as np
 
+from pycaputo.logging import get_logger
 from pycaputo.utils import Array
+
+logger = get_logger("brusselator")
 
 # {{{ Brusselator
 
@@ -50,9 +53,12 @@ for event in evolve(stepper):
     ts.append(event.t)
     ys.append(event.y)
 
-    print(
-        f"[{event.iteration:6d}] "
-        f"t = {event.t:8.5f} energy {np.linalg.norm(event.y):.5e}"
+    logger.info(
+        "[%06d] t = %.5e dt = %.5e energy %.5e",
+        event.iteration,
+        event.t,
+        event.dt,
+        np.linalg.norm(event.y),
     )
 
 # }}}
@@ -71,7 +77,7 @@ set_recommended_matplotlib()
 t = np.array(ts)
 y = np.array(ys).T
 
-with figure("brusselator-predictor-corrector.svg") as fig:
+with figure("brusselator-predictor-corrector") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[1], "--", lw=3, label="$y$")
@@ -80,7 +86,7 @@ with figure("brusselator-predictor-corrector.svg") as fig:
     ax.set_xlabel("$t$")
     ax.legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
 
-with figure("brusselator-predictor-corrector-cycle.svg") as fig:
+with figure("brusselator-predictor-corrector-cycle") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[1], ls="--")
