@@ -13,6 +13,7 @@ recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs *.txt
 recursive-include docs Makefile
+recursive-include scripts *.py
 recursive-include examples *.py
 recursive-include pycaputo *.typed
 recursive-include pycaputo *.py
