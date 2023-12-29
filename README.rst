@@ -2,6 +2,10 @@
     :alt: Build Status
     :target: https://github.com/alexfikl/pycaputo/actions?query=branch%3Amain+workflow%3ACI
 
+.. image:: https://badge.fury.io/py/pycaputo.svg
+    :alt: PyPI
+    :target: https://pypi.org/project/pycaputo/
+
 .. image:: https://readthedocs.org/projects/pycaputo/badge/?version=latest
     :alt: Documentation
     :target: https://pycaputo.readthedocs.io/en/latest/?badge=latest
