@@ -1,8 +1,16 @@
 Changelog
 =========
 
-pycaputo 0.3 (December 28, 2023)
---------------------------------
+pycaputo 0.3.1 (December 29, 2023)
+----------------------------------
+
+Features
+^^^^^^^^
+
+* Released on PyPI!
+
+pycaputo 0.3.0 (December 28, 2023)
+----------------------------------
 
 Features
 ^^^^^^^^
@@ -10,7 +18,7 @@ Features
 * Add support for adaptive time stepping (:ghpr:`32`). This functionality is
   very nice and there isn't much literature on the matter so it will likely
   need substantial improvements in the future. For the moment, the work of
-  [Jannelli2020] is implement and seems to work reasonably well.
+  [Jannelli2020]_ is implement and seems to work reasonably well.
 
 Fixes
 ^^^^^
@@ -18,8 +26,8 @@ Fixes
 * Make all methods use a vector of orders ``alpha`` when solving systems to be
   more future proof.
 
-pycaputo 0.2 (December 25, 2023)
---------------------------------
+pycaputo 0.2.0 (December 25, 2023)
+----------------------------------
 
 Dependency changes
 ^^^^^^^^^^^^^^^^^^
@@ -57,8 +65,8 @@ Fixes
 * Add dark variants of plots to the documentation for nicer results.
 * Promoto history management to :mod:`pycaputo.history`.
 
-pycaputo 0.1 (June 12, 2023)
-----------------------------
+pycaputo 0.1.0 (June 12, 2023)
+------------------------------
 
 This is the initial release of the project and has some basic functionality
 implemented already.
