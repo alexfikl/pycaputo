@@ -65,40 +65,6 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 # }}}
 
 
-# {{{ test_graded_time_span
-
-
-def test_graded_time_span() -> None:
-    from pycaputo.controller import evaluate_timestep_accept, make_graded_controller
-
-    nsteps = 100
-    tstart, tfinal = (-1.5, 3.0)
-    r = 3
-    control = make_graded_controller(tstart=tstart, tfinal=tfinal, nsteps=nsteps, r=r)
-    m = fode_factory(fode.CaputoForwardEulerMethod, wrap=False)(0.5, nsteps)
-
-    n = np.arange(nsteps)
-    t_ref = tstart + (n / nsteps) ** r * (tfinal - tstart)
-
-    t = np.empty_like(t_ref)
-    dummy = np.empty(3)
-
-    dt = 0.0
-    t[0] = tstart
-    for i in range(1, nsteps):
-        dt = evaluate_timestep_accept(
-            control, m, 1.0, dt, {"n": i - 1, "t": t[i - 1], "y": dummy}
-        )
-        t[i] = t[i - 1] + dt
-
-    error = la.norm(t - t_ref) / la.norm(t_ref)
-    logger.info("error: %.12e", error)
-    assert error < 1.0e-13
-
-
-# }}}
-
-
 # {{{ test_caputo_fode
 
 

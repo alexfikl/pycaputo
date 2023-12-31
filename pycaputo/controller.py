@@ -67,8 +67,7 @@ def _normalize_time_span_triple(
     elif nsteps is not None:
         tfinal = tstart + nsteps * dt
     else:
-        # nothing we can do here
-        pass
+        raise ValueError("Must provide either 'tfinal' or 'nsteps' or both")
 
     return dt, tfinal, nsteps
 
@@ -242,7 +241,7 @@ class Controller:
         # fmt: off
         return (
             (self.tfinal is not None and t >= self.tfinal)
-            or (self.nsteps is not None and n + 1 >= self.nsteps))
+            or (self.nsteps is not None and n >= self.nsteps))
         # fmt: on
 
 
@@ -449,7 +448,7 @@ def _evaluate_timestep_accept_graded(
     assert c.nsteps is not None
 
     n = state["n"]
-    h = (c.tfinal - c.tstart) / c.nsteps**c.r
+    h = (c.tfinal - c.tstart) / (c.nsteps - 1) ** c.r
     dt = q * h * ((n + 1) ** c.r - n**c.r)
 
     if c.tfinal is not None:
