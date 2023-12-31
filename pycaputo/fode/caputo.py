@@ -10,7 +10,7 @@ import numpy as np
 
 from pycaputo.fode.base import AdvanceResult, advance
 from pycaputo.fode.product_integration import CaputoProductIntegrationMethod
-from pycaputo.history import VariableProductIntegrationHistory
+from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, StateFunction
 
@@ -65,7 +65,7 @@ class CaputoForwardEulerMethod(CaputoProductIntegrationMethod):
 
 def _update_caputo_forward_euler(
     dy: Array,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     alphas: tuple[float, ...],
     n: int,
 ) -> Array:
@@ -88,7 +88,7 @@ def _update_caputo_forward_euler(
 @advance.register(CaputoForwardEulerMethod)
 def _advance_caputo_forward_euler(
     m: CaputoForwardEulerMethod,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     y: Array,
     dt: float,
 ) -> AdvanceResult:
@@ -242,7 +242,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
 
 def _update_caputo_weighted_euler(
     dy: Array,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     alphas: tuple[float, ...],
     theta: float,
     n: int,
@@ -276,7 +276,7 @@ def _update_caputo_weighted_euler(
 @advance.register(CaputoWeightedEulerMethod)
 def _advance_caputo_weighted_euler(
     m: CaputoWeightedEulerMethod,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     y: Array,
     dt: float,
 ) -> AdvanceResult:
@@ -389,7 +389,7 @@ class CaputoPECMethod(CaputoPredictorCorrectorMethod):
 
 def _update_caputo_adams_bashforth2(
     dy: Array,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     alpha: float,
     *,
     n: int | None = None,
@@ -444,7 +444,7 @@ def _update_caputo_adams_bashforth2(
 @advance.register(CaputoPredictorCorrectorMethod)
 def _advance_caputo_predictor_corrector(
     m: CaputoPredictorCorrectorMethod,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     y: Array,
     dt: float,
 ) -> AdvanceResult:
@@ -505,7 +505,7 @@ class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
 @advance.register(CaputoModifiedPECEMethod)
 def _advance_caputo_modified_pece(
     m: CaputoModifiedPECEMethod,
-    history: VariableProductIntegrationHistory,
+    history: ProductIntegrationHistory,
     y: Array,
     dt: float,
 ) -> AdvanceResult:

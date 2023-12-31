@@ -6,7 +6,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property, singledispatch
-from typing import Iterator
+from typing import Any, Iterator
 
 from typing_extensions import TypeAlias
 
@@ -166,7 +166,7 @@ class FractionalDifferentialEquationMethod(ABC):
 def evolve(
     m: FractionalDifferentialEquationMethod,
     *,
-    history: History | None = None,
+    history: History[Any] | None = None,
     dt: float | None = None,
 ) -> Iterator[Event]:
     """Evolve the fractional-order ordinary differential equation in time.
@@ -186,7 +186,10 @@ def evolve(
 
 @singledispatch
 def advance(
-    m: FractionalDifferentialEquationMethod, history: History, y: Array, dt: float
+    m: FractionalDifferentialEquationMethod,
+    history: History[Any],
+    y: Array,
+    dt: float,
 ) -> AdvanceResult:
     r"""Advance the solution with the *history* by a time step *dt*.
 

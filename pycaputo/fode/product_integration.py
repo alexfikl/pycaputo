@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Iterator
+from typing import Any, Iterator
 
 import numpy as np
 
@@ -37,16 +37,14 @@ class ProductIntegrationMethod(FractionalDifferentialEquationMethod):
 def _evolve_pi(
     m: FractionalDifferentialEquationMethod,
     *,
-    history: History | None = None,
+    history: History[Any] | None = None,
     dt: float | None = None,
 ) -> Iterator[Event]:
     if history is None:
-        from pycaputo.history import VariableProductIntegrationHistory
+        from pycaputo.history import ProductIntegrationHistory
 
         y = m.y0[0]
-        history = VariableProductIntegrationHistory.empty(
-            n=None, shape=y.shape, dtype=y.dtype
-        )
+        history = ProductIntegrationHistory.empty(n=None, shape=y.shape, dtype=y.dtype)
 
     from pycaputo.controller import (
         StepEstimateError,

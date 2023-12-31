@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, fields
-from typing import Any, Iterable
+from typing import Any, Generic, Iterable, TypeVar
 
 import numpy as np
 
@@ -32,7 +32,10 @@ class State:
             yield getattr(self, f.name)
 
 
-class History(ABC):
+T = TypeVar("T", bound=State)
+
+
+class History(ABC, Generic[T]):
     """A class handling the history checkpointing of an evolution equation.
 
     It essentially acts as a queue from which the items cannot be removed. For
@@ -59,7 +62,7 @@ class History(ABC):
         """
 
     @abstractmethod
-    def __getitem__(self, k: int) -> State:
+    def __getitem__(self, k: int) -> T:
         """Load a checkpoint from the history.
 
         :returns: a compound :class:`State` from the *k*-th checkpoint.
@@ -79,7 +82,7 @@ class History(ABC):
 
 
 @dataclass(frozen=True)
-class InMemoryHistory(History):
+class InMemoryHistory(History[T]):
     """A history with contiguous in-memory storage.
 
     This storage automatically grows when it exceeds its capacity and allows
@@ -139,8 +142,8 @@ class InMemoryHistory(History):
         cls,
         n: int | None,
         shape: tuple[int, ...],
-        dtype: np.dtype[Any] | None = None,
-    ) -> InMemoryHistory:
+        dtype: Any = None,
+    ) -> InMemoryHistory[T]:
         """Construct a :class:`InMemoryHistory` for given sizes.
 
         :arg n: number of time steps that will be stored.
@@ -150,6 +153,7 @@ class InMemoryHistory(History):
             # NOTE: should be enough for everybody!
             n = 512
 
+        dtype = np.dtype(dtype)
         return cls(
             storage=np.empty((n, *shape), dtype=dtype),
             ts=np.empty(n, dtype=dtype),
@@ -159,7 +163,7 @@ class InMemoryHistory(History):
 # }}}
 
 
-# {{{ VariableProductIntegrationHistory
+# {{{ ProductIntegrationHistory
 
 
 @dataclass(frozen=True)
@@ -175,7 +179,7 @@ class ProductIntegrationState(State):
 
 
 @dataclass(frozen=True)
-class VariableProductIntegrationHistory(InMemoryHistory):
+class ProductIntegrationHistory(InMemoryHistory[ProductIntegrationState]):
     """A history for Product Integration methods with variable time step."""
 
     def __getitem__(self, k: int) -> ProductIntegrationState:
