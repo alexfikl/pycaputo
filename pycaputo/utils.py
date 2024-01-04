@@ -29,7 +29,6 @@ from pycaputo.logging import get_logger
 
 logger = get_logger(__name__)
 
-__all__ = ("gamma",)
 
 # {{{ typing
 
@@ -37,7 +36,6 @@ __all__ = ("gamma",)
 T = TypeVar("T")
 #: A generic invariant :class:`typing.TypeVar`.
 R = TypeVar("R")
-#: A generic invarint :class:`typing.ParamSpec`.
 P = ParamSpec("P")
 
 #: A union of types supported as paths.
@@ -596,6 +594,7 @@ class BlockTimer:
 
 
 def gamma(x: Any) -> Array:
+    """Wrapper around :func:`scipy.special.gamma`."""
     try:
         from scipy.special import gamma as _gamma
 
@@ -613,6 +612,17 @@ def gamma(x: Any) -> Array:
 def cached_method(
     func: Callable[Concatenate[T, P], R],
 ) -> Callable[Concatenate[T, P], R]:
+    """Simple cache function for class methods.
+
+    The values are stored in the class instance and will be cleared once the
+    instance is destroyed. To clear the cache sooner, use
+
+    .. code:: python
+
+        obj.clear_cached()
+
+    :arg func: a class method to cache.
+    """
     cache_dict_name = f"_cached_method_{func.__module__}{func.__name__}"
 
     def wrapper(obj: T, /, *args: P.args, **kwargs: P.kwargs) -> R:
@@ -632,13 +642,13 @@ def cached_method(
 
         return result
 
-    def clear_cache(obj: T) -> None:
+    def clear_cached(obj: T) -> None:
         object.__delattr__(obj, cache_dict_name)
 
     from functools import update_wrapper
 
     new_wrapper = update_wrapper(wrapper, func)
-    new_wrapper.clear_cache = clear_cache  # type: ignore[attr-defined]
+    new_wrapper.clear_cached = clear_cached  # type: ignore[attr-defined]
 
     return new_wrapper
 

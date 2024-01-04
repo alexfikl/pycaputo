@@ -50,4 +50,8 @@ Logging
 Misc
 ----
 
+.. class:: pycaputo.utils.P
+
+    A generic invarint :class:`typing.ParamSpec`.
+
 .. automodule:: pycaputo.utils
