@@ -32,6 +32,7 @@ class State:
             yield getattr(self, f.name)
 
 
+#: Invariant type variable bound to :class:`State`.
 T = TypeVar("T", bound=State)
 
 

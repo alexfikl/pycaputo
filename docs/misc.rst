@@ -37,6 +37,11 @@ Lipschitz Constant Estimation
 
 .. automodule:: pycaputo.lipschitz
 
+Implicit Equations
+------------------
+
+.. automodule:: pycaputo.implicit
+
 Logging
 -------
 
