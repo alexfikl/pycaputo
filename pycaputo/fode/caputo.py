@@ -73,7 +73,9 @@ def _update_caputo_forward_euler(
     ts = history.ts[n] - history.ts[: n + 1]
 
     # sum up convolution
-    omega = (ts[:-1] ** m.alpha - ts[1:] ** m.alpha) / m.gamma1p
+    alpha = m.alpha.reshape(-1, 1)
+    gamma1p = m.gamma1p.reshape(-1, 1)
+    omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1p
     dy += sum(w * fk for w, fk in zip(omega.T, history.storage[: n + 1]))
 
     return dy
@@ -191,7 +193,9 @@ def _update_caputo_weighted_euler(
     theta = m.theta
 
     # add explicit terms
-    omega = ((ts[:-1] ** m.alpha - ts[1:] ** m.alpha) / m.gamma1p).T
+    alpha = m.alpha.reshape(-1, 1)
+    gamma1p = m.gamma1p.reshape(-1, 1)
+    omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1p).T
     if theta != 0.0:
         fs = history.storage[: n - 1]
         dy += sum(theta * w * fk for w, fk in zip(omega, fs))
