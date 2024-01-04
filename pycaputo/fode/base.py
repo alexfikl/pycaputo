@@ -8,13 +8,14 @@ from dataclasses import dataclass
 from functools import cached_property, singledispatch
 from typing import Any, Iterator
 
+import numpy as np
 from typing_extensions import TypeAlias
 
 from pycaputo.controller import Controller
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.history import History
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, StateFunction
+from pycaputo.utils import Array, StateFunction, gamma
 
 logger = get_logger(__name__)
 
@@ -145,11 +146,28 @@ class FractionalDifferentialEquationMethod(ABC):
 
     @cached_property
     def largest_derivative_order(self) -> float:
+        """Largest order in :attr:`derivative_order`."""
         return max(self.derivative_order)
 
     @cached_property
     def smallest_derivative_order(self) -> float:
+        """Smallest order in :attr:`derivative_order`."""
         return min(self.derivative_order)
+
+    @cached_property
+    def alpha(self) -> Array:
+        """A cached vectorized form of :attr:`derivative_order`."""
+        return np.array(self.derivative_order)
+
+    @cached_property
+    def gamma1p(self) -> Array:
+        r"""A cached vectorized value of :math:`\Gamma(1 + \alpha_i)`."""
+        return gamma(1 + self.alpha)
+
+    @cached_property
+    def gamma2p(self) -> Array:
+        r"""A cached vectorized value of :math:`\Gamma(2 + \alpha_i)`."""
+        return gamma(2 + self.alpha)
 
     @property
     @abstractmethod

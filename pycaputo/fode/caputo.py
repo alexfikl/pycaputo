@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import ceil, gamma
+from math import ceil
 
 import numpy as np
 
@@ -12,16 +12,17 @@ from pycaputo.fode.base import AdvanceResult, advance
 from pycaputo.fode.product_integration import CaputoProductIntegrationMethod
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, StateFunction
+from pycaputo.utils import Array, StateFunction, gamma
 
 logger = get_logger(__name__)
 
 
 def _update_caputo_initial_condition(
-    out: Array, t: float, y0: tuple[Array, ...]
+    out: Array, m: CaputoProductIntegrationMethod, t: float
 ) -> Array:
     """Adds the appropriate initial conditions to *dy*."""
-    for k, y0k in enumerate(y0):
+    t = t - m.control.tstart
+    for k, y0k in enumerate(m.y0):
         out += t**k / gamma(k + 1) * y0k
 
     return out
@@ -32,18 +33,15 @@ def _truncation_error(
 ) -> Array:
     from pycaputo.controller import JannelliIntegralController
 
-    alpha = m.derivative_order
+    alpha = m.alpha
     assert t > tprev
 
     if isinstance(m.control, JannelliIntegralController):
         trunc = np.array(
-            [
-                gamma(1.0 + alpha[i])
-                * (t - tprev) ** alpha[i]
-                / (t ** alpha[i] - tprev ** alpha[i])
-                * np.abs(y[i] - yprev[i])
-                for i in range(y.size)
-            ]
+            m.gamma1p
+            * (t - tprev) ** alpha
+            / (t**alpha - tprev**alpha)
+            * np.abs(y - yprev)
         )
     else:
         trunc = np.zeros_like(y)
@@ -65,8 +63,8 @@ class CaputoForwardEulerMethod(CaputoProductIntegrationMethod):
 
 def _update_caputo_forward_euler(
     dy: Array,
+    m: CaputoProductIntegrationMethod,
     history: ProductIntegrationHistory,
-    alphas: tuple[float, ...],
     n: int,
 ) -> Array:
     """Adds the Forward Euler right-hand side to *dy*."""
@@ -74,12 +72,8 @@ def _update_caputo_forward_euler(
     assert 0 < n <= len(history)
     ts = history.ts[n] - history.ts[: n + 1]
 
-    # vectorize alphas
-    gamma1 = np.array([gamma(1 + a) for a in alphas]).reshape(-1, 1)
-    alpha = np.array(alphas).reshape(-1, 1)
-
     # sum up convolution
-    omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1
+    omega = (ts[:-1] ** m.alpha - ts[1:] ** m.alpha) / m.gamma1p
     dy += sum(w * fk for w, fk in zip(omega.T, history.storage[: n + 1]))
 
     return dy
@@ -92,16 +86,14 @@ def _advance_caputo_forward_euler(
     y: Array,
     dt: float,
 ) -> AdvanceResult:
-    n = len(history)
-    alpha = m.derivative_order
-
     # set next time step
+    n = len(history)
     t = history.ts[n] = history.ts[n - 1] + dt
 
     # compute solution
     ynext = np.zeros_like(y)
-    ynext = _update_caputo_initial_condition(ynext, t - m.control.tstart, m.y0)
-    ynext = _update_caputo_forward_euler(ynext, history, alpha, n)
+    ynext = _update_caputo_initial_condition(ynext, m, t)
+    ynext = _update_caputo_forward_euler(ynext, m, history, n)
 
     trunc = _truncation_error(m, t, ynext, t - dt, y)
     return ynext, trunc, m.source(t, ynext)
@@ -147,8 +139,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
 
     @property
     def order(self) -> float:
-        alpha = min(self.derivative_order)
-        return (1.0 + alpha) if self.theta == 0.5 else 1.0
+        return (1.0 + self.smallest_derivative_order) if self.theta == 0.5 else 1.0
 
     # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
     # some specific application (undocumented for now).
@@ -188,21 +179,19 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
 
 def _update_caputo_weighted_euler(
     dy: Array,
+    m: CaputoWeightedEulerMethod,
     history: ProductIntegrationHistory,
-    alphas: tuple[float, ...],
-    theta: float,
     n: int,
 ) -> tuple[Array, Array]:
     """Adds the weighted Euler right-hand side to *dy*."""
     # NOTE: this is implicit so we never want to compute the last term
     assert 0 < n <= len(history)
-    ts = history.ts[n] - history.ts[: n + 1]
 
-    gamma1 = np.array([gamma(1 + a) for a in alphas]).reshape(-1, 1)
-    alpha = np.array(alphas).reshape(-1, 1)
+    ts = history.ts[n] - history.ts[: n + 1]
+    theta = m.theta
 
     # add explicit terms
-    omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1).T
+    omega = ((ts[:-1] ** m.alpha - ts[1:] ** m.alpha) / m.gamma1p).T
     if theta != 0.0:
         fs = history.storage[: n - 1]
         dy += sum(theta * w * fk for w, fk in zip(omega, fs))
@@ -226,16 +215,14 @@ def _advance_caputo_weighted_euler(
     y: Array,
     dt: float,
 ) -> AdvanceResult:
-    n = len(history)
-    alpha = m.derivative_order
-
     # set next time step
+    n = len(history)
     t = history.ts[n] = history.ts[n - 1] + dt
 
     # add explicit terms
     fnext = np.zeros_like(y)
-    fnext = _update_caputo_initial_condition(fnext, t - m.control.tstart, m.y0)
-    fnext, omega = _update_caputo_weighted_euler(fnext, history, alpha, m.theta, n)
+    fnext = _update_caputo_initial_condition(fnext, m, t)
+    fnext, omega = _update_caputo_weighted_euler(fnext, m, history, n)
 
     # solve implicit equation
     if m.theta != 1.0:  # noqa: SIM108
@@ -285,8 +272,7 @@ class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod):
 
     @property
     def order(self) -> float:
-        alpha = min(self.derivative_order)
-        return 1.0 + alpha
+        return 1.0 + self.smallest_derivative_order
 
 
 @dataclass(frozen=True)
@@ -404,11 +390,11 @@ def _advance_caputo_predictor_corrector(
 
     # add initial conditions
     y0 = np.zeros_like(y)
-    y0 = _update_caputo_initial_condition(y0, t - m.control.tstart, m.y0)
+    y0 = _update_caputo_initial_condition(y0, m, t)
 
     # predictor step (forward Euler)
     yp = np.copy(y0)
-    yp = _update_caputo_forward_euler(yp, history, m.derivative_order, len(history))
+    yp = _update_caputo_forward_euler(yp, m, history, len(history))
 
     # corrector step (Adams-Bashforth 2)
     yc_explicit = np.copy(y0)
@@ -471,10 +457,10 @@ def _advance_caputo_modified_pece(
 
     # compute common terms
     dy = np.zeros_like(y)
-    dy = _update_caputo_initial_condition(dy, t - m.control.tstart, m.y0)
+    dy = _update_caputo_initial_condition(dy, m, t)
 
     if n == 1:
-        yp = _update_caputo_forward_euler(dy, history, m.derivative_order, len(history))
+        yp = _update_caputo_forward_euler(dy, m, history, len(history))
     else:
         dy, _ = _update_caputo_adams_bashforth2(dy, history, alpha, n=n)
 

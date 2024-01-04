@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import pathlib
 import time
@@ -22,16 +23,22 @@ from typing import (
 )
 
 import numpy as np
-from typing_extensions import TypeAlias
+from typing_extensions import Concatenate, ParamSpec, TypeAlias
 
 from pycaputo.logging import get_logger
 
 logger = get_logger(__name__)
 
+__all__ = ("gamma",)
+
 # {{{ typing
 
 #: A generic invariant :class:`typing.TypeVar`.
 T = TypeVar("T")
+#: A generic invariant :class:`typing.TypeVar`.
+R = TypeVar("R")
+#: A generic invarint :class:`typing.ParamSpec`.
+P = ParamSpec("P")
 
 #: A union of types supported as paths.
 PathLike = Union[pathlib.Path, str]
@@ -585,7 +592,55 @@ class BlockTimer:
 # }}}
 
 
-# {{{
+# {{{ scipy wrappers
+
+
+def gamma(x: Any) -> Array:
+    try:
+        from scipy.special import gamma as _gamma
+
+        return np.array(_gamma(x))
+    except ImportError:
+        return np.array(np.vectorize(math.gamma)(x))
+
+
+# }}}
+
+
+# {{{ others
+
+
+def cached_method(
+    func: Callable[Concatenate[T, P], R],
+) -> Callable[Concatenate[T, P], R]:
+    cache_dict_name = f"_cached_method_{func.__module__}{func.__name__}"
+
+    def wrapper(obj: T, /, *args: P.args, **kwargs: P.kwargs) -> R:
+        key = frozenset(kwargs.items()) | frozenset(args)
+
+        try:
+            d = getattr(obj, cache_dict_name)
+        except AttributeError:
+            # NOTE: 'cache_dict_name' could not be found, so we create it
+            object.__setattr__(obj, cache_dict_name, {})
+
+        try:
+            result: R = d[key]
+        except KeyError:
+            # NOTE: key could not be found in 'cache_dict_name'
+            d[key] = result = func(*args, **kwargs)
+
+        return result
+
+    def clear_cache(obj: T) -> None:
+        object.__delattr__(obj, cache_dict_name)
+
+    from functools import update_wrapper
+
+    new_wrapper = update_wrapper(wrapper, func)
+    new_wrapper.clear_cache = clear_cache  # type: ignore[attr-defined]
+
+    return new_wrapper
 
 
 def single_valued(iterable: Iterable[T], eq: Callable[[T, T], bool] | None = None) -> T:
