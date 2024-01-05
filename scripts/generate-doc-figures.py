@@ -40,13 +40,11 @@ def main(outdir: pathlib.Path) -> int:
         return 1
 
     env = os.environ.copy()
-    env.update(
-        {
-            "PYCAPUTO_LOGGING_LEVEL": "ERROR",
-            "PYCAPUTO_SAVEFIG": "SVG",
-            "PYTHONPATH": str(pathlib.Path.cwd()),
-        }
-    )
+    env.update({
+        "PYCAPUTO_LOGGING_LEVEL": "ERROR",
+        "PYCAPUTO_SAVEFIG": "SVG",
+        "PYTHONPATH": str(pathlib.Path.cwd()),
+    })
 
     for dark in (True, False):
         for name, artifacts in ARTIFACTS.items():

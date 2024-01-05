@@ -14,24 +14,20 @@ logger = get_logger("lorenz")
 
 
 def lorenz(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> Array:
-    return np.array(
-        [
-            sigma * (y[1] - y[0]),
-            y[0] * (rho - y[2]) - y[1],
-            y[0] * y[1] - beta * y[2],
-        ]
-    )
+    return np.array([
+        sigma * (y[1] - y[0]),
+        y[0] * (rho - y[2]) - y[1],
+        y[0] * y[1] - beta * y[2],
+    ])
 
 
 def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> Array:
     # J_{ij} = d f_i / d y_j
-    return np.array(
-        [
-            [-sigma, sigma, 0],
-            [rho - y[2], -1, -y[0]],
-            [y[1], y[0], -beta],
-        ]
-    )
+    return np.array([
+        [-sigma, sigma, 0],
+        [rho - y[2], -1, -y[0]],
+        [y[1], y[0], -beta],
+    ])
 
 
 # }}}

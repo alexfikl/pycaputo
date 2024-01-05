@@ -259,15 +259,13 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
     lines.append((":-:",) * ncolumns)
 
     for i in range(nrows):
-        values = flatten(
-            [
-                (
-                    f"{error[i]:.6e}",
-                    "---" if i == 0 else f"{order[i - 1, 1]:.3f}",
-                )
-                for (_, error), order in zip(histories, orders)
-            ]
-        )
+        values = flatten([
+            (
+                f"{error[i]:.6e}",
+                "---" if i == 0 else f"{order[i - 1, 1]:.3f}",
+            )
+            for (_, error), order in zip(histories, orders)
+        ])
         lines.append((f"{h[i]:.3e}", *values))
 
     lines.append(
@@ -283,12 +281,10 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
     widths = [max(len(line[i]) for line in lines) for i in range(ncolumns)]
     formats = ["{:%s}" % w for w in widths]
 
-    return "\n".join(
-        [
-            " | ".join(fmt.format(value) for fmt, value in zip(formats, line))
-            for line in lines
-        ]
-    )
+    return "\n".join([
+        " | ".join(fmt.format(value) for fmt, value in zip(formats, line))
+        for line in lines
+    ])
 
 
 # }}}

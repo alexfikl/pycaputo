@@ -14,12 +14,10 @@ logger = get_logger("brusselator")
 
 
 def brusselator(t: float, y: Array, *, a: float, mu: float) -> Array:
-    return np.array(
-        [
-            a - (mu + 1) * y[0] + y[0] ** 2 * y[1],
-            mu * y[0] - y[0] ** 2 * y[1],
-        ]
-    )
+    return np.array([
+        a - (mu + 1) * y[0] + y[0] ** 2 * y[1],
+        mu * y[0] - y[0] ** 2 * y[1],
+    ])
 
 
 # }}}

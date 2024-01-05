@@ -72,17 +72,15 @@ def lubich_bdf_weights(alpha: float, order: int, n: int) -> Array:
     elif order == 5:
         c = np.array([137.0 / 60.0, -5.0, 5.0, -10.0 / 3.0, 5.0 / 4.0, -1.0 / 5.0])
     elif order == 6:
-        c = np.array(
-            [
-                49.0 / 20.0,
-                -6.0,
-                15.0 / 2.0,
-                -20.0 / 3.0,
-                15.0 / 4.0,
-                -6.0 / 5.0,
-                1.0 / 6.0,
-            ]
-        )
+        c = np.array([
+            49.0 / 20.0,
+            -6.0,
+            15.0 / 2.0,
+            -20.0 / 3.0,
+            15.0 / 4.0,
+            -6.0 / 5.0,
+            1.0 / 6.0,
+        ])
     else:
         raise ValueError(f"Unsupported order '{order}'")
 
