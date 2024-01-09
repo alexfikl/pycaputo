@@ -481,7 +481,7 @@ def _advance_caputo_modified_pece(
         yp += omega * history.storage[k - 1]
         # fmt: on
 
-        omega = -ts[k] ** (alpha + 1) / gamma2 / ds[k]
+        omega = -(ts[k] ** (alpha + 1)) / gamma2 / ds[k]
         yp += omega * history.storage[k]
 
     # compute corrector

@@ -131,9 +131,15 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
     if visualize:
         mp.close(fig)
 
-    a = np.array(
-        [-0.02651995, 0.18941314, -0.79926643, 0.0, 0.79926643, -0.18941314, 0.02651995]
-    )
+    a = np.array([
+        -0.02651995,
+        0.18941314,
+        -0.79926643,
+        0.0,
+        0.79926643,
+        -0.18941314,
+        0.02651995,
+    ])
     offsets = np.arange(-3, 4)
     s = DiffStencil(derivative=1, coeffs=a, offsets=offsets)
 

@@ -10,30 +10,40 @@ help: 			## Show this help
 
 # {{{ linting
 
-format: black	## Run all formatting scripts
-	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
-	$(PYTHON) -m isort src tests examples scripts
+format: black pyproject							## Run all formatting scripts
 .PHONY: format
 
 fmt: format
 .PHONY: fmt
 
-black:			## Run black over the source code
-	$(PYTHON) -m black src tests examples docs scripts
+pyproject:		## Run pyproject-fmt over the configuration
+	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
+	@echo -e "\e[1;32mpyproject clean!\e[0m"
+.PHONY: pyproject
+
+black:			## Run ruff format over the source code
+	ruff format src tests examples docs
+	ruff check --fix --select=I src tests examples scripts docs
+	@echo -e "\e[1;32mruff format clean!\e[0m"
 .PHONY: black
 
-lint: ruff mypy reuse codespell manifest	## Run all linting scripts
+lint: ruff mypy doc8 reuse codespell manifest	## Run all linting scripts
 .PHONY: lint
 
 ruff:			## Run ruff checks over the source code
-	ruff check src tests examples scripts
-	@echo -e "\e[1;32mruff clean!\e[0m"
+	ruff check src tests examples scripts scripts
+	@echo -e "\e[1;32mruff lint clean!\e[0m"
 .PHONY: ruff
 
 mypy:			## Run mypy checks over the source code
 	$(PYTHON) -m mypy src tests examples scripts
 	@echo -e "\e[1;32mmypy clean!\e[0m"
 .PHONY: mypy
+
+doc8:			## Run doc8 checks over the source code
+	$(PYTHON) -m doc8 src docs
+	@echo -e "\e[1;32mdoc8 clean!\e[0m"
+.PHONY: doc8
 
 reuse:			## Check REUSE license compliance
 	$(PYTHON) -m reuse lint
@@ -46,6 +56,7 @@ codespell:		## Run codespell over the source code and documentation
 		--uri-ignore-words-list '*' \
 		--ignore-words .codespell-ignore \
 		src tests examples docs scripts
+	@echo -e "\e[1;32mcodespell clean!\e[0m"
 .PHONY: codespell
 
 manifest:		## Update MANIFEST.in file

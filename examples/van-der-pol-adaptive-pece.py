@@ -23,9 +23,10 @@ def van_der_pol(t: float, y: Array, *, mu: float = 4.0) -> Array:
 
 
 def van_der_pol_jac(t: float, y: Array, *, mu: float = 4.0) -> Array:
-    return np.array(
-        [[0.0, 1.0], [-mu * 2.0 * y[0] * y[1] - 1.0, mu * (1.0 - y[0] ** 2)]]
-    )
+    return np.array([
+        [0.0, 1.0],
+        [-mu * 2.0 * y[0] * y[1] - 1.0, mu * (1.0 - y[0] ** 2)],
+    ])
 
 
 # }}}

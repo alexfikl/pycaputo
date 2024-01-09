@@ -268,13 +268,14 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
         ])
         lines.append((f"{h[i]:.3e}", *values))
 
-    lines.append(
-        ("Overall", *flatten([("", f"{eoc.estimated_order:.3f}") for eoc in eocs]))
-    )
+    lines.append((
+        "Overall",
+        *flatten([("", f"{eoc.estimated_order:.3f}") for eoc in eocs]),
+    ))
 
-    expected = flatten(
-        [("", f"{eoc.order:.3f}") for eoc in eocs if eoc.order is not None]
-    )
+    expected = flatten([
+        ("", f"{eoc.order:.3f}") for eoc in eocs if eoc.order is not None
+    ])
     if expected:
         lines.append(("Expected", *expected))
 

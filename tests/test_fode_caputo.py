@@ -35,7 +35,7 @@ def li2015_source(t: float, y: Array, *, alpha: float) -> Array:
         + (t**5 - 3 * t**4 + 2 * t**3) ** 2
     )
 
-    return np.array([-y[0] ** 2 + f], dtype=y.dtype)
+    return np.array([-(y[0] ** 2) + f], dtype=y.dtype)
 
 
 def li2015_source_jac(t: float, y: Array, *, alpha: float) -> Array:
@@ -83,15 +83,15 @@ def fode_factory(
     has_source_jac = "source_jac" in {f.name for f in fields(cls)}
 
     def source(t: float, y: Array, *, alpha: tuple[float, ...]) -> Array:
-        r = np.stack(
-            [garrappa2009_source(t, y[i], alpha=alpha[i]) for i in range(nterms)]
-        )
+        r = np.stack([
+            garrappa2009_source(t, y[i], alpha=alpha[i]) for i in range(nterms)
+        ])
         return r.squeeze()
 
     def source_jac(t: float, y: Array, *, alpha: tuple[float, ...]) -> Array:
-        r = np.stack(
-            [garrappa2009_source_jac(t, y[i], alpha=alpha[i]) for i in range(nterms)]
-        )
+        r = np.stack([
+            garrappa2009_source_jac(t, y[i], alpha=alpha[i]) for i in range(nterms)
+        ])
         return r.squeeze()
 
     def wrapper(

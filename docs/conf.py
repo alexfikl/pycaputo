@@ -3,12 +3,11 @@
 
 import os
 import sys
+from importlib import metadata
+
 from docutils import nodes
 
-
 # {{{ project information
-
-from importlib import metadata
 
 m = metadata.metadata("pycaputo")
 project = m["Name"]

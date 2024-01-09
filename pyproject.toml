@@ -45,12 +45,16 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
+    "check-manifest",
+    "codespell",
     "differint",
+    "doc8",
     "matplotlib",
     "mypy",
     "pip-tools",
     "pyproject-fmt",
     "pytest",
+    "reuse",
     "ruff",
     "types-dataclasses",
 ]
@@ -68,13 +72,6 @@ Repository = "https://github.com/alexfikl/pycaputo"
 [tool.setuptools]
 package-dir = { "" = "src" }
 packages = { find = { where = ["src"] } }
-
-[tool.black]
-safe = true
-preview = true
-line-length = 88
-target-version = ["py39", "py310", "py311"]
-exclude='\.eggs|\.git|\.mypy_cache|build|dist|\.pytest_cache|\.pytype'
 
 [tool.ruff]
 preview = true
@@ -103,7 +100,7 @@ select = [
 ignore = [
     "E203",     # whitespace-before-punctuation
     "E402",     # module-import-not-at-top-of-file
-    "I001",     # unsorted-imports
+    "ISC001",   # single-line-implicit-string-concatenation
     "N806",     # non-lowercase-variable-in-function
     "N803",     # non-lowercase-argument
     "PLC0415",  # import-outside-top-level
@@ -120,13 +117,13 @@ ignore = [
     "UP037",    # quoted-annotation
 ]
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "double"
 multiline-quotes = "double"
 
-[tool.isort]
-profile = "black"
+[tool.ruff.lint.isort]
+known-first-party = ["pycaputo"]
 
 [tool.check-manifest]
 ignore = [
@@ -149,3 +146,7 @@ module = [
     "scienceplots.*",
 ]
 ignore_missing_imports = true
+
+[tool.doc8]
+max-line-length = 88
+ignore-path = "src/*.egg-info"

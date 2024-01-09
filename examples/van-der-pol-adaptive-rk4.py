@@ -42,9 +42,9 @@ class RungeKutta4Dummy(FractionalDifferentialEquationMethod):
 
     @property
     def d(self) -> tuple[FractionalOperator, ...]:
-        return tuple(
-            [CaputoDerivative(d, side=Side.Left) for d in self.derivative_order]
-        )
+        return tuple([
+            CaputoDerivative(d, side=Side.Left) for d in self.derivative_order
+        ])
 
 
 def van_der_pol(t: float, y: Array, *, eps: float = 1.0e-3) -> Array:
