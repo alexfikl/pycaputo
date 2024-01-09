@@ -1,6 +1,18 @@
 Changelog
 =========
 
+pycaputo 0.4.0 (TBD)
+--------------------
+
+Fixes
+^^^^^
+
+* Updated and fixed Lorenz example with
+  :class:`~pycaputo.fode.CaputoWeightedEulerMethod` (:ghpr:`19`).
+* Store an :class:`~numpy.ndarray` for the orders and Gamma evaluations so
+  they are not recomputed at each time step in
+  :class:`~pycaputo.fode.FractionalDifferentialEquationMethod`.
+
 pycaputo 0.3.1 (December 29, 2023)
 ----------------------------------
 
