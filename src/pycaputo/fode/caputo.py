@@ -76,7 +76,7 @@ def _update_caputo_forward_euler(
     alpha = m.alpha.reshape(-1, 1)
     gamma1p = m.gamma1p.reshape(-1, 1)
     omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1p
-    dy += sum(w * fk for w, fk in zip(omega.T, history.storage[: n + 1]))
+    dy += np.einsum("ij,ij->j", omega.T, history.storage[:n])
 
     return dy
 
@@ -196,20 +196,17 @@ def _update_caputo_weighted_euler(
     alpha = m.alpha.reshape(-1, 1)
     gamma1p = m.gamma1p.reshape(-1, 1)
     omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1p).T
-    if theta != 0.0:
-        fs = history.storage[: n - 1]
-        dy += sum(theta * w * fk for w, fk in zip(omega, fs))
 
+    # add forward terms
+    fs = history.storage[:n]
+    if theta != 0.0:
+        dy += theta * np.einsum("ij,ij->j", omega, fs)
+
+    # add backwards terms
     if theta != 1.0:
-        fs = history.storage[1:n]
-        dy += sum((1 - theta) * w * fk for w, fk in zip(omega, fs))
+        dy += (1 - theta) * np.einsum("ij,ij->j", omega[:-1], fs[1:])
 
-    # add last forward
-    omega = omega[-1, :].squeeze().copy()
-    if theta != 0.0:
-        dy += omega * theta * history.storage[n - 1]
-
-    return dy, omega
+    return dy, omega[-1].squeeze()
 
 
 @advance.register(CaputoWeightedEulerMethod)
