@@ -590,7 +590,7 @@ class BlockTimer:
 
 
 def gamma(x: Any) -> Array:
-    """Wrapper around :func:`scipy.special.gamma`."""
+    """Wrapper around :data:`scipy.special.gamma`."""
     try:
         from scipy.special import gamma as _gamma
 

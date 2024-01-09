@@ -12,26 +12,26 @@ help: 			## Show this help
 
 format: black	## Run all formatting scripts
 	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
-	$(PYTHON) -m isort pycaputo tests examples scripts
+	$(PYTHON) -m isort src tests examples scripts
 .PHONY: format
 
 fmt: format
 .PHONY: fmt
 
 black:			## Run black over the source code
-	$(PYTHON) -m black pycaputo tests examples docs scripts
+	$(PYTHON) -m black src tests examples docs scripts
 .PHONY: black
 
 lint: ruff mypy reuse codespell manifest	## Run all linting scripts
 .PHONY: lint
 
 ruff:			## Run ruff checks over the source code
-	ruff check pycaputo tests examples scripts
+	ruff check src tests examples scripts
 	@echo -e "\e[1;32mruff clean!\e[0m"
 .PHONY: ruff
 
 mypy:			## Run mypy checks over the source code
-	$(PYTHON) -m mypy pycaputo tests examples scripts
+	$(PYTHON) -m mypy src tests examples scripts
 	@echo -e "\e[1;32mmypy clean!\e[0m"
 .PHONY: mypy
 
@@ -45,7 +45,7 @@ codespell:		## Run codespell over the source code and documentation
 		--skip _build \
 		--uri-ignore-words-list '*' \
 		--ignore-words .codespell-ignore \
-		pycaputo tests examples docs scripts
+		src tests examples docs scripts
 .PHONY: codespell
 
 manifest:		## Update MANIFEST.in file

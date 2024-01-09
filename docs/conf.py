@@ -5,9 +5,6 @@ import os
 import sys
 from docutils import nodes
 
-# NOTE: seems necessary for readthedocs.org because it doesn't `pip install -e`
-sys.path.insert(0, os.path.abspath(".."))
-
 
 # {{{ project information
 
@@ -134,6 +131,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "use_source_button": True,
     "use_repository_button": True,
+    "navigation_with_keys": True,
     "repository_url": "https://github.com/alexfikl/pycaputo",
     "repository_branch": "main",
     "icon_links": [
