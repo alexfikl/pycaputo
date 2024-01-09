@@ -32,28 +32,25 @@ def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> 
 
 # }}}
 
-
 # {{{ solve
 
 from pycaputo.controller import make_fixed_controller
 from pycaputo.fode import CaputoWeightedEulerMethod
 
-# NOTE: order example taken from https://doi.org/10.1016/j.chaos.2009.03.016
-alpha = (0.985, 0.99, 0.99)
-# NOTE: the (sigma, rho, beta) parameters are the classic Lorenz attractor
-# parameters and we take alpha ~ 1 to obtain something similar here
+# NOTE: example taken from Figure 1 in https://doi.org/10.1103/PhysRevLett.91.034101
+alpha = (0.99, 0.99, 0.99)
 sigma = 10.0
 rho = 28.0
 beta = 8.0 / 3.0
-y0 = np.array([-2.0, 1.0, -1.0])
+y0 = np.array([10.0, 0.0, 10.0])
 
 stepper = CaputoWeightedEulerMethod(
     derivative_order=alpha,
-    control=make_fixed_controller(1.0e-2, tstart=0.0, tfinal=75.0),
+    control=make_fixed_controller(1.0e-3, tstart=0.0, tfinal=25.0),
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
     source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
     y0=(y0,),
-    theta=1.0,
+    theta=0.5,
 )
 
 from pycaputo.fode import StepCompleted, evolve
@@ -88,7 +85,6 @@ except ImportError as exc:
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
-t = np.array(ts)
 y = np.array(ys).T
 
 with figure("lorenz-cycle-xy") as fig:
