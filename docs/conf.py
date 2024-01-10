@@ -85,7 +85,7 @@ def linkcode_resolve(domain, info):
     else:
         linestart, linestop = lineno, lineno + len(source) - 1
 
-    return "https://github.com/alexfikl/pycaputo/blob/main/{}#L{}-L{}".format(
+    return "https://github.com/alexfikl/pycaputo/blob/main/src/{}#L{}-L{}".format(
         filepath, linestart, linestop
     )
 
