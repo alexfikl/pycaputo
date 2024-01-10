@@ -6,10 +6,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property, singledispatch
-from typing import Any, Iterator
+from typing import Any, Iterable, Iterator
 
 import numpy as np
-from typing_extensions import TypeAlias
 
 from pycaputo.controller import Controller
 from pycaputo.derivatives import FractionalOperator
@@ -74,18 +73,10 @@ class StepRejected(StepCompleted):
     """Result of a successful update where the time step was rejected."""
 
 
-AdvanceResult: TypeAlias = tuple[Array, Array, Array]
-
 # }}}
 
 
 # {{{ interface
-
-
-class AdvanceFailedError(RuntimeError):
-    """An exception that should be raised by :func:`advance` when the solution
-    cannot be advanced.
-    """
 
 
 @dataclass(frozen=True)
@@ -208,7 +199,7 @@ def advance(
     history: History[Any],
     y: Array,
     dt: float,
-) -> AdvanceResult:
+) -> Iterable[Array]:
     r"""Advance the solution with the *history* by a time step *dt*.
 
     This function takes ``history[t_s, ... t_n]`` with the history up to the
@@ -218,10 +209,9 @@ def advance(
     :arg history: the history of all previous time steps.
     :arg y: state solution from the previous time step.
     :arg dt: the time step to use to evolve to the next step.
-    :returns: an instance of :data:`AdvanceResult` with the solution at the
-        next time step and additional information.
-
-    :raises: :exc:`AdvanceFailedError` if the solution could not be advanced.
+    :returns: an iterable where the first item is the solution at the next time
+        step and the remaining items contain additional information about the
+        evolution left to the individual methods.
     """
     raise NotImplementedError(f"'advance' functionality for '{type(m).__name__}'")
 

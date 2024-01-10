@@ -15,20 +15,8 @@ Time Stepping Events
 Time Stepping Interface
 -----------------------
 
-.. autoexception:: AdvanceFailedError
-
 .. autoclass:: FractionalDifferentialEquationMethod
 .. autoclass:: ProductIntegrationMethod
-
-.. data:: AdvanceResult
-
-    A tuple containing the result of :func:`advance`. It should contain
-    :math:`(y_{n + 1}, \tau_{n + 1}, h_{n + 1})`, where :math:`y_{n + 1}` is the updated
-    solution, :math:`\tau_{n + 1}` is an estimate of the truncation error, and
-    :math:`h_{n + 1}` is the value that should be stored in the history, if the
-    step was successful.
-
-    Alias of :class:`tuple` [:class:`Array`, :class:`Array`, :class:`Array`].
 
 .. autofunction:: evolve
 .. autofunction:: advance
@@ -37,6 +25,7 @@ Time Stepping Interface
 Caputo Derivative FODEs
 =======================
 
+.. autoclass:: AdvanceResult
 .. autoclass:: CaputoProductIntegrationMethod
 
 .. autoclass:: CaputoForwardEulerMethod

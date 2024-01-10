@@ -141,8 +141,8 @@ class InMemoryHistory(History[T]):
     @classmethod
     def empty(
         cls,
-        n: int | None,
-        shape: tuple[int, ...],
+        n: int = 512,
+        shape: tuple[int, ...] = (1,),
         dtype: Any = None,
     ) -> InMemoryHistory[T]:
         """Construct a :class:`InMemoryHistory` for given sizes.
@@ -150,15 +150,16 @@ class InMemoryHistory(History[T]):
         :arg n: number of time steps that will be stored.
         :arg shape: shape of each state array that will be stored.
         """
-        if n is None:
-            # NOTE: should be enough for everybody!
-            n = 512
-
         dtype = np.dtype(dtype)
         return cls(
             storage=np.empty((n, *shape), dtype=dtype),
             ts=np.empty(n, dtype=dtype),
         )
+
+    @classmethod
+    def empty_like(cls, y: Array, n: int = 512) -> InMemoryHistory[T]:
+        """Construct a :class:`InMemoryHistory` for *y*."""
+        return cls.empty(n=n, shape=y.shape, dtype=y.dtype)
 
 
 # }}}

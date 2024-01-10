@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 from pycaputo.fode.base import (
-    AdvanceFailedError,
-    AdvanceResult,
     Event,
     FractionalDifferentialEquationMethod,
     StepAccepted,
@@ -23,12 +21,12 @@ from pycaputo.fode.caputo import (
     CaputoWeightedEulerMethod,
 )
 from pycaputo.fode.product_integration import (
+    AdvanceResult,
     CaputoProductIntegrationMethod,
     ProductIntegrationMethod,
 )
 
 __all__ = (
-    "AdvanceFailedError",
     "AdvanceResult",
     "CaputoDifferentialEquationMethod",
     "CaputoForwardEulerMethod",

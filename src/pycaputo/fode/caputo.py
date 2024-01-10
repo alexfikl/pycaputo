@@ -8,8 +8,11 @@ from math import ceil
 
 import numpy as np
 
-from pycaputo.fode.base import AdvanceResult, advance
-from pycaputo.fode.product_integration import CaputoProductIntegrationMethod
+from pycaputo.fode.base import advance
+from pycaputo.fode.product_integration import (
+    AdvanceResult,
+    CaputoProductIntegrationMethod,
+)
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, StateFunction, gamma
@@ -98,7 +101,7 @@ def _advance_caputo_forward_euler(
     ynext = _update_caputo_forward_euler(ynext, m, history, n)
 
     trunc = _truncation_error(m, t, ynext, t - dt, y)
-    return ynext, trunc, m.source(t, ynext)
+    return AdvanceResult(ynext, trunc, m.source(t, ynext))
 
 
 # }}}
@@ -232,7 +235,7 @@ def _advance_caputo_weighted_euler(
         ynext = fnext
 
     trunc = _truncation_error(m, t, ynext, t - dt, y)
-    return ynext, trunc, m.source(t, ynext)
+    return AdvanceResult(ynext, trunc, m.source(t, ynext))
 
 
 # }}}
@@ -411,7 +414,7 @@ def _advance_caputo_predictor_corrector(
     f = fp if isinstance(m, CaputoPECMethod) else m.source(t, ynext)
 
     trunc = _truncation_error(m, t, ynext, t - dt, y)
-    return ynext, trunc, f
+    return AdvanceResult(ynext, trunc, f)
 
 
 # }}}
@@ -505,7 +508,7 @@ def _advance_caputo_modified_pece(
     ynext = yc
 
     trunc = _truncation_error(m, t, ynext, t - dt, y)
-    return ynext, trunc, m.source(t, ynext)
+    return AdvanceResult(ynext, trunc, m.source(t, ynext))
 
 
 # }}}

@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from functools import cached_property
 from typing import Any, Iterator
 
@@ -26,6 +26,24 @@ logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
+class AdvanceResult:
+    """Result of :func:`advance`."""
+
+    __slots__ = ("y", "trunc", "storage")
+
+    #: Estimated solution at the next time step.
+    y: Array
+    #: Estimated truncation error at the next time step.
+    trunc: Array
+    #: Array to add to the history storage.
+    storage: Array
+
+    def __iter__(self) -> Iterator[Array]:
+        for f in fields(self):
+            yield getattr(self, f.name)
+
+
+@dataclass(frozen=True)
 class ProductIntegrationMethod(FractionalDifferentialEquationMethod):
     """A generic class of methods based on Product Integration.
 
@@ -43,8 +61,7 @@ def _evolve_pi(
     if history is None:
         from pycaputo.history import ProductIntegrationHistory
 
-        y = m.y0[0]
-        history = ProductIntegrationHistory.empty(n=None, shape=y.shape, dtype=y.dtype)
+        history = ProductIntegrationHistory.empty_like(m.y0[0])
 
     from pycaputo.controller import (
         StepEstimateError,
@@ -55,7 +72,6 @@ def _evolve_pi(
         evaluate_timestep_reject,
     )
     from pycaputo.fode.base import (
-        AdvanceFailedError,
         StepAccepted,
         StepFailed,
         StepRejected,
@@ -68,40 +84,39 @@ def _evolve_pi(
     t = c.tstart
 
     # determine the initial condition
-    y = yprev = make_initial_condition(m)
-    history.append(t, m.source(t, y))
+    yprev = make_initial_condition(m)
+    history.append(t, m.source(t, yprev))
 
     # determine initial time step
     if dt is None:
         dt = estimate_initial_time_step(
-            t, y, m.source, m.smallest_derivative_order, trunc=m.order + 1
+            t, yprev, m.source, m.smallest_derivative_order, trunc=m.order + 1
         )
 
     yield StepAccepted(
-        t=t, iteration=n, dt=dt, y=y, eest=0.0, q=1.0, trunc=np.zeros_like(y)
+        t=t,
+        iteration=n,
+        dt=dt,
+        y=yprev,
+        eest=0.0,
+        q=1.0,
+        trunc=np.zeros_like(yprev),
     )
 
     while not c.finished(n, t):
         # evolve solution with current estimate of the time step
-        try:
-            y, trunc, h = advance(m, history, yprev, dt)
-        except AdvanceFailedError as exc:
-            logger.error("Failed to advance solution.", exc_info=exc)
-            yield StepFailed(t=t, iteration=n, reason="Failed to advance solution")
-            continue
-
-        eest = evaluate_error_estimate(c, m, trunc, y, yprev)
-        if not np.isfinite(eest):
-            logger.error("Failed to update solution: %s.", y)
-            yield StepFailed(t=t, iteration=n, reason="Solution is not finite")
-            continue
+        ynext, trunc, storage = advance(m, history, yprev, dt)
 
         # determine the next time step
-        accepted = eest <= 1.0
         try:
+            # estimate error
+            eest = evaluate_error_estimate(c, m, trunc, ynext, yprev)
+            accepted = eest <= 1.0
+
+            # estimate time step factor using the error
             q = evaluate_timestep_factor(c, m, eest)
 
-            # if accepted move to the next time step
+            # finally estimate a good dt for the next step
             tmp_state = {"t": t, "n": n, "y": yprev}
             if accepted:
                 dtnext = evaluate_timestep_accept(c, m, q, dt, tmp_state)
@@ -111,19 +126,21 @@ def _evolve_pi(
             accepted = False
             logger.error("Failed to estimate timestep.", exc_info=exc)
             yield StepFailed(t=t, iteration=n, reason="Failed to estimate timestep")
+            continue
 
+        # yield the solution if we got this far
         if accepted:
             n += 1
             t += dt
-            yprev = y
-            history.append(t, h)
+            yprev = ynext
+            history.append(t, storage)
 
             yield StepAccepted(
-                t=t, iteration=n, dt=dt, y=y, eest=eest, q=q, trunc=trunc
+                t=t, iteration=n, dt=dt, y=ynext, eest=eest, q=q, trunc=trunc
             )
         else:
             yield StepRejected(
-                t=t, iteration=n, dt=dt, y=y, eest=eest, q=q, trunc=trunc
+                t=t, iteration=n, dt=dt, y=ynext, eest=eest, q=q, trunc=trunc
             )
 
         dt = dtnext
