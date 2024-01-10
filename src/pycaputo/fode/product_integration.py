@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Iterator
+from typing import Any, Iterator, NamedTuple
 
 import numpy as np
 
@@ -25,11 +25,8 @@ logger = get_logger(__name__)
 # {{{ ProductIntegrationMethod
 
 
-@dataclass(frozen=True)
-class AdvanceResult:
-    """Result of :func:`advance`."""
-
-    __slots__ = ("y", "trunc", "storage")
+class AdvanceResult(NamedTuple):
+    """Result of :func:`advance` for :class:`ProductIntegrationMethod` subclasses."""
 
     #: Estimated solution at the next time step.
     y: Array
@@ -37,10 +34,6 @@ class AdvanceResult:
     trunc: Array
     #: Array to add to the history storage.
     storage: Array
-
-    def __iter__(self) -> Iterator[Array]:
-        for f in fields(self):
-            yield getattr(self, f.name)
 
 
 @dataclass(frozen=True)
