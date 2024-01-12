@@ -7,7 +7,7 @@ import logging
 import os
 import pathlib
 import shutil
-import subprocess
+import subprocess  # noqa: S404
 import tempfile
 
 import rich.logging
