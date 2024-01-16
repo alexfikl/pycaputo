@@ -35,8 +35,8 @@ In code, we can write them as below
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
     :lines: 16-26
+    :lineno-match:
     :language: python
-    :linenos:
 
 To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 [Li2020]_ or Chapter 3 in [Karniadakis2019]_). The methods are set up as
@@ -44,8 +44,8 @@ follows
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
     :lines: 29-35
+    :lineno-match:
     :language: python
-    :linenos:
 
 These methods are described by the :class:`~pycaputo.derivatives.CaputoDerivative`
 and :class:`~pycaputo.differentiation.CaputoL1Method` classes.
@@ -53,8 +53,8 @@ We can then set up a grid and evaluate the derivative at all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
     :lines: 37-40
+    :lineno-match:
     :language: python
-    :linenos:
 
 For the chosen number of points, this gives an error of about :math:`10^{-3}`.
 The resulting approximation can be see below
@@ -96,8 +96,8 @@ The right-hand side for this system can be implemented as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
     :lines: 16-22
+    :lineno-match:
     :language: python
-    :linenos:
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
@@ -105,8 +105,8 @@ by :class:`~pycaputo.fode.CaputoPECEMethod`. The solver is then set up as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
     :lines: 30-44
+    :lineno-match:
     :language: python
-    :linenos:
 
 We can see here that we have chosen to use a solver for the Caputo derivative
 an order :math:`\alpha`. The solver will use a fixed time step of :math:`10^{-2}`
@@ -120,8 +120,8 @@ iterator as follows
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
     :lines: 46-62
+    :lineno-match:
     :language: python
-    :linenos:
 
 The solution as a function of time can be seen below.
 
@@ -175,8 +175,8 @@ system is implemented as
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
     :lines: 21-29
+    :lineno-match:
     :language: python
-    :linenos:
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) implemented in
@@ -187,8 +187,8 @@ set up as follows
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
     :lines: 37-48
+    :lineno-match:
     :language: python
-    :linenos:
 
 We can see here that we have chosen a time interval of :math:`[0, 4]` to see
 the start of the limit cycle. We have also used other parameters better described
@@ -199,8 +199,8 @@ itself
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
     :lines: 50-59
+    :lineno-match:
     :language: python
-    :linenos:
 
 For the solver we set the desired order ``alpha`` and choose two corrector
 iterations, to be sure that the second-order accuracy is achieved. For an
@@ -209,8 +209,8 @@ step. This can be done using
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
     :lines: 61-68
+    :lineno-match:
     :language: python
-    :linenos:
 
 Having set everything up, we can evolve our equation and gather any relevant data.
 For the adaptive case, we are interested also in showing the behavior of the
@@ -219,8 +219,8 @@ for accepted steps.
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
     :lines: 86-97
+    :lineno-match:
     :language: python
-    :linenos:
 
 We can now look at the solution and the corresponding time steps below.
 
