@@ -83,3 +83,8 @@ References
     *A Novel Adaptive Procedure for Solving Fractional Differential Equations*,
     Journal of Computational Science, Vol. 47, pp. 101220--101220, 2020,
     `DOI <https://doi.org/10.1016/j.jocs.2020.101220>`__.
+
+.. [Naud2008] R. Naud, N. Marcille, C. Clopath, W. Gerstner,
+    *Firing Patterns in the Adaptive Exponential Integrate-and-Fire Model*,
+    Biological Cybernetics, Vol. 99, pp. 335--347, 2008,
+    `DOI <https://doi.org/10.1007/s00422-008-0264-7>`__.
