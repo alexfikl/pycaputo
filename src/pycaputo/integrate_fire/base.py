@@ -17,7 +17,12 @@ from pycaputo.fode.base import (
     evolve,
     make_initial_condition,
 )
-from pycaputo.fode.base import StepAccepted as StepAcceptedBase
+from pycaputo.fode.base import (
+    StepAccepted as StepAcceptedBase,
+)
+from pycaputo.fode.base import (
+    StepRejected as StepRejectedBase,
+)
 from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
@@ -70,6 +75,11 @@ ModelT = TypeVar("ModelT", bound=IntegrateFireModel)
 class StepAccepted(StepAcceptedBase):
     #: A flag to denote if the current accepted step was due to a spike.
     spiked: bool
+
+
+@dataclass(frozen=True)
+class StepRejected(StepRejectedBase):
+    pass
 
 
 class AdvanceResult(NamedTuple):

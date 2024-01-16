@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import NamedTuple, overload
 
 import numpy as np
 
@@ -22,6 +22,34 @@ logger = get_logger(__name__)
 
 
 # {{{ model
+
+
+class PIFReference(NamedTuple):
+    """Reference variables used to non-dimensionalize the PIF model."""
+
+    #: Fractional order used to non-dimensionalize.
+    alpha: float
+
+    #: Time scale (in milliseconds: *ms*).
+    T_ref: float
+    #: Voltage scale (in millivolts: *mV*).
+    V_ref: float
+    #: Current scale (in picoamperes: *pA*).
+    I_ref: float
+
+    @overload
+    def time(self, t: float) -> float: ...
+
+    @overload
+    def time(self, t: Array) -> Array: ...
+
+    def time(self, t: float | Array) -> float | Array:
+        """Add dimensions to the non-dimensional time *t*."""
+        return self.T_ref * t
+
+    def potential(self, V: Array) -> Array:
+        """Add dimensions to the non-dimensional potential *V*."""
+        return self.V_ref * V
 
 
 class PIFDim(NamedTuple):
@@ -49,14 +77,14 @@ class PIFDim(NamedTuple):
             header=("model", type(self).__name__),
         )
 
-    def nondim(
+    def ref(
         self,
         alpha: float,
         *,
-        v_ref: float | None = None,
+        V_ref: float | None = None,
         I_ref: float | None = None,
-    ) -> PIF:
-        r"""Construct a non-dimensional set of parameters for the PIF model.
+    ) -> PIFReference:
+        r"""Construct reference variables used in non-dimensionalizating the PIF model.
 
         The non-dimensionalization is performed using the following rescaling
 
@@ -66,42 +94,57 @@ class PIFDim(NamedTuple):
             \qquad
             \hat{V} = \frac{V}{V_{ref}},
             \qquad
-            \hat{I} = \frac{I}{I_{ref}},
-
-        which results in a parameter space consisting of the threshold
-        values :math:`(\hat{V}_{peak}, \hat{V}_r)` and the non-dimenional
-        current :math:`\hat{I}`.
+            \hat{I} = \frac{I}{I_{ref}}.
 
         :arg alpha: the order of the fractional derivative.
-        :arg v_ref: a reference potential used in non-dimensionalizing the
+        :arg V_ref: a reference potential used in non-dimensionalizing the
             membrane potential.
         :arg I_ref: a reference current used in non-dimensionalizing the current.
         """
 
-        if v_ref is None:
-            v_ref = max(abs(self.v_peak), abs(self.v_reset))
-        v_ref = abs(v_ref)
+        if V_ref is None:
+            V_ref = max(abs(self.v_peak), abs(self.v_reset))
+        V_ref = abs(V_ref)
 
         if I_ref is None:
             I_ref = abs(self.current)
         I_ref = abs(I_ref)
 
-        return PIF(
+        return PIFReference(
             alpha=alpha,
-            T=(I_ref / (self.C * v_ref)) ** (1 / alpha),
-            current=self.current / I_ref,
-            v_peak=self.v_peak / v_ref,
-            v_reset=self.v_reset / v_ref,
+            T_ref=1.0 / (I_ref / (self.C * V_ref)) ** (1 / alpha),
+            V_ref=V_ref,
+            I_ref=I_ref,
+        )
+
+    def nondim(
+        self,
+        alpha: float,
+        *,
+        V_ref: float | None = None,
+        I_ref: float | None = None,
+    ) -> PIF:
+        r"""Construct a non-dimensional set of parameters for the PIF model.
+
+        This uses the reference variables from :meth:`ref` to reduce the parameter
+        space to only the non-dimensional threshold values
+        :math:`(\hat{V}_{peak}, \hat{V}_r)` and current :math:`\hat{I}`.
+        """
+        ref = self.ref(alpha, V_ref=V_ref, I_ref=I_ref)
+
+        return PIF(
+            ref=ref,
+            current=self.current / ref.I_ref,
+            v_peak=self.v_peak / ref.V_ref,
+            v_reset=self.v_reset / ref.V_ref,
         )
 
 
 class PIF(NamedTuple):
     """Non-dimensional parameters for the PIF model (see :class:`PIFDim`)."""
 
-    #: Fractional order used in the non-dimensionalization.
-    alpha: float
-    #: Fractional time scale.
-    T: float
+    #: Reference values used in non-dimensionalization.
+    ref: PIFReference
 
     #: Current.
     current: float
@@ -117,14 +160,12 @@ class PIF(NamedTuple):
         """
         from math import gamma
 
-        ts = gamma(1 + self.alpha) * (self.v_peak - V0) / self.current
-        return float(ts ** (1 / self.alpha))
+        ts = gamma(1 + self.ref.alpha) * (self.v_peak - V0) / self.current
+        return float(ts ** (1 / self.ref.alpha))
 
     def __str__(self) -> str:
         return dc_stringify(
             {
-                "alpha  (fractional order)": self.alpha,
-                "T      (fractional time scale)": self.T,
                 "I      (current)": self.current,
                 "V_peak (peak potential)": self.v_peak,
                 "V_r    (reset potential)": self.v_reset,

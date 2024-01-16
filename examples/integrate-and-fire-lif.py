@@ -13,12 +13,12 @@ logger = get_logger("integrate-and-fire")
 # {{{ model
 
 # time interval
-tstart, tfinal = 0.0, 1.0
+tstart, tfinal = 0.0, 24.0
 # fractional order
 alpha = 0.8
 
-param = lif.LIFDim(current=160, C=100, gl=1.0, e_leak=-50.0, v_reset=-48, v_peak=0.0)
-model = lif.LIFModel(param.nondim(alpha, v_ref=1.0))
+param = lif.LIFDim(current=160, C=100, gl=3.0, e_leak=-50.0, v_reset=-48, v_peak=0.0)
+model = lif.LIFModel(param.nondim(alpha, V_ref=1.0))
 
 logger.info("Parameters:\n%s", model.param)
 
@@ -57,7 +57,8 @@ stepper = lif.CaputoLeakyIntegrateFireL1Method(
 
 # {{{ evolution
 
-from pycaputo.integrate_fire import StepAccepted, StepRejected, evolve
+from pycaputo.fode import evolve
+from pycaputo.integrate_fire import StepAccepted, StepRejected
 
 ts = []
 ys = []
@@ -98,18 +99,25 @@ except ImportError as exc:
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
-t = np.array(ts)
-s = np.array(spikes)
 
+# vectorize variables
+s = np.array(spikes)
+t = np.array(ts)
 y = np.array(ys).squeeze()
 eest = np.array(eests)
+print(s)
+
+# make variables dimensional for plotting
+dim = model.param.ref
+t = dim.time(t)
+y = dim.potential(y)
 
 with figure("integrate-fire-lif") as fig:
     ax = fig.gca()
 
     ax.plot(t, y, lw=3)
-    ax.axhline(model.param.v_peak, color="k", ls="-")
-    ax.axhline(model.param.v_reset, color="k", ls="--")
+    ax.axhline(param.v_peak, color="k", ls="-")
+    ax.axhline(param.v_reset, color="k", ls="--")
     ax.plot(t[s], y[s], "ro")
 
     ax.set_xlabel("$t$")
@@ -119,8 +127,8 @@ with figure("integrate-fire-lif-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
-    ax.axhline(dtinit, color="k", ls="--")
-    ax.axhline(c.dtmin, color="k", ls="--")
+    ax.axhline(dim.time(dtinit), color="k", ls="--")
+    ax.axhline(dim.time(c.dtmin), color="k", ls="--")
     ax.set_xlabel("$t$")
     ax.set_ylabel(r"$\Delta t$")
 

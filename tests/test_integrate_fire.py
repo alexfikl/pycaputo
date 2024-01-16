@@ -207,6 +207,15 @@ def test_ad_ex_solve() -> None:
 # }}}
 
 
+# {{{ test_pif_model
+
+
+def test_pif_model() -> None:
+    pass
+
+
+# }}}
+
 if __name__ == "__main__":
     import sys
 
