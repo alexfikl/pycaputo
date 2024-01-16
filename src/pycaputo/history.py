@@ -107,6 +107,11 @@ class InMemoryHistory(History[T]):
         """The maximum size currently available for storage."""
         return self.ts.size
 
+    @property
+    def current_time(self) -> float:
+        """The current time instance stored in the history."""
+        return float(self.ts[self.filled - 1])
+
     def __bool__(self) -> bool:
         return self.filled > 0
 
