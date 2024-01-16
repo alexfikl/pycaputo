@@ -16,7 +16,7 @@ from pycaputo.fode.base import (
     evolve,
     make_initial_condition,
 )
-from pycaputo.history import History
+from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
@@ -51,11 +51,6 @@ def _evolve_pi(
     history: History[Any] | None = None,
     dtinit: float | None = None,
 ) -> Iterator[Event]:
-    if history is None:
-        from pycaputo.history import ProductIntegrationHistory
-
-        history = ProductIntegrationHistory.empty_like(m.y0[0])
-
     from pycaputo.controller import (
         StepEstimateError,
         estimate_initial_time_step,
@@ -70,6 +65,9 @@ def _evolve_pi(
         StepRejected,
         advance,
     )
+
+    if history is None:
+        history = ProductIntegrationHistory.empty_like(m.y0[0])
 
     # initialize
     c = m.control
