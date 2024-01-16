@@ -49,7 +49,7 @@ def _evolve_pi(
     m: FractionalDifferentialEquationMethod,
     *,
     history: History[Any] | None = None,
-    dt: float | None = None,
+    dtinit: float | None = None,
 ) -> Iterator[Event]:
     if history is None:
         from pycaputo.history import ProductIntegrationHistory
@@ -81,10 +81,12 @@ def _evolve_pi(
     history.append(t, m.source(t, yprev))
 
     # determine initial time step
-    if dt is None:
+    if dtinit is None:
         dt = estimate_initial_time_step(
             t, yprev, m.source, m.smallest_derivative_order, trunc=m.order + 1
         )
+    else:
+        dt = dtinit
 
     yield StepAccepted(
         t=t,

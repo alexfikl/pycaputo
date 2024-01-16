@@ -176,14 +176,14 @@ def evolve(
     m: FractionalDifferentialEquationMethod,
     *,
     history: History[Any] | None = None,
-    dt: float | None = None,
+    dtinit: float | None = None,
 ) -> Iterator[Event]:
     """Evolve the fractional-order ordinary differential equation in time.
 
     :arg m: method used to evolve the FODE.
     :arg history: a :class:`~pycaputo.history.History` instance that handles
         checkpointing the necessary state history for the method *m*.
-    :arg dt: an initial time step used to start the simulation. If none is
+    :arg dtinit: an initial time step used to start the simulation. If none is
         provided the controller of the method will be used to estimate it
         (see :attr:`FractionalDifferentialEquationMethod.control`).
 

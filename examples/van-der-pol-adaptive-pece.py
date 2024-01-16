@@ -59,7 +59,7 @@ m = CaputoPECEMethod(
     corrector_iterations=2,
 )
 
-dt0 = 1.0e-1
+dtinit = 1.0e-1
 dtest = estimate_initial_time_step(
     tstart,
     y0,
@@ -67,7 +67,7 @@ dtest = estimate_initial_time_step(
     m.smallest_derivative_order,
     trunc=m.order,
 )
-logger.info("Initial time step %.8e estimate %.8e", dt0, dtest)
+logger.info("Initial time step %.8e estimate %.8e", dtinit, dtest)
 
 # }}}
 
@@ -84,7 +84,7 @@ truncs = []
 eests = []
 qs = []
 
-for event in evolve(m, dt=dt0):
+for event in evolve(m, dtinit=dtinit):
     if isinstance(event, StepAccepted):
         ts.append(event.t)
         ys.append(event.y)
@@ -143,7 +143,7 @@ with figure("van-der-pol-adaptive-pece-solution", nrows=2, figsize=(8, 8)) as fi
     ax[1].semilogy(t[:-1], np.diff(t), "o-", fillstyle="none", ms=3)
     ax[1].set_xlabel("$t$")
     ax[1].set_ylabel(r"$\Delta t$")
-    ax[1].set_ylim([c.dtmin, dt0])
+    ax[1].set_ylim([c.dtmin, dtinit])
 
 with figure("van-der-pol-adaptive-pece-eest", nrows=2, figsize=(8, 8)) as fig:
     ax = fig.axes
