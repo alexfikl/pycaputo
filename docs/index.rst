@@ -13,6 +13,7 @@ pycaputo documentation
     controllers
     timestepping
     fode
+    integrate_fire
     misc
     references
     changelog
