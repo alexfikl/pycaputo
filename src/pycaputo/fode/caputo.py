@@ -8,6 +8,7 @@ from math import ceil
 
 import numpy as np
 
+from pycaputo.controller import Controller
 from pycaputo.fode.base import advance
 from pycaputo.fode.product_integration import (
     AdvanceResult,
@@ -32,16 +33,14 @@ def _update_caputo_initial_condition(
 
 
 def _truncation_error(
-    m: CaputoProductIntegrationMethod, t: float, y: Array, tprev: float, yprev: Array
+    c: Controller, alpha: Array, t: float, y: Array, tprev: float, yprev: Array
 ) -> Array:
     from pycaputo.controller import JannelliIntegralController
 
-    alpha = m.alpha
     assert t > tprev
-
-    if isinstance(m.control, JannelliIntegralController):
+    if isinstance(c, JannelliIntegralController):
         trunc = np.array(
-            m.gamma1p
+            gamma(1 + alpha)
             * (t - tprev) ** alpha
             / (t**alpha - tprev**alpha)
             * np.abs(y - yprev)
@@ -100,7 +99,7 @@ def _advance_caputo_forward_euler(
     ynext = _update_caputo_initial_condition(ynext, m, t)
     ynext = _update_caputo_forward_euler(ynext, m, history, n)
 
-    trunc = _truncation_error(m, t, ynext, t - dt, y)
+    trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
 
 
@@ -234,7 +233,7 @@ def _advance_caputo_weighted_euler(
     else:
         ynext = fnext
 
-    trunc = _truncation_error(m, t, ynext, t - dt, y)
+    trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
 
 
@@ -413,7 +412,7 @@ def _advance_caputo_predictor_corrector(
     ynext = yc
     f = fp if isinstance(m, CaputoPECMethod) else m.source(t, ynext)
 
-    trunc = _truncation_error(m, t, ynext, t - dt, y)
+    trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, f)
 
 
@@ -507,7 +506,7 @@ def _advance_caputo_modified_pece(
         yc = ynext + omega * fp
     ynext = yc
 
-    trunc = _truncation_error(m, t, ynext, t - dt, y)
+    trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
 
 
