@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import NamedTuple, overload
 
 import numpy as np
 
@@ -22,6 +22,34 @@ logger = get_logger(__name__)
 
 
 # {{{ model
+
+
+class LIFReference(NamedTuple):
+    """Reference variables used to non-dimensionalize the LIF model."""
+
+    #: Fractional order used to non-dimensionalize.
+    alpha: float
+
+    #: Time scale (in milliseconds: *ms*).
+    T_ref: float
+    #: Voltage scale (in millivolts: *mV*).
+    V_ref: float
+    #: Current scale (in picoamperes: *pA*).
+    I_ref: float
+
+    @overload
+    def time(self, t: float) -> float: ...
+
+    @overload
+    def time(self, t: Array) -> Array: ...
+
+    def time(self, t: float | Array) -> float | Array:
+        """Add dimensions to the non-dimensional time *t*."""
+        return self.T_ref * t
+
+    def potential(self, V: Array) -> Array:
+        """Add dimensions to the non-dimensional potential *V*."""
+        return self.V_ref * V
 
 
 class LIFDim(NamedTuple):
@@ -54,8 +82,8 @@ class LIFDim(NamedTuple):
             header=("model", type(self).__name__),
         )
 
-    def nondim(self, alpha: float, *, v_ref: float | None = None) -> LIF:
-        r"""Construct a non-dimensional set of parameters for the LIF model.
+    def ref(self, alpha: float, *, V_ref: float | None = None) -> LIFReference:
+        r"""Construct reference variables used in non-dimensionalizating the LIF model.
 
         The non-dimensionalization is performed using the following rescaling
 
@@ -67,34 +95,44 @@ class LIFDim(NamedTuple):
             \qquad
             \hat{I} = \frac{I}{g_L V_{ref}},
 
-        which results in a reduction of the parameter space to just the threshold
-        values :math:`(V_{peak}, V_r)` and the constants :math:`(I, E_L)`.
-
         :arg alpha: the order of the fractional derivative.
         :arg v_ref: a reference potential used in non-dimensionalizing the
             membrane potential.
         """
-        if v_ref is None:
-            v_ref = max(abs(self.v_peak), abs(self.v_reset))
-        v_ref = abs(v_ref)
 
-        return LIF(
+        if V_ref is None:
+            V_ref = max(abs(self.v_peak), abs(self.v_reset))
+        V_ref = abs(V_ref)
+
+        return LIFReference(
             alpha=alpha,
-            T=(self.gl / self.C) ** (1 / alpha),
-            current=self.current / (self.gl * v_ref),
-            e_leak=self.e_leak / v_ref,
-            v_peak=self.v_peak / v_ref,
-            v_reset=self.v_reset / v_ref,
+            T_ref=1.0 / (self.gl / self.C) ** (1 / alpha),
+            V_ref=V_ref,
+            I_ref=self.gl * V_ref,
+        )
+
+    def nondim(self, alpha: float, *, V_ref: float | None = None) -> LIF:
+        r"""Construct a non-dimensional set of parameters for the LIF model.
+
+        This uses the reference variables from :meth:`ref` to reduce the parameter
+        space to only the non-dimensional threshold values
+        :math:`(\hat{V}_{peak}, \hat{V}_r)` and :math:`(\hat{I}, \hat{E}_L)`.
+        """
+        ref = self.ref(alpha, V_ref=V_ref)
+        return LIF(
+            ref=ref,
+            current=self.current / ref.I_ref,
+            e_leak=self.e_leak / ref.V_ref,
+            v_peak=self.v_peak / ref.V_ref,
+            v_reset=self.v_reset / ref.V_ref,
         )
 
 
 class LIF(NamedTuple):
     """Non-dimensional parameters for the LIF model (see :class:`LIFDim`)."""
 
-    #: Fractional order used in the non-dimensionalization.
-    alpha: float
-    #: Fractional time scale.
-    T: float
+    #: Reference values used in non-dimensionalization.
+    ref: LIFReference
 
     #: Current :math:`I`.
     current: float
@@ -109,8 +147,6 @@ class LIF(NamedTuple):
     def __str__(self) -> str:
         return dc_stringify(
             {
-                "alpha  (fractional order)": self.alpha,
-                "T      (fractional time scale)": self.T,
                 "I      (current)": self.current,
                 "E_leak (equilibrium potential leak)": self.e_leak,
                 "V_peak (peak potential)": self.v_peak,

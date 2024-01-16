@@ -64,7 +64,8 @@ stepper = eif.CaputoExponentialIntegrateFireL1Method(
 
 # {{{ evolution
 
-from pycaputo.integrate_fire import StepAccepted, StepRejected, evolve
+from pycaputo.fode import evolve
+from pycaputo.integrate_fire import StepAccepted, StepRejected
 
 ts = []
 ys = []
@@ -105,15 +106,17 @@ except ImportError as exc:
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
+
+# vectorize variables
 t = np.array(ts)
 s = np.array(spikes)
-
-y = np.array(ys).squeeze()
+y = np.array(ys)
 eest = np.array(eests)
 
 # dimensionalize variables
-t = t / model.param.T
-y = param.delta_t * y + param.vt
+dim = model.param.ref
+t = dim.time(t)
+y = dim.potential(y)
 
 with figure("integrate-fire-eif") as fig:
     ax = fig.gca()
@@ -121,6 +124,7 @@ with figure("integrate-fire-eif") as fig:
     ax.plot(t, y, lw=3)
     ax.axhline(param.v_peak, color="k", ls="-")
     ax.axhline(param.v_reset, color="k", ls="--")
+    ax.axhline(param.vt, color="k", ls=":")
     ax.plot(t[s], y[s], "ro")
 
     ax.set_xlabel("$t$ (ms)")
@@ -130,8 +134,8 @@ with figure("integrate-fire-eif-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
-    ax.axhline(dtinit, color="k", ls="--")
-    ax.axhline(c.dtmin, color="k", ls="--")
+    ax.axhline(dim.time(dtinit), color="k", ls="--")
+    ax.axhline(dim.time(c.dtmin), color="k", ls="--")
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel(r"$\Delta t$ (ms)")
 

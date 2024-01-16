@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import NamedTuple, overload
 
 import numpy as np
 
@@ -21,6 +21,36 @@ from pycaputo.utils import Array, dc_stringify
 logger = get_logger(__name__)
 
 # {{{ model
+
+
+class EIFReference(NamedTuple):
+    """Reference variables used to non-dimensionalize the EIF model."""
+
+    #: Fractional order used to non-dimensionalize.
+    alpha: float
+
+    #: Time scale (in milliseconds: *ms*).
+    T_ref: float
+    #: Voltage offset (in millivolts: *mV*).
+    V_off: float
+    #: Voltage scale (in millivolts: *mV*).
+    V_ref: float
+    #: Current scale (in picoamperes: *pA*).
+    I_ref: float
+
+    @overload
+    def time(self, t: float) -> float: ...
+
+    @overload
+    def time(self, t: Array) -> Array: ...
+
+    def time(self, t: float | Array) -> float | Array:
+        """Add dimensions to the non-dimensional time *t*."""
+        return self.T_ref * t
+
+    def potential(self, V: Array) -> Array:
+        """Add dimensions to the non-dimensional potential *V*."""
+        return self.V_ref * V + self.V_off
 
 
 class EIFDim(NamedTuple):
@@ -59,8 +89,8 @@ class EIFDim(NamedTuple):
             header=("model", type(self).__name__),
         )
 
-    def nondim(self, alpha: float) -> EIF:
-        r"""Construct a non-dimensional set of parameters for the EIF model.
+    def ref(self, alpha: float) -> EIFReference:
+        r"""Construct reference variables used in non-dimensionalizating the PIF model.
 
         The non-dimensionalization is performed using the following rescaling
 
@@ -72,28 +102,38 @@ class EIFDim(NamedTuple):
             \qquad
             \hat{I} = \frac{I}{g_L \Delta_T},
 
+        :arg alpha: the order of the fractional derivative.
+        """
+        return EIFReference(
+            alpha=alpha,
+            T_ref=1.0 / (self.gl / self.C) ** (1 / alpha),
+            V_off=self.vt,
+            V_ref=self.delta_t,
+            I_ref=self.gl * self.delta_t,
+        )
+
+    def nondim(self, alpha: float) -> EIF:
+        r"""Construct a non-dimensional set of parameters for the EIF model.
+
         which results in a reduction of the parameter space to just the threshold
         values :math:`(V_{peak}, V_r)` and the constants :math:`(I, E_L)`.
 
-        :arg alpha: the order of the fractional derivative.
         """
+        ref = self.ref(alpha)
         return EIF(
-            alpha=alpha,
-            T=(self.gl / self.C) ** (1 / alpha),
-            current=self.current / (self.gl * self.delta_t),
-            e_leak=(self.e_leak - self.vt) / self.delta_t,
-            v_peak=(self.v_peak - self.vt) / self.delta_t,
-            v_reset=(self.v_reset - self.vt) / self.delta_t,
+            ref=ref,
+            current=self.current / ref.I_ref,
+            e_leak=(self.e_leak - ref.V_off) / ref.V_ref,
+            v_peak=(self.v_peak - ref.V_off) / ref.V_ref,
+            v_reset=(self.v_reset - ref.V_off) / ref.V_ref,
         )
 
 
 class EIF(NamedTuple):
     """Non-dimensional parameters for the EIF model (see :class:`EIFDim`)."""
 
-    #: Fractional order used in the non-dimensionalization.
-    alpha: float
-    #: Fractional time scale.
-    T: float
+    #: Reference values used in non-dimensionalization.
+    ref: EIFReference
 
     #: Current :math:`I`.
     current: float
@@ -108,8 +148,6 @@ class EIF(NamedTuple):
     def __str__(self) -> str:
         return dc_stringify(
             {
-                "alpha  (fractional order)": self.alpha,
-                "T      (fractional time scale)": self.T,
                 "I      (current)": self.current,
                 "E_leak (equilibrium potential leak)": self.e_leak,
                 "V_peak (peak potential)": self.v_peak,

@@ -18,7 +18,7 @@ tstart, tfinal = 0.0, 32.0
 alpha = 0.8
 
 param = pif.PIFDim(current=160, C=100, v_reset=-48, v_peak=0.0)
-model = pif.PIFModel(param.nondim(alpha, v_ref=1.0, I_ref=20.0))
+model = pif.PIFModel(param.nondim(alpha, V_ref=1.0, I_ref=20.0))
 
 logger.info("Parameters:\n%s", model.param)
 
@@ -57,7 +57,8 @@ stepper = pif.CaputoPerfectIntegrateFireL1Method(
 
 # {{{ evolution
 
-from pycaputo.integrate_fire import StepAccepted, StepRejected, evolve
+from pycaputo.fode import evolve
+from pycaputo.integrate_fire import StepAccepted, StepRejected
 
 ts = []
 ys = []
@@ -98,23 +99,33 @@ except ImportError as exc:
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
-t = np.array(ts)
+
+# vectorize variables
 s = np.array(spikes)
-
-y = np.array(ys).squeeze()
-y_ref = (y0 + model.param.current * t**alpha / stepper.gamma1p).squeeze()
-
+t = np.array(ts)
+y = np.array(ys)
 eest = np.array(eests)
+
+# get exact solution up to the second spike
+t_ref = t[: s[1]]
+y_ref = y0 + model.param.current * t_ref**alpha / stepper.gamma1p
+
+# make variables dimensional for plotting
+dim = model.param.ref
+t = dim.time(t)
+y = dim.potential(y)
+t_ref = dim.time(t_ref)
+y_ref = dim.potential(y_ref)
 
 with figure("integrate-fire-pif") as fig:
     ax = fig.gca()
 
     ax.plot(t, y, lw=3)
-    ax.plot(t, y_ref, "k--")
-    ax.axhline(model.param.v_peak, color="k", ls="-")
-    ax.axhline(model.param.v_reset, color="k", ls="--")
+    ax.plot(t_ref, y_ref, "k--")
+    ax.axhline(param.v_peak, color="k", ls="-")
+    ax.axhline(param.v_reset, color="k", ls="--")
     ax.plot(t[s], y[s], "ro")
-    ax.axvline(tspike, ls="--")
+    ax.axvline(dim.time(tspike), ls="--")
 
     ax.set_xlabel("$t$")
     ax.set_ylabel("$V$")
@@ -123,8 +134,8 @@ with figure("integrate-fire-pif-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
-    ax.axhline(dtinit, color="k", ls="--")
-    ax.axhline(c.dtmin, color="k", ls="--")
+    ax.axhline(dim.time(dtinit), color="k", ls="--")
+    ax.axhline(dim.time(c.dtmin), color="k", ls="--")
     ax.set_xlabel("$t$")
     ax.set_ylabel(r"$\Delta t$")
 
