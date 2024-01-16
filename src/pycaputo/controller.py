@@ -740,6 +740,51 @@ def _evaluate_timestep_reject_proportional_integral(
 # {{{ Jannelli integral controller
 
 
+def make_jannelli_controller(
+    tstart: float = 0.0,
+    tfinal: float | None = None,
+    nsteps: int | None = None,
+    *,
+    dtmin: float = 1.0e-6,
+    sigma: float = 0.5,
+    rho: float = 1.5,
+    chimin: float | None = None,
+    chimax: float | None = None,
+    abstol: float = 1.0e-8,
+) -> JannelliIntegralController:
+    r"""Construct a :class:`JannelliIntegralController`.
+
+    This functions simply provides some useful defaults
+
+    :arg sigma: factor by which the time step will be decreased in the case the
+        step is rejected. A default value of ``0.5`` will half the time step
+        each time, but smaller increments are possible.
+    :arg rho: factor by which the time step will be increased in the case the
+        step is accepted. A default value of ``1.5`` with increase the time
+        step by half each time, but smaller increments are possible.
+    :arg chimin: a lower bound on the error estimated by the Jannelli controller.
+    :arg chimax: an upper bound on the error estimated by the Jannelli controller.
+    """
+    if chimin is None or chimax is None:
+        raise ValueError(
+            "Both 'chimin' and 'chimax' must pe provided. These are generally "
+            "problem dependent and no good estimation is possible a priori."
+        )
+
+    return JannelliIntegralController(
+        tstart=tstart,
+        tfinal=tfinal,
+        nsteps=nsteps,
+        dtmin=dtmin,
+        qmin=sigma,
+        qmax=rho,
+        chimin=chimin,
+        chimax=chimax,
+        abstol=abstol,
+        reltol=1.0,  # NOTE: not used by this methof
+    )
+
+
 @dataclass(frozen=True)
 class JannelliIntegralController(AdaptiveController):
     r"""A time step controller from [Jannelli2020]_ for fractional equations.

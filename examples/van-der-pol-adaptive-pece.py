@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pycaputo.controller import JannelliIntegralController, estimate_initial_time_step
+from pycaputo.controller import estimate_initial_time_step, make_jannelli_controller
 from pycaputo.fode import CaputoPECEMethod
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
@@ -35,17 +35,16 @@ def van_der_pol_jac(t: float, y: Array, *, mu: float = 4.0) -> Array:
 # {{{ set up problem
 
 tstart, tfinal = 0.0, 4.0
-c = JannelliIntegralController(
+c = make_jannelli_controller(
     tstart=tstart,
     tfinal=tfinal,
     nsteps=None,
     dtmin=1.0e-3,
-    qmin=0.5,  # corresponds to sigma in Jannelli2020
-    qmax=1.5,  # corresponds to rho in Jannelli2020
+    sigma=0.5,
+    rho=1.5,
     chimin=0.03,
     chimax=0.3,
     abstol=1.0e-12,
-    reltol=1.0e-1,  # not used by this method
 )
 
 alpha = 0.8

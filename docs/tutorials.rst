@@ -174,7 +174,7 @@ cycle of the oscillator (see e.g. [Jannelli2020]_). The right-hand side for this
 system is implemented as
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 21-28
+    :lines: 21-29
     :language: python
     :linenos:
 
@@ -186,7 +186,7 @@ results from [Jannelli2020]_ and implemented in
 set up as follows
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 36-48
+    :lines: 37-48
     :language: python
     :linenos:
 
