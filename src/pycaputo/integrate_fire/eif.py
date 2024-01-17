@@ -221,6 +221,50 @@ class EIFModel(IntegrateFireModel):
 # {{{ CaputoExponentialIntegrateFireL1Method
 
 
+def _evaluate_lambert_coefficients(
+    eif: EIFModel, t: float, y: Array, h: Array, r: Array
+) -> tuple[float, float, Array]:
+    d0 = 1 + h
+    d1 = h
+    # NOTE: we need the terms that do not depend on V, so we do
+    #   f(t, y) + y - exp(y) = I(t) + E_L
+    # since the current may be time-dependent
+    d2 = r + h * (eif.source(t, y) + y - np.exp(y))
+
+    return float(d0), float(d1), np.array(d2)
+
+
+def find_maximum_time_step_lambert(
+    eif: EIFModel, t: float, y: Array, tprev: float, r: Array
+) -> float:
+    """Find a maximum time step such that the Lambert W function is real.
+
+    This function looks at the argument of the Lambert W function for the EIF
+    model and ensures that it is :math:`> -1/e`. Note that this is not done
+    exactly, as we assume that the memory terms *r* are fixed.
+
+    :arg t: initial guess for the spike time.
+    :arg tprev: previous time step that was successful, i.e. that resulted in a
+        real valued membrane potential.
+    :arg r: memory terms, considered fixed for this solution.
+    """
+    from math import gamma
+
+    def func(tspike: float) -> float:
+        alpha = eif.param.ref.alpha
+        h = gamma(2 - alpha) * (tspike - tprev) ** alpha
+
+        d0, d1, d2 = _evaluate_lambert_coefficients(eif, tspike, y, h, y - h * r)
+        return float(d1 / d0 * np.exp(d2 / d0 + 1) - 1)
+
+    import scipy.optimize as so
+
+    result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])
+    t = float(result.root)
+
+    return t - tprev
+
+
 @dataclass(frozen=True)
 class CaputoExponentialIntegrateFireL1Method(CaputoIntegrateFireL1Method[EIFModel]):
     r"""Implementation of the L1 method for the Exponential Integrate-and-Fire model.
@@ -230,7 +274,7 @@ class CaputoExponentialIntegrateFireL1Method(CaputoIntegrateFireL1Method[EIFMode
 
     model: EIFModel
 
-    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
+    def solve(self, t: float, y: Array, h: Array, r: Array) -> Array:
         r"""Solve the implicit equation for the EIF model.
 
         In this case, since the right-hand side is nonlinear, but we can solve
@@ -243,17 +287,11 @@ class CaputoExponentialIntegrateFireL1Method(CaputoIntegrateFireL1Method[EIFMode
         """
         from scipy.special import lambertw
 
-        d0 = 1 + c
-        d1 = c
-        # NOTE: we need the terms that do not depend on V, so we do
-        #   f(t, y) + y - exp(y) = I(t) + E_L
-        # since the current may be time-dependent
-        d2 = r + c * (self.source(t, y0) + y0 - np.exp(y0))
-
+        d0, d1, d2 = _evaluate_lambert_coefficients(self.model, t, y, h, r)
         V = d2 / d0 - lambertw(-d1 / d0 * np.exp(d2 / d0), tol=1.0e-12)
         V = np.real_if_close(V, tol=100)
 
-        assert np.linalg.norm(V - c * self.source(t, V) - r) < 1.0e-8
+        assert np.linalg.norm(V - h * self.source(t, V) - r) < 1.0e-8
 
         return np.array(V)
 
@@ -267,32 +305,53 @@ def _advance_caputo_eif_l1(
 ) -> AdvanceResult:
     from pycaputo.integrate_fire.base import (
         advance_caputo_integrate_fire_l1,
-        advance_caputo_integrate_fire_spike_exp,
+        estimate_spike_time_exp,
     )
 
     tprev = history.current_time
     t = tprev + dt
+    result, r = advance_caputo_integrate_fire_l1(m, history, y, dt)
 
-    result = advance_caputo_integrate_fire_l1(m, history, y, dt)
+    p = m.model.param
+    if np.any(np.iscomplex(result.y)):
+        # NOTE: if the result is complex, it means the Lambert W function is out
+        # of range. We try here to find the maximum time step that would put it
+        # back in range and use that to mark the spike.
+        yprev = np.array([p.v_peak], dtype=y.dtype)
+        ynext = np.array([p.v_reset], dtype=y.dtype)
 
-    is_complex = np.any(np.iscomplex(result.y))
-    if is_complex or m.model.spiked(t, result.y) > 0.0:
-        p = m.model.param
-        result = advance_caputo_integrate_fire_spike_exp(
-            tprev, y, t, result, v_peak=p.v_peak, v_reset=p.v_reset
+        try:
+            dts = find_maximum_time_step_lambert(m.model, t, y, tprev, r)
+            trunc = np.zeros_like(y)
+            spiked = np.array(1)
+        except ValueError:
+            # NOTE: if we can't find a maximum time step, just let the adaptive
+            # step controller do its thing until it can't anymore
+            dts = float(result.dts)
+            trunc = np.full_like(y, 1.0e5)
+            spiked = np.array(0)
+
+        result = AdvanceResult(
+            y=ynext,
+            trunc=trunc,
+            storage=np.hstack([yprev, ynext]),
+            spiked=spiked,
+            dts=np.array(dts),
         )
+    elif m.model.spiked(t, result.y) > 0.0:
+        yprev = np.array([p.v_peak], dtype=y.dtype)
+        ynext = np.array([p.v_reset], dtype=y.dtype)
 
-        from pycaputo.controller import AdaptiveController
-
-        if is_complex and isinstance(m.control, AdaptiveController):
-            c = m.control
-
-            if dt < c.dtmin or c.nrejects > c.max_rejects:
-                # NOTE: we really tried to reduce the time step until the spike
-                # occurred, so now it's time to give up and spike!
-                pass
-            else:
-                result = result._replace(spiked=np.array(0))
+        ts = estimate_spike_time_exp(t, result.y[0], tprev, y[0], p.v_peak)
+        result = AdvanceResult(
+            y=ynext,
+            trunc=np.zeros_like(y),
+            storage=np.hstack([yprev, ynext]),
+            spiked=np.array(1),
+            dts=np.array(ts - tprev),
+        )
+    else:
+        pass
 
     return result
 

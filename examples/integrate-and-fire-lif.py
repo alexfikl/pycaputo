@@ -76,16 +76,9 @@ for event in evolve(stepper, dtinit=dtinit):
     elif isinstance(event, StepRejected):
         pass
     else:
-        raise RuntimeError("Evolution failed!")
+        raise RuntimeError(event)
 
-    logger.info(
-        "[%06d] t = %.5e dt = %.5e energy %.5e eest %+.5e",
-        event.iteration,
-        event.t,
-        event.dt,
-        np.linalg.norm(event.y),
-        event.eest,
-    )
+    logger.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
 
 # }}}
 

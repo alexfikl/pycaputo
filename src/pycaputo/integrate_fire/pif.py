@@ -275,7 +275,7 @@ def _advance_caputo_pif_l1(
     tprev = history.current_time
     t = tprev + dt
 
-    result = advance_caputo_integrate_fire_l1(m, history, y, dt)
+    result, _ = advance_caputo_integrate_fire_l1(m, history, y, dt)
     if m.model.spiked(t, result.y) > 0.0:
         p = m.model.param
         result = advance_caputo_integrate_fire_spike_linear(
