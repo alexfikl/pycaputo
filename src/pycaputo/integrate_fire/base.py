@@ -195,7 +195,7 @@ def _evolve_caputo_integrate_fire_l1(
         evaluate_timestep_factor,
         evaluate_timestep_reject,
     )
-    from pycaputo.fode.base import StepFailed, StepRejected, advance
+    from pycaputo.fode.base import StepFailed, advance
 
     if history is None:
         history = ProductIntegrationHistory.empty_like(np.hstack([m.y0[0], m.y0[0]]))
@@ -318,7 +318,7 @@ def advance_caputo_integrate_fire_l1(
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
-) -> AdvanceResult:
+) -> tuple[AdvanceResult, Array]:
     # set next time step
     d = y.size
     n = len(history)
@@ -345,9 +345,11 @@ def advance_caputo_integrate_fire_l1(
     ynext = m.solve(t, y, 1 / h[-1], y - r / h[-1])
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
 
-    return AdvanceResult(
+    result = AdvanceResult(
         ynext, trunc, np.hstack([ynext, ynext]), spiked=np.array(0), dts=np.array(dt)
     )
+
+    return result, r
 
 
 # }}}
@@ -421,40 +423,6 @@ def estimate_spike_time_exp(
 
     assert tprev <= ts <= t
     return float(ts)
-
-
-def advance_caputo_integrate_fire_spike_exp(
-    tprev: float,
-    y: Array,
-    t: float,
-    result: AdvanceResult,
-    *,
-    v_peak: float,
-    v_reset: float,
-) -> AdvanceResult:
-    # we have spiked, so we need to reconstruct our solution
-    yprev = np.array([v_peak], dtype=y.dtype)
-    ynext = np.array([v_reset], dtype=y.dtype)
-
-    if np.any(np.iscomplex(result.y)):
-        # keep the time step estimate the same here, because we can't really
-        # do better at this time. maybe solve the Lambert W equation?
-        dt = float(result.dts)
-
-        # set the truncation error to a large value to reject the next time step
-        trunc = np.full_like(y, 1.0e5)
-    else:
-        # estimate the time step used to get here
-        ts = estimate_spike_time_exp(t, result.y[0], tprev, y[0], v_peak)
-        dt = float(ts - tprev)
-
-        # set the truncation error to zero because we want to reset the next time
-        # step to the maximum allowable value.
-        trunc = np.zeros_like(y)
-
-    return AdvanceResult(
-        ynext, trunc, np.hstack([yprev, ynext]), spiked=np.array(1), dts=np.array(dt)
-    )
 
 
 # }}}
