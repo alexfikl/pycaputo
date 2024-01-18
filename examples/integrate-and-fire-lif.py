@@ -109,8 +109,8 @@ with figure("integrate-fire-lif") as fig:
     ax.axhline(param.v_reset, color="k", ls="--")
     ax.plot(t[s], y[s], "ro")
 
-    ax.set_xlabel("$t$")
-    ax.set_ylabel("$V$")
+    ax.set_xlabel("$t$ (ms)")
+    ax.set_ylabel("$V$ (mV)")
 
 with figure("integrate-fire-lif-dt") as fig:
     ax = fig.gca()
@@ -118,8 +118,8 @@ with figure("integrate-fire-lif-dt") as fig:
     ax.semilogy(t[:-1], np.diff(t))
     ax.axhline(dim.time(dtinit), color="k", ls="--")
     ax.axhline(dim.time(c.dtmin), color="k", ls="--")
-    ax.set_xlabel("$t$")
-    ax.set_ylabel(r"$\Delta t$")
+    ax.set_xlabel("$t$ (ms)")
+    ax.set_ylabel(r"$\Delta t$ (ms)")
 
 with figure("integrate-fire-lif-eest") as fig:
     ax = fig.gca()
@@ -128,7 +128,7 @@ with figure("integrate-fire-lif-eest") as fig:
     ax.axhline(1.0, color="k", ls="--")
     ax.axhline(0.0, color="k", ls="--")
     ax.plot(t[s], eest[s], "ro")
-    ax.set_xlabel("$t$")
+    ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$E_{est}$")
 
 # }}}
