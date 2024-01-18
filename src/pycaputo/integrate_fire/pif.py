@@ -47,9 +47,9 @@ class PIFReference(NamedTuple):
         """Add dimensions to the non-dimensional time *t*."""
         return self.T_ref * t
 
-    def potential(self, V: Array) -> Array:
-        """Add dimensions to the non-dimensional potential *V*."""
-        return self.V_ref * V
+    def var(self, y: Array) -> Array:
+        """Add dimensions to the non-dimensional potential *y*."""
+        return self.V_ref * y
 
 
 class PIFDim(NamedTuple):

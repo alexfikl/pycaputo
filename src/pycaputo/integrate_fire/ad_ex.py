@@ -9,7 +9,13 @@ from typing import NamedTuple, overload
 
 import numpy as np
 
-from pycaputo.integrate_fire.base import CaputoIntegrateFireL1Method, IntegrateFireModel
+from pycaputo.fode.base import advance
+from pycaputo.history import ProductIntegrationHistory
+from pycaputo.integrate_fire.base import (
+    AdvanceResult,
+    CaputoIntegrateFireL1Method,
+    IntegrateFireModel,
+)
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, dc_stringify
 
@@ -19,6 +25,38 @@ logger = get_logger(__name__)
 # {{{ parameters
 
 
+class AdExReference(NamedTuple):
+    """Reference variables used to non-dimensionalize the AdEx model."""
+
+    #: Fractional order used to non-dimensionalize.
+    alpha: tuple[float, float]
+
+    #: Time scale (in milliseconds: *ms*).
+    T_ref: float
+    #: Voltage offset (in millivolts: *mV*).
+    V_off: float
+    #: Voltage scale (in millivolts: *mV*).
+    V_ref: float
+    #: Adaptation variable scale (in picoamperes: *pA*)
+    w_ref: float
+    #: Current scale (in picoamperes: *pA*).
+    I_ref: float
+
+    @overload
+    def time(self, t: float) -> float: ...
+
+    @overload
+    def time(self, t: Array) -> Array: ...
+
+    def time(self, t: float | Array) -> float | Array:
+        """Add dimensions to the non-dimensional time *t*."""
+        return self.T_ref * t
+
+    def var(self, y: Array) -> Array:
+        """Add dimensions to the non-dimensional :math:`(V, w)`."""
+        return np.array([self.V_ref * y[0] + self.V_off, self.w_ref * y[1]])
+
+
 class AdExDim(NamedTuple):
     """Dimensional parameters for the Adaptive Exponential Integrate-and-Fire
     (AdEx) model from [Naud2008]_."""
@@ -26,11 +64,11 @@ class AdExDim(NamedTuple):
     #: Added current :math:`I` (in picoamperes *pA*).
     current: float
     #: Total capacitance :math:`C` (in picofarad per millisecond *pF / ms^(alpha - 1)*).
-    c: float
+    C: float
     #: Total leak conductance :math:`g_L` (in nanosiemens *nS*).
     gl: float
     #: Effective rest potential :math:`E_L` (in microvolts *mV*).
-    el: float
+    e_leak: float
     #: Threshold slope factor :math:`\Delta_T` (in microvolts *mV*).
     delta_t: float
     #: Effective threshold potential :math:`V_T` (in microvolts *mV*).
@@ -52,9 +90,9 @@ class AdExDim(NamedTuple):
         return dc_stringify(
             {
                 "I      (current / pA)": self.current,
-                "C      (total capacitance / pF/ms^alpha)": self.c,
+                "C      (total capacitance / pF/ms^alpha)": self.C,
                 "g_L    (total leak conductance / nS)": self.gl,
-                "E_L    (effective rest potential / mV)": self.el,
+                "E_L    (effective rest potential / mV)": self.e_leak,
                 "delta_T(threshold slope factor / mV)": self.delta_t,
                 "V_T    (effective threshold potential / mV)": self.vt,
                 "tau_w  (time scale ratio / ms^alpha)": self.tau_w,
@@ -66,8 +104,8 @@ class AdExDim(NamedTuple):
             header=("model", type(self).__name__),
         )
 
-    def nondim(self, alpha: float | tuple[float, float]) -> AdEx:
-        r"""Construct non-dimensional parameters for the AdEx model.
+    def ref(self, alpha: float | tuple[float, float]) -> AdExReference:
+        r"""Construct reference variables used in non-dimensionalizating the AdEx model.
 
         The non-dimensionalization is performed using the following rescaling
 
@@ -79,10 +117,6 @@ class AdExDim(NamedTuple):
             \qquad
             \hat{w} = \frac{w}{g_L \Delta_T}.
 
-        and results in a reduction of the parameter space to the four
-        non-dimensional variables :math:`(I, E_L, a, \tau_w)` in the model and
-        :math:`(V_{peak}, V_r, b)` in the reset condition.
-
         :arg alpha: the order of the fractional derivatives for two model
             components :math:`(V, w)`. These can be the same if the two variables
             use the same order.
@@ -91,31 +125,47 @@ class AdExDim(NamedTuple):
         if not len(alpha) == 2:
             raise ValueError(f"Only 2 orders 'alpha' are required: given {len(alpha)}")
 
-        return AdEx(
+        return AdExReference(
             alpha=alpha,
-            T=(self.gl / self.c) ** (1.0 / alpha[0]),
-            current=self.current / (self.delta_t * self.gl),
-            el=(self.el - self.vt) / self.delta_t,
-            tau_w=(self.gl / self.c) ** (alpha[1] / alpha[0]) * self.tau_w,
+            T_ref=1.0 / (self.gl / self.C) ** (1 / alpha[0]),
+            V_off=self.vt,
+            V_ref=self.delta_t,
+            w_ref=self.gl * self.delta_t,
+            I_ref=self.gl * self.delta_t,
+        )
+
+    def nondim(self, alpha: float | tuple[float, float]) -> AdEx:
+        r"""Construct non-dimensional parameters for the AdEx model.
+
+        This uses the reference variables from :meth:`ref` to reduce the parameter
+        space to only the non-dimensional threshold values
+        :math:`(\hat{V}_{peak}, \hat{V}_r, \hat{b})` and
+        :math:`(\hat{I}, \hat{E}_L, \hat{\tau}_w, \hat{a})`.
+
+        """
+        ref = self.ref(alpha)
+        return AdEx(
+            ref=ref,
+            current=self.current / ref.I_ref,
+            e_leak=(self.e_leak - ref.V_off) / ref.V_ref,
+            tau_w=self.tau_w / ref.T_ref ** ref.alpha[1],
             a=self.a / self.gl,
-            v_peak=(self.v_peak - self.vt) / self.delta_t,
-            v_reset=(self.v_reset - self.vt) / self.delta_t,
-            b=self.b / (self.delta_t * self.gl),
+            v_peak=(self.v_peak - ref.V_off) / ref.V_ref,
+            v_reset=(self.v_reset - ref.V_off) / ref.V_ref,
+            b=self.b / ref.w_ref,
         )
 
 
 class AdEx(NamedTuple):
     """Non-dimensional parameters for the AdEx model (see :class:`AdExDim`)."""
 
-    #: Fractional orders used in the non-dimensionalization.
-    alpha: tuple[float, float]
-    #: Fractional time scale.
-    T: float
+    #: Reference values used in non-dimensionalization.
+    ref: AdExReference
 
     #: Added current :math:`I`.
     current: float
     #: Effective rest potential :math:`E_L`.
-    el: float
+    e_leak: float
 
     #: Time constant :math:`\tau_w`.
     tau_w: float
@@ -132,10 +182,8 @@ class AdEx(NamedTuple):
     def __str__(self) -> str:
         return dc_stringify(
             {
-                "alpha  (fractional order)": self.alpha,
-                "T      (fractional time scale)": self.T,
                 "I      (current)": self.current,
-                "E_L    (effective rest potential)": self.el,
+                "E_L    (effective rest potential)": self.e_leak,
                 "tau_w  (time scale ratio)": self.tau_w,
                 "a      (conductance)": self.a,
                 "V_peak (peak potential)": self.v_peak,
@@ -149,9 +197,9 @@ class AdEx(NamedTuple):
 # Parameter values for the integer-order system from [Naud2008]_ Table 1.
 AD_EX_PARAMS: dict[str, AdExDim] = {
     "Naud4a": AdExDim(
-        c=200,
+        C=200,
         gl=10,
-        el=-70,
+        e_leak=-70,
         vt=-50,
         delta_t=2,
         a=2,
@@ -162,9 +210,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=500,
     ),
     "Naud4b": AdExDim(
-        c=200,
+        C=200,
         gl=12,
-        el=-70,
+        e_leak=-70,
         vt=-50,
         delta_t=2,
         a=2,
@@ -175,9 +223,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=500,
     ),
     "Naud4c": AdExDim(
-        c=130,
+        C=130,
         gl=18,
-        el=-58,
+        e_leak=-58,
         vt=-50,
         delta_t=2,
         a=4,
@@ -188,9 +236,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=400,
     ),
     "Naud4d": AdExDim(
-        c=200,
+        C=200,
         gl=10,
-        el=-58,
+        e_leak=-58,
         vt=-50,
         delta_t=2,
         a=2,
@@ -201,9 +249,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=210,
     ),
     "Naud4e": AdExDim(
-        c=200,
+        C=200,
         gl=12,
-        el=-70,
+        e_leak=-70,
         vt=-50,
         delta_t=2,
         a=-10,
@@ -214,9 +262,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=300,
     ),
     "Naud4f": AdExDim(
-        c=200,
+        C=200,
         gl=12,
-        el=-70,
+        e_leak=-70,
         vt=-50,
         delta_t=2,
         a=-6,
@@ -227,9 +275,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=110,
     ),
     "Naud4g": AdExDim(
-        c=100,
+        C=100,
         gl=10,
-        el=-65,
+        e_leak=-65,
         vt=-50,
         delta_t=2,
         a=-10,
@@ -240,9 +288,9 @@ AD_EX_PARAMS: dict[str, AdExDim] = {
         current=350,
     ),
     "Naud4h": AdExDim(
-        c=100,
+        C=100,
         gl=12,
-        el=-60,
+        e_leak=-60,
         vt=-50,
         delta_t=2,
         a=-11,
@@ -292,7 +340,7 @@ def get_ad_ex_parameters(
     return AD_EX_PARAMS[name].nondim(alpha)
 
 
-def get_ad_ex_parameters_latex(alpha: float | tuple[float, float]) -> str:
+def get_ad_ex_parameters_latex() -> str:
     from rich.box import Box
     from rich.table import Table
 
@@ -300,7 +348,10 @@ def get_ad_ex_parameters_latex(alpha: float | tuple[float, float]) -> str:
     t = Table(
         *[
             "Name",
+            "$C$",
             "$E_L$",
+            "$V_T$",
+            r"$\Delta_T$",
             "$a$",
             r"$\tau_w$",
             "$b$",
@@ -311,11 +362,14 @@ def get_ad_ex_parameters_latex(alpha: float | tuple[float, float]) -> str:
         header_style=None,
     )
 
-    for name, param in AD_EX_PARAMS.items():
-        ad_ex = param.nondim(alpha)
+    for name, ad_ex in AD_EX_PARAMS.items():
         t.add_row(*[
             name,
-            f"{ad_ex.el:.3f}",
+            f"{ad_ex.C:.3f}",
+            f"{ad_ex.gl:.3f}",
+            f"{ad_ex.e_leak:.3f}",
+            f"{ad_ex.vt:.3f}",
+            f"{ad_ex.delta_t:.3f}",
             f"{ad_ex.a:.3f}",
             f"{ad_ex.tau_w:.3f}",
             f"{ad_ex.b:.3f}",
@@ -384,8 +438,8 @@ class AdExModel(IntegrateFireModel):
         p = self.param
 
         return np.array([
-            p.current - (V - p.el) + np.exp(V) - w,
-            (p.a * (V - p.el) - w) / p.tau_w,
+            p.current - (V - p.e_leak) + np.exp(V) - w,
+            (p.a * (V - p.e_leak) - w) / p.tau_w,
         ])
 
     def source_jac(self, t: float, y: Array) -> Array:
@@ -427,63 +481,62 @@ class AdExModel(IntegrateFireModel):
 # {{{ Lambert W solver
 
 
-class _PotentialCoefficient(NamedTuple):
-    d0: float
-    d1: float
-    d2: float
-
-
-class _AdaptationCoefficient(NamedTuple):
-    c0: float
-    c1: float
-
-
 def _evaluate_lambert_coefficients(
-    ad_ex: AdExModel, h: Array, r: Array
-) -> tuple[_PotentialCoefficient, _AdaptationCoefficient]:
+    ad_ex: AdExModel, t: float, y: Array, h: Array, r: Array
+) -> tuple[float, float, float, float, float]:
     # NOTE: small rename to match write-up
     hV, hw = h
     rV, rw = r
-    _, _, I, el, tau_w, a, *_ = ad_ex.param  # noqa: E741
+    p = ad_ex.param
 
     # w coefficients: w = c0 V + c1
-    c0 = a * hw / (tau_w + hw)
-    c1 = (tau_w * rw - a * hw * el) / (hw + tau_w)
+    c0 = p.a * hw / (p.tau_w + hw)
+    c1 = (p.tau_w * rw - p.a * hw * p.e_leak) / (hw + p.tau_w)
 
     # V coefficients: d0 V + d1 = d2 exp(V)
+    I, _ = ad_ex.source(t, np.array([0.0, 0.0])) - 1.0  # noqa: E741
     d0 = 1 + hV * (1 + c0)
-    d1 = -hV * (I + el - c1) - rV
+    d1 = -hV * (I - c1) - rV
     d2 = hV
 
-    return _PotentialCoefficient(d0, d1, d2), _AdaptationCoefficient(c0, c1)
+    return d0, d1, d2, c0, c1
 
 
-def _find_maximum_time_lambert(ad_ex: AdExModel, t: float, r: Array) -> float:
+def find_maximum_time_step_lambert(
+    ad_ex: AdExModel, t: float, tprev: float, yprev: Array, r: Array
+) -> float:
+    """Find a maximum time step such that the Lambert W function is real.
+
+    This function looks at the argument of the Lambert W function for the AdEx
+    model and ensures that it is :math:`> -1/e`. Note that this is not done
+    exactly, as we assume that the memory terms *r* are fixed.
+
+    :arg t: initial guess for the spike time.
+    :arg tprev: previous time step that was successful, i.e. that resulted in a
+        real valued membrane potential.
+    :arg yprev: solution at the previous time step.
+    :arg r: memory terms, considered fixed for this solution.
+    """
     from math import gamma
 
     def func(tspike: float) -> float:
-        alpha = ad_ex.param.alpha
+        alpha = ad_ex.param.ref.alpha
         h = np.array([
             gamma(2 - alpha[0]) * (tspike - t) ** alpha[0],
             gamma(2 - alpha[1]) * (tspike - t) ** alpha[1],
         ])
 
-        (d0, d1, d2), _ = _evaluate_lambert_coefficients(ad_ex, h, r)
-        return float(d2 / d0 * np.exp(-d1 / d0 + 1.0)) - 1.0
+        d0, d1, d2, *_ = _evaluate_lambert_coefficients(
+            ad_ex, tspike, yprev, h, yprev - h * r
+        )
+        return float(d2 / d0 * np.exp(-d1 / d0 + 1.0) - 1.0)
 
     import scipy.optimize as so
 
-    try:
-        result = so.root_scalar(
-            f=func,
-            x0=1.0e-2,
-            bracket=[0.0, 0.5],
-        )
-        return float(result.root)
-    except ValueError:
-        # FIXME: what's a good return value here? the calling code should have
-        # a `dt = min(dt_min, t_min - t)` to handle any large values
-        return 0.5
+    result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])
+    t = float(result.root)
+
+    return t - tprev
 
 
 # }}}
@@ -492,44 +545,98 @@ def _find_maximum_time_lambert(ad_ex: AdExModel, t: float, r: Array) -> float:
 # {{{ AdExIntegrateFireL1Method
 
 
-def ad_ex_solve(ad_ex: AdExModel, t: float, y0: Array, h: Array, r: Array) -> Array:
-    r"""Solve the implicit equation for the AdEx model.
-
-    This solve an implicit nonlinear equation of the form
-
-    .. math::
-
-        \mathbf{y} - \mathbf{h} \odot \mathbf{f}(t, \mathbf{y}) = \mathbf{r}
-
-    where :math:`\mathbf{f}` is given by the source term of the :class:`AdExModel`.
-    In that case, we can solve the equation explicitly, i.e. without an iterative
-    method, by using the Lambert W function.
-
-    This function can return complex results if the solution is out of range of
-    the Lambert W function. This can happen if the simulation becomes unstable
-    or it is close to a spike and the time step is too large.
-
-    See :func:`pycaputo.implicit.solve` for an interactive method based on the
-    :func:`scipy.optimize.root`.
-    """
-
-    from scipy.special import lambertw
-
-    d, c = _evaluate_lambert_coefficients(ad_ex, h, r)
-    dstar = -d[2] / d[0] * np.exp(-d[1] / d[0])
-    Vstar = -d[1] / d[0] - lambertw(dstar)
-    wstar = c[0] * Vstar + c[1]
-
-    return np.array([Vstar, wstar])
-
-
 @dataclass(frozen=True)
-class AdExIntegrateFireL1Method(CaputoIntegrateFireL1Method[AdExModel]):
+class CaputoAdExIntegrateFireL1Model(CaputoIntegrateFireL1Method[AdExModel]):
     #: Parameters for the AdEx model.
     model: AdExModel
 
-    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        return ad_ex_solve(self.model, t, y0, c, r)
+    def solve(self, t: float, y: Array, h: Array, r: Array) -> Array:
+        """Solve the implicit equation for the AdEx model.
+
+        In this case, since the right-hand side is nonlinear, but we can solve
+        the implicit equation using the Lambert W function, a special function
+        that is a solution to
+
+        .. math::
+
+            z = w e^w.
+        """
+        from scipy.special import lambertw
+
+        d0, d1, d2, c0, c1 = _evaluate_lambert_coefficients(self.model, t, y, h, r)
+        dstar = -d2 / d0 * np.exp(-d1 / d0)
+        Vstar = -d1 / d0 - lambertw(dstar, tol=1.0e-12)
+        Vstar = np.real_if_close(Vstar, tol=100)
+        wstar = c0 * Vstar + c1
+
+        ystar = np.array([Vstar, wstar])
+        # assert np.linalg.norm(ystar - h * self.source(t, ystar) - r) < 1.0e-8
+
+        return ystar
+
+
+@advance.register(CaputoAdExIntegrateFireL1Model)
+def _advance_caputo_ad_ex_l1(
+    m: CaputoAdExIntegrateFireL1Model,
+    history: ProductIntegrationHistory,
+    y: Array,
+    dt: float,
+) -> AdvanceResult:
+    from pycaputo.controller import AdaptiveController
+    from pycaputo.integrate_fire.base import (
+        advance_caputo_integrate_fire_l1,
+        estimate_spike_time_exp,
+    )
+
+    c = m.control
+    assert isinstance(c, AdaptiveController)
+
+    tprev = history.current_time
+    t = tprev + dt
+    result, r = advance_caputo_integrate_fire_l1(m, history, y, dt)
+
+    p = m.model.param
+    if np.any(np.iscomplex(result.y)):
+        # NOTE: if the result is complex, it means the Lambert W function is out
+        # of range. We try here to find the maximum time step that would put it
+        # back in range and use that to mark the spike.
+        yprev = np.array([p.v_peak], dtype=y.dtype)
+        ynext = np.array([p.v_reset], dtype=y.dtype)
+
+        try:
+            dts = find_maximum_time_step_lambert(m.model, t, tprev, y, r)
+            trunc = np.zeros_like(y)
+            spiked = np.array(1)
+        except ValueError:
+            # NOTE: if we can't find a maximum time step, just let the adaptive
+            # step controller do its thing until it can't anymore
+            dts = float(result.dts)
+            trunc = np.full_like(y, 1.0e5)
+            spiked = np.array(int(c.nrejects > c.max_rejects))
+
+        result = AdvanceResult(
+            y=ynext,
+            trunc=trunc,
+            storage=np.hstack([yprev, ynext]),
+            spiked=spiked,
+            dts=np.array(dts),
+        )
+    elif m.model.spiked(t, result.y) > 0.0:
+        yprev = np.array([p.v_peak], dtype=y.dtype)
+        ynext = np.array([p.v_reset], dtype=y.dtype)
+
+        ts = estimate_spike_time_exp(t, result.y[0], tprev, y[0], p.v_peak)
+        result = AdvanceResult(
+            y=ynext,
+            trunc=np.zeros_like(y),
+            storage=np.hstack([yprev, ynext]),
+            spiked=np.array(1),
+            dts=np.array(ts - tprev),
+        )
+    else:
+        pass
+
+    return result
 
 
 # }}}

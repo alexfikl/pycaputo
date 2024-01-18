@@ -32,9 +32,6 @@ from pycaputo.controller import make_jannelli_controller
 rng = np.random.default_rng()
 y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
-# tspike = model.param.first_spike_time(y0[0])
-# logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspike, tstart, tfinal)
-
 dtinit = 1.0e-1
 c = make_jannelli_controller(
     tstart,
@@ -98,12 +95,11 @@ s = np.array(spikes)
 t = np.array(ts)
 y = np.array(ys).squeeze()
 eest = np.array(eests)
-print(s)
 
 # make variables dimensional for plotting
 dim = model.param.ref
 t = dim.time(t)
-y = dim.potential(y)
+y = dim.var(y)
 
 with figure("integrate-fire-lif") as fig:
     ax = fig.gca()
