@@ -13,7 +13,7 @@ logger = get_logger("integrate-and-fire")
 # {{{ model
 
 # time interval
-tstart, tfinal = 0.0, 10.0
+tstart, tfinal = 0.0, 50.0
 # fractional order
 alpha = 0.95
 
@@ -40,7 +40,7 @@ from pycaputo.controller import make_jannelli_controller
 
 # initial condition
 rng = np.random.default_rng()
-y0 = np.array([rng.uniform(model.param.v_reset - 2.0, model.param.v_reset)])
+y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
 dtinit = 1.0e-3
 c = make_jannelli_controller(
@@ -109,7 +109,7 @@ eest = np.array(eests)
 # dimensionalize variables
 dim = model.param.ref
 t = dim.time(t)
-y = dim.potential(y)
+y = dim.var(y)
 
 with figure("integrate-fire-eif") as fig:
     ax = fig.gca()

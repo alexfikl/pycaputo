@@ -106,9 +106,9 @@ y_ref = y0 + model.param.current * t_ref**alpha / stepper.gamma1p
 # make variables dimensional for plotting
 dim = model.param.ref
 t = dim.time(t)
-y = dim.potential(y)
+y = dim.var(y)
 t_ref = dim.time(t_ref)
-y_ref = dim.potential(y_ref)
+y_ref = dim.var(y_ref)
 
 with figure("integrate-fire-pif") as fig:
     ax = fig.gca()

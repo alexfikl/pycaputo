@@ -48,9 +48,9 @@ class EIFReference(NamedTuple):
         """Add dimensions to the non-dimensional time *t*."""
         return self.T_ref * t
 
-    def potential(self, V: Array) -> Array:
-        """Add dimensions to the non-dimensional potential *V*."""
-        return self.V_ref * V + self.V_off
+    def var(self, y: Array) -> Array:
+        """Add dimensions to the non-dimensional potential *y*."""
+        return self.V_ref * y + self.V_off
 
 
 class EIFDim(NamedTuple):
@@ -115,9 +115,9 @@ class EIFDim(NamedTuple):
     def nondim(self, alpha: float) -> EIF:
         r"""Construct a non-dimensional set of parameters for the EIF model.
 
-        which results in a reduction of the parameter space to just the threshold
-        values :math:`(V_{peak}, V_r)` and the constants :math:`(I, E_L)`.
-
+        This uses the reference variables from :meth:`ref` to reduce the parameter
+        space to only the non-dimensional threshold values
+        :math:`(\hat{V}_{peak}, \hat{V}_r)` and :math:`(\hat{I}, \hat{E}_L)`.
         """
         ref = self.ref(alpha)
         return EIF(
@@ -229,13 +229,13 @@ def _evaluate_lambert_coefficients(
     # NOTE: we need the terms that do not depend on V, so we do
     #   f(t, y) + y - exp(y) = I(t) + E_L
     # since the current may be time-dependent
-    d2 = r + h * (eif.source(t, y) + y - np.exp(y))
+    d2 = r + h * (eif.source(t, np.array([0.0])) - 1.0)
 
     return float(d0), float(d1), np.array(d2)
 
 
 def find_maximum_time_step_lambert(
-    eif: EIFModel, t: float, y: Array, tprev: float, r: Array
+    eif: EIFModel, t: float, tprev: float, yprev: Array, r: Array
 ) -> float:
     """Find a maximum time step such that the Lambert W function is real.
 
@@ -246,6 +246,7 @@ def find_maximum_time_step_lambert(
     :arg t: initial guess for the spike time.
     :arg tprev: previous time step that was successful, i.e. that resulted in a
         real valued membrane potential.
+    :arg yprev: solution at the previous time step.
     :arg r: memory terms, considered fixed for this solution.
     """
     from math import gamma
@@ -254,7 +255,9 @@ def find_maximum_time_step_lambert(
         alpha = eif.param.ref.alpha
         h = gamma(2 - alpha) * (tspike - tprev) ** alpha
 
-        d0, d1, d2 = _evaluate_lambert_coefficients(eif, tspike, y, h, y - h * r)
+        d0, d1, d2 = _evaluate_lambert_coefficients(
+            eif, tspike, yprev, h, yprev - h * r
+        )
         return float(d1 / d0 * np.exp(d2 / d0 + 1) - 1)
 
     import scipy.optimize as so
@@ -303,10 +306,14 @@ def _advance_caputo_eif_l1(
     y: Array,
     dt: float,
 ) -> AdvanceResult:
+    from pycaputo.controller import AdaptiveController
     from pycaputo.integrate_fire.base import (
         advance_caputo_integrate_fire_l1,
         estimate_spike_time_exp,
     )
+
+    c = m.control
+    assert isinstance(c, AdaptiveController)
 
     tprev = history.current_time
     t = tprev + dt
@@ -321,7 +328,7 @@ def _advance_caputo_eif_l1(
         ynext = np.array([p.v_reset], dtype=y.dtype)
 
         try:
-            dts = find_maximum_time_step_lambert(m.model, t, y, tprev, r)
+            dts = find_maximum_time_step_lambert(m.model, t, tprev, y, r)
             trunc = np.zeros_like(y)
             spiked = np.array(1)
         except ValueError:
@@ -330,6 +337,7 @@ def _advance_caputo_eif_l1(
             dts = float(result.dts)
             trunc = np.full_like(y, 1.0e5)
             spiked = np.array(0)
+            spiked = np.array(int(c.nrejects > c.max_rejects))
 
         result = AdvanceResult(
             y=ynext,
