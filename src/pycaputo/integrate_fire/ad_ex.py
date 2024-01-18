@@ -502,6 +502,20 @@ def _evaluate_lambert_coefficients(
     return d0, d1, d2, c0, c1
 
 
+def _evaluate_lambert_coefficients_time(
+    ad_ex: AdExModel, t: float, tprev: float, yprev: Array, r: Array
+) -> tuple[float, float, float, float, float]:
+    from math import gamma
+
+    alpha = ad_ex.param.ref.alpha
+    h = np.array([
+        gamma(2 - alpha[0]) * (t - tprev) ** alpha[0],
+        gamma(2 - alpha[1]) * (t - tprev) ** alpha[1],
+    ])
+
+    return _evaluate_lambert_coefficients(ad_ex, t, yprev, h, yprev - h * r)
+
+
 def find_maximum_time_step_lambert(
     ad_ex: AdExModel, t: float, tprev: float, yprev: Array, r: Array
 ) -> float:
@@ -517,26 +531,17 @@ def find_maximum_time_step_lambert(
     :arg yprev: solution at the previous time step.
     :arg r: memory terms, considered fixed for this solution.
     """
-    from math import gamma
 
     def func(tspike: float) -> float:
-        alpha = ad_ex.param.ref.alpha
-        h = np.array([
-            gamma(2 - alpha[0]) * (tspike - t) ** alpha[0],
-            gamma(2 - alpha[1]) * (tspike - t) ** alpha[1],
-        ])
-
-        d0, d1, d2, *_ = _evaluate_lambert_coefficients(
-            ad_ex, tspike, yprev, h, yprev - h * r
+        d0, d1, d2, *_ = _evaluate_lambert_coefficients_time(
+            ad_ex, tspike, tprev, yprev, r
         )
         return float(d2 / d0 * np.exp(-d1 / d0 + 1.0) - 1.0)
 
     import scipy.optimize as so
 
     result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])
-    t = float(result.root)
-
-    return t - tprev
+    return float(result.root) - tprev
 
 
 # }}}
@@ -570,9 +575,21 @@ class CaputoAdExIntegrateFireL1Model(CaputoIntegrateFireL1Method[AdExModel]):
         wstar = c0 * Vstar + c1
 
         ystar = np.array([Vstar, wstar])
-        # assert np.linalg.norm(ystar - h * self.source(t, ystar) - r) < 1.0e-8
+        assert np.linalg.norm(ystar - h * self.source(t, ystar) - r) < 1.0e-8
 
         return ystar
+
+
+def _ad_ex_spike_reset(
+    ad_ex: AdExModel, t: float, tprev: float, yprev: Array, r: Array
+) -> tuple[Array, Array]:
+    *_, c0, c1 = _evaluate_lambert_coefficients_time(ad_ex, t, tprev, yprev, r)
+
+    p = ad_ex.param
+    yprev = np.array([p.v_peak, c0 * p.v_peak + c1], dtype=yprev.dtype)
+    ynext = np.array([p.v_reset, yprev[1] + p.b], dtype=yprev.dtype)
+
+    return yprev, ynext
 
 
 @advance.register(CaputoAdExIntegrateFireL1Model)
@@ -600,9 +617,6 @@ def _advance_caputo_ad_ex_l1(
         # NOTE: if the result is complex, it means the Lambert W function is out
         # of range. We try here to find the maximum time step that would put it
         # back in range and use that to mark the spike.
-        yprev = np.array([p.v_peak], dtype=y.dtype)
-        ynext = np.array([p.v_reset], dtype=y.dtype)
-
         try:
             dts = find_maximum_time_step_lambert(m.model, t, tprev, y, r)
             trunc = np.zeros_like(y)
@@ -614,6 +628,7 @@ def _advance_caputo_ad_ex_l1(
             trunc = np.full_like(y, 1.0e5)
             spiked = np.array(int(c.nrejects > c.max_rejects))
 
+        yprev, ynext = _ad_ex_spike_reset(m.model, t + dts, tprev, y, r)
         result = AdvanceResult(
             y=ynext,
             trunc=trunc,
@@ -622,10 +637,9 @@ def _advance_caputo_ad_ex_l1(
             dts=np.array(dts),
         )
     elif m.model.spiked(t, result.y) > 0.0:
-        yprev = np.array([p.v_peak], dtype=y.dtype)
-        ynext = np.array([p.v_reset], dtype=y.dtype)
-
         ts = estimate_spike_time_exp(t, result.y[0], tprev, y[0], p.v_peak)
+        yprev, ynext = _ad_ex_spike_reset(m.model, ts, tprev, y, r)
+
         result = AdvanceResult(
             y=ynext,
             trunc=np.zeros_like(y),
