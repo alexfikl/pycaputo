@@ -52,6 +52,12 @@ def mittag_leffler_series(
     if kmax is None:
         kmax = 2048
 
+    if abs(z) >= 1.0:
+        raise ValueError(
+            "The series expansion of the Mittag-Leffler function "
+            "only converges for |z| < 1"
+        )
+
     result, term = 0j, 1j
     k = 0
     while abs(term) > eps and k <= kmax:
@@ -244,7 +250,7 @@ def mittag_leffler_diethelm(
         return K + P
 
     k0 = math.floor(-math.log(eps) / math.log(zabs))
-    result = -sum((z**-k / math.gamma(beta - alpha * k) for k in range(k0)), 0.0)
+    result = -sum((z**-k / math.gamma(beta - alpha * k + eps) for k in range(k0)), 0.0)
 
     if zarg < 0.75 * alpha * np.pi:
         result += z ** ((1 - beta) / alpha) * cmath.exp(z ** (1 / alpha)) / alpha

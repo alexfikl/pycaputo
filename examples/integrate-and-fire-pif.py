@@ -32,8 +32,8 @@ from pycaputo.controller import make_jannelli_controller
 rng = np.random.default_rng()
 y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
-tspike = model.param.first_spike_time(y0[0])
-logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspike, tstart, tfinal)
+tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
+logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
 
 dtinit = 1.0e-1
 c = make_jannelli_controller(
@@ -109,6 +109,7 @@ t = dim.time(t)
 y = dim.var(y)
 t_ref = dim.time(t_ref)
 y_ref = dim.var(y_ref)
+tspikes = dim.time(tspikes)
 
 with figure("integrate-fire-pif") as fig:
     ax = fig.gca()
@@ -118,7 +119,7 @@ with figure("integrate-fire-pif") as fig:
     ax.axhline(param.v_peak, color="k", ls="-")
     ax.axhline(param.v_reset, color="k", ls="--")
     ax.plot(t[s], y[s], "ro")
-    ax.axvline(dim.time(tspike), ls="--")
+    ax.plot(tspikes, np.full_like(tspikes, param.v_peak), "kx")
 
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$V$ (mV)")

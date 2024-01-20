@@ -114,7 +114,7 @@ def test_ad_ex_lambert_limits(*, visualize: bool = True) -> None:
     from pycaputo.integrate_fire.ad_ex import (
         AD_EX_PARAMS,
         AdExModel,
-        _evaluate_lambert_coefficients,
+        _evaluate_lambert_coefficients,  # noqa: PLC2701
         find_maximum_time_step_lambert,
     )
 

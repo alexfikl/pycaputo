@@ -153,15 +153,28 @@ class PIF(NamedTuple):
     #: Reset potential :math:`V_r`.
     v_reset: float
 
-    def first_spike_time(self, V0: float = 0.0) -> float:
-        """Compute the first spike time for a constant current.
+    def constant_spike_times(self, tfinal: float, V0: float = 0.0) -> Array:
+        """Compute the spike times for a constant current.
 
+        :arg tfinal: final time for the evolution.
         :arg V0: initial membrane current.
         """
-        from math import gamma
+        from math import ceil, gamma
 
-        ts = gamma(1 + self.ref.alpha) * (self.v_peak - V0) / self.current
-        return float(ts ** (1 / self.ref.alpha))
+        alpha = self.ref.alpha
+        gamma1p = gamma(1 + alpha)
+        kmax = ceil(
+            ((self.v_peak - V0) * gamma1p - self.current * tfinal**alpha)
+            / ((self.v_reset - self.v_peak) * gamma1p)
+        )
+        k = np.arange(kmax)
+        ts = (
+            gamma1p
+            * (self.v_peak - V0 + k * (self.v_peak - self.v_reset))
+            / self.current
+        ) ** (1.0 / alpha)
+
+        return ts
 
     def __str__(self) -> str:
         return dc_stringify(
