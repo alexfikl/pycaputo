@@ -170,4 +170,4 @@ def grad(
     return result
 
 
-__all__ = ("diff", "quad", "grad")
+__all__ = ("diff", "grad", "quad")

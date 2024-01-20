@@ -93,19 +93,19 @@ def guess_method_for_order(
 
 
 __all__ = (
-    "DerivativeMethod",
-    "diff",
-    "guess_method_for_order",
-    "make_method_from_name",
     "CaputoDerivativeMethod",
     "CaputoL1Method",
     "CaputoL2CMethod",
     "CaputoL2Method",
     "CaputoModifiedL1Method",
     "CaputoSpectralMethod",
+    "DerivativeMethod",
     "RiemannLiouvilleDerivativeMethod",
     "RiemannLiouvilleFromCaputoDerivativeMethod",
     "RiemannLiouvilleL1Method",
     "RiemannLiouvilleL2CMethod",
     "RiemannLiouvilleL2Method",
+    "diff",
+    "guess_method_for_order",
+    "make_method_from_name",
 )
