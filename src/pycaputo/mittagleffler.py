@@ -37,7 +37,7 @@ class Algorithm(enum.Enum):
 # {{{ series
 
 
-def _mittag_leffler_series(
+def mittag_leffler_series(
     z: complex,
     *,
     alpha: float,
@@ -145,7 +145,7 @@ def _ml_quad_p(
     return complex(r)
 
 
-def _mittag_leffler_diethelm(
+def mittag_leffler_diethelm(
     z: complex,
     *,
     alpha: float,
@@ -160,7 +160,7 @@ def _mittag_leffler_diethelm(
         zeta = 0.9
 
     if alpha == 0:
-        return _mittag_leffler_series(z, alpha=alpha, beta=beta, eps=eps)
+        return mittag_leffler_series(z, alpha=alpha, beta=beta, eps=eps)
 
     assert eps is not None
     assert zeta is not None
@@ -175,7 +175,7 @@ def _mittag_leffler_diethelm(
         alpha = alpha / k0
 
         def rec_ml(k: int) -> complex:
-            return _mittag_leffler_diethelm(
+            return mittag_leffler_diethelm(
                 z * np.exp(2j * np.pi * k / k0),
                 alpha=alpha,
                 beta=beta,
@@ -254,10 +254,10 @@ def _mittag_leffler_diethelm(
 # }}}
 
 
-# {{{
+# {{{ Ortigueira
 
 
-def _mittag_leffler_ortigueira(
+def mittag_leffler_ortigueira(
     z: complex,
     *,
     alpha: float,
@@ -274,7 +274,7 @@ def _mittag_leffler_ortigueira(
     if abs(z) == 0:
         return 1 / math.gamma(beta)
 
-    return 0
+    raise NotImplementedError
 
 
 # }}}
@@ -283,7 +283,7 @@ def _mittag_leffler_ortigueira(
 # {{{ Garrappa
 
 
-def _mittag_leffler_garrapa(
+def mittag_leffler_garrapa(
     z: complex,
     *,
     alpha: float,
@@ -292,7 +292,7 @@ def _mittag_leffler_garrapa(
     if abs(z) == 0:
         return 1 / math.gamma(beta)
 
-    return 0
+    raise NotImplementedError
 
 
 # }}}
@@ -362,13 +362,13 @@ def mittag_leffler(
 
     func: Any
     if alg == Algorithm.Series:
-        func = _mittag_leffler_series
+        func = mittag_leffler_series
     elif alg == Algorithm.Diethelm:
-        func = _mittag_leffler_diethelm
+        func = mittag_leffler_diethelm
     elif alg == Algorithm.Garrappa:
-        func = _mittag_leffler_garrapa
+        func = mittag_leffler_garrapa
     elif alg == Algorithm.Ortigueira:
-        func = _mittag_leffler_ortigueira
+        func = mittag_leffler_ortigueira
     else:
         raise ValueError(f"Unknown algorithm: '{alg}'")
 

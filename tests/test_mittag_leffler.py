@@ -24,14 +24,14 @@ logger = get_logger("pycaputo.test_mittag_leffler")
     ],
 )
 def test_mittag_leffler_series(alpha: float, beta: float) -> None:
-    from pycaputo.mittagleffler import _mittag_leffler_series, mittag_leffler
+    from pycaputo.mittagleffler import mittag_leffler, mittag_leffler_series
 
     rng = np.random.default_rng(seed=42)
     z = rng.random(128)
 
     result_ref = mittag_leffler(z, alpha=alpha, beta=beta)
     result = np.vectorize(
-        lambda zi: 0j + _mittag_leffler_series(zi, alpha=alpha, beta=beta)
+        lambda zi: 0j + mittag_leffler_series(zi, alpha=alpha, beta=beta)
     )(z)
 
     error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))
@@ -55,14 +55,14 @@ def test_mittag_leffler_series(alpha: float, beta: float) -> None:
     ],
 )
 def test_mittag_leffler_diethelm(alpha: float, beta: float) -> None:
-    from pycaputo.mittagleffler import _mittag_leffler_diethelm, mittag_leffler
+    from pycaputo.mittagleffler import mittag_leffler, mittag_leffler_diethelm
 
     rng = np.random.default_rng(seed=42)
     z = rng.random(128)
 
     result_ref = mittag_leffler(z, alpha=alpha, beta=beta)
     result = np.vectorize(
-        lambda zi: 0j + _mittag_leffler_diethelm(zi, alpha=alpha, beta=beta)
+        lambda zi: 0j + mittag_leffler_diethelm(zi, alpha=alpha, beta=beta)
     )(z)
 
     error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))
