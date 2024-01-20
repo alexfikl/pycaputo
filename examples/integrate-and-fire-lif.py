@@ -15,7 +15,7 @@ logger = get_logger("integrate-and-fire")
 # time interval
 tstart, tfinal = 0.0, 24.0
 # fractional order
-alpha = 0.8
+alpha = 0.83
 
 param = lif.LIFDim(current=160, C=100, gl=3.0, e_leak=-50.0, v_reset=-48, v_peak=0.0)
 model = lif.LIFModel(param.nondim(alpha, V_ref=1.0))
@@ -31,6 +31,9 @@ from pycaputo.controller import make_jannelli_controller
 # initial condition
 rng = np.random.default_rng()
 y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
+
+tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
+logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
 
 dtinit = 1.0e-1
 c = make_jannelli_controller(
@@ -100,6 +103,7 @@ eest = np.array(eests)
 dim = model.param.ref
 t = dim.time(t)
 y = dim.var(y)
+tspikes = dim.time(tspikes)
 
 with figure("integrate-fire-lif") as fig:
     ax = fig.gca()
@@ -108,6 +112,7 @@ with figure("integrate-fire-lif") as fig:
     ax.axhline(param.v_peak, color="k", ls="-")
     ax.axhline(param.v_reset, color="k", ls="--")
     ax.plot(t[s], y[s], "ro")
+    ax.plot(tspikes, np.full_like(tspikes, param.v_peak), "kx")
 
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$V$ (mV)")

@@ -144,6 +144,38 @@ class LIF(NamedTuple):
     #: Reset potential :math:`V_r`.
     v_reset: float
 
+    def constant_spike_times(self, tfinal: float, V0: float = 0.0) -> Array:
+        """Compute the spike times for a constant current.
+
+        :arg tfinal: final time for the evolution.
+        :arg V0: initial membrane current.
+        """
+        from pycaputo.mittagleffler import mittag_leffler_diethelm
+
+        alpha = self.ref.alpha
+        ts = [0.0]
+
+        def func(t: float) -> float:
+            k = len(ts) - 1
+            a = self.current + self.e_leak
+            b = a - V0 - k * (self.v_reset - self.v_peak)
+
+            E = mittag_leffler_diethelm(-(t**alpha), alpha=alpha, beta=1.0)
+            return self.v_peak - a - b * E.real
+
+        import scipy.optimize as so
+
+        while ts[-1] < tfinal:
+            result = so.root_scalar(
+                f=func,
+                x0=ts[-1],
+                # FIXME: this bracket is completely made up
+                bracket=(ts[-1] + 0.01, ts[-1] + 30),
+            )
+            ts.append(float(result.root))
+
+        return np.array(ts[1:])
+
     def __str__(self) -> str:
         return dc_stringify(
             {
