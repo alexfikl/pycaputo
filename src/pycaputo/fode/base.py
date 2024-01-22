@@ -38,6 +38,9 @@ class StepFailed(Event):
     #: A reason on why the step failed (if available).
     reason: str
 
+    def __str__(self) -> str:
+        return f"Event failed at iteration {self.iteration}: {self.reason}"
+
 
 @dataclass(frozen=True)
 class StepCompleted(Event):
@@ -60,7 +63,7 @@ class StepCompleted(Event):
     trunc: Array
 
     def __str__(self) -> str:
-        return f"[{self.iteration:5d}] t = {self.t:.5e} dt {self.dt:.5e}"
+        return f"[{self.iteration:06d}] t = {self.t:.5e} dt {self.dt:.5e}"
 
 
 @dataclass(frozen=True)
@@ -185,9 +188,10 @@ def evolve(
         checkpointing the necessary state history for the method *m*.
     :arg dtinit: an initial time step used to start the simulation. If none is
         provided the controller of the method will be used to estimate it
-        (see :attr:`FractionalDifferentialEquationMethod.control`).
+        (see :attr:`~pycaputo.fode.FractionalDifferentialEquationMethod.control`).
 
-    :returns: an :class:`Event` (usually a :class:`StepCompleted`) containing
+    :returns: an :class:`~pycaputo.fode.Event` (usually a
+        :class:`~pycaputo.fode.StepCompleted`) containing
         the solution at a time :math:`t`.
     """
     raise NotImplementedError(f"'evolve' functionality for '{type(m).__name__}'")

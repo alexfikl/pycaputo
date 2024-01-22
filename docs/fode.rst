@@ -11,6 +11,8 @@ Time Stepping Events
 .. autoclass:: Event
 .. autoclass:: StepFailed
 .. autoclass:: StepCompleted
+.. autoclass:: StepAccepted
+.. autoclass:: StepRejected
 
 Time Stepping Interface
 -----------------------
