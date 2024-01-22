@@ -152,6 +152,13 @@ class CaputoIntegrateFireL1Method(
     #: Integrate-and-Fire model parameters and functions.
     model: ModelT
 
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if any(a > 1.0 or a < 0.0 for a in self.derivative_order):
+                raise ValueError(f"Expected 'alpha' in (0, 1): {self.derivative_order}")
+
     @cached_property
     def d(self) -> tuple[CaputoDerivative, ...]:
         return tuple([
@@ -161,8 +168,7 @@ class CaputoIntegrateFireL1Method(
 
     @property
     def order(self) -> float:
-        # FIXME: this is the same as the standard L1 method? Unlikely..
-        return 2.0 - self.largest_derivative_order
+        return 1.0
 
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         """Wrapper around :func:`pycaputo.implicit.solve` to solve the implicit

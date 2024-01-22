@@ -277,6 +277,12 @@ class CaputoExponentialIntegrateFireL1Method(CaputoIntegrateFireL1Method[EIFMode
 
     model: EIFModel
 
+    @property
+    def order(self) -> float:
+        # NOTE: this is currently not tested, but it should match the PIF/LIF
+        # estimates for the time step even though it does not do the interpolation
+        return 1.0
+
     def solve(self, t: float, y: Array, h: Array, r: Array) -> Array:
         r"""Solve the implicit equation for the EIF model.
 

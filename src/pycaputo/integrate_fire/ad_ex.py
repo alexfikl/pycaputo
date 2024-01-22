@@ -552,8 +552,20 @@ def find_maximum_time_step_lambert(
 
 @dataclass(frozen=True)
 class CaputoAdExIntegrateFireL1Model(CaputoIntegrateFireL1Method[AdExModel]):
+    r"""Implementation of the L1 method for the Adaptive Exponential
+    Integrate-and-Fire model.
+
+    The model is described by :class:`AdExModel` with parameters :class:`AdEx`.
+    """
+
     #: Parameters for the AdEx model.
     model: AdExModel
+
+    @property
+    def order(self) -> float:
+        # NOTE: this is currently not tested, but it should match the PIF/LIF
+        # estimates for the time step even though it does not do the interpolation
+        return 1.0
 
     def solve(self, t: float, y: Array, h: Array, r: Array) -> Array:
         """Solve the implicit equation for the AdEx model.
