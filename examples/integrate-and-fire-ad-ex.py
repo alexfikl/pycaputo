@@ -106,7 +106,8 @@ t = np.array(ts)
 y = np.array(ys).T
 eest = np.array(eests)
 
-with figure("integrate-fire-adex-v") as fig:
+basename = f"integrate-fire-adex-{100 * alpha:.0f}"
+with figure(f"{basename}-v") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[0], lw=3)
@@ -117,7 +118,7 @@ with figure("integrate-fire-adex-v") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$V$ (mV)")
 
-with figure("integrate-fire-adex-w") as fig:
+with figure(f"{basename}-w") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[1], lw=3)
@@ -127,7 +128,7 @@ with figure("integrate-fire-adex-w") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$w$ (pA)")
 
-with figure("integrate-fire-adex-dt") as fig:
+with figure(f"{basename}-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
@@ -136,7 +137,7 @@ with figure("integrate-fire-adex-dt") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel(r"$\Delta t$ (ms)")
 
-with figure("integrate-fire-adex-eest") as fig:
+with figure(f"{basename}-eest") as fig:
     ax = fig.gca()
 
     ax.plot(t, eest)

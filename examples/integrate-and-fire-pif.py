@@ -34,6 +34,11 @@ y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
 tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
 logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
+if tspikes.size < 2:
+    raise ValueError(
+        "This example expects at least two spikes. "
+        "Try increasing 'alpha' or 'tfinal'."
+    )
 
 dtinit = 1.0e-1
 c = make_jannelli_controller(
@@ -111,7 +116,8 @@ t_ref = dim.time(t_ref)
 y_ref = dim.var(y_ref)
 tspikes = dim.time(tspikes)
 
-with figure("integrate-fire-pif") as fig:
+basename = f"integrate-fire-pif-{100 * alpha:.0f}"
+with figure(basename) as fig:
     ax = fig.gca()
 
     ax.plot(t, y, lw=3)
@@ -124,7 +130,7 @@ with figure("integrate-fire-pif") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$V$ (mV)")
 
-with figure("integrate-fire-pif-dt") as fig:
+with figure(f"{basename}-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
@@ -133,7 +139,7 @@ with figure("integrate-fire-pif-dt") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel(r"$\Delta t$ (ms)")
 
-with figure("integrate-fire-pif-eest") as fig:
+with figure(f"{basename}-eest") as fig:
     ax = fig.gca()
 
     ax.plot(t, eest)
