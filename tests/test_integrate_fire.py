@@ -7,6 +7,7 @@ import pathlib
 from functools import partial
 
 import numpy as np
+import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
@@ -224,8 +225,108 @@ def test_ad_ex_solve() -> None:
 # {{{ test_pif_model
 
 
-def test_pif_model() -> None:
-    pass
+@pytest.mark.parametrize(
+    ("alpha", "resolutions"),
+    [
+        (0.50, [(1.0, 2.0), (0.75, 1.5), (0.25, 0.5)]),
+        (0.75, [(1.0, 2.0), (0.75, 1.5), (0.25, 0.5)]),
+        (0.95, [(0.5, 1.0), (0.25, 0.5), (0.125, 0.25)]),
+    ],
+)
+def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None:
+    from pycaputo.integrate_fire import StepAccepted, pif
+
+    # time interval
+    tstart, tfinal = 0.0, 32.0
+    # initial time step
+    dtinit = 1.0e-1
+
+    param = pif.PIFDim(current=160, C=100, v_reset=-48, v_peak=0.0)
+    model = pif.PIFModel(param.nondim(alpha, V_ref=1.0, I_ref=20.0))
+
+    # initial condition
+    rng = np.random.default_rng(seed=42)
+    y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
+
+    from pycaputo.controller import make_jannelli_controller
+    from pycaputo.fode import evolve
+    from pycaputo.utils import EOCRecorder
+
+    tspikes_ref = model.param.constant_spike_times(tfinal, V0=y0[0])
+
+    if tspikes_ref.size < 1:
+        raise ValueError(
+            "This test expects at least one spike to check the order. "
+            "Try increasing 'alpha' or 'tfinal'."
+        )
+
+    logger.info("Found %d spikes", tspikes_ref.size)
+
+    eoct = EOCRecorder(order=1.0)
+    eocy = EOCRecorder(order=2.0 - alpha)
+    for chimin, chimax in resolutions:
+        c = make_jannelli_controller(
+            tstart,
+            tfinal,
+            dtmin=1.0e-5,
+            chimin=chimin,
+            chimax=chimax,
+            abstol=1.0e-4,
+        )
+
+        stepper = pif.CaputoPerfectIntegrateFireL1Method(
+            derivative_order=(alpha,),
+            control=c,
+            y0=(y0,),
+            source=model.source,
+            model=model,
+        )
+
+        ts = []
+        ys = []
+        tspikes = []
+        for event in evolve(stepper, dtinit=dtinit):
+            if isinstance(event, StepAccepted):
+                ts.append(event.t)
+                ys.append(event.y)
+                if event.spiked:
+                    tspikes.append(event.t)
+            else:
+                pass
+
+        dtmax = np.max(np.diff(ts))
+        err = la.norm(tspikes - tspikes_ref) / la.norm(tspikes_ref)
+
+        logger.info("dt %.12e error %.12e", dtmax, err)
+        eoct.add_data_point(dtmax, err)
+
+        ts = []
+        ys = []
+        for event in evolve(stepper, dtinit=dtinit):
+            if isinstance(event, StepAccepted):
+                ts.append(event.t)
+                ys.append(event.y)
+                if event.spiked:
+                    break
+            else:
+                pass
+
+        t = np.array(ts[:-2])
+        y = np.array(ys).squeeze()[:-2]
+        y_ref = y0 + model.param.current * t**alpha / stepper.gamma1p
+
+        dtmax = np.max(np.diff(t))
+        err = la.norm(y - y_ref) / la.norm(y_ref)
+        logger.info("dt %.12e error %.12e", dtmax, err)
+        eocy.add_data_point(dtmax, err)
+
+    logger.info("\n%s\n%s", eoct, eocy)
+
+    assert eoct.order is not None
+    assert eoct.order - 0.25 < eoct.estimated_order < eoct.order + 0.25
+
+    assert eocy.order is not None
+    assert eocy.estimated_order > 0.7
 
 
 # }}}
