@@ -111,7 +111,8 @@ dim = model.param.ref
 t = dim.time(t)
 y = dim.var(y)
 
-with figure("integrate-fire-eif") as fig:
+basename = f"integrate-fire-eif-{100 * alpha:.0f}"
+with figure(basename) as fig:
     ax = fig.gca()
 
     ax.plot(t, y, lw=3)
@@ -123,7 +124,7 @@ with figure("integrate-fire-eif") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$V$ (mV)")
 
-with figure("integrate-fire-eif-dt") as fig:
+with figure(f"{basename}-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
@@ -132,7 +133,7 @@ with figure("integrate-fire-eif-dt") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel(r"$\Delta t$ (ms)")
 
-with figure("integrate-fire-eif-eest") as fig:
+with figure(f"{basename}-eest") as fig:
     ax = fig.gca()
 
     ax.plot(t, eest)

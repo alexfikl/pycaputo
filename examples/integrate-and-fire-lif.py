@@ -33,7 +33,11 @@ rng = np.random.default_rng()
 y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
 tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
-logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
+if tspikes:
+    logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
+else:
+    logger.info("tstart %.8e, tfinal %.8e", tstart, tfinal)
+    logger.warning("No spikes should occur for this configuration.")
 
 dtinit = 1.0e-1
 c = make_jannelli_controller(
@@ -105,7 +109,8 @@ t = dim.time(t)
 y = dim.var(y)
 tspikes = dim.time(tspikes)
 
-with figure("integrate-fire-lif") as fig:
+basename = f"integrate-fire-lif-{100 * alpha:.0f}"
+with figure(basename) as fig:
     ax = fig.gca()
 
     ax.plot(t, y, lw=3)
@@ -117,7 +122,7 @@ with figure("integrate-fire-lif") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel("$V$ (mV)")
 
-with figure("integrate-fire-lif-dt") as fig:
+with figure(f"{basename}-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
@@ -126,7 +131,7 @@ with figure("integrate-fire-lif-dt") as fig:
     ax.set_xlabel("$t$ (ms)")
     ax.set_ylabel(r"$\Delta t$ (ms)")
 
-with figure("integrate-fire-lif-eest") as fig:
+with figure(f"{basename}-eest") as fig:
     ax = fig.gca()
 
     ax.plot(t, eest)
