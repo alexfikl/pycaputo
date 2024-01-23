@@ -72,6 +72,7 @@ class ScalarFunction(Protocol):
         """
 
 
+@runtime_checkable
 class StateFunction(Protocol):
     r"""A generic callable for right-hand side functions
     :math:`\mathbf{f}(t, \mathbf{y})`.
@@ -133,6 +134,10 @@ class DifferentiableScalarFunction(Protocol):
         """
 
 
+#: A invaraint :class:`~typing.TypeVar` bound to :class:`StateFunction`.
+StateFunctionT = TypeVar("StateFunctionT", bound=StateFunction)
+
+#: A union of scalar functions.
 ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
 
 # fmt: off

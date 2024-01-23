@@ -18,13 +18,13 @@ from pycaputo.fode.product_integration import (
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, gamma1p, gamma2m, make_initial_condition
-from pycaputo.utils import Array, StateFunction, gamma
+from pycaputo.utils import Array, StateFunctionT, gamma
 
 logger = get_logger(__name__)
 
 
 def _update_caputo_initial_condition(
-    out: Array, m: CaputoProductIntegrationMethod, t: float
+    out: Array, m: CaputoProductIntegrationMethod[StateFunctionT], t: float
 ) -> Array:
     """Adds the appropriate initial conditions to *dy*."""
     t = t - m.control.tstart
@@ -57,7 +57,7 @@ def _truncation_error(
 
 
 @dataclass(frozen=True)
-class CaputoProductIntegrationMethod(ProductIntegrationMethod):
+class CaputoProductIntegrationMethod(ProductIntegrationMethod[StateFunctionT]):
     @cached_property
     def d(self) -> tuple[CaputoDerivative, ...]:
         return tuple([
@@ -67,7 +67,9 @@ class CaputoProductIntegrationMethod(ProductIntegrationMethod):
 
 
 @make_initial_condition.register(CaputoProductIntegrationMethod)
-def _make_initial_condition_caputo(m: CaputoProductIntegrationMethod) -> Array:
+def _make_initial_condition_caputo(
+    m: CaputoProductIntegrationMethod[StateFunctionT],
+) -> Array:
     return m.y0[0]
 
 
@@ -78,7 +80,7 @@ def _make_initial_condition_caputo(m: CaputoProductIntegrationMethod) -> Array:
 
 
 @dataclass(frozen=True)
-class ForwardEuler(CaputoProductIntegrationMethod):
+class ForwardEuler(CaputoProductIntegrationMethod[StateFunctionT]):
     """The first-order forward Euler discretization of the Caputo derivative."""
 
     @property
@@ -88,7 +90,7 @@ class ForwardEuler(CaputoProductIntegrationMethod):
 
 def _update_caputo_forward_euler(
     dy: Array,
-    m: CaputoProductIntegrationMethod,
+    m: CaputoProductIntegrationMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
 ) -> Array:
@@ -108,7 +110,7 @@ def _update_caputo_forward_euler(
 
 @advance.register(ForwardEuler)
 def _advance_caputo_forward_euler(
-    m: ForwardEuler,
+    m: ForwardEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
@@ -133,7 +135,7 @@ def _advance_caputo_forward_euler(
 
 
 @dataclass(frozen=True)
-class WeightedEuler(CaputoProductIntegrationMethod):
+class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
     r"""The weighted Euler discretization of the Caputo derivative.
 
     The weighted Euler method is a convex combination of the forward Euler
@@ -155,7 +157,7 @@ class WeightedEuler(CaputoProductIntegrationMethod):
     #: :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
     #: By default, implicit methods use :mod:`scipy` for their root finding,
     #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
-    source_jac: StateFunction | None
+    source_jac: StateFunctionT | None
 
     if __debug__:
 
@@ -207,7 +209,7 @@ class WeightedEuler(CaputoProductIntegrationMethod):
 
 def _update_caputo_weighted_euler(
     dy: Array,
-    m: WeightedEuler,
+    m: WeightedEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
 ) -> tuple[Array, Array]:
@@ -237,7 +239,7 @@ def _update_caputo_weighted_euler(
 
 @advance.register(WeightedEuler)
 def _advance_caputo_weighted_euler(
-    m: WeightedEuler,
+    m: WeightedEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
@@ -268,7 +270,7 @@ def _advance_caputo_weighted_euler(
 
 
 @dataclass(frozen=True)
-class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod):
+class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod[StateFunctionT]):
     r"""The Predictor-Corrector discretization of the Caputo derivative.
 
     In their classic forms (see e.g. [Diethelm2002]_), these are methods of
@@ -303,7 +305,7 @@ class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod):
 
 
 @dataclass(frozen=True)
-class PECE(CaputoPredictorCorrectorMethod):
+class PECE(CaputoPredictorCorrectorMethod[StateFunctionT]):
     """The Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
     Caputo derivative.
 
@@ -336,7 +338,7 @@ class PECE(CaputoPredictorCorrectorMethod):
 
 
 @dataclass(frozen=True)
-class PEC(CaputoPredictorCorrectorMethod):
+class PEC(CaputoPredictorCorrectorMethod[StateFunctionT]):
     """The Predict-Evaluate-Correct (PEC) discretization of the Caputo derivative.
 
     This is a predictor-corrector similar to :class:`PECE`, where
@@ -402,7 +404,7 @@ def _update_caputo_adams_bashforth2(
 
 @advance.register(CaputoPredictorCorrectorMethod)
 def _advance_caputo_predictor_corrector(
-    m: CaputoPredictorCorrectorMethod,
+    m: CaputoPredictorCorrectorMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
@@ -447,7 +449,7 @@ def _advance_caputo_predictor_corrector(
 
 
 @dataclass(frozen=True)
-class ModifiedPECE(CaputoPredictorCorrectorMethod):
+class ModifiedPECE(CaputoPredictorCorrectorMethod[StateFunctionT]):
     r"""A modified Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
     Caputo derivative.
 
@@ -463,7 +465,7 @@ class ModifiedPECE(CaputoPredictorCorrectorMethod):
 
 @advance.register(ModifiedPECE)
 def _advance_caputo_modified_pece(
-    m: ModifiedPECE,
+    m: ModifiedPECE[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
@@ -541,7 +543,7 @@ def _advance_caputo_modified_pece(
 
 
 @dataclass(frozen=True)
-class L1(CaputoProductIntegrationMethod):
+class L1(CaputoProductIntegrationMethod[StateFunctionT]):
     """The first-order implicit L1 discretization of the Caputo derivative.
 
     Note that, unlike the :class:`ForwardEuler` method, the L1 method discretizes
@@ -553,7 +555,7 @@ class L1(CaputoProductIntegrationMethod):
     #: :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
     #: By default, implicit methods use :mod:`scipy` for their root finding,
     #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
-    source_jac: StateFunction | None
+    source_jac: StateFunctionT | None
 
     @property
     def order(self) -> float:
@@ -594,7 +596,7 @@ class L1(CaputoProductIntegrationMethod):
 
 def _update_caputo_l1(
     dy: Array,
-    m: CaputoProductIntegrationMethod,
+    m: CaputoProductIntegrationMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
     *,
@@ -627,7 +629,7 @@ def _update_caputo_l1(
 
 @advance.register(L1)
 def _advance_caputo_l1(
-    m: L1,
+    m: L1[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,

@@ -17,7 +17,7 @@ from pycaputo.stepping import (
     evolve,
     make_initial_condition,
 )
-from pycaputo.utils import Array
+from pycaputo.utils import Array, StateFunctionT
 
 logger = get_logger(__name__)
 
@@ -35,7 +35,7 @@ class AdvanceResult(NamedTuple):
 
 
 @dataclass(frozen=True)
-class ProductIntegrationMethod(FractionalDifferentialEquationMethod):
+class ProductIntegrationMethod(FractionalDifferentialEquationMethod[StateFunctionT]):
     """A generic class of methods based on Product Integration.
 
     In general, these methods support a variable time step.
@@ -44,7 +44,7 @@ class ProductIntegrationMethod(FractionalDifferentialEquationMethod):
 
 @evolve.register(ProductIntegrationMethod)
 def _evolve_pi(
-    m: FractionalDifferentialEquationMethod,
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
     *,
     history: History[Any] | None = None,
     dtinit: float | None = None,

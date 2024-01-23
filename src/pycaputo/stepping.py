@@ -6,14 +6,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property, singledispatch
-from typing import TYPE_CHECKING, Any, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator
 
 import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.events import Event
 from pycaputo.history import History
-from pycaputo.utils import Array, StateFunction, cached_on_first_arg, gamma
+from pycaputo.utils import Array, StateFunctionT, cached_on_first_arg, gamma
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import
@@ -21,25 +21,25 @@ if TYPE_CHECKING:
 
 
 @cached_on_first_arg
-def gamma1p(m: FractionalDifferentialEquationMethod) -> Array:
+def gamma1p(m: FractionalDifferentialEquationMethod[StateFunctionT]) -> Array:
     r"""A cached vectorized value of :math:`\Gamma(1 + \alpha_i)`."""
     return gamma(1 + m.alpha)
 
 
 @cached_on_first_arg
-def gamma2p(m: FractionalDifferentialEquationMethod) -> Array:
+def gamma2p(m: FractionalDifferentialEquationMethod[StateFunctionT]) -> Array:
     r"""A cached vectorized value of :math:`\Gamma(2 + \alpha_i)`."""
     return gamma(2 + m.alpha)
 
 
 @cached_on_first_arg
-def gamma2m(m: FractionalDifferentialEquationMethod) -> Array:
+def gamma2m(m: FractionalDifferentialEquationMethod[StateFunctionT]) -> Array:
     r"""A cached vectorized value of :math:`\Gamma(2 - \alpha_i)`."""
     return gamma(2 - m.alpha)
 
 
 @dataclass(frozen=True)
-class FractionalDifferentialEquationMethod(ABC):
+class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
     r"""A generic method used to solve fractional ordinary differential
     equations (FODE).
 
@@ -64,7 +64,7 @@ class FractionalDifferentialEquationMethod(ABC):
     control: Controller
 
     #: Right-hand side source term.
-    source: StateFunction
+    source: StateFunctionT
     #: Values used to reconstruct the required initial conditions.
     y0: tuple[Array, ...]
 
@@ -122,7 +122,7 @@ class FractionalDifferentialEquationMethod(ABC):
 
 @singledispatch
 def evolve(
-    m: FractionalDifferentialEquationMethod,
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
     *,
     history: History[Any] | None = None,
     dtinit: float | None = None,
@@ -145,7 +145,7 @@ def evolve(
 
 @singledispatch
 def advance(
-    m: FractionalDifferentialEquationMethod,
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
     history: History[Any],
     y: Array,
     dt: float,
@@ -167,7 +167,9 @@ def advance(
 
 
 @singledispatch
-def make_initial_condition(m: FractionalDifferentialEquationMethod) -> Array:
+def make_initial_condition(
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
+) -> Array:
     """Construct an initial condition for the method *m*."""
     raise NotImplementedError(type(m).__name__)
 
