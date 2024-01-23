@@ -3,9 +3,9 @@
 
 from pycaputo.integrate_fire.base import (
     AdvanceResult,
-    CaputoIntegrateFireL1Method,
+    IntegrateFireMethod,
     IntegrateFireModel,
-    ModelT,
+    IntegrateFireModelT,
     StepAccepted,
     StepFailed,
     StepRejected,
@@ -14,9 +14,9 @@ from pycaputo.integrate_fire.base import (
 
 __all__ = (
     "AdvanceResult",
-    "CaputoIntegrateFireL1Method",
+    "IntegrateFireMethod",
     "IntegrateFireModel",
-    "ModelT",
+    "IntegrateFireModelT",
     "StepAccepted",
     "StepFailed",
     "StepRejected",

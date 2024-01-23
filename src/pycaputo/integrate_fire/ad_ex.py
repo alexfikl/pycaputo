@@ -12,7 +12,7 @@ import numpy as np
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.integrate_fire.base import (
     AdvanceResult,
-    CaputoIntegrateFireL1Method,
+    IntegrateFireMethod,
     IntegrateFireModel,
 )
 from pycaputo.logging import get_logger
@@ -553,7 +553,7 @@ def find_maximum_time_step_lambert(
 
 
 @dataclass(frozen=True)
-class CaputoAdExIntegrateFireL1Model(CaputoIntegrateFireL1Method[AdExModel]):
+class CaputoAdExIntegrateFireL1Model(IntegrateFireMethod[AdExModel]):
     r"""Implementation of the L1 method for the Adaptive Exponential
     Integrate-and-Fire model.
 

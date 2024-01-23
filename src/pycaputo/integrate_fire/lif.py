@@ -11,7 +11,7 @@ import numpy as np
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.integrate_fire.base import (
     AdvanceResult,
-    CaputoIntegrateFireL1Method,
+    IntegrateFireMethod,
     IntegrateFireModel,
 )
 from pycaputo.logging import get_logger
@@ -253,7 +253,7 @@ class LIFModel(IntegrateFireModel):
 
 
 @dataclass(frozen=True)
-class CaputoLeakyIntegrateFireL1Method(CaputoIntegrateFireL1Method[LIFModel]):
+class CaputoLeakyIntegrateFireL1Method(IntegrateFireMethod[LIFModel]):
     r"""Implementation of the L1 method for the Leaky Integrate-and-Fire model.
 
     The model is described by :class:`LIFModel` with parameters :class:`LIF`.

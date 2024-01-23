@@ -58,8 +58,12 @@ class IntegrateFireModel(ABC):
         not be applied.
         """
 
+    def __call__(self, t: float, y: Array) -> Array:
+        """Evaluate the right-hand side of the IF model (see :meth:`source`)."""
+        return self.source(t, y)
 
-ModelT = TypeVar("ModelT", bound=IntegrateFireModel)
+
+IntegrateFireModelT = TypeVar("IntegrateFireModelT", bound=IntegrateFireModel)
 
 # }}}
 
@@ -102,13 +106,12 @@ class AdvanceResult(NamedTuple):
 
 
 @dataclass(frozen=True)
-class CaputoIntegrateFireL1Method(
-    FractionalDifferentialEquationMethod, Generic[ModelT]
+class IntegrateFireMethod(
+    FractionalDifferentialEquationMethod, Generic[IntegrateFireModelT]
 ):
-    r"""An implicit discretization of the Caputo derivative for Integrate-and-Fire
-    models based on the L1 method.
+    r"""A discretization of Integrate-and-Fire models using a fractional derivative.
 
-    A generic leaky Integrate-and-Fire model is given by
+    A generic Integrate-and-Fire model is given by
 
     .. math::
 
@@ -123,8 +126,8 @@ class CaputoIntegrateFireL1Method(
         \mathbf{y} = \text{reset}(t, \mathbf{y}),
 
     where the ``condition`` function and the ``reset`` functions are provided
-    by the user. For example, if we assume that our model has two variables
-    :math:`(V, w)` and we want to model the reset condition
+    by the user. For example, a standard adaptive model has two variables
+    :math:`(V, w)` and uses the reset condition
 
     .. math::
 
@@ -134,7 +137,7 @@ class CaputoIntegrateFireL1Method(
         w \gets w + b,
         \end{cases}
 
-    we can set
+    so
 
     .. math::
 
@@ -144,14 +147,12 @@ class CaputoIntegrateFireL1Method(
         \end{cases}
 
     for certain coefficients :math:`V_{peak}, V_r` and :math:`b`. These can
-    be very general conditions. The variant of the L1 method implemented here
-    takes into account the inherent discontinuity of the solutions to this
-    type of equation (see :class:`~pycaputo.differentiation.CaputoL1Method`
-    for a smooth implementation).
+    be very general conditions. The methods implemented here take into account
+    the inherent discontinuity of the solutions to this type of equation.
     """
 
     #: Integrate-and-Fire model parameters and functions.
-    model: ModelT
+    model: IntegrateFireModelT
 
     if __debug__:
 
@@ -182,14 +183,16 @@ class CaputoIntegrateFireL1Method(
         raise NotImplementedError(type(self).__name__)
 
 
-@make_initial_condition.register(CaputoIntegrateFireL1Method)
-def _make_initial_condition_caputo(m: CaputoIntegrateFireL1Method[ModelT]) -> Array:
+@make_initial_condition.register(IntegrateFireMethod)
+def _make_initial_condition_caputo(
+    m: IntegrateFireMethod[IntegrateFireModelT],
+) -> Array:
     return m.y0[0]
 
 
-@evolve.register(CaputoIntegrateFireL1Method)
+@evolve.register(IntegrateFireMethod)
 def _evolve_caputo_integrate_fire_l1(
-    m: CaputoIntegrateFireL1Method[ModelT],
+    m: IntegrateFireMethod[IntegrateFireModelT],
     *,
     history: History[Any] | None = None,
     dtinit: float | None = None,
@@ -320,7 +323,7 @@ def _evolve_caputo_integrate_fire_l1(
 
 
 def advance_caputo_integrate_fire_l1(
-    m: CaputoIntegrateFireL1Method[ModelT],
+    m: IntegrateFireMethod[IntegrateFireModelT],
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
