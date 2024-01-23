@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
 
 from pycaputo.integrate_fire import ad_ex
@@ -19,12 +21,14 @@ logger = get_logger("integrate-and-fire")
 
 # {{{ model
 
-# time interval
-tstart, tfinal = 0.0, 256.0
-# fractional order
-alpha = 0.99, 0.99
+adaptive = "PYCAPUTO_AD_EX_NO_ADAPTIVE" not in os.environ
 
-param = ad_ex.get_ad_ex_parameters("Naud4f")
+# time interval
+tstart, tfinal = 0.0, 32.0
+# fractional order
+alpha = 0.91, 0.99
+
+param = ad_ex.get_ad_ex_parameters("Naud4d")
 model = ad_ex.AdExModel(param.nondim(alpha))
 
 logger.info("Parameters:\n%s", model.param)
@@ -33,24 +37,33 @@ logger.info("Parameters:\n%s", model.param)
 
 # {{{ setup
 
-from pycaputo.controller import make_jannelli_controller
+from pycaputo.controller import (
+    Controller,
+    make_fixed_controller,
+    make_jannelli_controller,
+)
 
 # initial condition
-rng = np.random.default_rng()
+rng = np.random.default_rng(seed=42)
 y0 = np.array([
     rng.uniform(model.param.v_reset - 10, model.param.v_reset),
     rng.uniform(),
 ])
 
-dtinit = 1.0e-1
-c = make_jannelli_controller(
-    tstart,
-    tfinal,
-    dtmin=1.0e-5,
-    chimin=0.001,
-    chimax=0.01,
-    abstol=1.0e-4,
-)
+if adaptive:
+    dtinit = 1.0e-1
+    dtmin = 1.0e-5
+    c: Controller = make_jannelli_controller(
+        tstart,
+        tfinal,
+        dtmin=dtmin,
+        chimin=0.001,
+        chimax=0.01,
+        abstol=1.0e-4,
+    )
+else:
+    dtinit = dtmin = 1.0e-4
+    c = make_fixed_controller(dtinit, tstart=tstart, tfinal=tfinal)
 
 stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
     derivative_order=alpha,
@@ -106,17 +119,18 @@ t = np.array(ts)
 y = np.array(ys).T
 eest = np.array(eests)
 
-basename = f"integrate-fire-adex-{100 * alpha:.0f}"
+basename = f"integrate-fire-adex-{100 * alpha[0]:.0f}-{100 * alpha[1]:.0f}"
 with figure(f"{basename}-v") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[0], lw=3)
     ax.axhline(model.param.v_peak, color="k", ls="-")
     ax.axhline(model.param.v_reset, color="k", ls="--")
-    ax.plot(t[s], y[0][s], "ro")
+    ax.plot(t[s], y[0][s], "rv")
+    ax.plot(t[s], np.full_like(t[s], model.param.v_reset), "r^")
 
-    ax.set_xlabel("$t$ (ms)")
-    ax.set_ylabel("$V$ (mV)")
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$V$")
 
 with figure(f"{basename}-w") as fig:
     ax = fig.gca()
@@ -125,17 +139,17 @@ with figure(f"{basename}-w") as fig:
     ax.plot(t[s], y[1][s], "r^")
     ax.plot(t[s], y[1][s] + model.param.b, "rv")
 
-    ax.set_xlabel("$t$ (ms)")
-    ax.set_ylabel("$w$ (pA)")
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$w$")
 
 with figure(f"{basename}-dt") as fig:
     ax = fig.gca()
 
     ax.semilogy(t[:-1], np.diff(t))
     ax.axhline(dtinit, color="k", ls="--")
-    ax.axhline(c.dtmin, color="k", ls="--")
-    ax.set_xlabel("$t$ (ms)")
-    ax.set_ylabel(r"$\Delta t$ (ms)")
+    ax.axhline(dtmin, color="k", ls="--")
+    ax.set_xlabel("$t$")
+    ax.set_ylabel(r"$\Delta t$")
 
 with figure(f"{basename}-eest") as fig:
     ax = fig.gca()
@@ -144,7 +158,7 @@ with figure(f"{basename}-eest") as fig:
     ax.axhline(1.0, color="k", ls="--")
     ax.axhline(0.0, color="k", ls="--")
     ax.plot(t[s], eest[s], "ro")
-    ax.set_xlabel("$t$ (ms)")
+    ax.set_xlabel("$t$")
     ax.set_ylabel("$E_{est}$")
 
 # }}}
