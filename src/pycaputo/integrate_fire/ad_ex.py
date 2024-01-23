@@ -127,7 +127,7 @@ class AdExDim(NamedTuple):
 
         return AdExReference(
             alpha=alpha,
-            T_ref=1.0 / (self.gl / self.C) ** (1 / alpha[0]),
+            T_ref=(self.C / self.gl) ** (1 / alpha[0]),
             V_off=self.vt,
             V_ref=self.delta_t,
             w_ref=self.gl * self.delta_t,
@@ -494,7 +494,8 @@ def _evaluate_lambert_coefficients(
     c1 = (p.tau_w * rw - p.a * hw * p.e_leak) / (hw + p.tau_w)
 
     # V coefficients: d0 V + d1 = d2 exp(V)
-    I, _ = ad_ex.source(t, np.array([0.0, 0.0])) - 1.0  # noqa: E741
+    dummy = np.zeros_like(y)
+    I, _ = ad_ex.source(t, dummy) - 1.0  # noqa: E741
     d0 = 1 + hV * (1 + c0)
     d1 = -hV * (I - c1) - rV
     d2 = hV
@@ -531,6 +532,7 @@ def find_maximum_time_step_lambert(
     :arg yprev: solution at the previous time step.
     :arg r: memory terms, considered fixed for this solution.
     """
+    assert t > tprev
 
     def func(tspike: float) -> float:
         d0, d1, d2, *_ = _evaluate_lambert_coefficients_time(
@@ -617,9 +619,6 @@ def _advance_caputo_ad_ex_l1(
         estimate_spike_time_exp,
     )
 
-    c = m.control
-    assert isinstance(c, AdaptiveController)
-
     tprev = history.current_time
     t = tprev + dt
     result, r = advance_caputo_integrate_fire_l1(m, history, y, dt)
@@ -634,11 +633,17 @@ def _advance_caputo_ad_ex_l1(
             trunc = np.zeros_like(y)
             spiked = np.array(1)
         except ValueError:
-            # NOTE: if we can't find a maximum time step, just let the adaptive
-            # step controller do its thing until it can't anymore
             dts = float(result.dts)
             trunc = np.full_like(y, 1.0e5)
-            spiked = np.array(int(c.nrejects > c.max_rejects))
+
+            c = m.control
+            if isinstance(c, AdaptiveController):
+                # NOTE: if we can't find a maximum time step, just let the
+                # adaptive step controller do its thing until it can't anymore
+                spiked = np.array(int(c.nrejects > c.max_rejects))
+            else:
+                # NOTE: otherwise, just hope for the best
+                spiked = np.array(1)
 
         yprev, ynext = _ad_ex_spike_reset(m.model, t + dts, tprev, y, r)
         result = AdvanceResult(

@@ -352,7 +352,11 @@ def advance_caputo_integrate_fire_l1(
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
 
     result = AdvanceResult(
-        ynext, trunc, np.hstack([ynext, ynext]), spiked=np.array(0), dts=np.array(dt)
+        ynext,
+        trunc,
+        np.hstack([ynext, ynext]),
+        spiked=np.array(0),
+        dts=np.array(dt),
     )
 
     return result, r
