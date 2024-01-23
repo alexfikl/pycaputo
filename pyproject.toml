@@ -130,6 +130,7 @@ multiline-quotes = "double"
 
 [tool.ruff.lint.isort]
 known-first-party = ["pycaputo"]
+force-wrap-aliases = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"

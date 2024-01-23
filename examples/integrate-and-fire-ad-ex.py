@@ -77,8 +77,8 @@ stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
 
 # {{{ evolution
 
-from pycaputo.fode import evolve
 from pycaputo.integrate_fire import StepAccepted, StepRejected
+from pycaputo.stepping import evolve
 
 ts = []
 ys = []

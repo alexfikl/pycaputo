@@ -7,6 +7,7 @@ from pycaputo.integrate_fire.base import (
     IntegrateFireModel,
     ModelT,
     StepAccepted,
+    StepFailed,
     StepRejected,
     estimate_spike_time_linear,
 )
@@ -17,6 +18,7 @@ __all__ = (
     "IntegrateFireModel",
     "ModelT",
     "StepAccepted",
+    "StepFailed",
     "StepRejected",
     "estimate_spike_time_linear",
 )
