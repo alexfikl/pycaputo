@@ -237,6 +237,11 @@ class Controller:
                     f"Number of iterations must be positive: {self.nsteps}"
                 )
 
+    @property
+    def is_adaptive(self) -> bool:
+        """*True* if the controller is adaptive."""
+        return True
+
     def finished(self, n: int, t: float) -> bool:
         """Check if the evolution should finish at iteration *n* and time *t*."""
         # fmt: off
@@ -334,12 +339,19 @@ def evaluate_timestep_reject(
 # {{{ non-adaptive controller
 
 
+# {{{ FixedController
+
+
 @dataclass(frozen=True)
 class FixedController(Controller):
     """A fake controller with a fixed time step."""
 
     dt: float
     """Fixed time step used by the controller."""
+
+    @property
+    def is_adaptive(self) -> bool:
+        return False
 
 
 @evaluate_error_estimate.register(FixedController)
@@ -378,6 +390,11 @@ def _evaluate_timestep_accept_fixed(
     return dt
 
 
+# }}}
+
+
+# {{{ GradedController
+#
 @dataclass(frozen=True)
 class GradedController(Controller):
     r"""A :class:`Controller` with a variable graded time step.
@@ -414,15 +431,9 @@ class GradedController(Controller):
 
             super().__post_init__()
 
-    def estimate_initial_time_step(
-        self,
-        m: FractionalDifferentialEquationMethod[StateFunctionT],
-        t: float,
-        y: Array,
-    ) -> float:
-        assert self.tfinal is not None
-        assert self.nsteps is not None
-        return float((self.tfinal - self.tstart) / self.nsteps**self.r)
+    @property
+    def is_adaptive(self) -> bool:
+        return False
 
 
 @evaluate_error_estimate.register(GradedController)
@@ -466,6 +477,8 @@ def _evaluate_timestep_accept_graded(
 
     return float(dt)
 
+
+# }}}
 
 # }}}
 
@@ -566,6 +579,7 @@ def _evaluate_error_estimate_adaptive(
 
 
 # }}}
+
 
 # {{{ integral controller
 
@@ -748,7 +762,7 @@ def _evaluate_timestep_reject_proportional_integral(
 # }}}
 
 
-# {{{ Jannelli integral controller
+# {{{ Jannelli error controller
 
 
 def make_jannelli_controller(
