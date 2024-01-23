@@ -20,7 +20,7 @@ solve and the numerical method used to solve it. However, the usage will always 
     history.append(t + dt, ynext)
 
 Users that are just trying to obtain the solution of an FODE will not have to
-interact with this functionality. The :func:`~pycaputo.fode.evolve` function
+interact with this functionality. The :func:`~pycaputo.stepping.evolve` function
 returns appropriate events that contain the solution and the users are responsible
 for storage.
 

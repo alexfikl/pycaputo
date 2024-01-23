@@ -74,7 +74,8 @@ logger.info("Initial time step %.8e estimate %.8e", dtinit, dtest)
 # {{{ evolve
 
 
-from pycaputo.fode import StepAccepted, StepRejected, evolve
+from pycaputo.events import StepAccepted, StepRejected
+from pycaputo.stepping import evolve
 
 ts = []
 ys = []
@@ -94,7 +95,7 @@ for event in evolve(m, dtinit=dtinit):
     elif isinstance(event, StepRejected):
         pass
     else:
-        raise ValueError("Evolution failed!")
+        raise RuntimeError(event)
 
     logger.info(
         "%s[%06d] t = %.5e dt = %.5e (eest %+.5e q %.5e) energy %.5e",

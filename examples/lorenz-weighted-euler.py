@@ -53,7 +53,8 @@ stepper = CaputoWeightedEulerMethod(
     theta=0.5,
 )
 
-from pycaputo.fode import StepCompleted, evolve
+from pycaputo.events import StepCompleted
+from pycaputo.stepping import evolve
 
 ts = []
 ys = []

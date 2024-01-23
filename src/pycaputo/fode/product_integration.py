@@ -10,14 +10,15 @@ from typing import Any, Iterator, NamedTuple
 import numpy as np
 
 from pycaputo.derivatives import CaputoDerivative, Side
-from pycaputo.fode.base import (
-    Event,
+from pycaputo.events import Event
+from pycaputo.history import History, ProductIntegrationHistory
+from pycaputo.logging import get_logger
+from pycaputo.stepping import (
     FractionalDifferentialEquationMethod,
+    advance,
     evolve,
     make_initial_condition,
 )
-from pycaputo.history import History, ProductIntegrationHistory
-from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
 logger = get_logger(__name__)
@@ -26,7 +27,8 @@ logger = get_logger(__name__)
 
 
 class AdvanceResult(NamedTuple):
-    """Result of :func:`advance` for :class:`ProductIntegrationMethod` subclasses."""
+    """Result of :func:`~pycaputo.stepping.advance` for
+    :class:`ProductIntegrationMethod` subclasses."""
 
     #: Estimated solution at the next time step.
     y: Array
@@ -59,11 +61,10 @@ def _evolve_pi(
         evaluate_timestep_factor,
         evaluate_timestep_reject,
     )
-    from pycaputo.fode.base import (
+    from pycaputo.events import (
         StepAccepted,
         StepFailed,
         StepRejected,
-        advance,
     )
 
     if history is None:

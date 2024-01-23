@@ -12,7 +12,8 @@ import numpy as np
 from pycaputo.utils import Array, StateFunction
 
 if TYPE_CHECKING:
-    from pycaputo.fode.base import FractionalDifferentialEquationMethod
+    # NOTE: avoid cyclic import
+    from pycaputo.stepping import FractionalDifferentialEquationMethod
 
 # {{{ utils
 
@@ -389,7 +390,7 @@ class GradedController(Controller):
     where the time interval is :math:`[t_s, t_f]` and :math:`N` time steps are
     taken. This graded grid can give full second-order convergence for certain
     methods such as the Predictor-Corrector method (e.g. implemented by
-    :class:`~pycaputo.fode.CaputoPECEMethod`).
+    :class:`~pycaputo.fode.caputo.CaputoPECEMethod`).
     """
 
     #: A grading exponent that controls the clustering of points at

@@ -95,16 +95,16 @@ system has a stable limit cycle, which we can observe (see [Garrappa2015b]_).
 The right-hand side for this system can be implemented as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 16-22
+    :lines: 16-20
     :lineno-match:
     :language: python
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
-by :class:`~pycaputo.fode.CaputoPECEMethod`. The solver is then set up as
+by :class:`~pycaputo.fode.caputo.CaputoPECEMethod`. The solver is then set up as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 30-44
+    :lines: 28-42
     :lineno-match:
     :language: python
 
@@ -115,11 +115,11 @@ Predictor-Corrector schemes, the corrector step can be repeated multiple times,
 but here we choose ``corrector_iterations=1`` to only use a single iteration.
 
 Now that the solver is set up, we can simply evolve the equation time step by
-time step to get all the solutions. This will use the :func:`pycaputo.fode.evolve`
+time step to get all the solutions. This will use the :func:`pycaputo.stepping.evolve`
 iterator as follows
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 46-62
+    :lines: 44-61
     :lineno-match:
     :language: python
 
@@ -180,7 +180,7 @@ system is implemented as
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) implemented in
-:class:`~pycaputo.fode.CaputoPECEMethod`. The time adaptation is based on the
+:class:`~pycaputo.fode.caputo.CaputoPECEMethod`. The time adaptation is based on the
 results from [Jannelli2020]_ and implemented in
 :class:`~pycaputo.controller.JannelliIntegralController`. The controller is
 set up as follows
@@ -218,7 +218,7 @@ error estimate and the time step in time. Here, we will only gather this informa
 for accepted steps.
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 86-97
+    :lines: 87-98
     :lineno-match:
     :language: python
 

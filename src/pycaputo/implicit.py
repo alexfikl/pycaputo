@@ -107,7 +107,7 @@ def solve(
     :arg y0: initial guess at the unknown solution at time *t* (this is usually
         taken as :math:`\mathbf{y}_n`)
     :arg c: constant for the source term :math:`\mathbf{f}` that corresponds to
-        the :attr:`~pycaputo.fode.FractionalDifferentialEquationMethod.source`
+        the :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`
         term of an evolution equation.
     :arg r: right-hand side term.
 

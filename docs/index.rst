@@ -11,6 +11,7 @@ pycaputo documentation
     differentiation
     history
     controllers
+    timestepping
     fode
     misc
     references

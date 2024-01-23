@@ -9,13 +9,13 @@ from math import ceil
 import numpy as np
 
 from pycaputo.controller import Controller
-from pycaputo.fode.base import advance
 from pycaputo.fode.product_integration import (
     AdvanceResult,
     CaputoProductIntegrationMethod,
 )
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
+from pycaputo.stepping import advance
 from pycaputo.utils import Array, StateFunction, gamma
 
 logger = get_logger(__name__)
@@ -128,7 +128,8 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
     #: of :math:`\theta = 1/2` gives the standard Crank-Nicolson method.
     theta: float
 
-    #: Jacobian of :attr:`~pycaputo.fode.FractionalDifferentialEquationMethod.source`.
+    #: Jacobian of
+    #: :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
     #: By default, implicit methods use :mod:`scipy` for their root finding,
     #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
     source_jac: StateFunction | None

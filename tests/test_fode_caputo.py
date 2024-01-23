@@ -11,8 +11,9 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo import fode
+from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
+from pycaputo.stepping import FractionalDifferentialEquationMethod, evolve
 from pycaputo.utils import Array, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_fode_caputo")
@@ -69,7 +70,7 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 
 
 def fode_factory(
-    cls: type[fode.FractionalDifferentialEquationMethod],
+    cls: type[FractionalDifferentialEquationMethod],
     *,
     wrap: bool = True,
     **kwargs: Any,
@@ -96,7 +97,7 @@ def fode_factory(
 
     def wrapper(
         alpha: float | tuple[float, ...], n: int
-    ) -> fode.FractionalDifferentialEquationMethod:
+    ) -> FractionalDifferentialEquationMethod:
         if not isinstance(alpha, tuple):
             alpha = (alpha,)
 
@@ -125,29 +126,29 @@ def fode_factory(
 @pytest.mark.parametrize(
     "factory",
     [
-        fode_factory(fode.CaputoForwardEulerMethod),
+        fode_factory(caputo.CaputoForwardEulerMethod),
         fode_factory(
-            fode.CaputoWeightedEulerMethod,
+            caputo.CaputoWeightedEulerMethod,
             theta=0.0,
         ),
         fode_factory(
-            fode.CaputoWeightedEulerMethod,
+            caputo.CaputoWeightedEulerMethod,
             theta=0.5,
         ),
-        fode_factory(fode.CaputoPECEMethod, corrector_iterations=1),
+        fode_factory(caputo.CaputoPECEMethod, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
-        fode_factory(fode.CaputoPECMethod, corrector_iterations=2),
-        fode_factory(fode.CaputoModifiedPECEMethod, corrector_iterations=1),
+        fode_factory(caputo.CaputoPECMethod, corrector_iterations=2),
+        fode_factory(caputo.CaputoModifiedPECEMethod, corrector_iterations=1),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
 def test_caputo_fode(
-    factory: Callable[[float, int], fode.FractionalDifferentialEquationMethod],
+    factory: Callable[[float, int], FractionalDifferentialEquationMethod],
     alpha: float,
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.fode import StepCompleted, StepFailed, evolve
+    from pycaputo.events import StepCompleted, StepFailed
     from pycaputo.utils import BlockTimer, EOCRecorder
 
     eoc = EOCRecorder()
@@ -210,22 +211,16 @@ def test_caputo_fode(
 @pytest.mark.parametrize(
     "factory",
     [
-        fode_factory(fode.CaputoForwardEulerMethod, nterms=3),
-        fode_factory(
-            fode.CaputoWeightedEulerMethod,
-            theta=0.5,
-            nterms=3,
-        ),
+        fode_factory(caputo.CaputoForwardEulerMethod, nterms=3),
+        fode_factory(caputo.CaputoWeightedEulerMethod, theta=0.5, nterms=3),
     ],
 )
 def test_caputo_fode_system(
-    factory: Callable[
-        [tuple[float, ...], int], fode.FractionalDifferentialEquationMethod
-    ],
+    factory: Callable[[tuple[float, ...], int], FractionalDifferentialEquationMethod],
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.fode import StepCompleted, StepFailed, evolve
+    from pycaputo.events import StepCompleted, StepFailed
     from pycaputo.utils import BlockTimer, EOCRecorder
 
     eoc = EOCRecorder()

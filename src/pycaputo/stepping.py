@@ -6,80 +6,18 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property, singledispatch
-from typing import Any, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Iterable, Iterator
 
 import numpy as np
 
-from pycaputo.controller import Controller
 from pycaputo.derivatives import FractionalOperator
+from pycaputo.events import Event
 from pycaputo.history import History
-from pycaputo.logging import get_logger
 from pycaputo.utils import Array, StateFunction, gamma
 
-logger = get_logger(__name__)
-
-
-# {{{ events
-
-
-@dataclass(frozen=True)
-class Event:
-    """Event issued in :func:`evolve` describing the state of the evolution."""
-
-
-@dataclass(frozen=True)
-class StepFailed(Event):
-    """Result of a failed update to time :attr:`t`."""
-
-    #: Current time.
-    t: float
-    #: Current iteration.
-    iteration: int
-    #: A reason on why the step failed (if available).
-    reason: str
-
-    def __str__(self) -> str:
-        return f"Event failed at iteration {self.iteration}: {self.reason}"
-
-
-@dataclass(frozen=True)
-class StepCompleted(Event):
-    """Result of a successful update to time :attr:`t`."""
-
-    #: Current time.
-    t: float
-    #: Current iteration.
-    iteration: int
-    #: Final time of the simulation.
-    dt: float
-    #: State at the time :attr:`t`.
-    y: Array
-
-    #: Relative error estimate (useful when using adaptive step size).
-    eest: float
-    #: Time step adaptation factor (useful when using adaptive step size).
-    q: float
-    #: Estimated truncation error (useful when using adaptive step size).
-    trunc: Array
-
-    def __str__(self) -> str:
-        return f"[{self.iteration:06d}] t = {self.t:.5e} dt {self.dt:.5e}"
-
-
-@dataclass(frozen=True)
-class StepAccepted(StepCompleted):
-    """Result of a successful update where the time step was accepted."""
-
-
-@dataclass(frozen=True)
-class StepRejected(StepCompleted):
-    """Result of a successful update where the time step was rejected."""
-
-
-# }}}
-
-
-# {{{ interface
+if TYPE_CHECKING:
+    # NOTE: avoid cyclic import
+    from pycaputo.controller import Controller
 
 
 @dataclass(frozen=True)
@@ -188,10 +126,10 @@ def evolve(
         checkpointing the necessary state history for the method *m*.
     :arg dtinit: an initial time step used to start the simulation. If none is
         provided the controller of the method will be used to estimate it
-        (see :attr:`~pycaputo.fode.FractionalDifferentialEquationMethod.control`).
+        (see :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.control`).
 
-    :returns: an :class:`~pycaputo.fode.Event` (usually a
-        :class:`~pycaputo.fode.StepCompleted`) containing
+    :returns: an :class:`~pycaputo.events.Event` (usually a
+        :class:`~pycaputo.events.StepCompleted`) containing
         the solution at a time :math:`t`.
     """
     raise NotImplementedError(f"'evolve' functionality for '{type(m).__name__}'")

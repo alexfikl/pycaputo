@@ -20,8 +20,8 @@ from pycaputo.controller import (
     evaluate_timestep_reject,
 )
 from pycaputo.derivatives import CaputoDerivative, FractionalOperator, Side
-from pycaputo.fode import FractionalDifferentialEquationMethod
 from pycaputo.logging import get_logger
+from pycaputo.stepping import FractionalDifferentialEquationMethod
 from pycaputo.utils import Array
 
 logger = get_logger("van-der-pol-adaptive")

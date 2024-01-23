@@ -1,42 +1,12 @@
-.. _sec-fode:
+Systems of Fractional Ordinary Differential Equations
+-----------------------------------------------------
 
-Single-Term Fractional Ordinary Differential Equations
-======================================================
+Product Integration Methods
+---------------------------
 
-.. currentmodule:: pycaputo.fode
+.. automodule:: pycaputo.fode.product_integration
 
-Time Stepping Events
---------------------
+Caputo Derivative Equations
+---------------------------
 
-.. autoclass:: Event
-.. autoclass:: StepFailed
-.. autoclass:: StepCompleted
-.. autoclass:: StepAccepted
-.. autoclass:: StepRejected
-
-Time Stepping Interface
------------------------
-
-.. autoclass:: FractionalDifferentialEquationMethod
-.. autoclass:: ProductIntegrationMethod
-
-.. autofunction:: evolve
-.. autofunction:: advance
-.. autofunction:: make_initial_condition
-
-Caputo Derivative FODEs
-=======================
-
-.. autoclass:: AdvanceResult
-.. autoclass:: CaputoProductIntegrationMethod
-
-.. autoclass:: CaputoForwardEulerMethod
-.. autoclass:: CaputoWeightedEulerMethod
-.. autoclass:: CaputoPredictorCorrectorMethod
-.. autoclass:: CaputoPECEMethod
-.. autoclass:: CaputoPECMethod
-.. autoclass:: CaputoModifiedPECEMethod
-
-.. class:: Array
-
-   See :class:`pycaputo.utils.Array`.
+.. automodule:: pycaputo.fode.caputo
