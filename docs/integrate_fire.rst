@@ -6,15 +6,15 @@ Integrate-and-Fire Models
 Interfaces
 ----------
 
-.. class:: pycaputo.integrate_fire.ModelT
+.. class:: pycaputo.integrate_fire.IntegrateFireModelT
 
     A :class:`~typing.TypeVar` bound to
     :class:`~pycaputo.integrate_fire.IntegrateFireModel`.
 
-.. class:: pycaputo.integrate_fire.base.ModelT
+.. class:: pycaputo.integrate_fire.base.IntegrateFireModelT
 
-    See :class:`~pycaputo.integrate_fire.ModelT`. This is just documented here
-    to satisfy Sphinx.
+    See :class:`~pycaputo.integrate_fire.IntegrateFireModelT`. This is just
+    documented here to satisfy Sphinx.
 
 .. automodule:: pycaputo.integrate_fire
 
