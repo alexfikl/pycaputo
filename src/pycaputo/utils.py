@@ -79,7 +79,6 @@ class ScalarFunction(Protocol):
         """
 
 
-@runtime_checkable
 class StateFunction(Protocol):
     r"""A generic callable for right-hand side functions
     :math:`\mathbf{f}(t, \mathbf{y})`.

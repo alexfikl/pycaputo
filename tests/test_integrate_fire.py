@@ -116,7 +116,7 @@ def ad_ex_zero(a: float, tau_w: float, h: Array) -> Array:
     return (1 + (1 + a * h / (h + tau_w)) * h) / h
 
 
-def test_ad_ex_lambert_arg(*, visualize: bool = True) -> None:
+def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
     from math import gamma
 
     from pycaputo.integrate_fire.ad_ex import AD_EX_PARAMS
@@ -159,7 +159,7 @@ def test_ad_ex_lambert_arg(*, visualize: bool = True) -> None:
 
 
 @pytest.mark.xfail()
-def test_ad_ex_lambert_limits(*, visualize: bool = True) -> None:
+def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
     from math import gamma
 
     from pycaputo.controller import make_jannelli_controller
@@ -200,8 +200,7 @@ def test_ad_ex_lambert_limits(*, visualize: bool = True) -> None:
             derivative_order=alpha,
             control=make_jannelli_controller(chimin=0.1, chimax=1.0),
             y0=(y0,),
-            source=ad_ex.source,
-            model=ad_ex,
+            source=ad_ex,
         )
 
         # check that the solution is actually complex
@@ -274,8 +273,7 @@ def test_ad_ex_solve() -> None:
                 derivative_order=alpha,
                 control=make_jannelli_controller(chimin=0.1, chimax=1.0),
                 y0=(y0,),
-                source=ad_ex.source,
-                model=ad_ex,
+                source=ad_ex,
             )
 
             h = np.array([gamma(2 - a) * dt**a for a in alpha])
@@ -351,8 +349,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
             derivative_order=(alpha,),
             control=c,
             y0=(y0,),
-            source=model.source,
-            model=model,
+            source=model,
         )
 
         ts = []

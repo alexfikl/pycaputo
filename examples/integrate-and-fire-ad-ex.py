@@ -69,8 +69,7 @@ stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
     derivative_order=alpha,
     control=c,
     y0=(y0,),
-    source=model.source,
-    model=model,
+    source=model,
 )
 
 # }}}

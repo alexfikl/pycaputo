@@ -275,8 +275,6 @@ class CaputoExponentialIntegrateFireL1Method(IntegrateFireMethod[EIFModel]):
     The model is described by :class:`EIFModel` with parameters :class:`EIF`.
     """
 
-    model: EIFModel
-
     @property
     def order(self) -> float:
         # NOTE: this is currently not tested, but it should match the PIF/LIF
@@ -296,7 +294,7 @@ class CaputoExponentialIntegrateFireL1Method(IntegrateFireMethod[EIFModel]):
         """
         from scipy.special import lambertw
 
-        d0, d1, d2 = _evaluate_lambert_coefficients(self.model, t, y, h, r)
+        d0, d1, d2 = _evaluate_lambert_coefficients(self.source, t, y, h, r)
         V = d2 / d0 - lambertw(-d1 / d0 * np.exp(d2 / d0), tol=1.0e-12)
         V = np.real_if_close(V, tol=100)
 
@@ -306,7 +304,7 @@ class CaputoExponentialIntegrateFireL1Method(IntegrateFireMethod[EIFModel]):
 
 
 @advance.register(CaputoExponentialIntegrateFireL1Method)
-def _advance_caputo_eif_l1(
+def _advance_caputo_eif_l1(  # type: ignore[misc]
     m: CaputoExponentialIntegrateFireL1Method,
     history: ProductIntegrationHistory,
     y: Array,
@@ -325,7 +323,8 @@ def _advance_caputo_eif_l1(
     t = tprev + dt
     result, r = advance_caputo_integrate_fire_l1(m, history, y, dt)
 
-    p = m.model.param
+    model = m.source
+    p = model.param
     if np.any(np.iscomplex(result.y)):
         # NOTE: if the result is complex, it means the Lambert W function is out
         # of range. We try here to find the maximum time step that would put it
@@ -334,7 +333,7 @@ def _advance_caputo_eif_l1(
         ynext = np.array([p.v_reset], dtype=y.dtype)
 
         try:
-            dts = find_maximum_time_step_lambert(m.model, t, tprev, y, r)
+            dts = find_maximum_time_step_lambert(model, t, tprev, y, r)
             trunc = np.zeros_like(y)
             spiked = np.array(1)
         except ValueError:
@@ -352,7 +351,7 @@ def _advance_caputo_eif_l1(
             spiked=spiked,
             dts=np.array(dts),
         )
-    elif m.model.spiked(t, result.y) > 0.0:
+    elif model.spiked(t, result.y) > 0.0:
         yprev = np.array([p.v_peak], dtype=y.dtype)
         ynext = np.array([p.v_reset], dtype=y.dtype)
 

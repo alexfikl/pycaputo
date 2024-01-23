@@ -6,7 +6,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Generic, Iterator, NamedTuple, TypeVar
+from typing import Any, Iterator, NamedTuple, TypeVar
 
 import numpy as np
 
@@ -30,15 +30,15 @@ logger = get_logger(__name__)
 
 class IntegrateFireModel(ABC):
     @abstractmethod
-    def source(self, t: float, y: Array) -> Array:
+    def source(self, t: float, y: Array, /) -> Array:
         """Evaluate the right-hand side of the IF model."""
 
     @abstractmethod
-    def source_jac(self, t: float, y: Array) -> Array:
+    def source_jac(self, t: float, y: Array, /) -> Array:
         """Evaluate the Jacobian of the right-hand side of the IF model."""
 
     @abstractmethod
-    def spiked(self, t: float, y: Array) -> float:
+    def spiked(self, t: float, y: Array, /) -> float:
         """Check if the neuron has spiked.
 
         In most cases, this will simply be a delta of :math:`V - V_{peak}`, but
@@ -50,7 +50,7 @@ class IntegrateFireModel(ABC):
         """
 
     @abstractmethod
-    def reset(self, t: float, y: Array) -> Array:
+    def reset(self, t: float, y: Array, /) -> Array:
         """Evaluate the reset values for the IF model.
 
         This function assumes that the neuron has spiked, i.e. that :meth:`spiked`
@@ -58,11 +58,14 @@ class IntegrateFireModel(ABC):
         not be applied.
         """
 
-    def __call__(self, t: float, y: Array) -> Array:
+    # NOTE: this is here to satisfy the StateFunction protocol
+
+    def __call__(self, t: float, y: Array, /) -> Array:
         """Evaluate the right-hand side of the IF model (see :meth:`source`)."""
         return self.source(t, y)
 
 
+#: An invariant :class:`~typing.TypeVar` bound to :class:`IntegrateFireModel`.
 IntegrateFireModelT = TypeVar("IntegrateFireModelT", bound=IntegrateFireModel)
 
 # }}}
@@ -88,8 +91,8 @@ class StepRejected(events.StepRejected):
 
 
 class AdvanceResult(NamedTuple):
-    """Result of :func:`~pycaputo.stepping.advance` for
-    :class:`CaputoIntegrateFireL1Method` subclasses.
+    """Result of :func:`~pycaputo.stepping.advance` for :class:`IntegrateFireMethod`
+    subclasses.
     """
 
     #: Estimated solution at the next time step.
@@ -106,9 +109,7 @@ class AdvanceResult(NamedTuple):
 
 
 @dataclass(frozen=True)
-class IntegrateFireMethod(
-    FractionalDifferentialEquationMethod, Generic[IntegrateFireModelT]
-):
+class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireModelT]):
     r"""A discretization of Integrate-and-Fire models using a fractional derivative.
 
     A generic Integrate-and-Fire model is given by
@@ -150,9 +151,6 @@ class IntegrateFireMethod(
     be very general conditions. The methods implemented here take into account
     the inherent discontinuity of the solutions to this type of equation.
     """
-
-    #: Integrate-and-Fire model parameters and functions.
-    model: IntegrateFireModelT
 
     if __debug__:
 
