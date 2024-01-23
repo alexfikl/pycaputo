@@ -4,14 +4,29 @@ Changelog
 pycaputo 0.4.0 (TBD)
 --------------------
 
+Features
+^^^^^^^^
+
+* Implement an implicit L1 method in :class:`pycaputo.fode.caputo.L1`.
+* Store an :class:`~numpy.ndarray` for the orders so that they are not recomputed
+  at each time step in :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod`.
+  Several functions using :func:`~pycaputo.utils.cached_on_first_arg`, e.g.
+  :func:`~pycaputo.stepping.gamma1p` are also cached.
+* Rework the hierarchy for the product integration methods and update their
+  names. They are now available in :mod:`pycaputo.fode.caputo` only and called
+  directly ``ForwardEuler`` (before it was ``CaputoForwardEulerMethod``).
+* Promote events to :mod:`pycaputo.events`. Specific methods can then inherit
+  from there to return additional information, as required.
+* Add some dataclass helpers, e.g. :func:`~pycaputo.utils.dc_stringify`. All
+  numerical methods store their parameters in a dataclass, so these are used
+  all over.
+
 Fixes
 ^^^^^
 
 * Updated and fixed Lorenz example with
   :class:`~pycaputo.fode.caputo.WeightedEuler` (:ghpr:`19`).
-* Store an :class:`~numpy.ndarray` for the orders and Gamma evaluations so
-  they are not recomputed at each time step in
-  :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod`.
+* Use :func:`numpy.einsum` to compute weights for faster evaluation.
 
 pycaputo 0.3.1 (December 29, 2023)
 ----------------------------------
