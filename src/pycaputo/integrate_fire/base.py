@@ -10,21 +10,17 @@ from typing import Any, Generic, Iterator, NamedTuple, TypeVar
 
 import numpy as np
 
+from pycaputo import events
 from pycaputo.derivatives import CaputoDerivative, Side
-from pycaputo.fode.base import (
-    Event,
-    FractionalDifferentialEquationMethod,
-    evolve,
-    make_initial_condition,
-)
-from pycaputo.fode.base import (
-    StepAccepted as StepAcceptedBase,
-)
-from pycaputo.fode.base import (
-    StepRejected as StepRejectedBase,
-)
 from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
+from pycaputo.stepping import (
+    FractionalDifferentialEquationMethod,
+    advance,
+    evolve,
+    gamma2m,
+    make_initial_condition,
+)
 from pycaputo.utils import Array
 
 logger = get_logger(__name__)
@@ -72,18 +68,23 @@ ModelT = TypeVar("ModelT", bound=IntegrateFireModel)
 
 
 @dataclass(frozen=True)
-class StepAccepted(StepAcceptedBase):
+class StepFailed(events.StepFailed):
+    pass
+
+
+@dataclass(frozen=True)
+class StepAccepted(events.StepAccepted):
     #: A flag to denote if the current accepted step was due to a spike.
     spiked: bool
 
 
 @dataclass(frozen=True)
-class StepRejected(StepRejectedBase):
+class StepRejected(events.StepRejected):
     pass
 
 
 class AdvanceResult(NamedTuple):
-    """Result of :func:`~pycaputo.fode.advance` for
+    """Result of :func:`~pycaputo.stepping.advance` for
     :class:`CaputoIntegrateFireL1Method` subclasses.
     """
 
@@ -192,7 +193,7 @@ def _evolve_caputo_integrate_fire_l1(
     *,
     history: History[Any] | None = None,
     dtinit: float | None = None,
-) -> Iterator[Event]:
+) -> Iterator[events.Event]:
     from pycaputo.controller import (
         StepEstimateError,
         estimate_initial_time_step,
@@ -201,7 +202,6 @@ def _evolve_caputo_integrate_fire_l1(
         evaluate_timestep_factor,
         evaluate_timestep_reject,
     )
-    from pycaputo.fode.base import StepFailed, advance
 
     if history is None:
         history = ProductIntegrationHistory.empty_like(np.hstack([m.y0[0], m.y0[0]]))
@@ -335,9 +335,9 @@ def advance_caputo_integrate_fire_l1(
 
     # compute convolution coefficients
     alpha = m.alpha.reshape(-1, 1)
-    gamma2m = m.gamma2m.reshape(-1, 1)
+    g2m = gamma2m(m).reshape(-1, 1)
 
-    omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / gamma2m
+    omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / g2m
     h = (omega / np.diff(history.ts[: n + 1])).T
     assert h.shape == (n, d)
 

@@ -9,7 +9,6 @@ from typing import NamedTuple, overload
 
 import numpy as np
 
-from pycaputo.fode.base import advance
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.integrate_fire.base import (
     AdvanceResult,
@@ -17,6 +16,7 @@ from pycaputo.integrate_fire.base import (
     IntegrateFireModel,
 )
 from pycaputo.logging import get_logger
+from pycaputo.stepping import advance
 from pycaputo.utils import Array, dc_stringify
 
 logger = get_logger(__name__)

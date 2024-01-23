@@ -322,8 +322,8 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
     y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
     from pycaputo.controller import make_jannelli_controller
-    from pycaputo.fode import evolve
-    from pycaputo.utils import EOCRecorder
+    from pycaputo.stepping import evolve
+    from pycaputo.utils import EOCRecorder, gamma
 
     tspikes_ref = model.param.constant_spike_times(tfinal, V0=y0[0])
 
@@ -386,7 +386,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
 
         t = np.array(ts[:-2])
         y = np.array(ys).squeeze()[:-2]
-        y_ref = y0 + model.param.current * t**alpha / stepper.gamma1p
+        y_ref = y0 + model.param.current * t**alpha / gamma(1 + stepper.alpha)
 
         dtmax = np.max(np.diff(t))
         err = la.norm(y - y_ref) / la.norm(y_ref)

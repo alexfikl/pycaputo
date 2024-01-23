@@ -62,8 +62,8 @@ stepper = pif.CaputoPerfectIntegrateFireL1Method(
 
 # {{{ evolution
 
-from pycaputo.fode import evolve
 from pycaputo.integrate_fire import StepAccepted, StepRejected
+from pycaputo.stepping import evolve
 
 ts = []
 ys = []
@@ -94,7 +94,7 @@ try:
 except ImportError as exc:
     raise SystemExit(0) from exc
 
-from pycaputo.utils import figure, set_recommended_matplotlib
+from pycaputo.utils import figure, gamma, set_recommended_matplotlib
 
 set_recommended_matplotlib()
 
@@ -106,7 +106,7 @@ eest = np.array(eests)
 
 # get exact solution up to the second spike
 t_ref = t[: s[1]]
-y_ref = y0 + model.param.current * t_ref**alpha / stepper.gamma1p
+y_ref = y0 + model.param.current * t_ref**alpha / gamma(1 + alpha)
 
 # make variables dimensional for plotting
 dim = model.param.ref
