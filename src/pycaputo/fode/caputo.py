@@ -17,7 +17,7 @@ from pycaputo.fode.product_integration import (
 )
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
-from pycaputo.stepping import advance, make_initial_condition
+from pycaputo.stepping import advance, gamma1p, gamma2m, make_initial_condition
 from pycaputo.utils import Array, StateFunction, gamma
 
 logger = get_logger(__name__)
@@ -99,8 +99,8 @@ def _update_caputo_forward_euler(
 
     # sum up convolution
     alpha = m.alpha.reshape(-1, 1)
-    gamma1p = m.gamma1p.reshape(-1, 1)
-    omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1p
+    g1p = gamma1p(m).reshape(-1, 1)
+    omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / g1p
     dy += np.einsum("ij,ij->j", omega.T, history.storage[:n])
 
     return dy
@@ -220,8 +220,8 @@ def _update_caputo_weighted_euler(
 
     # add explicit terms
     alpha = m.alpha.reshape(-1, 1)
-    gamma1p = m.gamma1p.reshape(-1, 1)
-    omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / gamma1p).T
+    g1p = gamma1p(m).reshape(-1, 1)
+    omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / g1p).T
 
     # add forward terms
     fs = history.storage[:n]
@@ -607,9 +607,9 @@ def _update_caputo_l1(
 
     # compute convolution coefficients
     alpha = m.alpha.reshape(-1, 1)
-    gamma2m = m.gamma2m.reshape(-1, 1)
+    g2m = gamma2m(m).reshape(-1, 1)
 
-    omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / gamma2m
+    omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / g2m
     h = (omega / np.diff(history.ts[: n + 1])).T
     assert h.shape == (n, d)
 

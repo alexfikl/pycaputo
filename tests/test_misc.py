@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import pathlib
+from dataclasses import dataclass
 
 import numpy as np
 import pytest
@@ -127,6 +128,48 @@ def test_estimate_lischitz_constant(
         table.add_row(f"n = {n}", *[f"{Lapprox:.5e}" for Lapprox in lipschitz_approx])
 
     logger.info("Results:\n%s", stringify_table(table))
+
+
+# }}}
+
+
+# {{{
+
+
+class MyClass:
+    def __init__(self, value: float) -> None:
+        self.value = value
+
+
+@dataclass(frozen=True)
+class MyFrozenClass:
+    value: float
+
+
+@pytest.mark.parametrize("cls", [MyClass, MyFrozenClass])
+def test_cached_on_first_arg(cls: type) -> None:
+    from pycaputo.utils import cached_on_first_arg
+
+    flag = [0]
+
+    @cached_on_first_arg
+    def cached_func(o: object) -> int:
+        flag[0] = flag[0] + 1
+        return flag[0]
+
+    o = cls(3.0)
+    cached_func(o)
+    assert flag[0] == 1
+
+    cached_func(o)
+    assert flag[0] == 1
+
+    cached_func(o)
+    assert flag[0] == 1
+
+    cached_func.clear_cached(o)  # type: ignore[attr-defined]
+    cached_func(o)
+    assert flag[0] == 2
 
 
 # }}}

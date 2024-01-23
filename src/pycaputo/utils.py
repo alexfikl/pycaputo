@@ -615,19 +615,20 @@ def gamma(x: Any) -> Array:
 # {{{ others
 
 
-def cached_method(
+def cached_on_first_arg(
     func: Callable[Concatenate[T, P], R],
 ) -> Callable[Concatenate[T, P], R]:
-    """Simple cache function for class methods.
+    """Cache function that stores the return values in the first argument.
 
-    The values are stored in the class instance and will be cleared once the
-    instance is destroyed. To clear the cache sooner, use
+    The values are stored in the instance and will be cleared once the instance
+    is destroyed. To clear the cache sooner, use
 
     .. code:: python
 
-        obj.clear_cached()
+        func.clear_cached(obj)
 
-    :arg func: a class method to cache.
+    :arg func: a function whose return values are cached in its first argument.
+        This can be a simple function or a class method.
     """
     cache_dict_name = f"_cached_method_{func.__module__}{func.__name__}"
 
@@ -639,12 +640,13 @@ def cached_method(
         except AttributeError:
             # NOTE: 'cache_dict_name' could not be found, so we create it
             object.__setattr__(obj, cache_dict_name, {})
+            d = getattr(obj, cache_dict_name)
 
         try:
             result: R = d[key]
         except KeyError:
             # NOTE: key could not be found in 'cache_dict_name'
-            d[key] = result = func(*args, **kwargs)
+            d[key] = result = func(obj, *args, **kwargs)
 
         return result
 

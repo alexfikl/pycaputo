@@ -13,11 +13,29 @@ import numpy as np
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.events import Event
 from pycaputo.history import History
-from pycaputo.utils import Array, StateFunction, gamma
+from pycaputo.utils import Array, StateFunction, cached_on_first_arg, gamma
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import
     from pycaputo.controller import Controller
+
+
+@cached_on_first_arg
+def gamma1p(m: FractionalDifferentialEquationMethod) -> Array:
+    r"""A cached vectorized value of :math:`\Gamma(1 + \alpha_i)`."""
+    return gamma(1 + m.alpha)
+
+
+@cached_on_first_arg
+def gamma2p(m: FractionalDifferentialEquationMethod) -> Array:
+    r"""A cached vectorized value of :math:`\Gamma(2 + \alpha_i)`."""
+    return gamma(2 + m.alpha)
+
+
+@cached_on_first_arg
+def gamma2m(m: FractionalDifferentialEquationMethod) -> Array:
+    r"""A cached vectorized value of :math:`\Gamma(2 - \alpha_i)`."""
+    return gamma(2 - m.alpha)
 
 
 @dataclass(frozen=True)
@@ -90,21 +108,6 @@ class FractionalDifferentialEquationMethod(ABC):
     def alpha(self) -> Array:
         """A cached vectorized form of :attr:`derivative_order`."""
         return np.array(self.derivative_order)
-
-    @cached_property
-    def gamma1p(self) -> Array:
-        r"""A cached vectorized value of :math:`\Gamma(1 + \alpha_i)`."""
-        return gamma(1 + self.alpha)
-
-    @cached_property
-    def gamma2p(self) -> Array:
-        r"""A cached vectorized value of :math:`\Gamma(2 + \alpha_i)`."""
-        return gamma(2 + self.alpha)
-
-    @cached_property
-    def gamma2m(self) -> Array:
-        r"""A cached vectorized value of :math:`\Gamma(2 - \alpha_i)`."""
-        return gamma(2 - self.alpha)
 
     @property
     @abstractmethod
