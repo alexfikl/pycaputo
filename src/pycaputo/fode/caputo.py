@@ -4,18 +4,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cached_property
 from math import ceil
 
 import numpy as np
 
 from pycaputo.controller import Controller
+from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.fode.product_integration import (
     AdvanceResult,
-    CaputoProductIntegrationMethod,
+    ProductIntegrationMethod,
 )
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
-from pycaputo.stepping import advance
+from pycaputo.stepping import advance, make_initial_condition
 from pycaputo.utils import Array, StateFunction, gamma
 
 logger = get_logger(__name__)
@@ -51,11 +53,32 @@ def _truncation_error(
     return trunc
 
 
+# {{{ CaputoProductIntegrationMethod
+
+
+@dataclass(frozen=True)
+class CaputoProductIntegrationMethod(ProductIntegrationMethod):
+    @cached_property
+    def d(self) -> tuple[CaputoDerivative, ...]:
+        return tuple([
+            CaputoDerivative(order=alpha, side=Side.Left)
+            for alpha in self.derivative_order
+        ])
+
+
+@make_initial_condition.register(CaputoProductIntegrationMethod)
+def _make_initial_condition_caputo(m: CaputoProductIntegrationMethod) -> Array:
+    return m.y0[0]
+
+
+# }}}
+
+
 # {{{ forward Euler
 
 
 @dataclass(frozen=True)
-class CaputoForwardEulerMethod(CaputoProductIntegrationMethod):
+class ForwardEuler(CaputoProductIntegrationMethod):
     """The first-order forward Euler discretization of the Caputo derivative."""
 
     @property
@@ -83,9 +106,9 @@ def _update_caputo_forward_euler(
     return dy
 
 
-@advance.register(CaputoForwardEulerMethod)
+@advance.register(ForwardEuler)
 def _advance_caputo_forward_euler(
-    m: CaputoForwardEulerMethod,
+    m: ForwardEuler,
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
@@ -110,7 +133,7 @@ def _advance_caputo_forward_euler(
 
 
 @dataclass(frozen=True)
-class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
+class WeightedEuler(CaputoProductIntegrationMethod):
     r"""The weighted Euler discretization of the Caputo derivative.
 
     The weighted Euler method is a convex combination of the forward Euler
@@ -184,7 +207,7 @@ class CaputoWeightedEulerMethod(CaputoProductIntegrationMethod):
 
 def _update_caputo_weighted_euler(
     dy: Array,
-    m: CaputoWeightedEulerMethod,
+    m: WeightedEuler,
     history: ProductIntegrationHistory,
     n: int,
 ) -> tuple[Array, Array]:
@@ -212,9 +235,9 @@ def _update_caputo_weighted_euler(
     return dy, omega[-1].squeeze()
 
 
-@advance.register(CaputoWeightedEulerMethod)
+@advance.register(WeightedEuler)
 def _advance_caputo_weighted_euler(
-    m: CaputoWeightedEulerMethod,
+    m: WeightedEuler,
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,
@@ -280,7 +303,7 @@ class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod):
 
 
 @dataclass(frozen=True)
-class CaputoPECEMethod(CaputoPredictorCorrectorMethod):
+class PECE(CaputoPredictorCorrectorMethod):
     """The Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
     Caputo derivative.
 
@@ -313,10 +336,10 @@ class CaputoPECEMethod(CaputoPredictorCorrectorMethod):
 
 
 @dataclass(frozen=True)
-class CaputoPECMethod(CaputoPredictorCorrectorMethod):
+class PEC(CaputoPredictorCorrectorMethod):
     """The Predict-Evaluate-Correct (PEC) discretization of the Caputo derivative.
 
-    This is a predictor-corrector similar to :class:`CaputoPECEMethod`, where
+    This is a predictor-corrector similar to :class:`PECE`, where
     the previous evaluation of the predictor is used to avoid an additional
     right-hand side call. Like the PECE method, the corrector step can be
     repeated multiple times for improved error results.
@@ -411,7 +434,7 @@ def _advance_caputo_predictor_corrector(
         yc = yc_explicit + omega * fp
 
     ynext = yc
-    f = fp if isinstance(m, CaputoPECMethod) else m.source(t, ynext)
+    f = fp if isinstance(m, PEC) else m.source(t, ynext)
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, f)
@@ -424,12 +447,12 @@ def _advance_caputo_predictor_corrector(
 
 
 @dataclass(frozen=True)
-class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
+class ModifiedPECE(CaputoPredictorCorrectorMethod):
     r"""A modified Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
     Caputo derivative.
 
     This method is described in [Garrappa2010]_ as a modification to the standard
-    :class:`CaputoPECEMethod` with improved performance due to reusing the
+    :class:`PECE` with improved performance due to reusing the
     convolution weights.
 
     Note that this method has an improved order, i.e. it achieves
@@ -438,9 +461,9 @@ class CaputoModifiedPECEMethod(CaputoPredictorCorrectorMethod):
     """
 
 
-@advance.register(CaputoModifiedPECEMethod)
+@advance.register(ModifiedPECE)
 def _advance_caputo_modified_pece(
-    m: CaputoModifiedPECEMethod,
+    m: ModifiedPECE,
     history: ProductIntegrationHistory,
     y: Array,
     dt: float,

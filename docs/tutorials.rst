@@ -101,7 +101,7 @@ The right-hand side for this system can be implemented as
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
-by :class:`~pycaputo.fode.caputo.CaputoPECEMethod`. The solver is then set up as
+by :class:`~pycaputo.fode.caputo.PECE`. The solver is then set up as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
     :lines: 28-42
@@ -180,7 +180,7 @@ system is implemented as
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) implemented in
-:class:`~pycaputo.fode.caputo.CaputoPECEMethod`. The time adaptation is based on the
+:class:`~pycaputo.fode.caputo.PECE`. The time adaptation is based on the
 results from [Jannelli2020]_ and implemented in
 :class:`~pycaputo.controller.JannelliIntegralController`. The controller is
 set up as follows

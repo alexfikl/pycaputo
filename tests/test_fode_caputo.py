@@ -126,19 +126,13 @@ def fode_factory(
 @pytest.mark.parametrize(
     "factory",
     [
-        fode_factory(caputo.CaputoForwardEulerMethod),
-        fode_factory(
-            caputo.CaputoWeightedEulerMethod,
-            theta=0.0,
-        ),
-        fode_factory(
-            caputo.CaputoWeightedEulerMethod,
-            theta=0.5,
-        ),
-        fode_factory(caputo.CaputoPECEMethod, corrector_iterations=1),
+        fode_factory(caputo.ForwardEuler),
+        fode_factory(caputo.WeightedEuler, theta=0.0),
+        fode_factory(caputo.WeightedEuler, theta=0.5),
+        fode_factory(caputo.PECE, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
-        fode_factory(caputo.CaputoPECMethod, corrector_iterations=2),
-        fode_factory(caputo.CaputoModifiedPECEMethod, corrector_iterations=1),
+        fode_factory(caputo.PEC, corrector_iterations=2),
+        fode_factory(caputo.ModifiedPECE, corrector_iterations=1),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
@@ -211,8 +205,8 @@ def test_caputo_fode(
 @pytest.mark.parametrize(
     "factory",
     [
-        fode_factory(caputo.CaputoForwardEulerMethod, nterms=3),
-        fode_factory(caputo.CaputoWeightedEulerMethod, theta=0.5, nterms=3),
+        fode_factory(caputo.ForwardEuler, nterms=3),
+        fode_factory(caputo.WeightedEuler, theta=0.5, nterms=3),
     ],
 )
 def test_caputo_fode_system(

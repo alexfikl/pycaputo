@@ -97,7 +97,7 @@ def _check_fixed_controller_evolution(c: Controller, dt: float) -> None:
         evaluate_timestep_accept,
         evaluate_timestep_factor,
     )
-    from pycaputo.fode import CaputoForwardEulerMethod
+    from pycaputo.fode.caputo import ForwardEuler
 
     assert c.tfinal is not None
     assert c.nsteps is not None
@@ -107,7 +107,7 @@ def _check_fixed_controller_evolution(c: Controller, dt: float) -> None:
     yprev = rng.normal(size=7)
     trunc = rng.normal(size=7)
 
-    m = CaputoForwardEulerMethod(
+    m = ForwardEuler(
         derivative_order=(0.8,) * y.size,
         control=c,
         source=lambda t, y: np.zeros_like(y),
@@ -177,10 +177,10 @@ def test_graded_controller() -> None:
     assert c.tfinal is not None
     assert c.nsteps is not None
 
-    from pycaputo.fode import CaputoForwardEulerMethod
+    from pycaputo.fode.caputo import ForwardEuler
 
     y0 = np.zeros(7)
-    m = CaputoForwardEulerMethod(
+    m = ForwardEuler(
         derivative_order=(0.8,) * y0.size,
         control=c,
         source=lambda t, y: np.zeros_like(y0),

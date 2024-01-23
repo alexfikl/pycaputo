@@ -390,7 +390,7 @@ class GradedController(Controller):
     where the time interval is :math:`[t_s, t_f]` and :math:`N` time steps are
     taken. This graded grid can give full second-order convergence for certain
     methods such as the Predictor-Corrector method (e.g. implemented by
-    :class:`~pycaputo.fode.caputo.CaputoPECEMethod`).
+    :class:`~pycaputo.fode.caputo.PECE`).
     """
 
     #: A grading exponent that controls the clustering of points at

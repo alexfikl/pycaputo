@@ -4,12 +4,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Any, Iterator, NamedTuple
 
 import numpy as np
 
-from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.events import Event
 from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
@@ -22,8 +20,6 @@ from pycaputo.stepping import (
 from pycaputo.utils import Array
 
 logger = get_logger(__name__)
-
-# {{{ ProductIntegrationMethod
 
 
 class AdvanceResult(NamedTuple):
@@ -138,27 +134,3 @@ def _evolve_pi(
             )
 
         dt = dtnext
-
-
-# }}}
-
-
-# {{{ CaputoProductIntegrationMethod
-
-
-@dataclass(frozen=True)
-class CaputoProductIntegrationMethod(ProductIntegrationMethod):
-    @cached_property
-    def d(self) -> tuple[CaputoDerivative, ...]:
-        return tuple([
-            CaputoDerivative(order=alpha, side=Side.Left)
-            for alpha in self.derivative_order
-        ])
-
-
-@make_initial_condition.register(CaputoProductIntegrationMethod)
-def _make_initial_condition_caputo(m: CaputoProductIntegrationMethod) -> Array:
-    return m.y0[0]
-
-
-# }}}

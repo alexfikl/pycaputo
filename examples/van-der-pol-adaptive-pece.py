@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 
 from pycaputo.controller import estimate_initial_time_step, make_jannelli_controller
-from pycaputo.fode import CaputoPECEMethod
+from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
@@ -50,7 +50,7 @@ c = make_jannelli_controller(
 alpha = 0.8
 y0 = np.array([1.0, 0.0])
 
-m = CaputoPECEMethod(
+m = caputo.PECE(
     derivative_order=(alpha, alpha),
     control=c,
     source=van_der_pol,
