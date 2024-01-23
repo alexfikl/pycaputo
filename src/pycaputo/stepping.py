@@ -101,6 +101,11 @@ class FractionalDifferentialEquationMethod(ABC):
         r"""A cached vectorized value of :math:`\Gamma(2 + \alpha_i)`."""
         return gamma(2 + self.alpha)
 
+    @cached_property
+    def gamma2m(self) -> Array:
+        r"""A cached vectorized value of :math:`\Gamma(2 - \alpha_i)`."""
+        return gamma(2 - self.alpha)
+
     @property
     @abstractmethod
     def order(self) -> float:

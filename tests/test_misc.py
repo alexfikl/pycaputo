@@ -87,7 +87,7 @@ def test_estimate_lischitz_constant(
     a: float,
     b: float,
     *,
-    visualize: bool = True,
+    visualize: bool = False,
 ) -> None:
     nbatches = [25, 50, 75, 100]
     nslopes = [3, 5, 7, 9, 11]

@@ -535,3 +535,119 @@ def _advance_caputo_modified_pece(
 
 
 # }}}
+
+
+# {{{ L1 method
+
+
+@dataclass(frozen=True)
+class L1(CaputoProductIntegrationMethod):
+    """The first-order implicit L1 discretization of the Caputo derivative.
+
+    Note that, unlike the :class:`ForwardEuler` method, the L1 method discretizes
+    the Caputo derivative directly and does not use the Volterra formulation of
+    the equation.
+    """
+
+    #: Jacobian of
+    #: :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
+    #: By default, implicit methods use :mod:`scipy` for their root finding,
+    #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
+    source_jac: StateFunction | None
+
+    @property
+    def order(self) -> float:
+        return 2.0 - self.largest_derivative_order
+
+    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
+        """
+        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
+            or :func:`scipy.optimize.root`.
+        """
+        if scalar:
+            return {}
+        else:
+            # NOTE: the default hybr does not use derivatives, so use lm instead
+            # FIXME: will need to maybe benchmark these a bit?
+            return {"method": "lm" if self.source_jac else None}
+
+    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
+        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
+        implicit equation.
+
+        This function should be overwritten for specific applications if better
+        solvers are known. For example, many problems can be solved explicitly
+        or approximated to a very good degree to provide a better *y0*.
+        """
+        from pycaputo.implicit import solve
+
+        return solve(
+            self.source,
+            self.source_jac,
+            t,
+            y0,
+            c,
+            r,
+            **self._get_kwargs(scalar=y0.size == 1),
+        )
+
+
+def _update_caputo_l1(
+    dy: Array,
+    m: CaputoProductIntegrationMethod,
+    history: ProductIntegrationHistory,
+    n: int,
+    *,
+    diff: bool = True,
+) -> tuple[Array, Array]:
+    d = dy.size
+
+    assert 0 < n <= len(history)
+    ts = history.ts[n] - history.ts[: n + 1]
+
+    # compute convolution coefficients
+    alpha = m.alpha.reshape(-1, 1)
+    gamma2m = m.gamma2m.reshape(-1, 1)
+
+    omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / gamma2m
+    h = (omega / np.diff(history.ts[: n + 1])).T
+    assert h.shape == (n, d)
+
+    if diff:
+        r = history.storage[1 : n + 1] - history.storage[:n]
+    else:
+        # NOTE: can be used to handle discontinuous data stored as
+        # [y^-_n, y^+_n] on the two sides of t_n
+        r = history.storage[1 : n + 1, :d] - history.storage[:n, d:]
+
+    dy += np.einsum("ij,ij->j", h[:-1], r[:-1])
+
+    return dy, 1.0 / h[-1]
+
+
+@advance.register(L1)
+def _advance_caputo_l1(
+    m: L1,
+    history: ProductIntegrationHistory,
+    y: Array,
+    dt: float,
+) -> AdvanceResult:
+    # set next time step
+    n = len(history)
+    t = history.ts[n] = history.ts[n - 1] + dt
+
+    if n == 1:
+        # FIXME: the history stored for the first step is f(t, y0), which is not
+        # what we want here because we need to just store y0
+        history.storage[0] = y
+
+    r = np.zeros_like(y)
+    r, h = _update_caputo_l1(r, m, history, len(history))
+
+    ynext = m.solve(t, y, h, y - h * r)
+    trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
+
+    return AdvanceResult(ynext, trunc, ynext)
+
+
+# }}}

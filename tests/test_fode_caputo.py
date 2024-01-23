@@ -133,6 +133,7 @@ def fode_factory(
         # FIXME: this does not converge to the correct order with one iteration
         fode_factory(caputo.PEC, corrector_iterations=2),
         fode_factory(caputo.ModifiedPECE, corrector_iterations=1),
+        fode_factory(caputo.L1),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
@@ -188,10 +189,11 @@ def test_caputo_fode(
         with figure(dirname / filename) as fig:
             ax = fig.gca()
 
-            ax.plot(t, y)
-            ax.plot(t, y_ref, "k--")
+            ax.plot(t, y, label=f"{m.name}")
+            ax.plot(t, y_ref, "k--", label="Reference")
             ax.set_xlabel("$t$")
             ax.set_ylabel("$y$")
+            ax.legend()
 
     assert eoc.estimated_order > m.order - 0.25
 
