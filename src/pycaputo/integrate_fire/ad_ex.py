@@ -560,9 +560,6 @@ class CaputoAdExIntegrateFireL1Model(IntegrateFireMethod[AdExModel]):
     The model is described by :class:`AdExModel` with parameters :class:`AdEx`.
     """
 
-    #: Parameters for the AdEx model.
-    model: AdExModel
-
     @property
     def order(self) -> float:
         # NOTE: this is currently not tested, but it should match the PIF/LIF
@@ -582,7 +579,7 @@ class CaputoAdExIntegrateFireL1Model(IntegrateFireMethod[AdExModel]):
         """
         from scipy.special import lambertw
 
-        d0, d1, d2, c0, c1 = _evaluate_lambert_coefficients(self.model, t, y, h, r)
+        d0, d1, d2, c0, c1 = _evaluate_lambert_coefficients(self.source, t, y, h, r)
         dstar = -d2 / d0 * np.exp(-d1 / d0)
         Vstar = -d1 / d0 - lambertw(dstar, tol=1.0e-12)
         Vstar = np.real_if_close(Vstar, tol=100)
@@ -607,7 +604,7 @@ def _ad_ex_spike_reset(
 
 
 @advance.register(CaputoAdExIntegrateFireL1Model)
-def _advance_caputo_ad_ex_l1(
+def _advance_caputo_ad_ex_l1(  # type: ignore[misc]
     m: CaputoAdExIntegrateFireL1Model,
     history: ProductIntegrationHistory,
     y: Array,
@@ -623,13 +620,14 @@ def _advance_caputo_ad_ex_l1(
     t = tprev + dt
     result, r = advance_caputo_integrate_fire_l1(m, history, y, dt)
 
-    p = m.model.param
+    model = m.source
+    p = model.param
     if np.any(np.iscomplex(result.y)):
         # NOTE: if the result is complex, it means the Lambert W function is out
         # of range. We try here to find the maximum time step that would put it
         # back in range and use that to mark the spike.
         try:
-            dts = find_maximum_time_step_lambert(m.model, t, tprev, y, r)
+            dts = find_maximum_time_step_lambert(model, t, tprev, y, r)
             trunc = np.zeros_like(y)
             spiked = np.array(1)
         except ValueError:
@@ -645,7 +643,7 @@ def _advance_caputo_ad_ex_l1(
                 # NOTE: otherwise, just hope for the best
                 spiked = np.array(1)
 
-        yprev, ynext = _ad_ex_spike_reset(m.model, t + dts, tprev, y, r)
+        yprev, ynext = _ad_ex_spike_reset(model, t + dts, tprev, y, r)
         result = AdvanceResult(
             y=ynext,
             trunc=trunc,
@@ -653,9 +651,9 @@ def _advance_caputo_ad_ex_l1(
             spiked=spiked,
             dts=np.array(dts),
         )
-    elif m.model.spiked(t, result.y) > 0.0:
+    elif model.spiked(t, result.y) > 0.0:
         ts = estimate_spike_time_exp(t, result.y[0], tprev, y[0], p.v_peak)
-        yprev, ynext = _ad_ex_spike_reset(m.model, ts, tprev, y, r)
+        yprev, ynext = _ad_ex_spike_reset(model, ts, tprev, y, r)
 
         result = AdvanceResult(
             y=ynext,

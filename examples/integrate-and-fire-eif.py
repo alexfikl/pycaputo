@@ -56,8 +56,7 @@ stepper = eif.CaputoExponentialIntegrateFireL1Method(
     derivative_order=(alpha,),
     control=c,
     y0=(y0,),
-    source=model.source,
-    model=model,
+    source=model,
 )
 
 # }}}

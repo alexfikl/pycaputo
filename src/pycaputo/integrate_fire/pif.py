@@ -258,8 +258,6 @@ class CaputoPerfectIntegrateFireL1Method(IntegrateFireMethod[PIFModel]):
     The model is described by :class:`PIFModel` with parameters :class:`PIF`.
     """
 
-    model: PIFModel
-
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         r"""Solve the implicit equation for the PIF model.
 
@@ -274,7 +272,7 @@ class CaputoPerfectIntegrateFireL1Method(IntegrateFireMethod[PIFModel]):
 
 
 @advance.register(CaputoPerfectIntegrateFireL1Method)
-def _advance_caputo_pif_l1(
+def _advance_caputo_pif_l1(  # type: ignore[misc]
     m: CaputoPerfectIntegrateFireL1Method,
     history: ProductIntegrationHistory,
     y: Array,
@@ -285,12 +283,13 @@ def _advance_caputo_pif_l1(
         advance_caputo_integrate_fire_spike_linear,
     )
 
+    model = m.source
     tprev = history.current_time
     t = tprev + dt
 
     result, _ = advance_caputo_integrate_fire_l1(m, history, y, dt)
-    if m.model.spiked(t, result.y) > 0.0:
-        p = m.model.param
+    if model.spiked(t, result.y) > 0.0:
+        p = model.param
         result = advance_caputo_integrate_fire_spike_linear(
             tprev, y, t, result, v_peak=p.v_peak, v_reset=p.v_reset
         )
