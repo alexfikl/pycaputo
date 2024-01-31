@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+import pathlib
 from functools import partial
 from typing import Callable
 
@@ -11,6 +12,7 @@ from pycaputo import mittagleffler as ml
 from pycaputo.logging import get_logger
 from pycaputo.utils import set_recommended_matplotlib
 
+dirname = pathlib.Path(__file__).parent
 logger = get_logger("pycaputo.test_mittag_leffler")
 set_recommended_matplotlib()
 
@@ -183,7 +185,7 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
         f = np.vectorize(opt_func)(t, a, b, alpha=alpha)
 
         suffix = str(alpha).replace(".", "_")
-        with figure(f"test_mittag_leffler_opt_{suffix}") as fig:
+        with figure(dirname / f"test_mittag_leffler_opt_{suffix}") as fig:
             ax = fig.gca()
             ax.plot(t, f)
             ax.plot(result.root, fstar, "ro", ms=10)

@@ -15,6 +15,7 @@ from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ScalarFunction, set_recommended_matplotlib
 
+dirname = pathlib.Path(__file__).parent
 logger = get_logger("pycaputo.test_diff_caputo")
 set_recommended_matplotlib()
 
@@ -107,7 +108,6 @@ def test_caputo_lmethods(
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
-        dirname = pathlib.Path(__file__).parent
         filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
@@ -185,7 +185,6 @@ def test_caputo_spectral(
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
-        dirname = pathlib.Path(__file__).parent
         filename = f"test_caputo_{meth.name}_{j_alpha}_{j_beta}_{alpha}"
         savefig(fig, dirname / filename.replace(".", "_").replace("-", "m").lower())
 
@@ -345,7 +344,6 @@ def test_caputo_vs_differint(
 
         from pycaputo.utils import savefig
 
-        dirname = pathlib.Path(__file__).parent
         filename = f"test_caputo_differint_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
