@@ -298,37 +298,23 @@ def mittag_leffler_garrapa(
 # }}}
 
 
-def mittag_leffler(
+def mittag_leffler_special(
     z: float | complex | Array,
-    alpha: float = 0.0,
+    alpha: float = 1.0,
     beta: float = 1.0,
-    *,
-    alg: Algorithm | None = None,
-    use_explicit: bool = True,
-) -> Array:
-    r"""Evaluate the Mittag-Leffler function :math:`E_{\alpha, \beta}(z)`.
+) -> Array | None:
+    r"""Compute special cases of the Mittag-Leffler function.
 
-    Several special cases are handled explicitly and otherwise, the
-    approximation algorithm can be chosen by *alg*.
+    For special values of the :math:`(\alpha, \beta)` parameters, the Mitta-Leffler
+    function reduces to more well-known special functions. For example,
+    :math:`E_{1, 1}(x) = \exp(x)`.
 
-    :arg z: values at which to compute the Mittag-Leffler function.
-    :arg alpha: parameter of the function.
-    :arg beta: parameter of the function.
-    :arg alg: the algorithm used to compute the function.
-    :arg use_explicit: if *True*, explicit formulae are used for some known
-        sets of parameters. These can be significantly faster.
+    :return: the value of the Mittag-Leffler function or *None* if no special
+        case is known for the given pair :math:`(\alpha, \beta)`.
     """
-    if alpha < 0 or beta < 0:
-        raise NotImplementedError(
-            "Negative parameters are not implemented: "
-            f"alpha '{alpha}' and beta '{beta}'"
-        )
-
-    if alg is None:
-        alg = Algorithm.Series
-
     # NOTE: special cases taken from:
     #       https://arxiv.org/abs/0909.0230
+
     z = np.array(z)
     if beta == 1:
         if alpha == 0:
@@ -359,6 +345,44 @@ def mittag_leffler(
 
     if alpha == 0 and np.all(np.abs(z) < 1):
         return 1 / (1 - z) / math.gamma(beta)
+
+    return None
+
+
+def mittag_leffler(
+    z: float | complex | Array,
+    alpha: float = 1.0,
+    beta: float = 1.0,
+    *,
+    alg: Algorithm | None = None,
+    use_explicit: bool = True,
+) -> Array:
+    r"""Evaluate the Mittag-Leffler function :math:`E_{\alpha, \beta}(z)`.
+
+    Several special cases are handled explicitly and otherwise, the
+    approximation algorithm can be chosen by *alg*.
+
+    :arg z: values at which to compute the Mittag-Leffler function.
+    :arg alpha: parameter of the function.
+    :arg beta: parameter of the function.
+    :arg alg: the algorithm used to compute the function.
+    :arg use_explicit: if *True*, explicit formulae are used for some known
+        sets of parameters. These can be significantly faster.
+    """
+    if alpha < 0 or beta < 0:
+        raise NotImplementedError(
+            "Negative parameters are not implemented: "
+            f"alpha '{alpha}' and beta '{beta}'"
+        )
+
+    if alg is None:
+        # NOTE: for now this algorithm should be faster
+        alg = Algorithm.Diethelm
+
+    if use_explicit:
+        result = mittag_leffler_special(z, alpha, beta)
+        if result is not None:
+            return result
 
     func: Any
     if alg == Algorithm.Series:
