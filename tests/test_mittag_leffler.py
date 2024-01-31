@@ -136,7 +136,12 @@ def opt_func(t: float, a: float, b: float, *, alpha: float) -> float:
         f(t) = a - b * E_\alpha(-t^\alpha)
     """
     # result = a - b * mittleff(alpha, 1.0, -(t**alpha))
-    result = a - b * ml.mittag_leffler(-(t**alpha), alpha=alpha, beta=1.0)
+    result = a - b * ml.mittag_leffler(
+        -(t**alpha),
+        alpha=alpha,
+        beta=1.0,
+        alg=ml.Algorithm.Diethelm,
+    )
     return float(np.real_if_close(result))
 
 
@@ -161,7 +166,12 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
         result = so.root_scalar(f, x0=(bracket[0] + bracket[1]) / 2, bracket=bracket)
 
         fstar = f(result.root)
-        logger.info("f(t) = %.12e t = %.12e", fstar, result.root)
+        logger.info(
+            "f(t) = %+.12e t = %.12e bracket [%.8e, %.8e]",
+            fstar,
+            result.root,
+            *bracket,
+        )
         assert abs(fstar) < 1.0e-10
 
     if visualize:
