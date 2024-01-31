@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import NamedTuple, overload
+from typing import Callable, NamedTuple, overload
 
 import numpy as np
 
@@ -19,6 +19,50 @@ from pycaputo.stepping import advance
 from pycaputo.utils import Array, dc_stringify
 
 logger = get_logger(__name__)
+
+# {{{ first spike time
+
+
+def _find_bracket(
+    f: Callable[[float], float], a: float = 0.0, b: float = 10.0
+) -> tuple[float, float]:
+    t = np.linspace(a, b, 32)
+
+    fprev = f(t[0])
+    n = 1
+    while n < t.size:
+        fnext = f(t[n])
+        if fprev * fnext < 0.0:
+            return t[n - 1], t[n]
+
+        n += 1
+
+    return a, b
+
+
+def _find_first_spike_time(p: LIF, V0: float = 0.0) -> float:
+    from pycaputo.mittagleffler import mittag_leffler_diethelm
+
+    alpha = p.ref.alpha
+
+    def func(t: float) -> float:
+        a = p.current + p.e_leak
+        b = a - V0
+
+        E = mittag_leffler_diethelm(-(t**alpha), alpha=alpha, beta=1.0)
+        result = a - b * E - p.v_peak
+
+        return float(np.real_if_close(result))
+
+    import scipy.optimize as so
+
+    bracket = _find_bracket(func)
+    result = so.root_scalar(func, x0=(bracket[1] + bracket[0]) / 2, bracket=bracket)
+
+    return float(result.root)
+
+
+# }}}
 
 
 # {{{ model
@@ -147,34 +191,14 @@ class LIF(NamedTuple):
     def constant_spike_times(self, tfinal: float, V0: float = 0.0) -> Array:
         """Compute the spike times for a constant current.
 
+        Note that we can only compute the first spike time, since there is no
+        known analytic solution for the remaining spikes.
+
         :arg tfinal: final time for the evolution.
         :arg V0: initial membrane current.
         """
-        from pycaputo.mittagleffler import mittag_leffler_diethelm
-
-        alpha = self.ref.alpha
-        ts = [0.0]
-
-        def func(t: float) -> float:
-            k = len(ts) - 1
-            a = self.current + self.e_leak
-            b = a - V0 - k * (self.v_reset - self.v_peak)
-
-            E = mittag_leffler_diethelm(-(t**alpha), alpha=alpha, beta=1.0)
-            return self.v_peak - a - b * E.real
-
-        import scipy.optimize as so
-
-        while ts[-1] < tfinal:
-            result = so.root_scalar(
-                f=func,
-                x0=ts[-1],
-                # FIXME: this bracket is completely made up
-                bracket=(ts[-1] + 0.01, ts[-1] + 30),
-            )
-            ts.append(float(result.root))
-
-        return np.array(ts[1:])
+        result = _find_first_spike_time(self, V0=V0)
+        return np.array([result])
 
     def __str__(self) -> str:
         return dc_stringify(
