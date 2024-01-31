@@ -152,6 +152,8 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
     import scipy.optimize as so
 
     for a, m in [
+        # FIXME: none of these seem to go over the unit disk, so they don't really
+        # test a good chunk of the function values.
         (430, -58),
         (342, -50),
         (152, -46),
