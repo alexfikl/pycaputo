@@ -779,7 +779,13 @@ def make_jannelli_controller(
 ) -> JannelliIntegralController:
     r"""Construct a :class:`JannelliIntegralController`.
 
-    This functions simply provides some useful defaults
+    This functions simply provides some useful defaults. The main parameters
+    for the model are the :math:`\chi_{min}` and :math:`\chi_{max}`, which
+    effectively determine the error thresholds at which the step size should
+    change. In general, the rule of thumb is:
+
+    * :math:`\chi_{min}`: smaller values make it harder to increase the step size.
+    * :math:`\chi_{max}`: larger values make it harder to decrease the step size.
 
     :arg sigma: factor by which the time step will be decreased in the case the
         step is rejected. A default value of ``0.5`` will half the time step

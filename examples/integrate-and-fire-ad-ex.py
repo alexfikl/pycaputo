@@ -24,11 +24,12 @@ logger = get_logger("integrate-and-fire")
 adaptive = "PYCAPUTO_AD_EX_NO_ADAPTIVE" not in os.environ
 
 # time interval
-tstart, tfinal = 0.0, 32.0
+tstart, tfinal = 0.0, 64.0
 # fractional order
-alpha = 0.91, 0.99
+alpha = 0.999, 0.999
 
-param = ad_ex.get_ad_ex_parameters("Naud4d")
+name = "Naud4h"
+param = ad_ex.get_ad_ex_parameters(name)
 model = ad_ex.AdExModel(param.nondim(alpha))
 
 logger.info("Parameters:\n%s", model.param)
@@ -57,12 +58,11 @@ if adaptive:
         tstart,
         tfinal,
         dtmin=dtmin,
-        chimin=0.001,
-        chimax=0.01,
-        abstol=1.0e-4,
+        chimin=0.01,
+        chimax=0.1,
     )
 else:
-    dtinit = dtmin = 1.0e-4
+    dtinit = dtmin = 5.0e-3
     c = make_fixed_controller(dtinit, tstart=tstart, tfinal=tfinal)
 
 stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
@@ -118,15 +118,22 @@ t = np.array(ts)
 y = np.array(ys).T
 eest = np.array(eests)
 
-basename = f"integrate-fire-adex-{100 * alpha[0]:.0f}-{100 * alpha[1]:.0f}"
+# re-dimensionalize
+ref = model.param.ref
+t = ref.time(t)
+y = ref.var(y)
+
+basename = (
+    f"integrate-fire-adex-{name.lower()}-{1000 * alpha[0]:.0f}-{1000 * alpha[1]:.0f}"
+)
 with figure(f"{basename}-v") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[0], lw=3)
-    ax.axhline(model.param.v_peak, color="k", ls="-")
-    ax.axhline(model.param.v_reset, color="k", ls="--")
+    ax.axhline(param.v_peak, color="k", ls="-")
+    ax.axhline(param.v_reset, color="k", ls="--")
     ax.plot(t[s], y[0][s], "rv")
-    ax.plot(t[s], np.full_like(t[s], model.param.v_reset), "r^")
+    ax.plot(t[s], np.full_like(t[s], param.v_reset), "r^")
 
     ax.set_xlabel("$t$")
     ax.set_ylabel("$V$")
@@ -136,7 +143,7 @@ with figure(f"{basename}-w") as fig:
 
     ax.plot(t, y[1], lw=3)
     ax.plot(t[s], y[1][s], "r^")
-    ax.plot(t[s], y[1][s] + model.param.b, "rv")
+    ax.plot(t[s], y[1][s] + param.b, "rv")
 
     ax.set_xlabel("$t$")
     ax.set_ylabel("$w$")
