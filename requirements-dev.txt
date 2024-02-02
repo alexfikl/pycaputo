@@ -103,7 +103,7 @@ reuse==3.0.1
     # via pycaputo (pyproject.toml)
 rich==13.7.0
     # via pycaputo (pyproject.toml)
-ruff==0.1.15
+ruff==0.2.0
     # via pycaputo (pyproject.toml)
 scipy==1.12.0
     # via pycaputo (pyproject.toml)

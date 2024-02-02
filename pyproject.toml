@@ -77,6 +77,8 @@ packages = { find = { where = ["src"] } }
 preview = true
 target-version = "py38"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "A",        # flake8-builtins
     "B",        # flake8-bugbear
