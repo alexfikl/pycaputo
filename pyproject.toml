@@ -73,6 +73,9 @@ Repository = "https://github.com/alexfikl/pycaputo"
 package-dir = { "" = "src" }
 packages = { find = { where = ["src"] } }
 
+[tool.setuptools.package-data]
+pycaputo = ["py.typed"]
+
 [tool.ruff]
 preview = true
 target-version = "py38"
