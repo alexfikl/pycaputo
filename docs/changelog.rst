@@ -1,8 +1,8 @@
 Changelog
 =========
 
-pycaputo 0.4.0 (TBD)
---------------------
+pycaputo 0.4.0 (February 6, 2024)
+---------------------------------
 
 Features
 ^^^^^^^^
@@ -24,9 +24,17 @@ Features
 Fixes
 ^^^^^
 
+* Add more extensive tests for the Mittag-Leffler function.
+* Add a ``py.typed`` file for upstream projects.
 * Updated and fixed Lorenz example with
   :class:`~pycaputo.fode.caputo.WeightedEuler` (:ghpr:`19`).
 * Use :func:`numpy.einsum` to compute weights for faster evaluation.
+
+Maintenance
+^^^^^^^^^^^
+
+* Use ``ruff format`` for our formatting needs.
+* Switch to a ``src`` based layout.
 
 pycaputo 0.3.1 (December 29, 2023)
 ----------------------------------
