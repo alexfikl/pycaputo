@@ -17,6 +17,7 @@ from typing import (
     ClassVar,
     Iterable,
     Iterator,
+    Literal,
     NamedTuple,
     Protocol,
     TypeVar,
@@ -165,6 +166,14 @@ class EOCRecorder:
     #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
     history: list[tuple[float, float]] = field(default_factory=list, repr=False)
 
+    @classmethod
+    def from_data(cls, name: str, h: Array, error: Array) -> EOCRecorder:
+        eoc = cls(name=name)
+        for i in range(h.size):
+            eoc.add_data_point(h[i], error[i])
+
+        return eoc
+
     def add_data_points(self, h: Array, error: Array) -> None:
         """Add multiple data points using :meth:`add_data_point`."""
         for h_i, e_i in zip(h, error):
@@ -300,6 +309,78 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
         " | ".join(fmt.format(value) for fmt, value in zip(formats, line))
         for line in lines
     ])
+
+
+def visualize_eoc(
+    filename: pathlib.Path,
+    *eocs: EOCRecorder,
+    order: float | None = None,
+    abscissa: str | Literal[False] = "h",
+    ylabel: str | Literal[False] = "Error",
+    olabel: str | Literal[False] | None = None,
+    enable_legend: bool = True,
+    overwrite: bool = True,
+) -> None:
+    """Plot the given :class:`EOCRecorder` instances in a loglog plot.
+
+    :arg filename: output file name for the figure.
+    :arg order: expected order for all the errors recorded in *eocs*.
+    :arg abscissa: name for the abscissa.
+    """
+    if not eocs:
+        raise ValueError("no EOCRecorders are provided")
+
+    if order is not None and order <= 0.0:
+        raise ValueError(f"The 'order' should be a non-negative real number: {order}")
+
+    with figure(filename, overwrite=overwrite) as fig:
+        ax = fig.gca()
+
+        # {{{ plot eocs
+
+        line = None
+        for eoc in eocs:
+            h, error = np.array(eoc.history).T
+            ax.loglog(h, error, "o-", label=eoc.name)
+
+            imax = np.argmax(h)
+            max_h = h[imax]
+            max_e = error[imax]
+            min_e = np.min(error)
+
+            if order is not None:
+                min_h = np.exp(np.log(max_h) + np.log(min_e / max_e) / order)
+                (line,) = ax.loglog(
+                    [max_h, min_h],
+                    [max_e, min_e],
+                    "k-",
+                )
+
+        if abscissa and line is not None:
+            if olabel is None:
+                hname = abscissa.strip("$")
+                olabel = rf"$\mathcal{{O}}({hname}^{{{order:.2f}}})$"
+
+            if olabel:
+                line.set_label(olabel)
+
+        # }}}
+
+        # {{{ plot order
+
+        # }}}
+
+        ax.grid(visible=True, which="major", linestyle="-", alpha=0.75)
+        ax.grid(visible=True, which="minor", linestyle="--", alpha=0.5)
+
+        if abscissa:
+            ax.set_xlabel(abscissa)
+
+        if ylabel:
+            ax.set_ylabel(ylabel)
+
+        if enable_legend:
+            ax.legend()
 
 
 # }}}
