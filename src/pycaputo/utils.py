@@ -167,8 +167,10 @@ class EOCRecorder:
     history: list[tuple[float, float]] = field(default_factory=list, repr=False)
 
     @classmethod
-    def from_data(cls, name: str, h: Array, error: Array) -> EOCRecorder:
-        eoc = cls(name=name)
+    def from_data(
+        cls, name: str, h: Array, error: Array, *, order: float | None = None
+    ) -> EOCRecorder:
+        eoc = cls(name=name, order=order)
         for i in range(h.size):
             eoc.add_data_point(h[i], error[i])
 
@@ -348,8 +350,9 @@ def visualize_eoc(
             max_e = error[imax]
             min_e = np.min(error)
 
-            if order is not None:
-                min_h = np.exp(np.log(max_h) + np.log(min_e / max_e) / order)
+            if eoc.order is not None:
+                order = eoc.order
+                min_h = np.exp(np.log(max_h) + np.log(min_e / max_e) / eoc.order)
                 (line,) = ax.loglog(
                     [max_h, min_h],
                     [max_e, min_e],
@@ -359,7 +362,10 @@ def visualize_eoc(
         if abscissa and line is not None:
             if olabel is None:
                 hname = abscissa.strip("$")
-                olabel = rf"$\mathcal{{O}}({hname}^{{{order:.2f}}})$"
+                if order == 1:
+                    olabel = rf"$\mathcal{{O}}({hname})$"
+                else:
+                    olabel = rf"$\mathcal{{O}}({hname}^{{{order:g}}})$"
 
             if olabel:
                 line.set_label(olabel)
@@ -379,7 +385,7 @@ def visualize_eoc(
         if ylabel:
             ax.set_ylabel(ylabel)
 
-        if enable_legend:
+        if enable_legend and (len(eocs) > 1 or (line and olabel)):
             ax.legend()
 
 
