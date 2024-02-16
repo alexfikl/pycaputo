@@ -51,12 +51,12 @@ dev = [
     "doc8",
     "matplotlib",
     "mypy",
-    "pip-tools",
     "pyproject-fmt",
     "pytest",
     "reuse",
     "ruff",
     "types-dataclasses",
+    "uv",
 ]
 docs = [
     "sphinx>=6",
