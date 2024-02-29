@@ -143,16 +143,16 @@ def _diff_rl_from_caputo(
     elif 1.0 < alpha <= 2.0:
         # NOTE: this is a 3rd order approximation of the derivative at f(a)
         # that works on non-uniform grids too (derived by Mathematica)
-        # fmt: off
         dfx = (
+            # fmt: off
             (fx[0] - fx[1]) / (x[0] - x[1])
             + (fx[0] - fx[2]) / (x[0] - x[2])
             + (fx[0] - fx[3]) / (x[0] - x[3])
             - (fx[1] - fx[2]) / (x[1] - x[2])
             - (fx[1] - fx[3]) * (x[0] - x[2]) / ((x[1] - x[2]) * (x[1] - x[3]))
             + (fx[2] - fx[3]) * (x[0] - x[1]) / ((x[1] - x[2]) * (x[2] - x[3]))
+            # fmt: on
         )
-        # fmt: on
 
         df[1:] += dfx / (x[1:] - x[0]) ** (alpha - 1) / math.gamma(2 - alpha)
     else:

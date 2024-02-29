@@ -498,13 +498,12 @@ def _advance_caputo_modified_pece(
 
         k = n - 1
 
-        # fmt: off
         omega = (
-            ts[k] ** (alpha + 1) / gamma2 / ds[k]
-            + ts[k] ** alpha / gamma1
-            )
+            # fmt: off
+            ts[k] ** (alpha + 1) / gamma2 / ds[k] + ts[k] ** alpha / gamma1
+            # fmt: on
+        )
         yp += omega * history.storage[k - 1]
-        # fmt: on
 
         omega = -(ts[k] ** (alpha + 1)) / gamma2 / ds[k]
         yp += omega * history.storage[k]
