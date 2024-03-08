@@ -26,17 +26,17 @@ logger = get_logger(__name__)
 class EIFReference(NamedTuple):
     """Reference variables used to non-dimensionalize the EIF model."""
 
-    #: Fractional order used to non-dimensionalize.
     alpha: float
+    """Fractional order used to non-dimensionalize."""
 
-    #: Time scale (in milliseconds: *ms*).
     T_ref: float
-    #: Voltage offset (in millivolts: *mV*).
+    """Time scale (in milliseconds: *ms*)."""
     V_off: float
-    #: Voltage scale (in millivolts: *mV*).
+    """Voltage offset (in millivolts: *mV*)."""
     V_ref: float
-    #: Current scale (in picoamperes: *pA*).
+    """Voltage scale (in millivolts: *mV*)."""
     I_ref: float
+    """Current scale (in picoamperes: *pA*)."""
 
     @overload
     def time(self, t: float) -> float: ...
@@ -56,23 +56,23 @@ class EIFReference(NamedTuple):
 class EIFDim(NamedTuple):
     """Dimensional parameters for the Exponential Integrate-and-Fire (EIF) model."""
 
-    #: Added current :math:`I` (in picoamperes *pA*).
     current: float
-    #: Total capacitance :math:`C` (in picofarad per millisecond *pF / ms^(alpha - 1)*).
+    """Added current :math:`I` (in picoamperes *pA*)."""
     C: float
-    #: Total leak conductance :math:`g_L` (in nanosiemens *nS*).
+    """Total capacitance :math:`C` (in picofarad per ms *pF / ms^(alpha - 1)*)."""
     gl: float
-    #: Equilibrium potential leak :math:`E_L` (in microvolts *mV*).
+    """Total leak conductance :math:`g_L` (in nanosiemens *nS*)."""
     e_leak: float
-    #: Threshold slope factor :math:`\Delta_T` (in microvolts *mV*).
+    """Equilibrium potential leak :math:`E_L` (in microvolts *mV*)."""
     delta_t: float
-    #: Effective threshold potential :math:`V_T` (in microvolts *mV*).
+    r"""Threshold slope factor :math:`\Delta_T` (in microvolts *mV*)."""
     vt: float
+    """Effective threshold potential :math:`V_T` (in microvolts *mV*)."""
 
-    #: Peak potential :math:`V_{peak}` (in millivolts: *mV*).
     v_peak: float
-    #: Reset potential :math:`V_r` (in millivolts: *mV*).
+    """Peak potential :math:`V_{peak}` (in millivolts: *mV*)."""
     v_reset: float
+    """Reset potential :math:`V_r` (in millivolts: *mV*)."""
 
     def __str__(self) -> str:
         return dc_stringify(
@@ -132,18 +132,18 @@ class EIFDim(NamedTuple):
 class EIF(NamedTuple):
     """Non-dimensional parameters for the EIF model (see :class:`EIFDim`)."""
 
-    #: Reference values used in non-dimensionalization.
     ref: EIFReference
+    """Reference values used in non-dimensionalization."""
 
-    #: Current :math:`I`.
     current: float
-    #: Equilibrium potential leak :math:`E_L`.
+    """Current :math:`I`."""
     e_leak: float
+    """Equilibrium potential leak :math:`E_L`."""
 
-    #: Peak potential :math:`V_{peak}`.
     v_peak: float
-    #: Reset potential :math:`V_r`.
+    """Peak potential :math:`V_{peak}`."""
     v_reset: float
+    """Reset potential :math:`V_r`."""
 
     def __str__(self) -> str:
         return dc_stringify(
@@ -173,8 +173,8 @@ class EIFModel(IntegrateFireModel):
         \text{if } V > V_{peak} \qquad \text{then} \qquad V \gets V_r.
     """
 
-    #: Non-dimensional parameters of the model.
     param: EIF
+    """Non-dimensional parameters of the model."""
 
     if __debug__:
 

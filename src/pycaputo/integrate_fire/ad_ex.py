@@ -28,19 +28,19 @@ logger = get_logger(__name__)
 class AdExReference(NamedTuple):
     """Reference variables used to non-dimensionalize the AdEx model."""
 
-    #: Fractional order used to non-dimensionalize.
     alpha: tuple[float, float]
+    """Fractional order used to non-dimensionalize."""
 
-    #: Time scale (in milliseconds: *ms*).
     T_ref: float
-    #: Voltage offset (in millivolts: *mV*).
+    """Time scale (in milliseconds: *ms*)."""
     V_off: float
-    #: Voltage scale (in millivolts: *mV*).
+    """Voltage offset (in millivolts: *mV*)."""
     V_ref: float
-    #: Adaptation variable scale (in picoamperes: *pA*)
+    """Voltage scale (in millivolts: *mV*)."""
     w_ref: float
-    #: Current scale (in picoamperes: *pA*).
+    """Adaptation variable scale (in picoamperes: *pA*)."""
     I_ref: float
+    """Current scale (in picoamperes: *pA*)."""
 
     @overload
     def time(self, t: float) -> float: ...
@@ -61,30 +61,30 @@ class AdExDim(NamedTuple):
     """Dimensional parameters for the Adaptive Exponential Integrate-and-Fire
     (AdEx) model from [Naud2008]_."""
 
-    #: Added current :math:`I` (in picoamperes *pA*).
     current: float
-    #: Total capacitance :math:`C` (in picofarad per millisecond *pF / ms^(alpha - 1)*).
+    """Added current :math:`I` (in picoamperes *pA*)."""
     C: float
-    #: Total leak conductance :math:`g_L` (in nanosiemens *nS*).
+    """Total capacitance :math:`C` (in picofarad per ms *pF / ms^(alpha - 1)*)."""
     gl: float
-    #: Effective rest potential :math:`E_L` (in microvolts *mV*).
+    """Total leak conductance :math:`g_L` (in nanosiemens *nS*)."""
     e_leak: float
-    #: Threshold slope factor :math:`\Delta_T` (in microvolts *mV*).
+    """Effective rest potential :math:`E_L` (in microvolts *mV*)."""
     delta_t: float
-    #: Effective threshold potential :math:`V_T` (in microvolts *mV*).
+    r"""Threshold slope factor :math:`\Delta_T` (in microvolts *mV*)."""
     vt: float
+    """Effective threshold potential :math:`V_T` (in microvolts *mV*)."""
 
-    #: Time constant :math:`\tau_w` (in microseconds *ms^alpha*).
     tau_w: float
-    #: Conductance :math:`a` (in nanosiemens *nS*).
+    r"""Time constant :math:`\tau_w` (in microseconds *ms^alpha*)."""
     a: float
+    """Conductance :math:`a` (in nanosiemens *nS*)."""
 
-    #: Peak potential :math:`V_{peak}` (in microvolts *mV*).
     v_peak: float
-    #: Reset potential :math:`V_r` (in microvolts *mV*).
+    """Peak potential :math:`V_{peak}` (in microvolts *mV*)."""
     v_reset: float
-    #: Adaptation current reset offset :math:`b` (in picoamperes *pA*).
+    """Reset potential :math:`V_r` (in microvolts *mV*)."""
     b: float
+    """Adaptation current reset offset :math:`b` (in picoamperes *pA*)."""
 
     def __str__(self) -> str:
         return dc_stringify(
@@ -159,25 +159,25 @@ class AdExDim(NamedTuple):
 class AdEx(NamedTuple):
     """Non-dimensional parameters for the AdEx model (see :class:`AdExDim`)."""
 
-    #: Reference values used in non-dimensionalization.
     ref: AdExReference
+    """Reference values used in non-dimensionalization."""
 
-    #: Added current :math:`I`.
     current: float
-    #: Effective rest potential :math:`E_L`.
+    """Added current :math:`I`."""
     e_leak: float
+    """Effective rest potential :math:`E_L`."""
 
-    #: Time constant :math:`\tau_w`.
     tau_w: float
-    #: Conductance :math:`a`.
+    r"""Time constant :math:`\tau_w`."""
     a: float
+    """Conductance :math:`a`."""
 
-    #: Peak potential :math:`V_{peak}`.
     v_peak: float
-    #: Reset potential :math:`V_r`.
+    """Peak potential :math:`V_{peak}`."""
     v_reset: float
-    #: Adaptation current reset offset :math:`b`.
+    """Reset potential :math:`V_r`."""
     b: float
+    """Adaptation current reset offset :math:`b`."""
 
     def __str__(self) -> str:
         return dc_stringify(
@@ -421,8 +421,8 @@ class AdExModel(IntegrateFireModel):
         \end{cases}
     """
 
-    #: Non-dimensional parameters for the model.
     param: AdEx
+    """Non-dimensional parameters for the model."""
 
     if __debug__:
 

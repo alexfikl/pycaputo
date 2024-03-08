@@ -65,8 +65,8 @@ class IntegrateFireModel(ABC):
         return self.source(t, y)
 
 
-#: An invariant :class:`~typing.TypeVar` bound to :class:`IntegrateFireModel`.
 IntegrateFireModelT = TypeVar("IntegrateFireModelT", bound=IntegrateFireModel)
+"""An invariant :class:`~typing.TypeVar` bound to :class:`IntegrateFireModel`."""
 
 # }}}
 
@@ -81,8 +81,8 @@ class StepFailed(events.StepFailed):
 
 @dataclass(frozen=True)
 class StepAccepted(events.StepAccepted):
-    #: A flag to denote if the current accepted step was due to a spike.
     spiked: bool
+    """A flag to denote if the current accepted step was due to a spike."""
 
 
 @dataclass(frozen=True)
@@ -95,17 +95,17 @@ class AdvanceResult(NamedTuple):
     subclasses.
     """
 
-    #: Estimated solution at the next time step.
     y: Array
-    #: Estimated truncation error at the next time step.
+    """Estimated solution at the next time step."""
     trunc: Array
-    #: Array to add to the history storage.
+    """Estimated truncation error at the next time step."""
     storage: Array
+    """Array to add to the history storage."""
 
-    #: Flag to denote if a spike occurred.
     spiked: Array
-    #: Time step taken by the method in case a spike occurred.
+    """Flag to denote if a spike occurred."""
     dts: Array
+    """Time step taken by the method in case a spike occurred."""
 
 
 @dataclass(frozen=True)
