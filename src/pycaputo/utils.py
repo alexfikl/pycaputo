@@ -35,23 +35,24 @@ logger = get_logger(__name__)
 
 # {{{ typing
 
-#: A generic invariant :class:`typing.TypeVar`.
 T = TypeVar("T")
-#: A generic invariant :class:`typing.TypeVar`.
+"""A generic invariant :class:`typing.TypeVar`."""
 R = TypeVar("R")
+"""A generic invariant :class:`typing.TypeVar`."""
 P = ParamSpec("P")
+"""A generic invariant :class:`typing.ParamSpec`."""
 
-#: A union of types supported as paths.
 PathLike = Union[pathlib.Path, str]
+"""A union of types supported as paths."""
 
 if TYPE_CHECKING:
     Array: TypeAlias = np.ndarray[Any, Any]
     Scalar: TypeAlias = Union[np.generic, Array]
 else:
-    #: Array type alias for :class:`numpy.ndarray`.
     Array: TypeAlias = np.ndarray
-    #: Scalar type alias (generally a value convertible to a :class:`float`).
+    """Array type alias for :class:`numpy.ndarray`."""
     Scalar: TypeAlias = Union[np.generic, Array]
+    """Scalar type alias (generally a value convertible to a :class:`float`)."""
 
 
 class DataclassInstance(Protocol):
@@ -135,11 +136,11 @@ class DifferentiableScalarFunction(Protocol):
         """
 
 
-#: A invaraint :class:`~typing.TypeVar` bound to :class:`StateFunction`.
 StateFunctionT = TypeVar("StateFunctionT", bound=StateFunction)
+"""An invariant :class:`~typing.TypeVar` bound to :class:`StateFunction`."""
 
-#: A union of scalar functions.
 ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
+"""A union of scalar functions."""
 
 # fmt: off
 BOOLEAN_STATES = {
@@ -158,13 +159,13 @@ BOOLEAN_STATES = {
 class EOCRecorder:
     """Keep track of all your *estimated order of convergence* needs."""
 
-    #: A string identifier for the value which is estimated.
     name: str = "Error"
-    #: An expected order of convergence, if any.
+    """A string identifier for the value which is estimated."""
     order: float | None = None
+    """An expected order of convergence, if any."""
 
-    #: A list of ``(h, error)`` entries added from :meth:`add_data_point`.
     history: list[tuple[float, float]] = field(default_factory=list, repr=False)
+    """A list of ``(h, error)`` entries added from :meth:`add_data_point`."""
 
     @classmethod
     def from_data(
@@ -590,12 +591,12 @@ def savefig(
 class TimingResult:
     """Statistics for a set of runs (see :func:`timeit`)."""
 
-    #: Minimum walltime for a set of runs.
     walltime: float
-    #: Mean walltime for a set of runs.
+    """Minimum walltime for a set of runs."""
     mean: float
-    #: Standard derivation for a set of runs.
+    """Mean walltime for a set of runs."""
     std: float
+    """Standard derivation for a set of runs."""
 
     @classmethod
     def from_results(cls, results: list[float]) -> TimingResult:
@@ -648,18 +649,20 @@ class BlockTimer:
         print(bt)
     """
 
-    #: An identifier used to differentiate the timer.
     name: str = "block"
+    """An identifier used to differentiate the timer."""
 
-    #: Total wall time (set after ``__exit__``), obtained from
-    #: :func:`time.perf_counter`.
-    t_wall: float = field(init=False)
     t_wall_start: float = field(init=False)
+    t_wall: float = field(init=False)
+    """Total wall time (set after ``__exit__``), obtained from
+    :func:`time.perf_counter`.
+    """
 
-    #: Total process time (set after ``__exit__``), obtained from
-    #: :func:`time.process_time`.
-    t_proc: float = field(init=False)
     t_proc_start: float = field(init=False)
+    t_proc: float = field(init=False)
+    """Total process time (set after ``__exit__``), obtained from
+    :func:`time.process_time`.
+    """
 
     @property
     def t_cpu(self) -> float:

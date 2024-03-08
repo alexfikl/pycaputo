@@ -58,15 +58,15 @@ class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
     will required additional initial data.
     """
 
-    #: The fractional derivative order used for the derivative.
     derivative_order: tuple[float, ...]
-    #: An instance describing the discrete time being simulated.
+    """The fractional derivative order used for the derivative."""
     control: Controller
+    """An instance describing the discrete time being simulated."""
 
-    #: Right-hand side source term.
     source: StateFunctionT
-    #: Values used to reconstruct the required initial conditions.
+    """Right-hand side source term."""
     y0: tuple[Array, ...]
+    """Values used to reconstruct the required initial conditions."""
 
     if __debug__:
 

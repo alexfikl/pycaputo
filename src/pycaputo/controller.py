@@ -219,12 +219,12 @@ class Controller:
     probability.
     """
 
-    #: Start of the time interval.
     tstart: float
-    #: End of the time interval (leave *None* for infinite time stepping).
+    """Start of the time interval."""
     tfinal: float | None
-    #: Number of time steps (leave *None* for infinite time stepping).
+    """End of the time interval (leave *None* for infinite time stepping)."""
     nsteps: int | None
+    """Number of time steps (leave *None* for infinite time stepping)."""
 
     if __debug__:
 
@@ -338,8 +338,8 @@ def evaluate_timestep_reject(
 class FixedController(Controller):
     """A fake controller with a fixed time step."""
 
-    #: Fixed time step used by the controller.
     dt: float
+    """Fixed time step used by the controller."""
 
 
 @evaluate_error_estimate.register(FixedController)
@@ -395,9 +395,10 @@ class GradedController(Controller):
     :class:`~pycaputo.fode.caputo.PECE`).
     """
 
-    #: A grading exponent that controls the clustering of points at
-    #: :attr:`~Controller.tstart`.
     r: float
+    """A grading exponent that controls the clustering of points at
+    :attr:`~Controller.tstart`.
+    """
 
     if __debug__:
 
@@ -503,20 +504,22 @@ class AdaptiveController(Controller):
     step is updated for each of these cases.
     """
 
-    #: Smallest allowable time step by the controller.
     dtmin: float
+    """Smallest allowable time step by the controller."""
 
-    #: Smallest allowable step change factor. If the factor is larger than this,
-    #: no change in the time step will be added.
     qmin: float
-    #: Largest allowable step change factor. If the factor is smaller than this,
-    #: no change in the time step will be added.
+    """Smallest allowable step change factor. If the factor is larger than this,
+    no change in the time step will be added.
+    """
     qmax: float
+    """Largest allowable step change factor. If the factor is smaller than this,
+    no change in the time step will be added.
+    """
 
-    #: Absolute tolerance used by the controller to compute a scaled norm.
     abstol: float
-    #: Relative tolerance used by the controller to compute a scaled norm.
+    """Absolute tolerance used by the controller to compute a scaled norm."""
     reltol: float
+    """Relative tolerance used by the controller to compute a scaled norm."""
 
     nrejects: int = field(default=0, init=False)
 
@@ -820,10 +823,10 @@ class JannelliIntegralController(AdaptiveController):
     the amplification factor.
     """
 
-    #: Minimum limit of the error estimate.
     chimin: float
-    #: Maximum limit of the error estimate.
+    """Minimum limit of the error estimate."""
     chimax: float
+    """Maximum limit of the error estimate."""
 
 
 @evaluate_error_estimate.register(JannelliIntegralController)

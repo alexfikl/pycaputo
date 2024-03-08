@@ -19,8 +19,8 @@ from .base import QuadratureMethod, quad
 class RiemannLiouvilleMethod(QuadratureMethod):
     """Quadrature method for the Riemann-Liouville integral."""
 
-    #: Description of the integral that is approximated.
     d: RiemannLiouvilleDerivative
+    """Description of the integral that is approximated."""
 
     if __debug__:
 
@@ -47,8 +47,8 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     This method is of order :math:`\mathcal{O}(h)` and supports arbitrary grids.
     """
 
-    #: Weight used in the approximation :math:`\theta f_k + (1 - \theta) f_{k + 1}`.
     theta: float = 0.5
+    r"""Weight used in the approximation :math:`\theta f_k + (1 - \theta) f_{k + 1}`."""
 
     if __debug__:
 
@@ -444,16 +444,17 @@ class RiemannLiouvilleConvolutionMethod(RiemannLiouvilleMethod):
     This quadrature method only supports on uniform grids.
     """
 
-    #: The order of the convolution quadrature method. Only orders up to 6 are
-    #: currently supported, see
-    #: :func:`~pycaputo.generating_functions.lubich_bdf_weights` for additional
-    #: details.
     quad_order: int
-    #: An exponent used in constructing the starting weights of the quadrature.
-    #: Negative values will allow for certain singularities at the origin, while
-    #: a default of :math:`\beta = 1` will benefit a smooth function. Setting
-    #: this to ``float("inf")`` will disable the starting weights.
+    """The order of the convolution quadrature method. Only orders up to 6 are
+    currently supported, see :func:`~pycaputo.generating_functions.lubich_bdf_weights`
+    for additional details.
+    """
     beta: float
+    r"""An exponent used in constructing the starting weights of the quadrature.
+    Negative values will allow for certain singularities at the origin, while
+    a default of :math:`\beta = 1` will benefit a smooth function. Setting
+    this to ``float("inf")`` will disable the starting weights.
+    """
 
     if __debug__:
 

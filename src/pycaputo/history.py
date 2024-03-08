@@ -32,8 +32,8 @@ class State:
             yield getattr(self, f.name)
 
 
-#: Invariant type variable bound to :class:`State`.
 T = TypeVar("T", bound=State)
+"""Invariant type variable bound to :class:`State`."""
 
 
 class History(ABC, Generic[T]):
@@ -93,12 +93,13 @@ class InMemoryHistory(History[T]):
     made instead if absolutely necessary.
     """
 
-    #: An array of shape ``(n, ...)`` containing the stored values. Note that
-    #: this is not necessarily the solution itself, but can be any data that is
-    #: required for storage in the method.
     storage: Array = field(repr=False)
-    #: An array of shape ``(n,)`` containing the fixed time steps.
+    """An array of shape ``(n, ...)`` containing the stored values. Note that
+    this is not necessarily the solution itself, but can be any data that is
+    required for storage in the method.
+    """
     ts: Array = field(repr=False)
+    """An array of shape ``(n,)`` containing the fixed time steps."""
 
     filled: int = field(default=0, repr=False, init=False)
 
@@ -179,10 +180,10 @@ class ProductIntegrationState(State):
     standard Product Integration methods.
     """
 
-    #: Time of the evaluation.
     t: float
-    #: Evaluation of the right-hand side.
+    """Time of the evaluation."""
     f: Array
+    """Evaluation of the right-hand side."""
 
 
 @dataclass(frozen=True)

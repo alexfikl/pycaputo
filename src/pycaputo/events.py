@@ -22,12 +22,12 @@ class Event:
 class StepFailed(Event):
     """Result of a failed update to time :attr:`t`."""
 
-    #: Current time.
     t: float
-    #: Current iteration.
+    """Current time."""
     iteration: int
-    #: A reason on why the step failed (if available).
+    """Current iteration."""
     reason: str
+    """A reason on why the step failed (if available)."""
 
     def __str__(self) -> str:
         return f"Event failed at iteration {self.iteration}: {self.reason}"
@@ -37,21 +37,21 @@ class StepFailed(Event):
 class StepCompleted(Event):
     """Result of a successful update to time :attr:`t`."""
 
-    #: Current time.
     t: float
-    #: Current iteration.
+    """Current time."""
     iteration: int
-    #: Final time of the simulation.
+    """Current iteration."""
     dt: float
-    #: State at the time :attr:`t`.
+    """Final time of the simulation."""
     y: Array
+    """State at the time :attr:`t`."""
 
-    #: Relative error estimate (useful when using adaptive step size).
     eest: float
-    #: Time step adaptation factor (useful when using adaptive step size).
+    """Relative error estimate (useful when using adaptive step size)."""
     q: float
-    #: Estimated truncation error (useful when using adaptive step size).
+    """Time step adaptation factor (useful when using adaptive step size)."""
     trunc: Array
+    """Estimated truncation error (useful when using adaptive step size)."""
 
     def __str__(self) -> str:
         return f"[{self.iteration:06d}] t = {self.t:.5e} dt {self.dt:.5e}"

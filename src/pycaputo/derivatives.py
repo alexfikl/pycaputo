@@ -11,10 +11,10 @@ from dataclasses import dataclass
 class Side(enum.Enum):
     """Side of a fractional derivative, if any."""
 
-    #: Denotes the left side, e.g. :math:`[a, x]` for intervals around :math:`x`.
     Left = enum.auto()
-    #: Denotes the right side, e.g. :math:`[x, b]` for intervals around :math:`x`.
+    """Denotes the left side, e.g. :math:`[a, x]` for intervals around :math:`x`."""
     Right = enum.auto()
+    """Denotes the right side, e.g. :math:`[x, b]` for intervals around :math:`x`."""
 
 
 @dataclass(frozen=True)
@@ -29,10 +29,11 @@ class FractionalOperator:
     For a recent review of these operators see [SalesTeodoro2019]_.
     """
 
-    #: Order of the fractional operator, as a real number
-    #: :math:`\alpha \in \mathbb{R}`. A positive number would denote a derivative,
-    #: while a negative number would denote a fractional integral, as supported.
     order: float
+    r"""Order of the fractional operator, as a real number
+    :math:`\alpha \in \mathbb{R}`. A positive number would denote a derivative,
+    while a negative number would denote a fractional integral, as supported.
+    """
 
     @property
     def n(self) -> int:
@@ -57,8 +58,8 @@ class RiemannLiouvilleDerivative(FractionalOperator):
     :math:`[x, b]` with a factor of :math:`(-1)^n`.
     """
 
-    #: Side on which to compute the derivative.
     side: Side
+    """Side on which to compute the derivative."""
 
     @property
     def n(self) -> int:
@@ -86,8 +87,8 @@ class CaputoDerivative(FractionalOperator):
     Riemann-Liouville integral.
     """
 
-    #: Side on which to compute the derivative.
     side: Side
+    """Side on which to compute the derivative."""
 
     @property
     def n(self) -> int:
@@ -115,8 +116,8 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
     where :math:`N(h) = (x - a) / h`. The upper derivative is similarly defined.
     """
 
-    #: Side on which to compute the derivative.
     side: Side
+    """Side on which to compute the derivative."""
 
     @property
     def n(self) -> int:
@@ -141,5 +142,5 @@ class HadamardDerivative(FractionalOperator):
             \int_a^x (\log x - \log s)^{2 + n - \alpha} \frac{f(s)}{s} \,\mathrm{d}s.
     """
 
-    #: Side on which to compute the derivative.
     side: Side
+    """Side on which to compute the derivative."""

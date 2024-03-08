@@ -23,8 +23,8 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
     """A method used to evaluate a
     :class:`~pycaputo.derivatives.RiemannLiouvilleDerivative`."""
 
-    #: A Riemann-Liouville derivative to discretize.
     d: RiemannLiouvilleDerivative
+    """A Riemann-Liouville derivative to discretize."""
 
     if __debug__:
 
@@ -59,8 +59,8 @@ class RiemannLiouvilleFromCaputoDerivativeMethod(RiemannLiouvilleDerivativeMetho
     initial terms.
     """
 
-    #: A Riemann-Liouville derivative to discretize
     d: RiemannLiouvilleDerivative
+    """A Riemann-Liouville derivative to discretize"""
 
     @property
     def caputo(self) -> CaputoDerivativeMethod:

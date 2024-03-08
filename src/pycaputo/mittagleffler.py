@@ -19,19 +19,20 @@ logger = get_logger(__name__)
 class Algorithm(enum.Enum):
     """Algorithm used to compute the Mittag-Leffler function."""
 
-    #: The standard series definition is used to compute the function. This
-    #: choice can be very slow to converge for certain arguments and parameters.
-    #: It is not recommended for production use.
     Series = enum.auto()
+    """The standard series definition is used to compute the function. This
+    choice can be very slow to converge for certain arguments and parameters.
+    It is not recommended for production use.
+    """
 
-    #: Algorithm by [Diethelm2005]_.
     Diethelm = enum.auto()
+    """Algorithm by [Diethelm2005]_."""
 
-    #: Algorithm by [Garrappa2015]_.
     Garrappa = enum.auto()
+    """Algorithm by [Garrappa2015]_."""
 
-    #: Algorithm by [Ortigueira2019]_.
     Ortigueira = enum.auto()
+    """Algorithm by [Ortigueira2019]_."""
 
 
 # {{{ series

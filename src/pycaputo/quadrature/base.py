@@ -16,8 +16,8 @@ from pycaputo.utils import Array, ArrayOrScalarFunction
 class QuadratureMethod(ABC):
     """A generic method used to evaluate a fractional integral."""
 
-    #: Description of the integral that is approximated.
     d: FractionalOperator
+    """Description of the integral that is approximated."""
 
     if __debug__:
 

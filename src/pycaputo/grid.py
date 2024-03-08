@@ -21,12 +21,12 @@ logger = get_logger(__name__)
 class Points:
     """A collection of points in an interval :math:`[a, b]`."""
 
-    #: The left boundary of the interval.
     a: float
-    #: The right boundary of the interval.
+    """The left boundary of the interval."""
     b: float
-    #: The array of points.
+    """The right boundary of the interval."""
     x: Array
+    """The array of points."""
 
     def __len__(self) -> int:
         return len(self.x)
@@ -182,12 +182,12 @@ class JacobiGaussLobattoPoints(Points):
     :math:`2 n - 3`.
     """
 
-    #: Parameter of the Jacobi polynomials.
     alpha: float
-    #: Parameter of the Jacobi poylnomials.
+    """Parameter of the Jacobi polynomials."""
     beta: float
-    #: Jacobi-Gauss-Lobatto quadrature weights on :math:`[a, b]`.
+    """Parameter of the Jacobi poylnomials."""
     w: Array
+    """Jacobi-Gauss-Lobatto quadrature weights on :math:`[a, b]`."""
 
     def translate(self, a: float, b: float) -> Points:
         """Linearly translate the set of points to the new interval :math:`[a, b]`."""

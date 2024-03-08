@@ -149,15 +149,17 @@ class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
     order in the limit of :math:`\alpha \to 1`.
     """
 
-    #: Parameter weight between the forward and backward Euler methods. The value
-    #: of :math:`\theta = 1/2` gives the standard Crank-Nicolson method.
     theta: float
+    r"""Parameter weight between the forward and backward Euler methods. The value
+    of :math:`\theta = 1/2` gives the standard Crank-Nicolson method.
+    """
 
-    #: Jacobian of
-    #: :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
-    #: By default, implicit methods use :mod:`scipy` for their root finding,
-    #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
     source_jac: StateFunctionT | None
+    r"""Jacobian of
+    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
+    By default, implicit methods use :mod:`scipy` for their root finding,
+    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
+    """
 
     if __debug__:
 
@@ -287,8 +289,8 @@ class CaputoPredictorCorrectorMethod(CaputoProductIntegrationMethod[StateFunctio
     a Newton iteration to solve the root finding problem.
     """
 
-    #: Number of repetitions of the corrector step.
     corrector_iterations: int
+    """Number of repetitions of the corrector step."""
 
     if __debug__:
 
@@ -550,11 +552,12 @@ class L1(CaputoProductIntegrationMethod[StateFunctionT]):
     the equation.
     """
 
-    #: Jacobian of
-    #: :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
-    #: By default, implicit methods use :mod:`scipy` for their root finding,
-    #: which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
     source_jac: StateFunctionT | None
+    r"""Jacobian of
+    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
+    By default, implicit methods use :mod:`scipy` for their root finding,
+    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
+    """
 
     @property
     def order(self) -> float:

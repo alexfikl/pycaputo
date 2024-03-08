@@ -16,10 +16,10 @@ from pycaputo.utils import Array
 class Truncation(NamedTuple):
     """A representation of the truncation error of a :class:`DiffStencil`."""
 
-    #: Order of the approximation.
     order: int
-    #: Truncation error coefficient (without the function derivative).
+    """Order of the approximation."""
     error: float
+    """Truncation error coefficient (without the function derivative)."""
 
 
 @dataclass(frozen=True)
@@ -36,12 +36,12 @@ class DiffStencil:
     truncation error can be retrieved from :attr:`trunc`.
     """
 
-    #: Order of the derivative approximated by the stencil.
+    """Order of the derivative approximated by the stencil."""
     derivative: int
-    #: Coefficients used in the stencil.
     coeffs: Array
-    #: Offsets around the centered :math:`0` used in the stencil.
+    """Coefficients used in the stencil."""
     offsets: Array
+    """Offsets around the centered :math:`0` used in the stencil."""
 
     @cached_property
     def padded_coeffs(self) -> Array:

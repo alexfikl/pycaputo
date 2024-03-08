@@ -28,12 +28,12 @@ class InterpStencil:
     grids (Runge phenomenon), so they should not be used with high-order.
     """
 
-    #: Coefficients used in the stencil.
     coeffs: Array
-    #: Offsets around the centered :math:`0` used in the stencil.
+    """Coefficients used in the stencil."""
     offsets: Array
-    #: Point at which the interpolation was evaluated.
+    """Offsets around the centered :math:`0` used in the stencil."""
     x: float
+    """Point at which the interpolation was evaluated."""
 
     @property
     def order(self) -> int:

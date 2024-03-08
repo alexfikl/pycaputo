@@ -23,8 +23,8 @@ logger = get_logger(__name__)
 class CaputoDerivativeMethod(DerivativeMethod):
     """A method used to evaluate a :class:`~pycaputo.derivatives.CaputoDerivative`."""
 
-    #: A Caputo derivative to discretize.
     d: CaputoDerivative
+    """A Caputo derivative to discretize."""
 
     if __debug__:
 

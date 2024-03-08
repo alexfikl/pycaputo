@@ -26,12 +26,12 @@ class AdvanceResult(NamedTuple):
     """Result of :func:`~pycaputo.stepping.advance` for
     :class:`ProductIntegrationMethod` subclasses."""
 
-    #: Estimated solution at the next time step.
     y: Array
-    #: Estimated truncation error at the next time step.
+    """Estimated solution at the next time step."""
     trunc: Array
-    #: Array to add to the history storage.
+    """Estimated truncation error at the next time step."""
     storage: Array
+    """Array to add to the history storage."""
 
 
 @dataclass(frozen=True)
