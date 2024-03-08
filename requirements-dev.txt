@@ -6,7 +6,7 @@ boolean-py==4.0
     # via
     #   license-expression
     #   reuse
-build==1.0.3
+build==1.1.1
     # via check-manifest
 chardet==5.2.0
     # via
@@ -41,7 +41,7 @@ markupsafe==2.1.5
 matplotlib==3.8.3
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.8.0
+mypy==1.9.0
 mypy-extensions==1.0.0
     # via mypy
 natsort==8.4.0
@@ -68,13 +68,13 @@ pygments==2.17.2
     # via
     #   doc8
     #   rich
-pyparsing==3.1.1
+pyparsing==3.1.2
     # via matplotlib
 pyproject-fmt==1.7.0
 pyproject-hooks==1.0.0
     # via build
 pytest==8.0.2
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via matplotlib
 python-debian==0.1.49
     # via reuse
@@ -82,7 +82,7 @@ restructuredtext-lint==1.4.0
     # via doc8
 reuse==3.0.1
 rich==13.7.1
-ruff==0.3.0
+ruff==0.3.1
 scipy==1.12.0
 setuptools==69.1.1
     # via check-manifest
@@ -95,4 +95,4 @@ tomlkit==0.12.4
 types-dataclasses==0.6.6
 typing-extensions==4.10.0
     # via mypy
-uv==0.1.12
+uv==0.1.16
