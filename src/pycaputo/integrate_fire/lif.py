@@ -71,15 +71,15 @@ def _find_first_spike_time(p: LIF, V0: float = 0.0) -> float:
 class LIFReference(NamedTuple):
     """Reference variables used to non-dimensionalize the LIF model."""
 
-    #: Fractional order used to non-dimensionalize.
     alpha: float
+    """Fractional order used to non-dimensionalize."""
 
-    #: Time scale (in milliseconds: *ms*).
     T_ref: float
-    #: Voltage scale (in millivolts: *mV*).
+    """Time scale (in milliseconds: *ms*)."""
     V_ref: float
-    #: Current scale (in picoamperes: *pA*).
+    """Voltage scale (in millivolts: *mV*)."""
     I_ref: float
+    """Current scale (in picoamperes: *pA*)."""
 
     @overload
     def time(self, t: float) -> float: ...
@@ -99,19 +99,19 @@ class LIFReference(NamedTuple):
 class LIFDim(NamedTuple):
     """Dimensional parameters for the Leaky Integrate-and-Fire (LIF) model."""
 
-    #: Added current :math:`I` (in picoamperes *pA*).
     current: float
-    #: Total capacitance :math:`C` (in picofarad per millisecond *pF / ms^(alpha - 1)*).
+    """Added current :math:`I` (in picoamperes *pA*)."""
     C: float
-    #: Total leak conductance :math:`g_L` (in nanosiemens *nS*).
+    """Total capacitance :math:`C` (in picofarad per ms *pF / ms^(alpha - 1)*)."""
     gl: float
-    #: Equilibrium potential leak :math:`E_L` (in microvolts *mV*).
+    """Total leak conductance :math:`g_L` (in nanosiemens *nS*)."""
     e_leak: float
+    """Equilibrium potential leak :math:`E_L` (in microvolts *mV*)."""
 
-    #: Peak potential :math:`V_{peak}` (in millivolts: *mV*).
     v_peak: float
-    #: Reset potential :math:`V_r` (in millivolts: *mV*).
+    """Peak potential :math:`V_{peak}` (in millivolts: *mV*)."""
     v_reset: float
+    """Reset potential :math:`V_r` (in millivolts: *mV*)."""
 
     def __str__(self) -> str:
         return dc_stringify(
@@ -175,18 +175,18 @@ class LIFDim(NamedTuple):
 class LIF(NamedTuple):
     """Non-dimensional parameters for the LIF model (see :class:`LIFDim`)."""
 
-    #: Reference values used in non-dimensionalization.
     ref: LIFReference
+    """Reference values used in non-dimensionalization."""
 
-    #: Current :math:`I`.
     current: float
-    #: Equilibrium potential leak :math:`E_L`.
+    """Current :math:`I`."""
     e_leak: float
+    """Equilibrium potential leak :math:`E_L`."""
 
-    #: Peak potential :math:`V_{peak}`.
     v_peak: float
-    #: Reset potential :math:`V_r`.
+    """Peak potential :math:`V_{peak}`."""
     v_reset: float
+    """Reset potential :math:`V_r`."""
 
     def constant_spike_times(self, tfinal: float, V0: float = 0.0) -> Array:
         """Compute the spike times for a constant current.
@@ -228,8 +228,8 @@ class LIFModel(IntegrateFireModel):
         \text{if } V > V_{peak} \qquad \text{then} \qquad V \gets V_r.
     """
 
-    #: Non-dimensional parameters of the model.
     param: LIF
+    """Non-dimensional parameters of the model."""
 
     if __debug__:
 

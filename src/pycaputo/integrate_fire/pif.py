@@ -27,15 +27,15 @@ logger = get_logger(__name__)
 class PIFReference(NamedTuple):
     """Reference variables used to non-dimensionalize the PIF model."""
 
-    #: Fractional order used to non-dimensionalize.
     alpha: float
+    """Fractional order used to non-dimensionalize."""
 
-    #: Time scale (in milliseconds: *ms*).
     T_ref: float
-    #: Voltage scale (in millivolts: *mV*).
+    """Time scale (in milliseconds: *ms*)."""
     V_ref: float
-    #: Current scale (in picoamperes: *pA*).
+    """Voltage scale (in millivolts: *mV*)."""
     I_ref: float
+    """Current scale (in picoamperes: *pA*)."""
 
     @overload
     def time(self, t: float) -> float: ...
@@ -55,16 +55,15 @@ class PIFReference(NamedTuple):
 class PIFDim(NamedTuple):
     """Dimensional parameters for the Perfect Integrate-and-Fire (PIF) model."""
 
-    #: Added current :math:`I` (in picoamperes: *pA*).
     current: float
-    #: Total capacitance :math:`C` (in picofarad per millisecond:
-    #: *pF / ms^(alpha - 1)*).
+    """Added current :math:`I` (in picoamperes: *pA*)."""
     C: float
+    """Total capacitance :math:`C` (in picofarad per ms: *pF / ms^(alpha - 1)*)."""
 
-    #: Peak potential :math:`V_{peak}` (in millivolts: *mV*).
     v_peak: float
-    #: Reset potential :math:`V_r` (in millivolts: *mV*).
+    """Peak potential :math:`V_{peak}` (in millivolts: *mV*)."""
     v_reset: float
+    """Reset potential :math:`V_r` (in millivolts: *mV*)."""
 
     def __str__(self) -> str:
         return dc_stringify(
@@ -143,15 +142,15 @@ class PIFDim(NamedTuple):
 class PIF(NamedTuple):
     """Non-dimensional parameters for the PIF model (see :class:`PIFDim`)."""
 
-    #: Reference values used in non-dimensionalization.
     ref: PIFReference
+    """Reference values used in non-dimensionalization."""
 
-    #: Current.
     current: float
-    #: Peak potential :math:`V_{peak}`.
+    """Current."""
     v_peak: float
-    #: Reset potential :math:`V_r`.
+    """Peak potential :math:`V_{peak}`."""
     v_reset: float
+    """Reset potential :math:`V_r`."""
 
     def constant_spike_times(self, tfinal: float, V0: float = 0.0) -> Array:
         """Compute the spike times for a constant current.
@@ -203,8 +202,8 @@ class PIFModel(IntegrateFireModel):
         \text{if } V > V_{peak} \qquad \text{then} \qquad V \gets V_r.
     """
 
-    #: Non-dimensional parameters of the model.
     param: PIF
+    """Non-dimensional parameters of the model."""
 
     if __debug__:
 
