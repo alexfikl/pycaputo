@@ -143,6 +143,7 @@ ignore = [
 strict = true
 hide_error_codes = false
 warn_unused_ignores = true
+local_partial_types = true
 plugins = "numpy.typing.mypy_plugin"
 
 [[tool.mypy.overrides]]
