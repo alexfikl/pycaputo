@@ -311,10 +311,8 @@ def _advance_caputo_eif_l1(  # type: ignore[misc]
     dt: float,
 ) -> AdvanceResult:
     from pycaputo.controller import AdaptiveController
-    from pycaputo.integrate_fire.base import (
-        advance_caputo_integrate_fire_l1,
-        estimate_spike_time_exp,
-    )
+    from pycaputo.integrate_fire.base import advance_caputo_integrate_fire_l1
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_exp
 
     c = m.control
     assert isinstance(c, AdaptiveController)

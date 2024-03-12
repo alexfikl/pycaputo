@@ -402,6 +402,71 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
 # }}}
 
 
+# {{{ test spike time estimates
+
+
+def test_spike_time_estimate_linear() -> None:
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_linear
+
+    rng = np.random.default_rng(seed=42)
+    for _ in range(16):
+        tp, t = sorted(rng.uniform(0.0, 0.1, size=2))
+        Vp, Vpeak, V = sorted(-np.sqrt(rng.uniform(1.0, 20, size=3)))
+
+        ts = estimate_spike_time_linear(t, V, tp, Vp, Vpeak)
+        assert tp <= ts <= t
+
+        Vpeak_est = (ts - tp) / (t - tp) * V + (t - ts) / (t - tp) * Vp
+        error = abs(Vpeak - Vpeak_est)
+
+        logger.info("Error: %.8e", error)
+        assert error < 1.0e-14
+
+
+def test_spike_time_estimate_quadratic() -> None:
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_quadratic
+
+    rng = np.random.default_rng(seed=42)
+    for _ in range(16):
+        tpp, tp, t = sorted(rng.uniform(0.0, 0.1, size=3))
+        Vpp, Vp, Vpeak, V = sorted(-np.sqrt(rng.uniform(1.0, 20, size=4)))
+
+        ts = estimate_spike_time_quadratic(t, V, tp, Vp, tpp, Vpp, Vpeak)
+        assert tpp <= tp <= ts <= t
+
+        Vpeak_est = (
+            (ts - tp) * (ts - tpp) / ((t - tp) * (t - tpp)) * V
+            + (ts - t) * (ts - tpp) / ((tp - t) * (tp - tpp)) * Vp
+            + (ts - t) * (ts - tp) / ((tpp - t) * (tpp - tp)) * Vpp
+        )
+        error = abs(Vpeak - Vpeak_est)
+
+        logger.info("Error: %.8e", error)
+        assert error < 1.0e-13
+
+
+def test_spike_time_estimate_exponential() -> None:
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_exp
+
+    rng = np.random.default_rng(seed=42)
+    for _ in range(16):
+        tp, t = sorted(rng.uniform(0.0, 0.1, size=2))
+        Vp, Vpeak, V = sorted(-np.sqrt(rng.uniform(1.0, 20, size=3)))
+
+        ts = estimate_spike_time_exp(t, V, tp, Vp, Vpeak)
+        assert tp <= ts <= t
+
+        a = (V - Vp) / (np.exp(t) - np.exp(tp))
+        Vpeak_est = a * np.exp(ts) + (Vp - a * np.exp(tp))
+        error = abs(Vpeak - Vpeak_est)
+
+        logger.info("Error: %.8e", error)
+        assert error < 1.0e-12
+
+
+# }}}
+
+
 if __name__ == "__main__":
     import sys
 
