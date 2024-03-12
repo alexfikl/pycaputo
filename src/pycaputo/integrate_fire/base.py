@@ -366,29 +366,7 @@ def advance_caputo_integrate_fire_l1(
 # }}}
 
 
-# {{{ spike time
-
-
-def estimate_spike_time_linear(
-    t: float, V: Array, tprev: float, Vprev: Array, Vpeak: Array | float
-) -> float:
-    """Give a linear estimation of the spike time.
-
-    .. math::
-
-        V(t) = a + b t.
-
-    We assume that the spike occurred between :math:`(t, V)` and
-    :math:`(t_{prev}, V_{prev})` at :math:`V_{peak}`. This information can be
-    used to provide a simple linear estimation for the spike time.
-
-    :return: an estimation of the spike time.
-    """
-    assert Vprev <= Vpeak <= V
-    ts = (Vpeak - Vprev) / (V - Vprev) * t + (V - Vpeak) / (V - Vprev) * tprev
-    assert tprev <= ts <= t
-
-    return float(ts)
+# {{{ advance helpers
 
 
 def advance_caputo_integrate_fire_spike_linear(
@@ -400,6 +378,8 @@ def advance_caputo_integrate_fire_spike_linear(
     v_peak: float,
     v_reset: float,
 ) -> AdvanceResult:
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_linear
+
     # we have spiked, so we need to reconstruct our solution
     yprev = np.array([v_peak], dtype=y.dtype)
     ynext = np.array([v_reset], dtype=y.dtype)
@@ -415,25 +395,6 @@ def advance_caputo_integrate_fire_spike_linear(
     return AdvanceResult(
         ynext, trunc, np.hstack([yprev, ynext]), spiked=np.array(1), dts=np.array(dt)
     )
-
-
-def estimate_spike_time_exp(
-    t: float, V: Array, tprev: float, Vprev: Array, Vpeak: Array | float
-) -> float:
-    """Give an exponential estimation of the spike time.
-
-    .. math::
-
-        V(t) = a b^t.
-
-    :returns: an estimate of the spike time.
-    """
-    assert Vprev <= Vpeak <= V
-    b = (V / Vprev) ** (1 / (t - tprev))
-    ts = tprev + (np.log(Vpeak) - np.log(Vprev)) / np.log(b)
-
-    assert tprev <= ts <= t
-    return float(ts)
 
 
 # }}}

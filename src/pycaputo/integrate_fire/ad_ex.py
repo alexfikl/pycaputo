@@ -611,10 +611,8 @@ def _advance_caputo_ad_ex_l1(  # type: ignore[misc]
     dt: float,
 ) -> AdvanceResult:
     from pycaputo.controller import AdaptiveController
-    from pycaputo.integrate_fire.base import (
-        advance_caputo_integrate_fire_l1,
-        estimate_spike_time_exp,
-    )
+    from pycaputo.integrate_fire.base import advance_caputo_integrate_fire_l1
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_exp
 
     tprev = history.current_time
     t = tprev + dt

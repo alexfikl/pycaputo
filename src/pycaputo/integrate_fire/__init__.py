@@ -9,7 +9,6 @@ from pycaputo.integrate_fire.base import (
     StepAccepted,
     StepFailed,
     StepRejected,
-    estimate_spike_time_linear,
 )
 
 __all__ = (
@@ -20,5 +19,4 @@ __all__ = (
     "StepAccepted",
     "StepFailed",
     "StepRejected",
-    "estimate_spike_time_linear",
 )
