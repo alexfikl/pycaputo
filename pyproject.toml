@@ -1,8 +1,7 @@
 [build-system]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
 requires = [
-    "setuptools>=61",
-    "wheel",
+    "hatchling>=1.10.0",
 ]
 
 [project]
@@ -45,7 +44,6 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
-    "check-manifest",
     "codespell",
     "differint",
     "doc8",
@@ -69,12 +67,11 @@ vis = [
 Documentation = "https://pycaputo.readthedocs.io"
 Repository = "https://github.com/alexfikl/pycaputo"
 
-[tool.setuptools]
-package-dir = { "" = "src" }
-packages = { find = { where = ["src"] } }
+[tool.hatch.build.targets.sdist]
+exclude = [".github", ".ci", "docs/_build"]
 
-[tool.setuptools.package-data]
-pycaputo = ["py.typed"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/pycaputo"]
 
 [tool.ruff]
 preview = true
@@ -131,13 +128,6 @@ multiline-quotes = "double"
 
 [tool.ruff.lint.isort]
 known-first-party = ["pycaputo"]
-
-[tool.check-manifest]
-ignore = [
-    "*.yml",
-    "*.yaml",
-    ".ci/*",
-]
 
 [tool.mypy]
 strict = true
