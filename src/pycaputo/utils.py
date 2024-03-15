@@ -336,15 +336,16 @@ def visualize_eoc(
     if order is not None and order <= 0.0:
         raise ValueError(f"The 'order' should be a non-negative real number: {order}")
 
+    markers = ["o", "v", "^", "<", ">", "x", "+", "d", "D"]
     with figure(filename, overwrite=overwrite) as fig:
         ax = fig.gca()
 
         # {{{ plot eocs
 
         line = None
-        for eoc in eocs:
+        for eoc, marker in zip(eocs, markers):
             h, error = np.array(eoc.history).T
-            ax.loglog(h, error, "o-", label=eoc.name)
+            ax.loglog(h, error, marker=marker, label=eoc.name)
 
             imax = np.argmax(h)
             max_h = h[imax]
@@ -357,7 +358,7 @@ def visualize_eoc(
                 (line,) = ax.loglog(
                     [max_h, min_h],
                     [max_e, min_e],
-                    "k-",
+                    "k--",
                 )
 
         if abscissa and line is not None:
