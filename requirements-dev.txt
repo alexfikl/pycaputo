@@ -6,13 +6,10 @@ boolean-py==4.0
     # via
     #   license-expression
     #   reuse
-build==1.1.1
-    # via check-manifest
 chardet==5.2.0
     # via
     #   binaryornot
     #   python-debian
-check-manifest==0.49
 codespell==2.2.6
 contourpy==1.2.0
     # via matplotlib
@@ -52,9 +49,8 @@ numpy==1.26.4
     #   differint
     #   matplotlib
     #   scipy
-packaging==23.2
+packaging==24.0
     # via
-    #   build
     #   matplotlib
     #   pyproject-fmt
     #   pytest
@@ -71,9 +67,7 @@ pygments==2.17.2
 pyparsing==3.1.2
     # via matplotlib
 pyproject-fmt==1.7.0
-pyproject-hooks==1.0.0
-    # via build
-pytest==8.0.2
+pytest==8.1.1
 python-dateutil==2.9.0.post0
     # via matplotlib
 python-debian==0.1.49
@@ -82,10 +76,8 @@ restructuredtext-lint==1.4.0
     # via doc8
 reuse==3.0.1
 rich==13.7.1
-ruff==0.3.1
+ruff==0.3.2
 scipy==1.12.0
-setuptools==69.1.1
-    # via check-manifest
 six==1.16.0
     # via python-dateutil
 stevedore==5.2.0
@@ -95,4 +87,4 @@ tomlkit==0.12.4
 types-dataclasses==0.6.6
 typing-extensions==4.10.0
     # via mypy
-uv==0.1.16
+uv==0.1.21
