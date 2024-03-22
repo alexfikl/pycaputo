@@ -322,7 +322,7 @@ def _advance_caputo_lif_l1(  # type: ignore[misc]
     if model.spiked(t, result.y) > 0.0:
         p = model.param
         result = advance_caputo_integrate_fire_spike_linear(
-            tprev, y, t, result, v_peak=p.v_peak, v_reset=p.v_reset
+            t, result.y[0], history, v_peak=p.v_peak, v_reset=p.v_reset
         )
 
     return result
