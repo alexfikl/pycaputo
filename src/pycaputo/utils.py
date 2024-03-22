@@ -417,7 +417,7 @@ def check_usetex(*, s: bool) -> bool:
         if not shutil.which("dvipng"):
             return False
 
-        if not shutil.which("gs"):
+        if not shutil.which("gs"):  # noqa: SIM103
             return False
 
         return True
