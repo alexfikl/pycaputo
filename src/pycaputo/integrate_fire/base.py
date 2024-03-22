@@ -370,23 +370,56 @@ def advance_caputo_integrate_fire_l1(
 
 
 def advance_caputo_integrate_fire_spike_linear(
-    tprev: float,
-    y: Array,
     t: float,
-    result: AdvanceResult,
+    y: Array,
+    history: ProductIntegrationHistory,
     *,
     v_peak: float,
     v_reset: float,
 ) -> AdvanceResult:
     from pycaputo.integrate_fire.spikes import estimate_spike_time_linear
 
+    prev = history[-1]
+
     # we have spiked, so we need to reconstruct our solution
     yprev = np.array([v_peak], dtype=y.dtype)
     ynext = np.array([v_reset], dtype=y.dtype)
 
     # estimate the time step used to get here
-    ts = estimate_spike_time_linear(t, result.y[0], tprev, y[0], v_peak)
-    dt = float(ts - tprev)
+    ts = estimate_spike_time_linear(t, y, prev.t, prev.f[0], v_peak)
+    dt = float(ts - prev.t)
+
+    # set the truncation error to zero because we want to reset the next time
+    # step to the maximum allowable value.
+    trunc = np.zeros_like(y)
+
+    return AdvanceResult(
+        ynext, trunc, np.hstack([yprev, ynext]), spiked=np.array(1), dts=np.array(dt)
+    )
+
+
+def advance_caputo_integrate_fire_spike_quadratic(
+    t: float,
+    y: Array,
+    history: ProductIntegrationHistory,
+    *,
+    v_peak: float,
+    v_reset: float,
+) -> AdvanceResult:
+    from pycaputo.integrate_fire.spikes import estimate_spike_time_quadratic
+
+    prev = history[-1]
+    pprev = history[-2]
+
+    # we have spiked, so we need to reconstruct our solution
+    yprev = np.array([v_peak], dtype=y.dtype)
+    ynext = np.array([v_reset], dtype=y.dtype)
+
+    # estimate the time step used to get here
+    ts = estimate_spike_time_quadratic(
+        t, y, prev.t, prev.f[0], pprev.t, pprev.f[0], v_peak
+    )
+    dt = float(ts - prev.t)
 
     # set the truncation error to zero because we want to reset the next time
     # step to the maximum allowable value.

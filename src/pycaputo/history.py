@@ -191,8 +191,8 @@ class ProductIntegrationHistory(InMemoryHistory[ProductIntegrationState]):
     """A history for Product Integration methods with variable time step."""
 
     def __getitem__(self, k: int) -> ProductIntegrationState:
-        if k == -1:
-            k = self.filled - 1
+        if k <= -1:
+            k = self.filled + k
 
         if not 0 <= k < self.filled:
             raise IndexError(f"History index out of range: 0 <= {k} < {self.filled}")

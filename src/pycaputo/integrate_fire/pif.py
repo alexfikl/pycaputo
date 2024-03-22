@@ -257,6 +257,10 @@ class CaputoPerfectIntegrateFireL1Method(IntegrateFireMethod[PIFModel]):
     The model is described by :class:`PIFModel` with parameters :class:`PIF`.
     """
 
+    @property
+    def spike_order(self) -> int:
+        return 1
+
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         r"""Solve the implicit equation for the PIF model.
 
@@ -280,6 +284,7 @@ def _advance_caputo_pif_l1(  # type: ignore[misc]
     from pycaputo.integrate_fire.base import (
         advance_caputo_integrate_fire_l1,
         advance_caputo_integrate_fire_spike_linear,
+        advance_caputo_integrate_fire_spike_quadratic,
     )
 
     model = m.source
@@ -289,9 +294,18 @@ def _advance_caputo_pif_l1(  # type: ignore[misc]
     result, _ = advance_caputo_integrate_fire_l1(m, history, y, dt)
     if model.spiked(t, result.y) > 0.0:
         p = model.param
-        result = advance_caputo_integrate_fire_spike_linear(
-            tprev, y, t, result, v_peak=p.v_peak, v_reset=p.v_reset
-        )
+        if m.spike_order == 1:
+            result = advance_caputo_integrate_fire_spike_linear(
+                t, result.y[0], history, v_peak=p.v_peak, v_reset=p.v_reset
+            )
+        elif m.spike_order == 2:
+            result = advance_caputo_integrate_fire_spike_quadratic(
+                t, result.y[0], history, v_peak=p.v_peak, v_reset=p.v_reset
+            )
+        else:
+            raise ValueError(
+                f"Unsupported spike time approximation order: {m.spike_order}"
+            )
 
     return result
 
