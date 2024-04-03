@@ -26,7 +26,12 @@ from typing import (
 )
 
 import numpy as np
-from typing_extensions import Concatenate, ParamSpec, TypeAlias
+
+try:
+    # NOTE: available in Python >=3.10
+    from typing import Concatenate, ParamSpec
+except ImportError:
+    from typing_extensions import Concatenate, ParamSpec  # type: ignore[assignment]
 
 from pycaputo.logging import get_logger
 
@@ -46,12 +51,12 @@ PathLike = Union[pathlib.Path, str]
 """A union of types supported as paths."""
 
 if TYPE_CHECKING:
-    Array: TypeAlias = np.ndarray[Any, Any]
-    Scalar: TypeAlias = Union[np.generic, Array]
+    Array = np.ndarray[Any, Any]
+    Scalar = Union[np.generic, Array]
 else:
-    Array: TypeAlias = np.ndarray
+    Array = np.ndarray
     """Array type alias for :class:`numpy.ndarray`."""
-    Scalar: TypeAlias = Union[np.generic, Array]
+    Scalar = Union[np.generic, Array]
     """Scalar type alias (generally a value convertible to a :class:`float`)."""
 
 

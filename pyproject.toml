@@ -38,9 +38,9 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.17",
-    "rich",
+    "rich>=13",
     "scipy>=1.7",
-    "typing-extensions",
+    'typing-extensions; python_version < "3.10"',
 ]
 [project.optional-dependencies]
 dev = [
