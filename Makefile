@@ -97,8 +97,10 @@ test:					## Run pytest tests
 
 benchmark:				## Run pytest benchmarks
 	$(PYTHON) -m pytest -m 'benchmark' \
-		--benchmark-autosave --benchmark-storage=docs/benchmarks \
+		--benchmark-autosave \
+		--benchmark-storage=docs/benchmarks \
 		--benchmark-name=short \
+		--benchmark-columns=min,max,mean,iqr,ops,rounds \
 		tests/benchmarks
 .PHONY: benchmark
 

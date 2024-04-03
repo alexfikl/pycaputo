@@ -31,10 +31,11 @@ def func_der_ref(x: Array, *, alpha: float) -> Array:
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
+        ("CaputoL1Method", "stretch"),
         ("CaputoL1Method", "uniform"),
-        ("CaputoModifiedL1Method", "midpoints"),
         ("CaputoL2CMethod", "uniform"),
         ("CaputoL2Method", "uniform"),
+        ("CaputoModifiedL1Method", "midpoints"),
     ],
 )
 def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkType) -> None:
@@ -42,7 +43,7 @@ def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkType) -> Non
     from pycaputo.grid import make_points_from_name
 
     alpha = 0.9
-    n = 512
+    n = 1024
 
     if name in {"CaputoL2Method", "CaputoL2CMethod"}:
         alpha += 1
@@ -60,6 +61,8 @@ def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkType) -> Non
         error = la.norm(df_test[1:] - df_ref[1:]) / la.norm(df_ref[1:])
         assert error < 1.0e-2
 
+    benchmark.extra_info["alpha"] = alpha
+    benchmark.extra_info["n"] = n
     benchmark(run_diff)
 
 
