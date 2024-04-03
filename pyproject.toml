@@ -51,6 +51,7 @@ dev = [
     "mypy",
     "pyproject-fmt",
     "pytest",
+    "pytest-benchmark",
     "reuse",
     "ruff",
     "types-dataclasses",
@@ -128,6 +129,15 @@ multiline-quotes = "double"
 
 [tool.ruff.lint.isort]
 known-first-party = ["pycaputo"]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = [
+    "-rswx",
+    "--durations=25",
+    "--capture=no",
+    "--verbose",
+]
 
 [tool.mypy]
 strict = true

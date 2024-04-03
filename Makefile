@@ -92,8 +92,14 @@ pip-install:			## Install pinned depdencies from requirements.txt
 .PHONY: pip-install
 
 test:					## Run pytest tests
-	$(PYTHON) -m pytest -rswx --durations=25 -v -s
+	$(PYTHON) -m pytest -m 'not benchmark'
 .PHONY: test
+
+benchmark:				## Run pytest benchmarks
+	$(PYTHON) -m pytest -m 'benchmark' \
+		--benchmark-autosave --benchmark-storage=docs/benchmarks \
+		tests/benchmarks
+.PHONY: benchmark
 
 examples:				## Run examples
 	@for ex in $$(find examples -name "*.py"); do \
