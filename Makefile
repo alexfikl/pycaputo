@@ -17,7 +17,7 @@ fmt: format
 .PHONY: fmt
 
 black:			## Run ruff format over the source code
-	ruff format src tests examples docs
+	ruff format src tests examples docs scripts
 	@echo -e "\e[1;32mruff format clean!\e[0m"
 .PHONY: black
 

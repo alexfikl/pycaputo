@@ -32,7 +32,7 @@ class Points:
         return len(self.x)
 
     @property
-    def dtype(self) -> "np.dtype[Any]":
+    def dtype(self) -> np.dtype[Any]:
         """The :class:`numpy.dtype` of the points in the set."""
         return np.dtype(self.x.dtype)
 

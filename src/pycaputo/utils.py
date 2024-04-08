@@ -433,6 +433,7 @@ def set_recommended_matplotlib(
     use_tex: bool | None = None,
     dark: bool | None = None,
     savefig_format: str | None = None,
+    overrides: dict[str, Any] | None = None,
 ) -> None:
     """Set custom :mod:`matplotlib` parameters.
 
@@ -450,6 +451,8 @@ def set_recommended_matplotlib(
     :arg savefig_format: the format used when saving figures. By default, this
         uses the ``PYCAPUTO_SAVEFIG`` environment variable and falls back to
         the :mod:`matplotlib` parameter ``savefig.format``.
+    :arg overrides: a mapping of parameters to override the defaults. These
+        can also be set separately after this function was called.
     """
     try:
         import matplotlib.pyplot as mp
@@ -458,6 +461,9 @@ def set_recommended_matplotlib(
 
     if use_tex is None:
         use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)
+
+    if not use_tex:
+        logger.warning("'use_tex' is disabled on this system.")
 
     if dark is None:
         tmp = os.environ.get("PYCAPUTO_DARK", "off").lower()
@@ -472,22 +478,23 @@ def set_recommended_matplotlib(
         "figure": {
             "figsize": (8, 8),
             "dpi": 300,
-            "constrained_layout": {"use": True},
+            "constrained_layout.use": True,
         },
         "savefig": {"format": savefig_format},
         "text": {"usetex": use_tex},
         "legend": {"fontsize": 32},
         "lines": {"linewidth": 2, "markersize": 10},
         "axes": {
-            "labelsize": 32,
-            "titlesize": 32,
+            "labelsize": 28,
+            "titlesize": 28,
             "grid": True,
+            "grid.axis": "both",
+            "grid.which": "both",
             # NOTE: preserve existing colors (the ones in "science" are ugly)
             "prop_cycle": mp.rcParams["axes.prop_cycle"],
         },
-        "xtick": {"labelsize": 24, "direction": "inout"},
-        "ytick": {"labelsize": 24, "direction": "inout"},
-        "axes.grid": {"axis": "both", "which": "both"},
+        "xtick": {"labelsize": 20, "direction": "inout"},
+        "ytick": {"labelsize": 20, "direction": "inout"},
         "xtick.major": {"size": 6.5, "width": 1.5},
         "ytick.major": {"size": 6.5, "width": 1.5},
         "xtick.minor": {"size": 4.0},
@@ -513,7 +520,10 @@ def set_recommended_matplotlib(
         mp.style.use("seaborn-dark" if dark else "seaborn-white")
 
     for group, params in defaults.items():
-        with suppress(KeyError):
+        mp.rc(group, **params)
+
+    if overrides:
+        for group, params in overrides.items():
             mp.rc(group, **params)
 
 
@@ -582,8 +592,6 @@ def savefig(
         raise FileExistsError(f"Output file '{filename}' already exists")
 
     logger.info("Saving '%s'", filename)
-
-    fig.tight_layout()
     fig.savefig(filename, **kwargs)
 
 
