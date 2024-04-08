@@ -60,7 +60,7 @@ def main(infile: pathlib.Path, *, outfile: pathlib.Path | None = None) -> int:
         ax.set_xlim([0, len(results) + 1])
         ax.set_ylabel("Time (s)")
         ax.set_xticks(ax.get_xticks(), ax.get_xticklabels(), rotation=25, ha="right")
-        ax.set_title(f"{machine.system} - {machine.python}", pad=20)
+        ax.set_title(f"{machine.python} - {machine.system}", pad=20)
 
     return 0
 
