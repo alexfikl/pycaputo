@@ -13,7 +13,7 @@ script = pathlib.Path(__file__)
 logger = get_logger(script.stem)
 
 
-def main(infile: pathlib.path, *, outfile: pathlib.Path | None = None) -> int:
+def main(infile: pathlib.Path, *, outfile: pathlib.Path | None = None) -> int:
     if not infile.exists():
         logger.error("File does not exist: '%s'.", infile)
         return 1

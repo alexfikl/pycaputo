@@ -148,11 +148,12 @@ plugins = "numpy.typing.mypy_plugin"
 
 [[tool.mypy.overrides]]
 module = [
+    "SciencePlots.*",
     "differint.*",
     "mittleff.*",
-    "scipy.*",
-    "SciencePlots.*",
+    "pytest_benchmark.*",
     "scienceplots.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true
 

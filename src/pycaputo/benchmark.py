@@ -4,13 +4,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from pycaputo.logging import get_logger
 
 logger = get_logger(__name__)
-
-BenchmarkType = Callable[[Callable[[], Any]], Any]
 
 
 # {{{ get_basic_machine_info

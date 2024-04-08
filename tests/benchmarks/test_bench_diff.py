@@ -6,8 +6,8 @@ from __future__ import annotations
 import numpy as np
 import numpy.linalg as la
 import pytest
+from pytest_benchmark.fixture import BenchmarkFixture
 
-from pycaputo.benchmark import BenchmarkType
 from pycaputo.utils import Array
 
 
@@ -38,7 +38,7 @@ def func_der_ref(x: Array, *, alpha: float) -> Array:
         ("CaputoModifiedL1Method", "midpoints"),
     ],
 )
-def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkType) -> None:
+def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkFixture) -> None:
     from pycaputo.differentiation import diff, make_method_from_name
     from pycaputo.grid import make_points_from_name
 
