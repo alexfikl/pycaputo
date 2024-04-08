@@ -31,11 +31,11 @@ def func_der_ref(x: Array, *, alpha: float) -> Array:
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
-        ("CaputoL1Method", "stretch"),
-        ("CaputoL1Method", "uniform"),
-        ("CaputoL2CMethod", "uniform"),
-        ("CaputoL2Method", "uniform"),
-        ("CaputoModifiedL1Method", "midpoints"),
+        ("CaputoL1", "stretch"),
+        ("CaputoL1", "uniform"),
+        ("CaputoL2", "uniform"),
+        ("CaputoL2C", "uniform"),
+        ("CaputoModifiedL1", "midpoints"),
     ],
 )
 def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkFixture) -> None:
@@ -45,10 +45,10 @@ def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkFixture) -> 
     alpha = 0.9
     n = 1024
 
-    if name in {"CaputoL2Method", "CaputoL2CMethod"}:
+    if name in {"CaputoL2", "CaputoL2C"}:
         alpha += 1
 
-    meth = make_method_from_name(name, alpha)
+    meth = make_method_from_name(f"{name}Method", alpha)
     p = make_points_from_name(grid_type, n, a=0.0, b=1.0)
 
     f_test = func(p.x, alpha=alpha)
