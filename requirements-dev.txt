@@ -68,7 +68,7 @@ pygments==2.17.2
     #   rich
 pyparsing==3.1.2
     # via matplotlib
-pyproject-fmt==1.7.0
+pyproject-fmt==1.8.0
 pytest==8.1.1
     # via pytest-benchmark
 pytest-benchmark==4.0.0
@@ -80,7 +80,7 @@ restructuredtext-lint==1.4.0
     # via doc8
 reuse==3.0.2
 rich==13.7.1
-ruff==0.3.5
+ruff==0.4.0
 scipy==1.13.0
 six==1.16.0
     # via python-dateutil
@@ -91,4 +91,4 @@ tomlkit==0.12.4
 types-dataclasses==0.6.6
 typing-extensions==4.11.0
     # via mypy
-uv==0.1.29
+uv==0.1.34
