@@ -45,8 +45,9 @@ class IntegrateFireModel(ABC):
         it is generally left to the model itself to define how the spike is
         recognized.
 
-        :returns: a positive value if the neuron spiked and a negative value
-            otherwise.
+        :returns: a positive value if the neuron spiked, a negative value
+            if the neuron has not spiked yet and *0* if the spike threshold is
+            achieved exactly.
         """
 
     @abstractmethod
@@ -122,11 +123,11 @@ class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireMode
 
     .. math::
 
-        \text{condition}(t, \mathbf{y}) \ge 0
+        \text{spiked}(t, \mathbf{y}) \ge 0
         \quad \text{then} \quad
         \mathbf{y} = \text{reset}(t, \mathbf{y}),
 
-    where the ``condition`` function and the ``reset`` functions are provided
+    where the ``spiked`` function and the ``reset`` functions are provided
     by the user. For example, a standard adaptive model has two variables
     :math:`(V, w)` and uses the reset condition
 
@@ -143,7 +144,7 @@ class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireMode
     .. math::
 
         \begin{cases}
-        \text{condition}(t, [V, w]) = V - V_{peak}, \\
+        \text{spiked}(t, [V, w]) = V - V_{peak}, \\
         \text{reset}(t, [V, w]) = (V_r, w + b)
         \end{cases}
 
