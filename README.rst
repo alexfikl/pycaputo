@@ -14,6 +14,9 @@
     :alt: REUSE
     :target: https://api.reuse.software/info/github.com/alexfikl/pycaputo
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10996100.svg
+    :target: https://doi.org/10.5281/zenodo.10996100
+
 pycaputo
 ========
 
