@@ -15,9 +15,9 @@ Features
 Maintenance
 ^^^^^^^^^^^
 
-* Use [uv](https://github.com/astral-sh/uv) to handled pinning dependencies.
-* Use [hatchling](https://hatch.pypa.io) as the build backend instead of ``setuptools``.
-* Start using [pytest-benchmark](https://pytest-benchmark.readthedocs.io) to
+* Use `uv <https://github.com/astral-sh/uv>`__ to handled pinning dependencies.
+* Use `hatchling <https://hatch.pypa.io>`__ as the build backend instead of ``setuptools``.
+* Start using `pytest-benchmark <https://pytest-benchmark.readthedocs.io>`__ to
   benchmark the code. This still needs a lot of work.
 
 pycaputo 0.4.0 (February 6, 2024)
