@@ -116,6 +116,7 @@ ignore = [
     "PLR0915",  # too-many-statements
     "PLR0917",  # too-many-positional
     "PLR6301",  # no-self-use
+    "PLR6104",  # non-augmented-assignment
     "PLR2004",  # magic-value-comparison
     "S101",     # assert
     "S102",     # exec-builtin
