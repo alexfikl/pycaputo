@@ -1,4 +1,4 @@
-References
+Literature
 ==========
 
 .. [Lubich1986] C. Lubich,

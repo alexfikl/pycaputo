@@ -2,10 +2,19 @@ pycaputo documentation
 ======================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :hidden:
+    :caption: Getting started
 
     tutorials
+    changelog
+    literature
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: API Reference
+
     operator
     quadrature
     differentiation
@@ -15,8 +24,6 @@ pycaputo documentation
     fode
     integrate_fire
     misc
-    references
-    changelog
 
 .. warning::
 
