@@ -394,7 +394,8 @@ def _evaluate_timestep_accept_fixed(
 
 
 # {{{ GradedController
-#
+
+
 @dataclass(frozen=True)
 class GradedController(Controller):
     r"""A :class:`Controller` with a variable graded time step.

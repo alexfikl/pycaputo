@@ -10,8 +10,6 @@
 
 from __future__ import annotations
 
-import os
-
 import numpy as np
 
 from pycaputo.integrate_fire import ad_ex
@@ -20,8 +18,6 @@ from pycaputo.logging import get_logger
 logger = get_logger("integrate-and-fire")
 
 # {{{ model
-
-adaptive = "PYCAPUTO_AD_EX_NO_ADAPTIVE" not in os.environ
 
 # time interval
 tstart, tfinal = 0.0, 64.0
@@ -38,11 +34,7 @@ logger.info("Parameters:\n%s", model.param)
 
 # {{{ setup
 
-from pycaputo.controller import (
-    Controller,
-    make_fixed_controller,
-    make_jannelli_controller,
-)
+from pycaputo.controller import Controller, make_jannelli_controller
 
 # initial condition
 rng = np.random.default_rng(seed=42)
@@ -51,19 +43,15 @@ y0 = np.array([
     rng.uniform(),
 ])
 
-if adaptive:
-    dtinit = 1.0e-1
-    dtmin = 1.0e-5
-    c: Controller = make_jannelli_controller(
-        tstart,
-        tfinal,
-        dtmin=dtmin,
-        chimin=0.01,
-        chimax=0.1,
-    )
-else:
-    dtinit = dtmin = 5.0e-3
-    c = make_fixed_controller(dtinit, tstart=tstart, tfinal=tfinal)
+dtinit = 1.0e-1
+dtmin = 1.0e-5
+c: Controller = make_jannelli_controller(
+    tstart,
+    tfinal,
+    dtmin=dtmin,
+    chimin=0.01,
+    chimax=0.1,
+)
 
 stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
     derivative_order=alpha,
