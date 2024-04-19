@@ -54,4 +54,6 @@ Misc
 
     A generic invarint :class:`typing.ParamSpec`.
 
+    alias of ParamSpec('P')
+
 .. automodule:: pycaputo.utils

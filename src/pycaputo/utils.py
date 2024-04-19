@@ -40,13 +40,12 @@ logger = get_logger(__name__)
 
 # {{{ typing
 
+P = ParamSpec("P")
+
 T = TypeVar("T")
 """A generic invariant :class:`typing.TypeVar`."""
 R = TypeVar("R")
 """A generic invariant :class:`typing.TypeVar`."""
-P = ParamSpec("P")
-"""A generic invariant :class:`typing.ParamSpec`."""
-
 PathLike = Union[pathlib.Path, str]
 """A union of types supported as paths."""
 
@@ -104,23 +103,6 @@ class ScalarStateFunction(Protocol):
         """
         :arg t: time at which to evaluate the function.
         :arg y: state vector value at which to evaluate the function.
-        """
-
-
-class CallbackFunction(Protocol):
-    """A generic callback for evolution equations that can be used to modify
-    the state.
-
-    .. automethod:: __call__
-    """
-
-    def __call__(self, t: float, y: Array, /) -> bool:
-        """
-        :arg t: time at which to evaluate the function.
-        :arg y: state vector value at which to evaluate the function.
-
-        :returns: if *True*, hint to the algorithm that the evolution should be
-            stopped.
         """
 
 
