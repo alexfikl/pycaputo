@@ -1,6 +1,25 @@
 Changelog
 =========
 
+pycaputo 0.5.0 (April 19, 2024)
+-------------------------------
+
+Features
+^^^^^^^^
+
+* Implement an implicit adaptive L1 type method for Integrate-and-Fire models
+  in :mod:`pycaputo.integrate_fire`.
+* Implement PIF, LIF, EIF and AdEx models explicitly. These can be used to model
+  neurons using fractional dynamics.
+
+Maintenance
+^^^^^^^^^^^
+
+* Use [uv](https://github.com/astral-sh/uv) to handled pinning dependencies.
+* Use [hatchling](https://hatch.pypa.io) as the build backend instead of ``setuptools``.
+* Start using [pytest-benchmark](https://pytest-benchmark.readthedocs.io) to
+  benchmark the code. This still needs a lot of work.
+
 pycaputo 0.4.0 (February 6, 2024)
 ---------------------------------
 
