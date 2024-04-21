@@ -3,11 +3,57 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Iterator
+
+import numpy as np
+
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array
+from pycaputo.utils import Array, ScalarFunction
 
 logger = get_logger(__name__)
+
+
+# {{{
+
+
+@dataclass(frozen=True)
+class _LagrangePoly:
+    n: int
+    """Order of the Lagrange polynomial."""
+    p: Array
+    """Nodes used to construct the polynomials."""
+
+    def __call__(self, x: Array) -> Array:
+        n, p = self.n, self.p
+        return np.prod(
+            [(x - p[i]) / (p[n] - p[i]) for i in range(p.size) if n != i], axis=0
+        )
+
+
+def lagrange_polynomials(p: Array) -> Iterator[ScalarFunction]:
+    """Construct functions to evaluate the Lagrange polynomials."""
+    for n in range(p.size):
+        yield _LagrangePoly(n, p)
+
+
+def vandermonde(x: Array) -> Array:
+    """Compute the Vandermonde matrix for the monomial polynomials."""
+    assert x.ndim == 1
+
+    n = np.arange(x.size)
+    x = x.reshape(-1, 1)
+
+    return x**n
+
+
+def monomial_coefficients(x: Array) -> Array:
+    vdm = vandermonde(x)
+    return np.linalg.pinv(vdm)
+
+
+# }}}
 
 
 # {{{ Lagrange Riemann-Liouville integral
