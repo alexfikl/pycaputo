@@ -471,10 +471,10 @@ class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
         :attr:`npoints`. This function can be easily overwritten to make use of
         different points. However, they must be in :math:`[0, 1]`.
         """
-        from numpy.polynomial.legendre import leggaus
+        from numpy.polynomial.legendre import leggauss
 
-        xi, _ = leggaus(self.npoints)
-        return xi
+        xi, _ = leggauss(self.npoints)
+        return (xi + 1.0) / 2.0
 
 
 @quad.register(RiemannLiouvilleSplineMethod)

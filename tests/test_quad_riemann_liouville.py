@@ -205,6 +205,64 @@ def test_riemann_liouville_quad_spectral(
 # }}}
 
 
+# {{{ test_riemann_liouville_spline
+
+
+@pytest.mark.parametrize("npoints", [2, 4, 6, 8])
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 1.25, 2.5, 7.75])
+def test_riemann_liouville_spline(
+    npoints: int,
+    alpha: float,
+    *,
+    visualize: bool = False,
+) -> None:
+    from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
+    from pycaputo.grid import make_uniform_points
+    from pycaputo.quadrature import RiemannLiouvilleSplineMethod, quad
+
+    d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
+    meth = RiemannLiouvilleSplineMethod(d=d, npoints=npoints)
+
+    from pycaputo.utils import EOCRecorder, savefig
+
+    eoc = EOCRecorder(order=meth.order)
+
+    if visualize:
+        import matplotlib.pyplot as mp
+
+        fig = mp.figure()
+        ax = fig.gca()
+
+    for n in [8, 12, 16, 24, 32]:
+        p = make_uniform_points(n, a=0.0, b=0.5)
+        qf_num = quad(meth, f_test, p)
+        qf_ref = qf_test(p.x, alpha=alpha)
+
+        h = np.max(p.dx)
+        e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
+        eoc.add_data_point(h, e)
+        logger.info("n %4d h %.5e e %.12e", n, h, e)
+
+        if visualize:
+            ax.plot(p.x[1:], qf_num[1:])
+
+    logger.info("\n%s", eoc)
+
+    if visualize:
+        ax.plot(p.x[1:], qf_ref[1:], "k--")
+        ax.set_xlabel("$x$")
+        ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
+
+        dirname = pathlib.Path(__file__).parent
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
+        savefig(fig, dirname / filename.lower())
+
+    # assert eoc.estimated_order > 7.0
+
+
+# }}}
+
+
 if __name__ == "__main__":
     import sys
 

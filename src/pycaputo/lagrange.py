@@ -97,26 +97,39 @@ def lagrange_riemann_liouville_integral(
     :returns: the integrals :math:`L^{q, \alpha}_{nk}` for every subinterval
         :math:`[x_k, x_{k + 1}]` for each :math:`x_n`.
     """
-    from scipy.special import betainc, gamma
+    from scipy.special import beta, betainc, gamma
 
     x = p.x
     dx = p.dx
     dxa = dx**alpha / gamma(alpha)
 
-    Ln = np.empty(x.size)
+    Ln = np.empty((x.size, xi.size))
+    Lm = np.empty((x.size, xi.size))
     A = np.linalg.pinv(vandermonde(xi))
 
-    for n in range(1, p.n):
-        # shape (q,)
-        k = np.arange(xi.size)
-        # shape (n, 1)
-        zn = ((x[n] - x[:n]) / dx[:n]).reshape(-1, 1)
-        # shape (n, q)
-        B = betainc(1 + k, alpha, 1 / zn) * betainc(1 + k, alpha, 1)
-        # shape (n,) * sum((q, q) @ (q, n) @ (n, q))
-        Ln[:n] = dxa[:n] * np.sum(A @ (zn ** (k + alpha)) @ B, axis=1)
+    for n in range(1, p.size):
+        zn = (x[n] - x[:n]) / dx[:n]
 
-        yield Ln[:n]
+        for i in range(n):
+            for k in range(xi.size):
+                Lm[i, k] = 0.0
+                for j in range(xi.size):
+                    Lm[i, k] += (
+                        dxa[i]
+                        * A[k, j]
+                        * zn[i] ** (j + alpha)
+                        * betainc(1 + j, alpha, 1 / zn[i])
+                        * beta(1 + j, alpha)
+                    )
+
+        yield Lm[:n]
+
+        # # shape (n, q)
+        # B = betainc(1 + k, alpha, 1 / zn) * betainc(1 + k, alpha, 1)
+        # # shape (n,) * sum((q, q) @ (q, n) @ (n, q))
+        # Ln[:n] = dxa[:n] * np.sum(A @ (zn ** (k + alpha)) @ B, axis=1)
+
+        # yield Ln[:n]
 
 
 # }}}
