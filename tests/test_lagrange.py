@@ -22,10 +22,10 @@ def test_vandermonde_matrix() -> None:
     a, b = -1.0, 1.0
     p = make_jacobi_gauss_lobatto_points(n, a, b).x
 
-    from pycaputo.lagrange import lagrange_polynomials, monomial_coefficients
+    from pycaputo.lagrange import lagrange_polynomials, vandermonde_inverse
 
     rng = np.random.default_rng(seed=42)
-    A = monomial_coefficients(p)
+    A = vandermonde_inverse(p)
     kappa = la.cond(A)
     logger.info("kappa: %.12e", kappa)
 

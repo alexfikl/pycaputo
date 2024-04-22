@@ -27,9 +27,11 @@ class _LagrangePoly:
 
     def __call__(self, x: Array) -> Array:
         n, p = self.n, self.p
-        return np.prod(
+        result = np.prod(
             [(x - p[i]) / (p[n] - p[i]) for i in range(p.size) if n != i], axis=0
         )
+
+        return np.array(result)
 
 
 def lagrange_polynomials(p: Array) -> Iterator[ScalarFunction]:
@@ -43,9 +45,9 @@ def vandermonde(x: Array) -> Array:
     assert x.ndim == 1
 
     n = np.arange(x.size)
-    x = x.reshape(-1, 1)
+    x = x.reshape((-1, 1))
 
-    return x**n
+    return np.array(x**n)
 
 
 def vandermonde_inverse(x: Array) -> Array:
@@ -103,7 +105,7 @@ def lagrange_riemann_liouville_integral(
     dx = p.dx
     dxa = dx**alpha / gamma(alpha)
 
-    Ln = np.empty((x.size, xi.size))
+    # Ln = np.empty((x.size, xi.size))
     Lm = np.empty((x.size, xi.size))
     A = np.linalg.pinv(vandermonde(xi))
 

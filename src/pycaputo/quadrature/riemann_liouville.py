@@ -473,12 +473,12 @@ class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
         """
         from numpy.polynomial.legendre import leggauss
 
-        xi, _ = leggauss(self.npoints)
-        return (xi + 1.0) / 2.0
+        xi, _ = leggauss(self.npoints)  # type: ignore[no-untyped-call]
+        return np.array(xi + 1.0) / 2.0
 
 
 @quad.register(RiemannLiouvilleSplineMethod)
-def _quad_rl_conv(
+def _quad_rl_spline(
     m: RiemannLiouvilleSplineMethod,
     f: ArrayOrScalarFunction,
     p: Points,
