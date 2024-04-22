@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from functools import cached_property
 
 import numpy as np
 
@@ -412,6 +413,97 @@ def _quad_rl_spec(
         df += fhat[n] * Phat
 
     return df
+
+
+# }}}
+
+
+# {{{ RiemannLiouvilleSplineMethod
+
+
+@dataclass(frozen=True)
+class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
+    """Riemann-Lioville integral approximation using the piecewise Lagrange
+    spline method from [Cardone2021]_.
+
+    Note that, unlike other methods, this method requires evaluating the function
+    :math:`f` at interior points on each interval (based on :attr:`xi`). The
+    integral itself, however, is only evaluated at the given points :math:`x`.
+
+    This method has an order that depends on the reference points :attr:`xi` and
+    supports arbitrary grids.
+    """
+
+    npoints: int
+    """Number of points used on each element."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            from warnings import warn
+
+            super().__post_init__()
+
+            if self.npoints > 16:
+                warn(
+                    "Evaluating Lagrange polynomials of order > 16 might be "
+                    "numerically unstable",
+                    stacklevel=2,
+                )
+
+            if not np.all([0 < xi < 1 for xi in self.xi]):
+                raise ValueError(f"Reference nodes are not in [0, 1]: {self.xi}")
+
+    @property
+    def name(self) -> str:
+        return "RLSpline"
+
+    @property
+    def order(self) -> int:
+        return self.npoints
+
+    @cached_property
+    def xi(self) -> Array:
+        """Reference points used to construct the Lagrange polynomials on each
+        element.
+
+        By default, this function constructs the Gauss-Legendre nodes based on
+        :attr:`npoints`. This function can be easily overwritten to make use of
+        different points. However, they must be in :math:`[0, 1]`.
+        """
+        from numpy.polynomial.legendre import leggaus
+
+        xi, _ = leggaus(self.npoints)
+        return xi
+
+
+@quad.register(RiemannLiouvilleSplineMethod)
+def _quad_rl_conv(
+    m: RiemannLiouvilleSplineMethod,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    from pycaputo.lagrange import lagrange_riemann_liouville_integral
+
+    xi = m.xi
+    alpha = -m.d.order
+
+    if not callable(f):
+        raise TypeError(
+            f"'{type(m).__name__}' only supports callable functions: 'f' is a "
+            f"{type(f).__name__}"
+        )
+
+    x = p.x[:-1].reshape(-1, 1) + p.dx.reshape(-1, 1) * xi
+    fx = f(x)
+
+    qf = np.empty(p.size, dtype=fx.dtype)
+    qf[0] = np.nan
+
+    for n, w in enumerate(lagrange_riemann_liouville_integral(p, xi, alpha)):
+        qf[n + 1] = np.sum(w * fx[: n + 1])
+
+    return qf
 
 
 # }}}

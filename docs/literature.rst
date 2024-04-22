@@ -88,3 +88,8 @@ Literature
     *Firing Patterns in the Adaptive Exponential Integrate-and-Fire Model*,
     Biological Cybernetics, Vol. 99, pp. 335--347, 2008,
     `DOI <https://doi.org/10.1007/s00422-008-0264-7>`__.
+
+.. [Cardone2021] A. Cardone, D. Conte, B. Paternoster,
+    *A MATLAB Implementation of Spline Collocation Methods for Fractional Differential Equations*,
+    Computational Science and Its Applications – ICCSA 2021, pp. 387--401, 2021,
+    `DOI <https://doi.org/10.1007/978-3-030-86653-2_29>`__.
