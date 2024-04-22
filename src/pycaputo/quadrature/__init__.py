@@ -13,6 +13,7 @@ from pycaputo.quadrature.riemann_liouville import (
     RiemannLiouvilleRectangularMethod,
     RiemannLiouvilleSimpsonMethod,
     RiemannLiouvilleSpectralMethod,
+    RiemannLiouvilleSplineMethod,
     RiemannLiouvilleTrapezoidalMethod,
 )
 
@@ -90,6 +91,7 @@ __all__ = (
     "RiemannLiouvilleRectangularMethod",
     "RiemannLiouvilleSimpsonMethod",
     "RiemannLiouvilleSpectralMethod",
+    "RiemannLiouvilleSplineMethod",
     "RiemannLiouvilleTrapezoidalMethod",
     "guess_method_for_order",
     "make_method_from_name",
