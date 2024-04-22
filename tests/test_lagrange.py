@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-import pathlib
-
 import numpy as np
 import numpy.linalg as la
 import pytest
