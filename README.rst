@@ -1,21 +1,23 @@
-.. image:: https://github.com/alexfikl/pycaputo/workflows/CI/badge.svg
+.. |badge-ci| image:: https://github.com/alexfikl/pycaputo/workflows/CI/badge.svg
     :alt: Build Status
     :target: https://github.com/alexfikl/pycaputo/actions?query=branch%3Amain+workflow%3ACI
 
-.. image:: https://badge.fury.io/py/pycaputo.svg
+.. |badge-pypi| image:: https://badge.fury.io/py/pycaputo.svg
     :alt: PyPI
     :target: https://pypi.org/project/pycaputo/
 
-.. image:: https://readthedocs.org/projects/pycaputo/badge/?version=latest
+.. |badge-rtd| image:: https://readthedocs.org/projects/pycaputo/badge/?version=latest
     :alt: Documentation
     :target: https://pycaputo.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://api.reuse.software/badge/github.com/alexfikl/pycaputo
+.. |badge-reuse| image:: https://api.reuse.software/badge/github.com/alexfikl/pycaputo
     :alt: REUSE
     :target: https://api.reuse.software/info/github.com/alexfikl/pycaputo
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10996100.svg
+.. |badge-zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10996100.svg
     :target: https://doi.org/10.5281/zenodo.10996100
+
+|badge-ci| |badge-pypi| |badge-rtd| |badge-reuse| |badge-zenodo|
 
 pycaputo
 ========
