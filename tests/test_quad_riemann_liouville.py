@@ -257,7 +257,10 @@ def test_riemann_liouville_spline(
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
-    # assert eoc.estimated_order > 7.0
+    from pycaputo.lagrange import vandermonde
+
+    kappa = la.cond(vandermonde(meth.xi))
+    assert eoc.estimated_order > meth.order or eoc.max_error < 1.0e-15 * kappa
 
 
 # }}}

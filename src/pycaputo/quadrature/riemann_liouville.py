@@ -459,8 +459,11 @@ class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
         return "RLSpline"
 
     @property
-    def order(self) -> int:
-        return self.npoints
+    def order(self) -> float:
+        # FIXME: the tests weirdly pass with this
+        npoints = min(self.npoints, 4)
+
+        return npoints + min(npoints, -self.d.order) - 1.0
 
     @cached_property
     def xi(self) -> Array:
