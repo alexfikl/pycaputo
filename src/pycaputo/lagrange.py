@@ -103,35 +103,18 @@ def lagrange_riemann_liouville_integral(
 
     x = p.x
     dx = p.dx
-    dxa = dx**alpha / gamma(alpha)
 
-    # Ln = np.empty((x.size, xi.size))
-    Lm = np.empty((x.size, xi.size))
+    dxa = (dx**alpha / gamma(alpha)).reshape(-1, 1)
     A = np.linalg.pinv(vandermonde(xi))
 
     for n in range(1, p.size):
-        zn = (x[n] - x[:n]) / dx[:n]
+        j = np.arange(xi.size)
+        zn = ((x[n] - x[:n]) / dx[:n]).reshape(-1, 1)
+        B = betainc(1 + j, alpha, 1 / zn) * beta(1 + j, alpha)
 
-        for i in range(n):
-            for k in range(xi.size):
-                Lm[i, k] = 0.0
-                for j in range(xi.size):
-                    Lm[i, k] += (
-                        dxa[i]
-                        * A[k, j]
-                        * zn[i] ** (j + alpha)
-                        * betainc(1 + j, alpha, 1 / zn[i])
-                        * beta(1 + j, alpha)
-                    )
-
-        yield Lm[:n]
-
-        # # shape (n, q)
-        # B = betainc(1 + k, alpha, 1 / zn) * betainc(1 + k, alpha, 1)
-        # # shape (n,) * sum((q, q) @ (q, n) @ (n, q))
-        # Ln[:n] = dxa[:n] * np.sum(A @ (zn ** (k + alpha)) @ B, axis=1)
-
-        # yield Ln[:n]
+        # NOTE: in [Cardone2021] this is written as
+        #   dx^alpha / gamma(alpha) * sum(A_{jk} z^{j + alpha} B(1/z, 1 + j, alpha))
+        yield (dxa[:n] * (zn ** (j + alpha)) * B) @ A
 
 
 # }}}
