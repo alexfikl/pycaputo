@@ -76,7 +76,7 @@ def lagrange_riemann_liouville_integral(
 
     .. math::
 
-        I^\alpha[\phi_{kj}](x_n) = \frac{1}{\Gamma(\alpha)} \int_{0}^x_n
+        I^\alpha[\phi_{kj}](x_n) = \frac{1}{\Gamma(\alpha)} \int_{0}^{x_n}
             (x_n - s)^{\alpha - 1} \phi_{kj}(s) \,\mathrm{d}s.
 
     As the polynomials are zero except in the domain of definition, this simplifies
@@ -86,7 +86,7 @@ def lagrange_riemann_liouville_integral(
 
         I^\alpha[\phi_{kj}](x_n) = L^\alpha_{nkj} =
             \frac{1}{\Gamma(\alpha)}
-            int_{x_k}^{x_{k + 1}} (x_n - s)^{\alpha - 1} \phi_{kj}(s)
+            \int_{x_k}^{x_{k + 1}} (x_n - s)^{\alpha - 1} \phi_{kj}(s)
             \,\mathrm{d} s
 
     for :math:`k \in \{0, \dots, n - 1\}`. For every :math:`n`, this function
@@ -96,8 +96,7 @@ def lagrange_riemann_liouville_integral(
     :arg xi: reference nodes on the unit interval :math:`[0, 1]` in each element,
         that are used to construct the Lagrange polynomials.
 
-    :returns: the integrals :math:`L^{q, \alpha}_{nk}` for every subinterval
-        :math:`[x_k, x_{k + 1}]` for each :math:`x_n`.
+    :returns: the integrals :math:`L^{\alpha}_{n, \cdot}` for each :math:`x_n`.
     """
     from scipy.special import beta, betainc, gamma
 
@@ -136,7 +135,7 @@ def lagrange_caputo_derivative(
 
         D^{q, \alpha}_{nk} \triangleq
             \frac{1}{\Gamma(m - \alpha)}
-            int_{x_k}^{x_{k + 1}} (x_n - s)^{m - \alpha - 1}
+            \int_{x_k}^{x_{k + 1}} (x_n - s)^{m - \alpha - 1}
             \frac{\mathrm{d}^m}{\mathrm{d} s^m}
             \left(\prod_{i = 0}^p \frac{x - x_i}{x_j - x_i}\right)
             \,\mathrm{d} s

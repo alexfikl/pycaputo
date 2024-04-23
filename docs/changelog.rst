@@ -1,6 +1,17 @@
 Changelog
 =========
 
+pycaputo [unreleased] (TBD)
+---------------------------
+
+Features
+^^^^^^^^
+
+* Implement Riemann-Lioville quadrature based on high-order Lagrange polynomials
+  in :class:`~pycaputo.quadrature.RiemannLiouvilleSplineMethod`. These methods
+  require knowledge of the function :math:`f` being integrated, but can obtain
+  high order :math:`> 3`.
+
 pycaputo 0.5.0 (April 19, 2024)
 -------------------------------
 
