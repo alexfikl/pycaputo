@@ -38,7 +38,7 @@ derivatives and integrals. It offers functionality to (non-exhaustive)
 
 * Evaluate Caputo fractional-order derivatives of real orders.
 * Evaluate Riemann-Liouville fractional-order integrals of arbitrary real orders.
-* Solve single-term fractional-order ordinary differential equations.
+* Solve single-term systems of fractional-order ordinary differential equation.
 * Easily extend this functionality with new numerical methods.
 
 At the moment, performance is not an important focus, but fractional-order

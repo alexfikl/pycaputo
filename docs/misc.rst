@@ -11,11 +11,15 @@ Special Functions
 
 .. automodule:: pycaputo.mittagleffler
 
+Lagrange Polynomials
+--------------------
+
+.. automodule:: pycaputo.lagrange
+
 Jacobi Polynomials
 ------------------
 
 .. automodule:: pycaputo.jacobi
-
 
 Finite Difference Approximations
 --------------------------------
