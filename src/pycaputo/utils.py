@@ -285,14 +285,16 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
         *flatten([("", f"{eoc.estimated_order:.3f}") for eoc in eocs]),
     ))
 
-    expected = flatten([
-        ("", f"{eoc.order:.3f}") for eoc in eocs if eoc.order is not None
-    ])
-    if expected:
+    if any(eoc.order is not None for eoc in eocs):
+        expected = flatten([
+            (("", f"{eoc.order:.3f}") if eoc.order is not None else ("", "--"))
+            for eoc in eocs
+        ])
+
         lines.append(("Expected", *expected))
 
     widths = [max(len(line[i]) for line in lines) for i in range(ncolumns)]
-    formats = ["{:%s}" % w for w in widths]
+    formats = ["{:%s}" % w for w in widths]  # noqa: UP031
 
     return "\n".join([
         " | ".join(fmt.format(value) for fmt, value in zip(formats, line))

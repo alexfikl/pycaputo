@@ -16,7 +16,7 @@ def diff(
     p: Points,
     alpha: float,
     *,
-    method: DerivativeMethod | str | None = None,
+    method: DerivativeMethod | None = None,
 ) -> Array:
     """Compute the fractional-order derivative of *f* at the points *p*.
 
@@ -40,10 +40,6 @@ def diff(
             raise ValueError("Cannot provide both order 'alpha' and 'method'")
 
         m = method
-    elif isinstance(method, str):
-        if alpha is None:
-            raise ValueError("Order 'alpha' is required if 'method' is a string")
-        m = d.make_method_from_name(method, alpha)
     else:
         raise TypeError(f"'method' has unsupported type: {type(method).__name__!r}")
 
@@ -97,7 +93,7 @@ def grad(
     a: Array | None = None,
     alpha: float | None = None,
     *,
-    method: DerivativeMethod | str | None = None,
+    method: DerivativeMethod | None = None,
 ) -> Array:
     """Compute the fractional-order gradient of *f* at the points *p*.
 
@@ -137,11 +133,6 @@ def grad(
             raise ValueError("Cannot provide both order 'alpha' and 'method'")
 
         m = method
-    elif isinstance(method, str):
-        if alpha is None:
-            raise ValueError("Order 'alpha' is required if 'method' is a string")
-
-        m = d.make_method_from_name(method, alpha)
     else:
         raise TypeError(f"'method' has unsupported type: {type(method).__name__!r}")
 

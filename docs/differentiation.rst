@@ -34,7 +34,7 @@ We give here the skeleton for implementing a new custom
 First, all subclasses must be a :func:`~dataclasses.dataclass` as
 
 .. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 14-27
+    :lines: 14-24
     :language: python
     :linenos:
 
@@ -42,7 +42,7 @@ Then, we can implement the :func:`~pycaputo.differentiation.diff` method by
 registering it with the :func:`~functools.singledispatch` mechanism as
 
 .. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 30-37
+    :lines: 27-34
     :language: python
     :linenos:
 
@@ -55,3 +55,13 @@ API Reference
 .. autofunction:: pycaputo.diff
 
 .. automodule:: pycaputo.differentiation
+
+Caputo Derivative
+^^^^^^^^^^^^^^^^^
+
+.. automodule:: pycaputo.differentiation.caputo
+
+Riemann-Liouville Derivative
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pycaputo.differentiation.riemann_liouville

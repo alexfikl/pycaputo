@@ -7,13 +7,13 @@ import math
 from dataclasses import dataclass
 from functools import cached_property
 
-from pycaputo.derivatives import CaputoDerivative, RiemannLiouvilleDerivative
+from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ArrayOrScalarFunction
 
+from . import caputo
 from .base import DerivativeMethod, diff
-from .caputo import CaputoDerivativeMethod
 
 logger = get_logger(__name__)
 
@@ -23,18 +23,18 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
     """A method used to evaluate a
     :class:`~pycaputo.derivatives.RiemannLiouvilleDerivative`."""
 
-    d: RiemannLiouvilleDerivative
-    """A Riemann-Liouville derivative to discretize."""
+    alpha: float
+    """Order of the Riemann-Liouville derivative that is being discretized."""
 
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
-            if not isinstance(self.d, RiemannLiouvilleDerivative):
-                raise TypeError(
-                    "Expected a Riemann-Liouville derivative:"
-                    f" '{type(self.d).__name__}'"
-                )
+            if self.alpha < 0:
+                raise ValueError(f"Negative orders are not supported: {self.alpha}")
+
+    @property
+    def d(self) -> RiemannLiouvilleDerivative:
+        return RiemannLiouvilleDerivative(self.alpha, side=Side.Left)
 
 
 # {{{ RiemannLiouvilleFromCaputoDerivativeMethod
@@ -59,72 +59,47 @@ class RiemannLiouvilleFromCaputoDerivativeMethod(RiemannLiouvilleDerivativeMetho
     initial terms.
     """
 
-    d: RiemannLiouvilleDerivative
-    """A Riemann-Liouville derivative to discretize"""
-
     @property
-    def caputo(self) -> CaputoDerivativeMethod:
-        raise AttributeError
-
-    @property
-    def order(self) -> float:
-        return self.caputo.order
-
-    def supports(self, alpha: float) -> bool:
-        return self.caputo.supports(alpha)
+    def base(self) -> DerivativeMethod:
+        raise NotImplementedError
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleL1Method(RiemannLiouvilleFromCaputoDerivativeMethod):
-    r"""A discretization based on :class:`~pycaputo.differentiation.CaputoL1Method`.
-
-    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})` and supports
-    arbitrary grids.
+class L1(RiemannLiouvilleFromCaputoDerivativeMethod):
+    r"""A discretization based on the :class:`~pycaputo.differentiation.caputo.L1`
+    method.
     """
 
     @cached_property
-    def caputo(self) -> CaputoDerivativeMethod:
-        from .caputo import CaputoL1Method
-
-        d = CaputoDerivative(self.d.order, self.d.side)
-        return CaputoL1Method(d)
+    def base(self) -> DerivativeMethod:
+        return caputo.L1(self.d.order)
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleL2Method(RiemannLiouvilleFromCaputoDerivativeMethod):
-    r"""A discretization based on :class:`~pycaputo.differentiation.CaputoL2Method`.
-
-    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})` and supports
-    uniform grids.
+class L2(RiemannLiouvilleFromCaputoDerivativeMethod):
+    r"""A discretization based on the :class:`~pycaputo.differentiation.caputo.L2`
+    method.
     """
 
     @cached_property
-    def caputo(self) -> CaputoDerivativeMethod:
-        from .caputo import CaputoL2Method
-
-        d = CaputoDerivative(self.d.order, self.d.side)
-        return CaputoL2Method(d)
+    def base(self) -> DerivativeMethod:
+        return caputo.L2(self.d.order)
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleL2CMethod(RiemannLiouvilleFromCaputoDerivativeMethod):
-    r"""A discretization based on :class:`~pycaputo.differentiation.CaputoL2CMethod`.
-
-    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})` and supports
-    uniform grids.
+class L2C(RiemannLiouvilleFromCaputoDerivativeMethod):
+    r"""A discretization based on the :class:`~pycaputo.differentiation.caputo.L2C`
+    method.
     """
 
     @cached_property
-    def caputo(self) -> CaputoDerivativeMethod:
-        from .caputo import CaputoL2CMethod
-
-        d = CaputoDerivative(self.d.order, self.d.side)
-        return CaputoL2CMethod(d)
+    def base(self) -> DerivativeMethod:
+        return caputo.L2C(self.d.order)
 
 
-@diff.register(RiemannLiouvilleL1Method)
-@diff.register(RiemannLiouvilleL2Method)
-@diff.register(RiemannLiouvilleL2CMethod)
+@diff.register(L1)
+@diff.register(L2)
+@diff.register(L2C)
 def _diff_rl_from_caputo(
     m: RiemannLiouvilleFromCaputoDerivativeMethod,
     f: ArrayOrScalarFunction,
@@ -134,7 +109,7 @@ def _diff_rl_from_caputo(
     x = p.x
     fx = f(x) if callable(f) else f
 
-    df = diff(m.caputo, fx, p)
+    df = diff(m.base, fx, p)
     df[1:] += fx[0] / (x[1:] - x[0]) ** alpha / math.gamma(1 - alpha)
 
     if 0.0 < alpha <= 1.0:
@@ -156,7 +131,7 @@ def _diff_rl_from_caputo(
 
         df[1:] += dfx / (x[1:] - x[0]) ** (alpha - 1) / math.gamma(2 - alpha)
     else:
-        raise AssertionError
+        raise NotImplementedError(f"Unsupported derivative order: {alpha}")
 
     return df
 

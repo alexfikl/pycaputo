@@ -12,6 +12,17 @@ Features
   require knowledge of the function :math:`f` being integrated, but can obtain
   high order :math:`> 3`.
 
+Changes
+^^^^^^^
+
+* :mod:`pycaputo.differentiation` no longer exports all the underlying methods.
+  It is not required to do e.g. ``from pycaputo.differentiation.caputo import L1``.
+* All the methods in :mod:`pycaputo.differentiation` have been renamed without the
+  derivative type, e.g ``CaputoL1Method`` becomes simply ``L1``.
+* The methods in :mod:`pycaputo.differentiation` no longer provide an order. This
+  was not well-defined, since e.g. the L1 method has different orders depending
+  on the smoothness of the operand.
+
 pycaputo 0.5.0 (April 19, 2024)
 -------------------------------
 
@@ -113,7 +124,7 @@ Features
   standard 4th order method.
 * Implement differentiation methods for the Riemann-Liouville derivatives based
   on the Caputo derivative in
-  :class:`~pycaputo.differentiation.RiemannLiouvilleFromCaputoDerivativeMethod`.
+  :class:`~pycaputo.differentiation.riemann_liouville.RiemannLiouvilleFromCaputoDerivativeMethod`.
 * Support different fractional orders for FODE systems in
   :class:`~pycaputo.fode.caputo.ForwardEuler`,
   :class:`~pycaputo.fode.caputo.WeightedEuler` and others.

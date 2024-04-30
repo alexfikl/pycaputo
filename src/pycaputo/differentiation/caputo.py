@@ -9,7 +9,7 @@ from typing import Iterator
 
 import numpy as np
 
-from pycaputo.derivatives import CaputoDerivative
+from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import Points, UniformMidpoints, UniformPoints
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ArrayOrScalarFunction
@@ -23,44 +23,43 @@ logger = get_logger(__name__)
 class CaputoDerivativeMethod(DerivativeMethod):
     """A method used to evaluate a :class:`~pycaputo.derivatives.CaputoDerivative`."""
 
-    d: CaputoDerivative
-    """A Caputo derivative to discretize."""
+    alpha: float
+    """Order of the Caputo derivative that is being discretized."""
 
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
-            if not isinstance(self.d, CaputoDerivative):
-                raise TypeError(
-                    f"Expected a Caputo derivative: '{type(self.d).__name__}'"
-                )
+            if self.alpha < 0:
+                raise ValueError(f"Negative orders are not supported: {self.alpha}")
+
+    @property
+    def d(self) -> CaputoDerivative:
+        return CaputoDerivative(self.alpha, side=Side.Left)
 
 
 # {{{ Caputo L1 Method
 
 
 @dataclass(frozen=True)
-class CaputoL1Method(CaputoDerivativeMethod):
+class L1(CaputoDerivativeMethod):
     r"""Implements the L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
     This method is defined in Section 4.1.1 (II) from [Li2020]_ for general
-    non-uniform grids. Note that it cannot compute the derivative at the
-    starting point, i.e. :math:`D_C^\alpha[f](a)` is undefined.
-
-    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})` and supports
-    arbitrary grids.
+    non-uniform grids.
     """
 
-    @property
-    def order(self) -> float:
-        return 2 - self.d.order
+    if __debug__:
 
-    def supports(self, alpha: float) -> bool:
-        return 0 < alpha < 1
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if not 0 < self.alpha < 1:
+                raise ValueError(
+                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                )
 
 
-def _weights_l1(m: CaputoL1Method, p: Points) -> Iterator[Array]:
+def _weights_l1(m: L1, p: Points) -> Iterator[Array]:
     x, dx = p.x, p.dx
     alpha = m.d.order
     w0 = 1 / math.gamma(2 - alpha)
@@ -82,8 +81,8 @@ def _weights_l1(m: CaputoL1Method, p: Points) -> Iterator[Array]:
             yield w0 * w
 
 
-@diff.register(CaputoL1Method)
-def _diff_l1method(m: CaputoL1Method, f: ArrayOrScalarFunction, p: Points) -> Array:
+@diff.register(L1)
+def _diff_l1_method(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     dfx = np.diff(f(p.x) if callable(f) else f)
 
     df = np.empty(p.x.shape, dtype=dfx.dtype)
@@ -96,20 +95,25 @@ def _diff_l1method(m: CaputoL1Method, f: ArrayOrScalarFunction, p: Points) -> Ar
 
 
 @dataclass(frozen=True)
-class CaputoModifiedL1Method(CaputoL1Method):
+class ModifiedL1(CaputoDerivativeMethod):
     r"""Implements the modified L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
     This method is defined in Section 4.1.1 (III) from [Li2020]_ for quasi-uniform
-    grids. Note that it cannot compute the derivative at the starting point, i.e.
-    :math:`D_C^\alpha[f](a)` is undefined.
-
-    This method is of order :math:`\mathcal{O}(h^{2 - \alpha})` and requires
-    a special grid constructed by :func:`~pycaputo.grid.make_uniform_midpoints`.
+    grids. These grids can be constructed by :class:`~pycaputo.grid.UniformMidpoints`.
     """
 
+    if __debug__:
 
-def _weights_modified_l1(m: CaputoModifiedL1Method, p: Points) -> Iterator[Array]:
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if not 0 < self.alpha < 1:
+                raise ValueError(
+                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                )
+
+
+def _weights_modified_l1(m: ModifiedL1, p: Points) -> Iterator[Array]:
     if not isinstance(p, UniformMidpoints):
         raise NotImplementedError(
             f"'{type(m).__name__}' does not implement 'weights' for"
@@ -132,9 +136,9 @@ def _weights_modified_l1(m: CaputoModifiedL1Method, p: Points) -> Iterator[Array
         yield wc * w
 
 
-@diff.register(CaputoModifiedL1Method)
-def _diff_modified_l1method(
-    m: CaputoModifiedL1Method, f: ArrayOrScalarFunction, p: Points
+@diff.register(ModifiedL1)
+def _diff_modified_l1_method(
+    m: ModifiedL1, f: ArrayOrScalarFunction, p: Points
 ) -> Array:
     if not isinstance(p, UniformMidpoints):
         raise NotImplementedError(
@@ -160,32 +164,29 @@ def _diff_modified_l1method(
 
 
 @dataclass(frozen=True)
-class CaputoL2Method(CaputoDerivativeMethod):
+class L2(CaputoDerivativeMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
-    This method is defined in Section 4.1.2 from [Li2020]_. Note that
-    it cannot compute the derivative at the starting point, i.e.
-    :math:`D_C^\alpha[f](a)` is undefined.
-
-    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})` and supports
-    only uniform grids.
+    This method is defined in Section 4.1.2 from [Li2020]_ for uniform grids.
     """
 
-    @property
-    def order(self) -> float:
-        return 1
+    if __debug__:
 
-    def supports(self, alpha: float) -> bool:
-        return 1 < alpha < 2
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if not 1 < self.alpha < 2:
+                raise ValueError(
+                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                )
 
 
 def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
     return np.array((i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha))
 
 
-@diff.register(CaputoL2Method)
-def _diff_l2method(m: CaputoL2Method, f: ArrayOrScalarFunction, p: Points) -> Array:
+@diff.register(L2)
+def _diff_l2method(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
     fx = f(x) if callable(f) else f
@@ -227,27 +228,25 @@ def _diff_l2method(m: CaputoL2Method, f: ArrayOrScalarFunction, p: Points) -> Ar
 
 
 @dataclass(frozen=True)
-class CaputoL2CMethod(CaputoL2Method):
+class L2C(CaputoDerivativeMethod):
     r"""Implements the L2C method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
-    This method is defined in Section 4.1.2 from [Li2020]_. Note that
-    it cannot compute the derivative at the starting point, i.e.
-    :math:`D_C^\alpha[f](a)` is undefined.
-
-    This method is of order :math:`\mathcal{O}(h^{3 - \alpha})` and supports
-    only uniform grids.
+    This method is defined in Section 4.1.2 from [Li2020]_ on uniform grids.
     """
 
-    @property
-    def order(self) -> float:
-        return 3 - self.d.order
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if not 1 < self.alpha < 2:
+                raise ValueError(
+                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                )
 
 
-@diff.register(CaputoL2CMethod)
-def _diff_uniform_l2cmethod(
-    m: CaputoL2CMethod, f: ArrayOrScalarFunction, p: Points
-) -> Array:
+@diff.register(L2C)
+def _diff_uniform_l2cmethod(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
     fx = f(x) if callable(f) else f
@@ -285,7 +284,7 @@ def _diff_uniform_l2cmethod(
 
 
 @dataclass(frozen=True)
-class CaputoSpectralMethod(CaputoDerivativeMethod):
+class SpectralJacobi(CaputoDerivativeMethod):
     r"""Caputo derivative approximation using spectral methods based
     on Jacobi polynomials.
 
@@ -308,20 +307,9 @@ class CaputoSpectralMethod(CaputoDerivativeMethod):
     constructed by :func:`~pycaputo.grid.make_jacobi_gauss_lobatto_points`.
     """
 
-    @property
-    def name(self) -> str:
-        return "CSpec"
 
-    @property
-    def order(self) -> float:
-        return np.inf
-
-    def supports(self, alpha: float) -> bool:
-        return 0 < alpha < np.inf
-
-
-@diff.register(CaputoSpectralMethod)
-def _diff_jacobi(m: CaputoSpectralMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
+@diff.register(SpectralJacobi)
+def _diff_jacobi(m: SpectralJacobi, f: ArrayOrScalarFunction, p: Points) -> Array:
     from pycaputo.grid import JacobiGaussLobattoPoints
 
     if not isinstance(p, JacobiGaussLobattoPoints):

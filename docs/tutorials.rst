@@ -43,16 +43,16 @@ To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 follows
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 29-35
+    :lines: 29-32
     :lineno-match:
     :language: python
 
 These methods are described by the :class:`~pycaputo.derivatives.CaputoDerivative`
-and :class:`~pycaputo.differentiation.CaputoL1Method` classes.
+and :class:`~pycaputo.differentiation.caputo.L1` classes.
 We can then set up a grid and evaluate the derivative at all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 37-40
+    :lines: 34-40
     :lineno-match:
     :language: python
 

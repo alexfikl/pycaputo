@@ -7,8 +7,7 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.differentiation import diff
+from pycaputo.differentiation import diff, riemann_liouville
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, set_recommended_matplotlib
 
@@ -54,10 +53,10 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
-        ("RiemannLiouvilleL1Method", "stretch"),
-        ("RiemannLiouvilleL1Method", "uniform"),
-        ("RiemannLiouvilleL2Method", "uniform"),
-        ("RiemannLiouvilleL2CMethod", "uniform"),
+        ("L1", "stretch"),
+        ("L1", "uniform"),
+        ("L2", "uniform"),
+        ("L2C", "uniform"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -68,17 +67,27 @@ def test_riemann_liouville_lmethods(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.differentiation import make_method_from_name
     from pycaputo.grid import make_points_from_name
 
-    if name in {"RiemannLiouvilleL2Method", "RiemannLiouvilleL2CMethod"}:
+    if name in {"L2", "L2C"}:
         alpha += 1
+
+    meth: riemann_liouville.RiemannLiouvilleDerivativeMethod
+    if name == "L1":
+        meth = riemann_liouville.L1(alpha=alpha)
+        order = 2.0 - alpha
+    elif name == "L2":
+        meth = riemann_liouville.L2(alpha=alpha)
+        order = 1.0
+    elif name == "L2C":
+        meth = riemann_liouville.L2C(alpha=alpha)
+        order = 3.0 - alpha
+    else:
+        raise ValueError(f"Unsupported method: {name}")
 
     from pycaputo.utils import EOCRecorder, savefig
 
-    d = RiemannLiouvilleDerivative(alpha, Side.Left)
-    meth = make_method_from_name(name, d)
-    eoc = EOCRecorder(order=meth.order)
+    eoc = EOCRecorder(order=order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -114,8 +123,7 @@ def test_riemann_liouville_lmethods(
 
     # FIXME: the L2 methods do not behave as expected, but they're doing better
     # so maybe shouldn't complain too much
-    assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 1.5
+    assert order - 0.25 < eoc.estimated_order < order + 1.5
 
 
 # }}}

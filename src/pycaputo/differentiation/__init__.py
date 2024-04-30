@@ -3,50 +3,9 @@
 
 from __future__ import annotations
 
-from pycaputo.derivatives import CaputoDerivative, FractionalOperator, Side
+from pycaputo.derivatives import FractionalOperator, Side
 from pycaputo.differentiation.base import DerivativeMethod, diff
-from pycaputo.differentiation.caputo import (
-    CaputoDerivativeMethod,
-    CaputoL1Method,
-    CaputoL2CMethod,
-    CaputoL2Method,
-    CaputoModifiedL1Method,
-    CaputoSpectralMethod,
-)
-from pycaputo.differentiation.riemann_liouville import (
-    RiemannLiouvilleDerivativeMethod,
-    RiemannLiouvilleFromCaputoDerivativeMethod,
-    RiemannLiouvilleL1Method,
-    RiemannLiouvilleL2CMethod,
-    RiemannLiouvilleL2Method,
-)
 from pycaputo.grid import Points
-
-
-def make_method_from_name(
-    name: str,
-    d: float | FractionalOperator,
-) -> DerivativeMethod:
-    """Instantiate a :class:`DerivativeMethod` given the name *name*.
-
-    :arg d: a fractional operator that should be discretized by the method. If
-        the method does not support this operator, it can fail.
-    """
-
-    methods: dict[str, type[DerivativeMethod]] = {
-        cls.__name__: cls for cls in diff.registry
-    }
-    if name not in methods:
-        raise ValueError(
-            "Unknown differentiation method '{}'. Known methods are '{}'".format(
-                name, "', '".join(methods)
-            )
-        )
-
-    if not isinstance(d, FractionalOperator):
-        d = CaputoDerivative(order=d, side=Side.Left)
-
-    return methods[name](d)
 
 
 def guess_method_for_order(
@@ -59,28 +18,36 @@ def guess_method_for_order(
     Note that in general not all methods support arbitrary sets of points or
     arbitrary orders, so specialized methods must be chosen. This function is
     mean to make a reasonable guess at a high-order method. If other properties
-    are required (e.g. stability), then a manual choice is better, perhaps
-    using :func:`make_method_from_name`.
+    are required (e.g. stability), then a manual choice is better.
 
     :arg p: a set of points on which to evaluate the fractional operator.
-    :arg d: a fractional operator to discretize.
+    :arg d: a fractional operator to discretize. If only a float is given, the
+        common Caputo derivative is used.
     """
-    from pycaputo.grid import JacobiGaussLobattoPoints, UniformMidpoints, UniformPoints
+    from pycaputo import grid
+    from pycaputo.derivatives import CaputoDerivative, RiemannLiouvilleDerivative
+    from pycaputo.differentiation import caputo
+    from pycaputo.differentiation import riemann_liouville as rl
 
     m: DerivativeMethod | None = None
     if not isinstance(d, FractionalOperator):
         d = CaputoDerivative(order=d, side=Side.Left)
 
     if isinstance(d, CaputoDerivative):
-        if isinstance(p, JacobiGaussLobattoPoints):
-            m = CaputoSpectralMethod(d)
+        if isinstance(p, grid.JacobiGaussLobattoPoints):
+            m = caputo.SpectralJacobi(d.order)
         elif 0 < d.order < 1:
-            if isinstance(p, UniformMidpoints):
-                m = CaputoModifiedL1Method(d)
+            if isinstance(p, grid.UniformMidpoints):
+                m = caputo.ModifiedL1(d.order)
             else:
-                m = CaputoL1Method(d)
-        elif 1 < d.order < 2 and isinstance(p, UniformPoints):
-            m = CaputoL2CMethod(d)
+                m = caputo.L1(d.order)
+        elif 1 < d.order < 2 and isinstance(p, grid.UniformPoints):
+            m = caputo.L2C(d.order)
+    elif isinstance(d, RiemannLiouvilleDerivative):
+        if 0 < d.order < 1:
+            m = rl.L1(d.order)
+        elif 1 < d.order < 2 and isinstance(p, grid.UniformPoints):
+            m = rl.L2C(d.order)
 
     if m is None:
         raise ValueError(
@@ -93,19 +60,7 @@ def guess_method_for_order(
 
 
 __all__ = (
-    "CaputoDerivativeMethod",
-    "CaputoL1Method",
-    "CaputoL2CMethod",
-    "CaputoL2Method",
-    "CaputoModifiedL1Method",
-    "CaputoSpectralMethod",
     "DerivativeMethod",
-    "RiemannLiouvilleDerivativeMethod",
-    "RiemannLiouvilleFromCaputoDerivativeMethod",
-    "RiemannLiouvilleL1Method",
-    "RiemannLiouvilleL2CMethod",
-    "RiemannLiouvilleL2Method",
     "diff",
     "guess_method_for_order",
-    "make_method_from_name",
 )

@@ -8,6 +8,7 @@ import numpy.linalg as la
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
+from pycaputo.differentiation import caputo, diff
 from pycaputo.utils import Array
 
 
@@ -31,24 +32,34 @@ def func_der_ref(x: Array, *, alpha: float) -> Array:
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
-        ("CaputoL1", "stretch"),
-        ("CaputoL1", "uniform"),
-        ("CaputoL2", "uniform"),
-        ("CaputoL2C", "uniform"),
-        ("CaputoModifiedL1", "midpoints"),
+        ("L1", "stretch"),
+        ("L1", "uniform"),
+        ("L2", "uniform"),
+        ("L2C", "uniform"),
+        ("ModifiedL1", "midpoints"),
     ],
 )
 def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkFixture) -> None:
-    from pycaputo.differentiation import diff, make_method_from_name
     from pycaputo.grid import make_points_from_name
 
     alpha = 0.9
     n = 1024
 
-    if name in {"CaputoL2", "CaputoL2C"}:
+    if name in {"L2", "L2C"}:
         alpha += 1
 
-    meth = make_method_from_name(f"{name}Method", alpha)
+    meth: caputo.CaputoDerivativeMethod
+    if name == "L1":
+        meth = caputo.L1(alpha=alpha)
+    elif name == "ModifiedL1":
+        meth = caputo.ModifiedL1(alpha=alpha)
+    elif name == "L2":
+        meth = caputo.L2(alpha=alpha)
+    elif name == "L2C":
+        meth = caputo.L2C(alpha=alpha)
+    else:
+        raise ValueError(f"Unsupported method: {name}")
+
     p = make_points_from_name(grid_type, n, a=0.0, b=1.0)
 
     f_test = func(p.x, alpha=alpha)

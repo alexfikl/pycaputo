@@ -26,20 +26,20 @@ def df(x: Array, alpha: float) -> Array:
     )
 
 
-from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.differentiation.caputo import L1
 
-d = CaputoDerivative(order=0.9, side=Side.Left)
-
-from pycaputo.differentiation import CaputoL1Method, diff
-
-method = CaputoL1Method(d)
+alpha = 0.9
+method = L1(alpha=alpha)
 
 from pycaputo.grid import make_uniform_points
 
 p = make_uniform_points(256, a=0.0, b=1.0)
+
+from pycaputo.differentiation import diff
+
 df_num = diff(method, f, p)
 
-df_ref = df(p.x, d.order)
+df_ref = df(p.x, alpha)
 logger.info(
     "Relative error: %.12e",
     np.linalg.norm(df_num[1:] - df_ref[1:]) / np.linalg.norm(df_ref[1:]),

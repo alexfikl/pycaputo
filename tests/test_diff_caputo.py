@@ -10,7 +10,7 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo.differentiation import CaputoDerivativeMethod, diff
+from pycaputo.differentiation import caputo, diff
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, ScalarFunction, set_recommended_matplotlib
@@ -54,11 +54,11 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
-        ("CaputoL1Method", "stretch"),
-        ("CaputoL1Method", "uniform"),
-        ("CaputoModifiedL1Method", "midpoints"),
-        ("CaputoL2CMethod", "uniform"),
-        ("CaputoL2Method", "uniform"),
+        ("L1", "stretch"),
+        ("L1", "uniform"),
+        ("L2", "uniform"),
+        ("L2C", "uniform"),
+        ("ModifiedL1", "midpoints"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -69,16 +69,31 @@ def test_caputo_lmethods(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.differentiation import make_method_from_name
     from pycaputo.grid import make_points_from_name
 
-    if name in {"CaputoL2Method", "CaputoL2CMethod"}:
+    if name in {"L2", "L2C"}:
         alpha += 1
 
-    from pycaputo.utils import EOCRecorder, savefig
+    from pycaputo.utils import EOCRecorder, savefig, stringify_eoc
 
-    meth = make_method_from_name(name, alpha)
-    eoc = EOCRecorder(order=meth.order)
+    meth: caputo.CaputoDerivativeMethod
+    if name == "L1":
+        meth = caputo.L1(alpha=alpha)
+        order = 2.0 - alpha
+    elif name == "ModifiedL1":
+        meth = caputo.ModifiedL1(alpha=alpha)
+        order = 2 - alpha
+    elif name == "L2":
+        meth = caputo.L2(alpha=alpha)
+        # FIXME: this is wrong
+        order = 1.0
+    elif name == "L2C":
+        meth = caputo.L2C(alpha=alpha)
+        order = 3.0 - alpha
+    else:
+        raise ValueError(f"Unsupported method: {name}")
+
+    eoc = EOCRecorder(order=order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -100,7 +115,7 @@ def test_caputo_lmethods(
             ax.plot(p.x[1:], df_num[1:])
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
-    logger.info("\n%s", eoc)
+    logger.info("\n%s", stringify_eoc(eoc))
 
     if visualize:
         ax.plot(p.x[1:], df_ref[1:], "k--")
@@ -111,8 +126,7 @@ def test_caputo_lmethods(
         filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
-    assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 0.25
+    assert order - 0.25 < eoc.estimated_order < order + 0.25
 
 
 # }}}
@@ -140,16 +154,11 @@ def test_caputo_spectral(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.derivatives import CaputoDerivative, Side
-    from pycaputo.differentiation import CaputoSpectralMethod
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
-
-    d = CaputoDerivative(alpha, side=Side.Left)
-    meth = CaputoSpectralMethod(d)
-
     from pycaputo.utils import EOCRecorder, savefig
 
-    eoc = EOCRecorder(order=meth.order)
+    meth = caputo.SpectralJacobi(alpha=alpha)
+    eoc = EOCRecorder()
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -198,16 +207,12 @@ def test_caputo_spectral(
 
 
 @dataclass(frozen=True)
-class DifferIntCaputoL1Method(CaputoDerivativeMethod):
-    @property
-    def order(self) -> float:
-        return 2 - self.d.order
+class DifferIntCaputoL1(caputo.CaputoDerivativeMethod):
+    pass
 
 
-@diff.register(DifferIntCaputoL1Method)
-def _diff_differint_l1(
-    m: DifferIntCaputoL1Method, f: ScalarFunction, p: Points
-) -> Array:
+@diff.register(DifferIntCaputoL1)
+def _diff_differint_l1(m: DifferIntCaputoL1, f: ScalarFunction, p: Points) -> Array:
     from differint.differint import CaputoL1point
 
     df = np.empty_like(p.x)
@@ -226,16 +231,12 @@ def _diff_differint_l1(
 
 
 @dataclass(frozen=True)
-class DifferIntCaputoL2Method(CaputoDerivativeMethod):
-    @property
-    def order(self) -> float:
-        return 3 - self.d.order
+class DifferIntCaputoL2(caputo.CaputoDerivativeMethod):
+    pass
 
 
-@diff.register(DifferIntCaputoL2Method)
-def _diff_differint_l2(
-    m: DifferIntCaputoL2Method, f: ScalarFunction, p: Points
-) -> Array:
+@diff.register(DifferIntCaputoL2)
+def _diff_differint_l2(m: DifferIntCaputoL2, f: ScalarFunction, p: Points) -> Array:
     from differint.differint import CaputoL2point
 
     df = np.empty_like(p.x)
@@ -254,16 +255,12 @@ def _diff_differint_l2(
 
 
 @dataclass(frozen=True)
-class DifferIntCaputoL2CMethod(CaputoDerivativeMethod):
-    @property
-    def order(self) -> float:
-        return 3 - self.d.order
+class DifferIntCaputoL2C(caputo.CaputoDerivativeMethod):
+    pass
 
 
-@diff.register(DifferIntCaputoL2CMethod)
-def _diff_differint_l2c(
-    m: DifferIntCaputoL2CMethod, f: ScalarFunction, p: Points
-) -> Array:
+@diff.register(DifferIntCaputoL2C)
+def _diff_differint_l2c(m: DifferIntCaputoL2C, f: ScalarFunction, p: Points) -> Array:
     from differint.differint import CaputoL2Cpoint
 
     df = np.empty_like(p.x)
@@ -282,33 +279,30 @@ def _diff_differint_l2c(
 
 
 @pytest.mark.xfail()
-@pytest.mark.parametrize(
-    ("name", "cls"),
-    [
-        ("CaputoL1Method", DifferIntCaputoL1Method),
-        ("CaputoL2Method", DifferIntCaputoL2Method),
-        ("CaputoL2CMethod", DifferIntCaputoL2CMethod),
-    ],
-)
+@pytest.mark.parametrize("name", ["L1", "L2", "L2C"])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
 def test_caputo_vs_differint(
     name: str,
-    cls: type[CaputoDerivativeMethod],
     alpha: float,
     *,
     visualize: bool = False,
 ) -> None:
     pytest.importorskip("differint")
 
-    from pycaputo.differentiation import CaputoDerivativeMethod, make_method_from_name
-
-    if name in {"CaputoL2Method", "CaputoL2CMethod"}:
+    if name in {"L2", "L2C"}:
         alpha += 1
 
-    meth = make_method_from_name(name, alpha)
-    assert isinstance(meth, CaputoDerivativeMethod)
-
-    differint_meth = cls(d=meth.d)
+    if name == "L1":
+        meth: caputo.CaputoDerivativeMethod = caputo.L1(alpha=alpha)
+        differint_meth: caputo.CaputoDerivativeMethod = DifferIntCaputoL1(alpha=alpha)
+    elif name == "L2":
+        meth = caputo.L2(alpha=alpha)
+        differint_meth = DifferIntCaputoL2(alpha=alpha)
+    elif name == "L2C":
+        meth = caputo.L2C(alpha=alpha)
+        differint_meth = DifferIntCaputoL2C(alpha=alpha)
+    else:
+        raise ValueError(f"Unknown method: '{name}'")
 
     from pycaputo.grid import make_points_from_name
 
