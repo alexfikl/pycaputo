@@ -164,7 +164,7 @@ class CaputoHadamardDerivative(FractionalOperator):
     """
 
     alpha: float
-    """Order of the Grünwald-Letnikov derivative."""
+    """Order of the Caputo-Hadamard derivative."""
 
     side: Side
     """Side on which to compute the derivative."""
