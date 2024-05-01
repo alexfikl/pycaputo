@@ -18,8 +18,7 @@ def guess_method_for_order(
     Note that in general not all methods support arbitrary sets of points or
     arbitrary orders, so specialized methods must be chosen. This function is
     mean to make a reasonable guess at a high-order method. If other properties
-    are required (e.g. stability), then a manual choice is better, perhaps
-    using :func:`make_method_from_name`.
+    are required (e.g. stability), then a manual choice is better.
 
     :arg p: a set of points on which to evaluate the fractional operator.
     :arg d: a fractional operator to discretize.

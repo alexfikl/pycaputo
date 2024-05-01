@@ -8,13 +8,16 @@ Features
 ^^^^^^^^
 
 * Implement Riemann-Lioville quadrature based on high-order Lagrange polynomials
-  in :class:`~pycaputo.quadrature.RiemannLiouvilleSplineMethod`. These methods
+  in :class:`~pycaputo.quadrature.riemann_liouville.SplineLagrange`. These methods
   require knowledge of the function :math:`f` being integrated, but can obtain
   high order :math:`> 3`.
 
 Changes
 ^^^^^^^
 
+* The base :class:`~pycaputo.derivatives.FractionalOperator` no longer defines
+  an ``order`` attribute. This does not make sense for more complex operators
+  with multiple parameters.
 * :mod:`pycaputo.differentiation` no longer exports all the underlying methods.
   It is not required to do e.g. ``from pycaputo.differentiation.caputo import L1``.
 * All the methods in :mod:`pycaputo.differentiation` have been renamed without the
@@ -22,9 +25,8 @@ Changes
 * The methods in :mod:`pycaputo.differentiation` no longer provide an order. This
   was not well-defined, since e.g. the L1 method has different orders depending
   on the smoothness of the operand.
-* The base :class:`~pycaputo.derivatives.FractionalOperator` no longer defines
-  an ``order`` attribute. This does not make sense for more complex operators
-  with multiple parameters.
+* The :mod:`pycaputo.quadrature` module went through similar changes to the
+  differentiation one.
 
 pycaputo 0.5.0 (April 19, 2024)
 -------------------------------
@@ -121,9 +123,9 @@ Features
   for :class:`~pycaputo.fode.caputo.PECE` from [Garrappa2010]_.
 * Added a modified PECE method from [Garrappa2010]_ in the form of
   :class:`~pycaputo.fode.caputo.ModifiedPECE`.
-* Implement :class:`~pycaputo.quadrature.RiemannLiouvilleSimpsonMethod`, a
+* Implement :class:`~pycaputo.quadrature.riemann_liouville.Simpson`, a
   standard 3rd order method.
-* Implement :class:`~pycaputo.quadrature.RiemannLiouvilleCubicHermiteMethod`, a
+* Implement :class:`~pycaputo.quadrature.riemann_liouville.CubicHermite`, a
   standard 4th order method.
 * Implement differentiation methods for the Riemann-Liouville derivatives based
   on the Caputo derivative in
@@ -137,7 +139,7 @@ Features
 Fixes
 ^^^^^
 
-* Fix :class:`~pycaputo.quadrature.RiemannLiouvilleTrapezoidalMethod` on
+* Fix :class:`~pycaputo.quadrature.riemann_liouville.Trapezoidal` on
   uniform grids (:ghissue:`3`).
 * Fix Jacobian construction for :class:`~pycaputo.fode.caputo.WeightedEuler`
   which gave incorrect results for systems of equations (:ghissue:`11`).
