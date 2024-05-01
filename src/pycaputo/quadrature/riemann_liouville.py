@@ -67,7 +67,7 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     @property
     def order(self) -> float:
         if self.theta == 0.5:
-            return min(2.0, 1.0 - self.d.order)
+            return min(2.0, 1.0 - self.d.alpha)
 
         return 1.0
 
@@ -80,7 +80,7 @@ def _quad_rl_rect(
 ) -> Array:
     x = p.x
     fx = f(x) if callable(f) else f
-    alpha = -m.d.order
+    alpha = -m.d.alpha
     w0 = 1 / math.gamma(1 + alpha)
 
     fc = m.theta * fx[:-1] + (1 - m.theta) * fx[1:]
@@ -133,7 +133,7 @@ def _quad_rl_trap(
 
     x = p.x
     fx = f(x) if callable(f) else f
-    alpha = -m.d.order
+    alpha = -m.d.alpha
     w0 = 1 / math.gamma(2 + alpha)
 
     # compute integral
@@ -212,7 +212,7 @@ def _quad_rl_simpson(
     fx = f(p.x)
     fm = f(p.xm)
 
-    alpha = -m.d.order
+    alpha = -m.d.alpha
     w0 = p.dx[0] ** alpha / math.gamma(3 + alpha)
     indices = np.arange(fx.size)
 
@@ -308,7 +308,7 @@ def _quad_rl_cubic_hermite(
     fx = f(p.x, d=0)
     fp = f(p.x, d=1)
 
-    alpha = -m.d.order
+    alpha = -m.d.alpha
     h = p.dx[0]
     w0 = h**alpha / math.gamma(4 + alpha)
     indices = np.arange(fx.size)
@@ -409,7 +409,7 @@ def _quad_rl_spec(
     fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)
-    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, -m.d.order)):
+    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, -m.d.alpha)):
         df += fhat[n] * Phat
 
     return df
@@ -463,7 +463,7 @@ class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
         # FIXME: the tests weirdly pass with this
         npoints = min(self.npoints, 4)
 
-        return npoints + min(npoints, -self.d.order) - 1.0
+        return npoints + min(npoints, -self.d.alpha) - 1.0
 
     @cached_property
     def xi(self) -> Array:
@@ -489,7 +489,7 @@ def _quad_rl_spline(
     from pycaputo.lagrange import lagrange_riemann_liouville_integral
 
     xi = m.xi
-    alpha = -m.d.order
+    alpha = -m.d.alpha
 
     if not callable(f):
         raise TypeError(
@@ -593,7 +593,7 @@ def _quad_rl_conv(
     )
 
     fx = f(p.x) if callable(f) else f
-    alpha = -m.d.order
+    alpha = -m.d.alpha
     dxa = p.dx[0] ** alpha
 
     qf = np.empty_like(fx)

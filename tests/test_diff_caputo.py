@@ -220,7 +220,7 @@ def _diff_differint_l1(m: DifferIntCaputoL1, f: ScalarFunction, p: Points) -> Ar
 
     for n in range(1, df.size):
         df[n] = CaputoL1point(
-            m.d.order,
+            m.alpha,
             f,
             domain_start=p.a,
             domain_end=p.x[n],
@@ -244,7 +244,7 @@ def _diff_differint_l2(m: DifferIntCaputoL2, f: ScalarFunction, p: Points) -> Ar
 
     for n in range(1, df.size):
         df[n] = CaputoL2point(
-            m.d.order,
+            m.alpha,
             f,
             domain_start=p.a,
             domain_end=p.x[n],
@@ -268,7 +268,7 @@ def _diff_differint_l2c(m: DifferIntCaputoL2C, f: ScalarFunction, p: Points) -> 
 
     for n in range(2, df.size - 1):
         df[n] = CaputoL2Cpoint(
-            m.d.order,
+            m.alpha,
             f,
             domain_start=p.a,
             domain_end=p.x[n],

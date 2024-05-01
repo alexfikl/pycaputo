@@ -31,29 +31,28 @@ def guess_method_for_order(
 
     m: DerivativeMethod | None = None
     if not isinstance(d, FractionalOperator):
-        d = CaputoDerivative(order=d, side=Side.Left)
+        d = CaputoDerivative(alpha=d, side=Side.Left)
 
     if isinstance(d, CaputoDerivative):
         if isinstance(p, grid.JacobiGaussLobattoPoints):
-            m = caputo.SpectralJacobi(d.order)
-        elif 0 < d.order < 1:
+            m = caputo.SpectralJacobi(d.alpha)
+        elif 0 < d.alpha < 1:
             if isinstance(p, grid.UniformMidpoints):
-                m = caputo.ModifiedL1(d.order)
+                m = caputo.ModifiedL1(d.alpha)
             else:
-                m = caputo.L1(d.order)
-        elif 1 < d.order < 2 and isinstance(p, grid.UniformPoints):
-            m = caputo.L2C(d.order)
+                m = caputo.L1(d.alpha)
+        elif 1 < d.alpha < 2 and isinstance(p, grid.UniformPoints):
+            m = caputo.L2C(d.alpha)
     elif isinstance(d, RiemannLiouvilleDerivative):
-        if 0 < d.order < 1:
-            m = rl.L1(d.order)
-        elif 1 < d.order < 2 and isinstance(p, grid.UniformPoints):
-            m = rl.L2C(d.order)
+        if 0 < d.alpha < 1:
+            m = rl.L1(d.alpha)
+        elif 1 < d.alpha < 2 and isinstance(p, grid.UniformPoints):
+            m = rl.L2C(d.alpha)
 
     if m is None:
         raise ValueError(
-            "Cannot determine an adequate method for the "
-            f"'{type(d).__name__}' of order '{d.order}' and points of type "
-            f"'{type(p).__name__}'."
+            "Cannot determine an adequate method for operator "
+            f"'{d!r}' and points of type '{type(p).__name__}'."
         )
 
     return m

@@ -43,7 +43,7 @@ def make_rl_conv_factory(order: int) -> Callable[[float], QuadratureMethod]:
     from pycaputo.quadrature import RiemannLiouvilleConvolutionMethod
 
     def wrapper(alpha: float) -> RiemannLiouvilleConvolutionMethod:
-        d = RiemannLiouvilleDerivative(order=alpha, side=Side.Left)
+        d = RiemannLiouvilleDerivative(alpha=alpha, side=Side.Left)
         return RiemannLiouvilleConvolutionMethod(d=d, quad_order=order, beta=np.inf)
 
     return wrapper
@@ -154,7 +154,7 @@ def test_riemann_liouville_quad_spectral(
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.quadrature import RiemannLiouvilleSpectralMethod, quad
 
-    d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
+    d = RiemannLiouvilleDerivative(alpha=-alpha, side=Side.Left)
     meth = RiemannLiouvilleSpectralMethod(d=d)
 
     from pycaputo.utils import EOCRecorder, savefig
@@ -220,7 +220,7 @@ def test_riemann_liouville_spline(
     from pycaputo.grid import make_uniform_points
     from pycaputo.quadrature import RiemannLiouvilleSplineMethod, quad
 
-    d = RiemannLiouvilleDerivative(order=-alpha, side=Side.Left)
+    d = RiemannLiouvilleDerivative(alpha=-alpha, side=Side.Left)
     meth = RiemannLiouvilleSplineMethod(d=d, npoints=npoints)
 
     from pycaputo.utils import EOCRecorder, savefig

@@ -72,7 +72,7 @@ class L1(RiemannLiouvilleFromCaputoDerivativeMethod):
 
     @cached_property
     def base(self) -> DerivativeMethod:
-        return caputo.L1(self.d.order)
+        return caputo.L1(self.d.alpha)
 
 
 @dataclass(frozen=True)
@@ -83,7 +83,7 @@ class L2(RiemannLiouvilleFromCaputoDerivativeMethod):
 
     @cached_property
     def base(self) -> DerivativeMethod:
-        return caputo.L2(self.d.order)
+        return caputo.L2(self.d.alpha)
 
 
 @dataclass(frozen=True)
@@ -94,7 +94,7 @@ class L2C(RiemannLiouvilleFromCaputoDerivativeMethod):
 
     @cached_property
     def base(self) -> DerivativeMethod:
-        return caputo.L2C(self.d.order)
+        return caputo.L2C(self.alpha)
 
 
 @diff.register(L1)
@@ -105,7 +105,7 @@ def _diff_rl_from_caputo(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
-    alpha = m.d.order
+    alpha = m.alpha
     x = p.x
     fx = f(x) if callable(f) else f
 

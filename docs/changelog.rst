@@ -22,6 +22,9 @@ Changes
 * The methods in :mod:`pycaputo.differentiation` no longer provide an order. This
   was not well-defined, since e.g. the L1 method has different orders depending
   on the smoothness of the operand.
+* The base :class:`~pycaputo.derivatives.FractionalOperator` no longer defines
+  an ``order`` attribute. This does not make sense for more complex operators
+  with multiple parameters.
 
 pycaputo 0.5.0 (April 19, 2024)
 -------------------------------

@@ -39,7 +39,7 @@ def make_method_from_name(
         )
 
     if not isinstance(d, FractionalOperator):
-        d = RiemannLiouvilleDerivative(order=d, side=Side.Left)
+        d = RiemannLiouvilleDerivative(alpha=d, side=Side.Left)
 
     return methods[name](d)
 
@@ -63,7 +63,7 @@ def guess_method_for_order(
     from pycaputo.grid import JacobiGaussLobattoPoints
 
     if not isinstance(d, FractionalOperator):
-        d = RiemannLiouvilleDerivative(order=d, side=Side.Left)
+        d = RiemannLiouvilleDerivative(alpha=d, side=Side.Left)
 
     m: QuadratureMethod | None = None
 
@@ -76,8 +76,7 @@ def guess_method_for_order(
     if m is None:
         raise ValueError(
             "Cannot determine an adequate method for the "
-            f"'{type(d).__name__}' of order '{d.order}' and points of type "
-            f"'{type(p).__name__}'."
+            f"'{type(d).__name__}' and points of type '{type(p).__name__}'."
         )
 
     return m

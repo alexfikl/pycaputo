@@ -61,7 +61,7 @@ class CaputoProductIntegrationMethod(ProductIntegrationMethod[StateFunctionT]):
     @cached_property
     def d(self) -> tuple[CaputoDerivative, ...]:
         return tuple([
-            CaputoDerivative(order=alpha, side=Side.Left)
+            CaputoDerivative(alpha=alpha, side=Side.Left)
             for alpha in self.derivative_order
         ])
 

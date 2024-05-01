@@ -22,10 +22,7 @@ class QuadratureMethod(ABC):
     if __debug__:
 
         def __post_init__(self) -> None:
-            if self.d.order >= 0:
-                raise ValueError(
-                    f"Integral requires a negative order: order is '{self.d.order}'"
-                )
+            pass
 
     @property
     @abstractmethod

@@ -61,7 +61,7 @@ class L1(CaputoDerivativeMethod):
 
 def _weights_l1(m: L1, p: Points) -> Iterator[Array]:
     x, dx = p.x, p.dx
-    alpha = m.d.order
+    alpha = m.alpha
     w0 = 1 / math.gamma(2 - alpha)
 
     # NOTE: weights given in [Li2020] Equation 4.20
@@ -122,7 +122,7 @@ def _weights_modified_l1(m: ModifiedL1, p: Points) -> Iterator[Array]:
 
     # NOTE: weights from [Li2020] Equation 4.51
     # FIXME: this does not use the formula from the book; any benefit to it?
-    alpha = m.d.order
+    alpha = m.alpha
     wc = 1 / math.gamma(2 - alpha) / p.dx[-1] ** alpha
     k = np.arange(p.x.size)
 
@@ -186,12 +186,12 @@ def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
 
 
 @diff.register(L2)
-def _diff_l2method(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
+def _diff_l2_method(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
     fx = f(x) if callable(f) else f
 
-    alpha = m.d.order
+    alpha = m.alpha
     w0 = 1 / math.gamma(3 - alpha)
 
     # NOTE: [Li2020] Section 4.2
@@ -246,12 +246,12 @@ class L2C(CaputoDerivativeMethod):
 
 
 @diff.register(L2C)
-def _diff_uniform_l2cmethod(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
+def _diff_l2c_method(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
     fx = f(x) if callable(f) else f
 
-    alpha = m.d.order
+    alpha = m.alpha
     w0 = 1 / math.gamma(3 - alpha)
 
     # NOTE: [Li2020] Section 4.2
@@ -324,7 +324,7 @@ def _diff_jacobi(m: SpectralJacobi, f: ArrayOrScalarFunction, p: Points) -> Arra
     fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)
-    for n, Dhat in jacobi_caputo_derivative(p, m.d.order):
+    for n, Dhat in jacobi_caputo_derivative(p, m.alpha):
         df += fhat[n] * Dhat
 
     return df

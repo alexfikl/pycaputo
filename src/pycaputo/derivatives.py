@@ -19,7 +19,7 @@ class Side(enum.Enum):
 
 @dataclass(frozen=True)
 class FractionalOperator:
-    """Generic type of a fractional order operator.
+    r"""Generic type of a fractional order operator.
 
     Subclasses can define any form of a fractional order derivative or integral.
     This includes classic derivatives, such as the Riemann-Liouville derivative,
@@ -28,16 +28,6 @@ class FractionalOperator:
 
     For a recent review of these operators see [SalesTeodoro2019]_.
     """
-
-    order: float
-    r"""Order of the fractional operator, as a real number
-    :math:`\alpha \in \mathbb{R}`. A positive number would denote a derivative,
-    while a negative number would denote a fractional integral, as supported.
-    """
-
-    @property
-    def n(self) -> int:
-        raise NotImplementedError
 
 
 @dataclass(frozen=True)
@@ -52,21 +42,24 @@ class RiemannLiouvilleDerivative(FractionalOperator):
 
         D_{RL}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
             \frac{\mathrm{d}^n}{\mathrm{d} x^n} \int_a^x
-            \frac{f(s)}{(x - s)^{\alpha + 1 - n}} \,\mathrm{d}s,
+            \frac{f(s)}{(x - s)^{\alpha - n + 1}} \,\mathrm{d}s,
 
     while the upper Riemann-Liouville fractional derivative is integrated on
     :math:`[x, b]` with a factor of :math:`(-1)^n`.
     """
+
+    alpha: float
+    """Order of the Riemann-Liouville derivative."""
 
     side: Side
     """Side on which to compute the derivative."""
 
     @property
     def n(self) -> int:
-        r"""Integer part of the :attr:`~FractionalOperator.order`, i.e.
-        :math:`n - 1 \le \text{order} < n`.
+        r"""Integer part of the :attr:`~RiemannLiouvilleDerivative.alpha`, i.e.
+        :math:`n - 1 \le \alpha < n`.
         """
-        return math.floor(self.order + 1)
+        return math.floor(self.alpha + 1)
 
 
 @dataclass(frozen=True)
@@ -80,22 +73,25 @@ class CaputoDerivative(FractionalOperator):
     .. math::
 
         D_C^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)} \int_a^x
-            \frac{f^{(n)}(s)}{(x - s)^{\alpha + 1 - n}} \,\mathrm{d}s,
+            \frac{f^{(n)}(s)}{(x - s)^{\alpha - n + 1}} \,\mathrm{d}s,
 
     while the upper Caputo fractional derivative is integrated on :math:`[x, b]`.
     Note that for negative orders, the Caputo derivative is defined as the
     Riemann-Liouville integral.
     """
 
+    alpha: float
+    """Order of the Caputo derivative."""
+
     side: Side
     """Side on which to compute the derivative."""
 
     @property
     def n(self) -> int:
-        r"""Integer part of the :attr:`~FractionalOperator.order`, i.e.
-        :math:`n - 1 < \text{order} \le n`.
+        r"""Integer part of the :attr:`~CaputoDerivative.alpha`, i.e.
+        :math:`n - 1 < \alpha \le n`.
         """
-        return math.ceil(self.order)
+        return math.ceil(self.alpha)
 
 
 @dataclass(frozen=True)
@@ -116,31 +112,59 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
     where :math:`N(h) = (x - a) / h`. The upper derivative is similarly defined.
     """
 
+    alpha: float
+    """Order of the Grünwald-Letnikov derivative."""
+
     side: Side
     """Side on which to compute the derivative."""
 
     @property
     def n(self) -> int:
-        r"""Integer part of the :attr:`~FractionalOperator.order`, i.e.
-        :math:`n - 1 \le \text{order} < n`.
+        r"""Integer part of the :attr:`~GrunwaldLetnikovDerivative.alpha`, i.e.
+        :math:`n - 1 \le \alpha < n`.
         """
-        return math.floor(self.order + 1)
+        return math.floor(self.alpha + 1)
 
 
 @dataclass(frozen=True)
 class HadamardDerivative(FractionalOperator):
     r"""Hadamard fractional order derivative.
 
-    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{Z}`,
+    For an order :math:`n - 1 \le \alpha < n`, where :math:`n \in \mathbb{Z}`,
     the Hadamard fractional derivative of a function :math:`f: [a, b] \to \mathbb{R}`
     is given by (see e.g. [SalesTeodoro2019]_)
 
     .. math::
 
-        D_{H}^\alpha[f](x) = \frac{\alpha}{\Gamma(1 - \alpha)}
-            \frac{\mathrm{d}^n}{\mathrm{d} x^n}
-            \int_a^x (\log x - \log s)^{2 + n - \alpha} \frac{f(s)}{s} \,\mathrm{d}s.
+        D_{H}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
+            \left(x \frac{\mathrm{d}}{\mathrm{d} x}\right)^n
+            \int_a^x frac{(\log x - \log s)^{n + 1 - \alpha}}{s} f(s) \,\mathrm{d}s.
     """
+
+    alpha: float
+    """Order of the Hadamard derivative."""
+
+    side: Side
+    """Side on which to compute the derivative."""
+
+
+@dataclass(frozen=True)
+class CaputoHadamardDerivative(FractionalOperator):
+    r"""Caputo-Hadamard fractional order derivative.
+
+    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{Z}`,
+    the Caputo-Hadamard fractional derivative of a function :math:`f: [a, b]
+    \to \mathbb{R}` is given by
+
+    .. math::
+
+        D_{CH}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
+            \int_a^x \frac{(\log x - \log s)^{n + 1 - \alpha}}{s}
+            \left(s \frac{\mathrm{d}}{\mathrm{d} s}\right)^n f(s) \,\mathrm{d}s.
+    """
+
+    alpha: float
+    """Order of the Grünwald-Letnikov derivative."""
 
     side: Side
     """Side on which to compute the derivative."""
