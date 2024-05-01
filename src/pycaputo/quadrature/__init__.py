@@ -3,45 +3,9 @@
 
 from __future__ import annotations
 
-from pycaputo.derivatives import FractionalOperator, RiemannLiouvilleDerivative, Side
+from pycaputo.derivatives import FractionalOperator, Side
 from pycaputo.grid import Points
 from pycaputo.quadrature.base import QuadratureMethod, quad
-from pycaputo.quadrature.riemann_liouville import (
-    RiemannLiouvilleConvolutionMethod,
-    RiemannLiouvilleCubicHermiteMethod,
-    RiemannLiouvilleMethod,
-    RiemannLiouvilleRectangularMethod,
-    RiemannLiouvilleSimpsonMethod,
-    RiemannLiouvilleSpectralMethod,
-    RiemannLiouvilleSplineMethod,
-    RiemannLiouvilleTrapezoidalMethod,
-)
-
-
-def make_method_from_name(
-    name: str,
-    d: float | FractionalOperator,
-) -> QuadratureMethod:
-    """Instantiate a :class:`QuadratureMethod` given the name *name*.
-
-    :arg d: a fractional operator that should be discretized by the method. If
-        the method does not support this operator, it can fail.
-    """
-
-    methods: dict[str, type[QuadratureMethod]] = {
-        cls.__name__: cls for cls in quad.registry
-    }
-    if name not in methods:
-        raise ValueError(
-            "Unknown quadrature method '{}'. Known methods are '{}'".format(
-                name, "', '".join(methods)
-            )
-        )
-
-    if not isinstance(d, FractionalOperator):
-        d = RiemannLiouvilleDerivative(alpha=d, side=Side.Left)
-
-    return methods[name](d)
 
 
 def guess_method_for_order(
@@ -60,7 +24,9 @@ def guess_method_for_order(
     :arg p: a set of points on which to evaluate the fractional operator.
     :arg d: a fractional operator to discretize.
     """
-    from pycaputo.grid import JacobiGaussLobattoPoints
+    from pycaputo import grid
+    from pycaputo.derivatives import RiemannLiouvilleDerivative
+    from pycaputo.quadrature import riemann_liouville as rl
 
     if not isinstance(d, FractionalOperator):
         d = RiemannLiouvilleDerivative(alpha=d, side=Side.Left)
@@ -68,15 +34,15 @@ def guess_method_for_order(
     m: QuadratureMethod | None = None
 
     if isinstance(d, RiemannLiouvilleDerivative):
-        if isinstance(p, JacobiGaussLobattoPoints):
-            m = RiemannLiouvilleSpectralMethod(d)
+        if isinstance(p, grid.JacobiGaussLobattoPoints):
+            m = rl.SpectralJacobi(d.alpha)
         else:
-            m = RiemannLiouvilleTrapezoidalMethod(d)
+            m = rl.Trapezoidal(d.alpha)
 
     if m is None:
         raise ValueError(
-            "Cannot determine an adequate method for the "
-            f"'{type(d).__name__}' and points of type '{type(p).__name__}'."
+            "Cannot determine an adequate method for the operator "
+            f"'{d!r}' and points of type '{type(p).__name__}'."
         )
 
     return m
@@ -84,15 +50,6 @@ def guess_method_for_order(
 
 __all__ = (
     "QuadratureMethod",
-    "RiemannLiouvilleConvolutionMethod",
-    "RiemannLiouvilleCubicHermiteMethod",
-    "RiemannLiouvilleMethod",
-    "RiemannLiouvilleRectangularMethod",
-    "RiemannLiouvilleSimpsonMethod",
-    "RiemannLiouvilleSpectralMethod",
-    "RiemannLiouvilleSplineMethod",
-    "RiemannLiouvilleTrapezoidalMethod",
     "guess_method_for_order",
-    "make_method_from_name",
     "quad",
 )

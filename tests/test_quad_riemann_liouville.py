@@ -4,14 +4,13 @@
 from __future__ import annotations
 
 import pathlib
-from typing import Callable
 
 import numpy as np
 import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
-from pycaputo.quadrature import QuadratureMethod
+from pycaputo.quadrature import quad, riemann_liouville
 from pycaputo.utils import Array, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_quad_riemann_liouville")
@@ -38,52 +37,54 @@ def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     )
 
 
-def make_rl_conv_factory(order: int) -> Callable[[float], QuadratureMethod]:
-    from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-    from pycaputo.quadrature import RiemannLiouvilleConvolutionMethod
-
-    def wrapper(alpha: float) -> RiemannLiouvilleConvolutionMethod:
-        d = RiemannLiouvilleDerivative(alpha=alpha, side=Side.Left)
-        return RiemannLiouvilleConvolutionMethod(d=d, quad_order=order, beta=np.inf)
-
-    return wrapper
-
-
 @pytest.mark.parametrize(
-    ("factory", "grid_type"),
+    ("name", "grid_type"),
     [
-        ("RiemannLiouvilleRectangularMethod", "uniform"),
-        ("RiemannLiouvilleRectangularMethod", "stynes"),
-        ("RiemannLiouvilleTrapezoidalMethod", "uniform"),
-        ("RiemannLiouvilleTrapezoidalMethod", "stretch"),
-        ("RiemannLiouvilleSimpsonMethod", "uniform"),
-        ("RiemannLiouvilleCubicHermiteMethod", "uniform"),
-        (make_rl_conv_factory(1), "uniform"),
-        # (make_rl_conv_factory(2), "uniform"),
-        # (make_rl_conv_factory(3), "uniform"),
-        # (make_rl_conv_factory(4), "uniform"),
-        # (make_rl_conv_factory(5), "uniform"),
-        # (make_rl_conv_factory(6), "uniform"),
+        ("Rectangular", "uniform"),
+        ("Rectangular", "stynes"),
+        ("Trapezoidal", "uniform"),
+        ("Trapezoidal", "stretch"),
+        ("Simpson", "uniform"),
+        ("CubicHermite", "uniform"),
+        ("Lubich1", "uniform"),
+        # ("Lubich2", "uniform"),
+        # ("Lubich3", "uniform"),
+        # ("Lubich4", "uniform"),
+        # ("Lubich5", "uniform"),
+        # ("Lubich6", "uniform"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.25, 2.5, 7.75])
 def test_riemann_liouville_quad(
-    factory: str | Callable[[float], QuadratureMethod],
+    name: str,
     grid_type: str,
     alpha: float,
     *,
     visualize: bool = False,
 ) -> None:
     from pycaputo.grid import make_points_from_name
-    from pycaputo.quadrature import make_method_from_name, quad
     from pycaputo.utils import EOCRecorder, savefig
 
-    if callable(factory):
-        meth = factory(-alpha)
+    meth: riemann_liouville.RiemannLiouvilleMethod
+    if name == "Rectangular":
+        meth = riemann_liouville.Rectangular(-alpha, theta=0.5)
+        order = min(2.0, 1 + alpha) if meth.theta == 0.5 else 1.0
+    elif name == "Trapezoidal":
+        meth = riemann_liouville.Trapezoidal(-alpha)
+        order = 2.0
+    elif name == "Simpson":
+        meth = riemann_liouville.Simpson(-alpha)
+        order = 3.0
+    elif name == "CubicHermite":
+        meth = riemann_liouville.CubicHermite(-alpha)
+        order = 4.0
+    elif name.startswith("Lubich"):
+        order = int(name[6:])
+        meth = riemann_liouville.Lubich(-alpha, quad_order=order, beta=np.inf)
     else:
-        meth = make_method_from_name(factory, -alpha)
+        raise ValueError(f"Unsupported method: '{name}'")
 
-    eoc = EOCRecorder(order=meth.order)
+    eoc = EOCRecorder(order=order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -91,7 +92,7 @@ def test_riemann_liouville_quad(
         fig = mp.figure()
         ax = fig.gca()
 
-    if meth.name == "RLCHermite":
+    if meth.name == "RLCubicHermite":
         # FIXME: errors start to grow at finer meshes; not clear why?
         resolutions = [8, 12, 16, 20, 24, 28, 32, 48, 64]
     else:
@@ -121,8 +122,7 @@ def test_riemann_liouville_quad(
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
-    assert eoc.order is not None
-    assert eoc.order - 0.25 < eoc.estimated_order < eoc.order + 1.0
+    assert order - 0.25 < eoc.estimated_order < order + 1.0
 
 
 # }}}
@@ -150,16 +150,11 @@ def test_riemann_liouville_quad_spectral(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
-    from pycaputo.quadrature import RiemannLiouvilleSpectralMethod, quad
-
-    d = RiemannLiouvilleDerivative(alpha=-alpha, side=Side.Left)
-    meth = RiemannLiouvilleSpectralMethod(d=d)
-
     from pycaputo.utils import EOCRecorder, savefig
 
-    eoc = EOCRecorder(order=meth.order)
+    meth = riemann_liouville.SpectralJacobi(-alpha)
+    eoc = EOCRecorder()
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -216,16 +211,15 @@ def test_riemann_liouville_spline(
     *,
     visualize: bool = False,
 ) -> None:
-    from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
     from pycaputo.grid import make_uniform_points
-    from pycaputo.quadrature import RiemannLiouvilleSplineMethod, quad
-
-    d = RiemannLiouvilleDerivative(alpha=-alpha, side=Side.Left)
-    meth = RiemannLiouvilleSplineMethod(d=d, npoints=npoints)
-
     from pycaputo.utils import EOCRecorder, savefig
 
-    eoc = EOCRecorder(order=meth.order)
+    # FIXME: this order is not right? where is it coming from?
+    order = 1.0 * min(npoints, 4.0)
+    order = order + min(order, alpha) - 1.0
+    meth = riemann_liouville.SplineLagrange(alpha=-alpha, npoints=npoints)
+
+    eoc = EOCRecorder(order=order)
 
     if visualize:
         import matplotlib.pyplot as mp
@@ -260,7 +254,7 @@ def test_riemann_liouville_spline(
     from pycaputo.lagrange import vandermonde
 
     kappa = la.cond(vandermonde(meth.xi))
-    assert eoc.estimated_order > meth.order or eoc.max_error < 1.0e-15 * kappa
+    assert eoc.estimated_order > order or eoc.max_error < 1.0e-15 * kappa
 
 
 # }}}

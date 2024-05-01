@@ -9,7 +9,7 @@ from functools import cached_property
 
 import numpy as np
 
-from pycaputo.derivatives import RiemannLiouvilleDerivative
+from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
 from pycaputo.utils import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
 
@@ -20,32 +20,29 @@ from .base import QuadratureMethod, quad
 class RiemannLiouvilleMethod(QuadratureMethod):
     """Quadrature method for the Riemann-Liouville integral."""
 
-    d: RiemannLiouvilleDerivative
-    """Description of the integral that is approximated."""
+    alpha: float
+    """Order of the Riemann-Liouville integral that is being discretized."""
 
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
-            if not isinstance(self.d, RiemannLiouvilleDerivative):
-                raise TypeError(
-                    f"Expected a Riemann-Liouville integral: '{type(self.d).__name__}'"
-                )
+            if self.alpha > 0:
+                raise ValueError(f"Positive orders are not supported: {self.alpha}")
+
+    @property
+    def d(self) -> RiemannLiouvilleDerivative:
+        return RiemannLiouvilleDerivative(self.alpha, side=Side.Left)
 
 
-# {{{ RiemannLiouvilleRectangularMethod
+# {{{ Rectangular
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
+class Rectangular(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using the rectangular formula.
 
-    The rectangular formula is derived in Section 3.1.(I) from [Li2020]_. It
-    uses a piecewise constant approximation on each subinterval and cannot
-    be used to evaluate the value at the starting point, i.e.
-    :math:`I_{RL}^\alpha[f](a)` is not defined.
-
-    This method is of order :math:`\mathcal{O}(h)` and supports arbitrary grids.
+    The rectangular formula is derived in Section 3.1.(I) from [Li2020]_ for
+    general non-uniform grids.
     """
 
     theta: float = 0.5
@@ -64,23 +61,16 @@ class RiemannLiouvilleRectangularMethod(RiemannLiouvilleMethod):
     def name(self) -> str:
         return "RLRect"
 
-    @property
-    def order(self) -> float:
-        if self.theta == 0.5:
-            return min(2.0, 1.0 - self.d.alpha)
 
-        return 1.0
-
-
-@quad.register(RiemannLiouvilleRectangularMethod)
+@quad.register(Rectangular)
 def _quad_rl_rect(
-    m: RiemannLiouvilleRectangularMethod,
+    m: Rectangular,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
     x = p.x
     fx = f(x) if callable(f) else f
-    alpha = -m.d.alpha
+    alpha = -m.alpha
     w0 = 1 / math.gamma(1 + alpha)
 
     fc = m.theta * fx[:-1] + (1 - m.theta) * fx[1:]
@@ -99,33 +89,25 @@ def _quad_rl_rect(
 # }}}
 
 
-# {{{ RiemannLiouvilleTrapezoidalMethod
+# {{{ Trapezoidal
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleTrapezoidalMethod(RiemannLiouvilleMethod):
+class Trapezoidal(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using the trapezoidal formula.
 
-    The trapezoidal formula is derived in Section 3.1.(II) from [Li2020]_. It
-    uses a linear approximation on each subinterval and cannot be used to
-    evaluate the value at the starting point, i.e.
-    :math:`I_{RL}^\alpha[f](a)` is not defined.
-
-    This method is of order :math:`\mathcal{O}(h^2)` and supports arbitrary grids.
+    The trapezoidal formula is derived in Section 3.1.(II) from [Li2020]_ for
+    general non-uniform grids.
     """
 
     @property
     def name(self) -> str:
         return "RLTrap"
 
-    @property
-    def order(self) -> float:
-        return 2.0
 
-
-@quad.register(RiemannLiouvilleTrapezoidalMethod)
+@quad.register(Trapezoidal)
 def _quad_rl_trap(
-    m: RiemannLiouvilleTrapezoidalMethod,
+    m: Trapezoidal,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
@@ -133,7 +115,7 @@ def _quad_rl_trap(
 
     x = p.x
     fx = f(x) if callable(f) else f
-    alpha = -m.d.alpha
+    alpha = -m.alpha
     w0 = 1 / math.gamma(2 + alpha)
 
     # compute integral
@@ -171,33 +153,25 @@ def _quad_rl_trap(
 # }}}
 
 
-# {{{ RiemannLiouvilleSimpsonMethod
+# {{{ Simpson
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleSimpsonMethod(RiemannLiouvilleMethod):
+class Simpson(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using Simpson's method.
 
-    This method is described in more detail in Section 3.3.(III) of [Li2020]_. It
-    uses a quadratic approximation on each subinterval and cannot be used to
-    evaluate the value at the starting point, i.e.
-    :math:`I_{RL}^\alpha[f](a)` is not defined.
-
-    This method is of order :math:`\mathcal{O}(h^3)` and supports uniform grids.
+    This method is described in more detail in Section 3.3.(III) of [Li2020]_
+    for uniform grids.
     """
 
     @property
     def name(self) -> str:
         return "RLSimpson"
 
-    @property
-    def order(self) -> float:
-        return 3.0
 
-
-@quad.register(RiemannLiouvilleSimpsonMethod)
+@quad.register(Simpson)
 def _quad_rl_simpson(
-    m: RiemannLiouvilleSimpsonMethod,
+    m: Simpson,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
@@ -212,7 +186,7 @@ def _quad_rl_simpson(
     fx = f(p.x)
     fm = f(p.xm)
 
-    alpha = -m.d.alpha
+    alpha = -m.alpha
     w0 = p.dx[0] ** alpha / math.gamma(3 + alpha)
     indices = np.arange(fx.size)
 
@@ -265,35 +239,27 @@ def _quad_rl_simpson(
 # }}}
 
 
-# {{{ RiemannLiouvilleCubicHermiteMethod
+# {{{ CubicHermite
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleCubicHermiteMethod(RiemannLiouvilleMethod):
+class CubicHermite(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using a cubic Hermite interpolant.
 
-    This method is described in more detail in Section 3.3.(B) of [Li2020]_. It
-    uses a cubic approximation on each subinterval and cannot be used to
-    evaluate the value at the starting point, i.e.
-    :math:`I_{RL}^\alpha[f](a)` is not defined.
+    This method is described in more detail in Section 3.3.(B) of [Li2020]_
+    for uniform grids.
 
     Note that Hermite interpolants require derivative values at the grid points.
-
-    This method is of order :math:`\mathcal{O}(h^4)` and supports uniform grids.
     """
 
     @property
     def name(self) -> str:
-        return "RLCHermite"
-
-    @property
-    def order(self) -> float:
-        return 4.0
+        return "RLCubicHermite"
 
 
-@quad.register(RiemannLiouvilleCubicHermiteMethod)
+@quad.register(CubicHermite)
 def _quad_rl_cubic_hermite(
-    m: RiemannLiouvilleCubicHermiteMethod,
+    m: CubicHermite,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
@@ -308,7 +274,7 @@ def _quad_rl_cubic_hermite(
     fx = f(p.x, d=0)
     fp = f(p.x, d=1)
 
-    alpha = -m.d.alpha
+    alpha = -m.alpha
     h = p.dx[0]
     w0 = h**alpha / math.gamma(4 + alpha)
     indices = np.arange(fx.size)
@@ -353,11 +319,11 @@ def _quad_rl_cubic_hermite(
 # }}}
 
 
-# {{{ RiemannLiouvilleSpectralMethod: Jacobi polynomials
+# {{{ SpectralJacobi
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
+class SpectralJacobi(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using spectral methods based
     on Jacobi polynomials.
 
@@ -382,16 +348,12 @@ class RiemannLiouvilleSpectralMethod(RiemannLiouvilleMethod):
 
     @property
     def name(self) -> str:
-        return "RLSpec"
-
-    @property
-    def order(self) -> float:
-        return np.inf
+        return "RLJacobi"
 
 
-@quad.register(RiemannLiouvilleSpectralMethod)
+@quad.register(SpectralJacobi)
 def _quad_rl_spec(
-    m: RiemannLiouvilleSpectralMethod,
+    m: SpectralJacobi,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
@@ -409,7 +371,7 @@ def _quad_rl_spec(
     fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)
-    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, -m.d.alpha)):
+    for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, -m.alpha)):
         df += fhat[n] * Phat
 
     return df
@@ -418,11 +380,11 @@ def _quad_rl_spec(
 # }}}
 
 
-# {{{ RiemannLiouvilleSplineMethod
+# {{{ SplineLagrange
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
+class SplineLagrange(RiemannLiouvilleMethod):
     """Riemann-Lioville integral approximation using the piecewise Lagrange
     spline method from [Cardone2021]_.
 
@@ -458,13 +420,6 @@ class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
     def name(self) -> str:
         return "RLSpline"
 
-    @property
-    def order(self) -> float:
-        # FIXME: the tests weirdly pass with this
-        npoints = min(self.npoints, 4)
-
-        return npoints + min(npoints, -self.d.alpha) - 1.0
-
     @cached_property
     def xi(self) -> Array:
         """Reference points used to construct the Lagrange polynomials on each
@@ -480,16 +435,16 @@ class RiemannLiouvilleSplineMethod(RiemannLiouvilleMethod):
         return np.array(xi + 1.0) / 2.0
 
 
-@quad.register(RiemannLiouvilleSplineMethod)
+@quad.register(SplineLagrange)
 def _quad_rl_spline(
-    m: RiemannLiouvilleSplineMethod,
+    m: SplineLagrange,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
     from pycaputo.lagrange import lagrange_riemann_liouville_integral
 
     xi = m.xi
-    alpha = -m.d.alpha
+    alpha = -m.alpha
 
     if not callable(f):
         raise TypeError(
@@ -512,11 +467,11 @@ def _quad_rl_spline(
 # }}}
 
 
-# {{{ RiemannLiouvilleConvolutionMethod: Lubich
+# {{{ Lubich
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleConvolutionMethod(RiemannLiouvilleMethod):
+class Lubich(RiemannLiouvilleMethod):
     r"""Riemann-Liouville integral approximation using the convolution quadratures
     of [Lubich1986]_.
 
@@ -544,6 +499,7 @@ class RiemannLiouvilleConvolutionMethod(RiemannLiouvilleMethod):
     currently supported, see :func:`~pycaputo.generating_functions.lubich_bdf_weights`
     for additional details.
     """
+
     beta: float
     r"""An exponent used in constructing the starting weights of the quadrature.
     Negative values will allow for certain singularities at the origin, while
@@ -570,14 +526,10 @@ class RiemannLiouvilleConvolutionMethod(RiemannLiouvilleMethod):
     def name(self) -> str:
         return "RLConv"
 
-    @property
-    def order(self) -> int:
-        return self.quad_order
 
-
-@quad.register(RiemannLiouvilleConvolutionMethod)
+@quad.register(Lubich)
 def _quad_rl_conv(
-    m: RiemannLiouvilleConvolutionMethod,
+    m: Lubich,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
@@ -593,7 +545,7 @@ def _quad_rl_conv(
     )
 
     fx = f(p.x) if callable(f) else f
-    alpha = -m.d.alpha
+    alpha = -m.alpha
     dxa = p.dx[0] ** alpha
 
     qf = np.empty_like(fx)

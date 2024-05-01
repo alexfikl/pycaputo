@@ -5,6 +5,12 @@ from __future__ import annotations
 
 import numpy as np
 
+from pycaputo.derivatives import (
+    CaputoDerivative,
+    FractionalOperator,
+    RiemannLiouvilleDerivative,
+    Side,
+)
 from pycaputo.differentiation import DerivativeMethod
 from pycaputo.grid import Points
 from pycaputo.quadrature import QuadratureMethod
@@ -14,7 +20,7 @@ from pycaputo.utils import Array, ArrayOrScalarFunction, ScalarFunction
 def diff(
     f: ArrayOrScalarFunction,
     p: Points,
-    alpha: float,
+    d: FractionalOperator | float | None = None,
     *,
     method: DerivativeMethod | None = None,
 ) -> Array:
@@ -23,67 +29,72 @@ def diff(
     :arg f: an array or callable to compute the derivative of. If this is an
         array, it is assumed that it is evaluated at every point in *p*.
     :arg p: a set of points at which to compute the derivative.
-    :arg alpha: the order of the fractional derivative.
+    :arg d: a fractional operator. If this is just a number, the standard
+        Caputo derivative will be used.
     :arg method: the name of the method to use. If *None*, an appropriate method
         is select, otherwise the string should directly reference a class
         from :ref:`sec-differentiation`.
     """
-    import pycaputo.differentiation as d
+    from pycaputo.differentiation import diff as _diff
+    from pycaputo.differentiation import guess_method_for_order
 
     if method is None:
-        if alpha is None:
-            raise ValueError("Order 'alpha' is required if 'method is not given")
+        if d is None:
+            raise ValueError("'d' is required if 'method is not given")
 
-        m = d.guess_method_for_order(p, alpha)
+        if not isinstance(d, FractionalOperator):
+            d = CaputoDerivative(d, side=Side.Left)
+
+        m = guess_method_for_order(p, d)
     elif isinstance(method, DerivativeMethod):
-        if alpha is not None:
+        if d is not None:
             raise ValueError("Cannot provide both order 'alpha' and 'method'")
 
         m = method
     else:
         raise TypeError(f"'method' has unsupported type: {type(method).__name__!r}")
 
-    return d.diff(m, f, p)
+    return _diff(m, f, p)
 
 
 def quad(
     f: ArrayOrScalarFunction,
     p: Points,
-    alpha: float,
+    d: FractionalOperator | float | None = None,
     *,
-    method: QuadratureMethod | str | None = None,
+    method: QuadratureMethod | None = None,
 ) -> Array:
     """Compute the fractional-order integral of *f* at the points *p*.
 
     :arg f: an array or callable to compute the integral of. If this is an
         array, it is assumed that it is evaluated at every point in *p*.
     :arg p: a set of points at which to compute the integral.
-    :arg alpha: the order of the fractional integral.
+    :arg d: a fractional operator. If this is just a number, the standard
+        Riemann-Liouville integral will be used.
     :arg method: the name of the method to use. If *None*, an appropriate method
         is select, otherwise the string should directly reference a class
         from :ref:`sec-quadrature`.
     """
-    import pycaputo.quadrature as q
+    from pycaputo.quadrature import guess_method_for_order
+    from pycaputo.quadrature import quad as _quad
 
     if method is None:
-        if alpha is None:
-            raise ValueError("Order 'alpha' is required if 'method is not given")
+        if d is None:
+            raise ValueError("'d' is required if 'method' is not given")
 
-        m = q.guess_method_for_order(p, alpha)
+        if not isinstance(d, FractionalOperator):
+            d = RiemannLiouvilleDerivative(d, side=Side.Left)
+
+        m = guess_method_for_order(p, d)
     elif isinstance(method, QuadratureMethod):
-        if alpha is not None:
-            raise ValueError("Cannot provide both order 'alpha' and 'method'")
+        if d is not None:
+            raise ValueError("Cannot provide both 'd' and 'method'")
 
         m = method
-    elif isinstance(method, str):
-        if alpha is None:
-            raise ValueError("Order 'alpha' is required if 'method' is a string")
-
-        m = q.make_method_from_name(method, alpha)
     else:
         raise TypeError(f"'method' has unsupported type: {type(method).__name__!r}")
 
-    return q.quad(m, f, p)
+    return _quad(m, f, p)
 
 
 def grad(
@@ -91,7 +102,7 @@ def grad(
     p: Points,
     x: Array,
     a: Array | None = None,
-    alpha: float | None = None,
+    d: FractionalOperator | float | None = None,
     *,
     method: DerivativeMethod | None = None,
 ) -> Array:
@@ -121,16 +132,20 @@ def grad(
     if any(x[i] <= a[i] for i in np.ndindex(x.shape)):
         raise ValueError("Lower limits 'a' must be smaller than 'x'")
 
-    import pycaputo.differentiation as d
+    from pycaputo.differentiation import diff as _diff
+    from pycaputo.differentiation import guess_method_for_order
 
     if method is None:
-        if alpha is None:
-            raise ValueError("Order 'alpha' is required if 'method is not given")
+        if d is None:
+            raise ValueError("'d' is required if 'method is not given")
 
-        m = d.guess_method_for_order(p, alpha)
+        if not isinstance(d, FractionalOperator):
+            d = CaputoDerivative(d, side=Side.Left)
+
+        m = guess_method_for_order(p, d)
     elif isinstance(method, DerivativeMethod):
-        if alpha is not None:
-            raise ValueError("Cannot provide both order 'alpha' and 'method'")
+        if d is not None:
+            raise ValueError("Cannot provide both 'd' and 'method'")
 
         m = method
     else:
@@ -151,12 +166,10 @@ def grad(
     def make_component_p(i: tuple[int, ...]) -> Points:
         return p.translate(a[i], x[i])
 
-    import pycaputo.differentiation as d
-
     result = np.empty_like(x)
     for i in np.ndindex(x.shape):
         # FIXME: this should just compute the gradient at -1
-        result[i] = d.diff(m, make_component_f(i), make_component_p(i))[-1]
+        result[i] = _diff(m, make_component_f(i), make_component_p(i))[-1]
 
     return result
 

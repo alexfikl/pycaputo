@@ -37,7 +37,7 @@ class CaputoDerivativeMethod(DerivativeMethod):
         return CaputoDerivative(self.alpha, side=Side.Left)
 
 
-# {{{ Caputo L1 Method
+# {{{ L1
 
 
 @dataclass(frozen=True)
@@ -92,6 +92,12 @@ def _diff_l1_method(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
         df[n + 1] = np.sum(w * dfx[: n + 1])
 
     return df
+
+
+# }}}
+
+
+# {{{ ModifiedL1
 
 
 @dataclass(frozen=True)
@@ -160,7 +166,7 @@ def _diff_modified_l1_method(
 # }}}
 
 
-# {{{ Caputo L2 Method
+# {{{ L2
 
 
 @dataclass(frozen=True)
@@ -224,7 +230,7 @@ def _diff_l2_method(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
 # }}}
 
 
-# {{{ CaputoL2CMethod
+# {{{ L2C
 
 
 @dataclass(frozen=True)
@@ -280,7 +286,7 @@ def _diff_l2c_method(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
 # }}}
 
 
-# {{{ CaputoSpectralMethod
+# {{{ SpectralJacobi
 
 
 @dataclass(frozen=True)

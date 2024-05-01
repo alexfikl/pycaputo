@@ -24,7 +24,7 @@ class DerivativeMethod(ABC):
     @property
     @abstractmethod
     def d(self) -> FractionalOperator:
-        """The fractional derivative that is being discretized by the method."""
+        """The fractional operator that is being discretized by the method."""
 
 
 @singledispatch

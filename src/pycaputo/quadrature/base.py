@@ -14,40 +14,31 @@ from pycaputo.utils import Array, ArrayOrScalarFunction
 
 @dataclass(frozen=True)
 class QuadratureMethod(ABC):
-    """A generic method used to evaluate a fractional integral."""
-
-    d: FractionalOperator
-    """Description of the integral that is approximated."""
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            pass
+    """A generic method used to evaluate a fractional integral at a set of points."""
 
     @property
-    @abstractmethod
     def name(self) -> str:
         """An identifier for the quadrature method."""
         return type(self).__name__.replace("Method", "")
 
     @property
     @abstractmethod
-    def order(self) -> float:
-        """Expected order of convergence of the method."""
+    def d(self) -> FractionalOperator:
+        """The fractional operator that is being discretized by the method."""
 
 
 @singledispatch
-def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, x: Points) -> Array:
-    """Evaluate the fractional integral of *f* using the points *x*.
+def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
+    """Evaluate the fractional integral of *f* at *p* using method *m*.
 
     :arg m: method used to evaluate the integral.
     :arg f: a simple function for which to evaluate the integral. If the
         method requires higher-order derivatives (e.g. for Hermite interpolation),
         this function can also be a
         :class:`~pycaputo.utils.DifferentiableScalarFunction`.
-    :arg x: an array of points at which to evaluate the integral.
+    :arg p: an array of points at which to evaluate the integral.
     """
 
     raise NotImplementedError(
-        f"Cannot evaluate integral with method '{type(m).__name__}'"
+        f"Cannot evaluate fractional integral with method '{type(m).__name__}'"
     )

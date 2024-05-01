@@ -91,7 +91,7 @@ def test_caputo_lmethods(
         meth = caputo.L2C(alpha=alpha)
         order = 3.0 - alpha
     else:
-        raise ValueError(f"Unsupported method: {name}")
+        raise ValueError(f"Unsupported method: '{name}'")
 
     eoc = EOCRecorder(order=order)
 

@@ -5,23 +5,23 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pycaputo.derivatives import HadamardDerivative
+from pycaputo.derivatives import HadamardDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.quadrature import QuadratureMethod, make_method_from_name, quad
+from pycaputo.quadrature import QuadratureMethod, quad
 from pycaputo.utils import Array, ArrayOrScalarFunction
 
 
 @dataclass(frozen=True)
 class HadamardQuadratureMethod(QuadratureMethod):
-    d: HadamardDerivative
+    alpha: float
 
     @property
     def name(self) -> str:
         return "Hadamard"
 
     @property
-    def order(self) -> float:
-        return 1.0
+    def d(self) -> HadamardDerivative:
+        return HadamardDerivative(self.alpha, side=Side.Left)
 
 
 @quad.register(HadamardQuadratureMethod)
@@ -34,4 +34,4 @@ def _quad_hadamard(
     return np.zeros_like(fx)
 
 
-m = make_method_from_name("HadamardQuadratureMethod", -1.5)
+d = HadamardQuadratureMethod(0.9)
