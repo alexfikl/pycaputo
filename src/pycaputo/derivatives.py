@@ -138,7 +138,7 @@ class HadamardDerivative(FractionalOperator):
 
         D_{H}^\alpha[f](x) = \frac{1}{\Gamma(n - \alpha)}
             \left(x \frac{\mathrm{d}}{\mathrm{d} x}\right)^n
-            \int_a^x frac{(\log x - \log s)^{n + 1 - \alpha}}{s} f(s) \,\mathrm{d}s.
+            \int_a^x \frac{(\log x - \log s)^{n + 1 - \alpha}}{s} f(s) \,\mathrm{d}s.
     """
 
     alpha: float
@@ -146,6 +146,13 @@ class HadamardDerivative(FractionalOperator):
 
     side: Side
     """Side on which to compute the derivative."""
+
+    @property
+    def n(self) -> int:
+        r"""Integer part of the :attr:`~HadamardDerivative.alpha`, i.e.
+        :math:`n - 1 \le \alpha < n`.
+        """
+        return math.floor(self.alpha + 1)
 
 
 @dataclass(frozen=True)
@@ -168,3 +175,10 @@ class CaputoHadamardDerivative(FractionalOperator):
 
     side: Side
     """Side on which to compute the derivative."""
+
+    @property
+    def n(self) -> int:
+        r"""Integer part of the :attr:`~CaputoHadamardDerivative.alpha`, i.e.
+        :math:`n - 1 < \alpha \le n`.
+        """
+        return math.ceil(self.alpha)
