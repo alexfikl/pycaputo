@@ -753,7 +753,10 @@ def cached_on_first_arg(
     return new_wrapper
 
 
-def single_valued(iterable: Iterable[T], eq: Callable[[T, T], bool] | None = None) -> T:
+def single_valued(
+    iterable: Iterable[T],
+    eq: Callable[[T, T], bool] | None = None,
+) -> T:
     """Retrieve a single value from the *iterable*.
 
     This function will return the first value from the *iterable* and assert that
@@ -778,6 +781,35 @@ def single_valued(iterable: Iterable[T], eq: Callable[[T, T], bool] | None = Non
 
     assert all(eq(first, other) for other in iterable)
     return first
+
+
+def is_single_valued(
+    iterable: Iterable[T],
+    eq: Callable[[T, T], bool] | None = None,
+) -> bool:
+    """This is a boolean version of :func:`single_valued`.
+
+    The function will return *True* if all the elements in the iterable are equal,
+    in the sense of the *eq* predicate, and *False* otherwise. Note that, unlike
+    :func:`single_valued`, an empty iterable will return *True* to match the
+    behaviour of :func:`all`.
+
+    :arg eq: an equality predicate on the elements of *iterable*, defaulting to
+        :func:`operator.eq`.
+    """
+    if eq is None:
+        import operator
+
+        eq = operator.eq
+
+    iterable = iter(iterable)
+
+    try:
+        first = next(iterable)
+    except StopIteration:
+        return True
+
+    return all(eq(first, other) for other in iterable)
 
 
 # }}}
