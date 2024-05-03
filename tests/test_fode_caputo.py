@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import pathlib
+from dataclasses import replace
 from functools import partial
 from typing import Any, Callable
 
@@ -66,13 +67,14 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 # }}}
 
 
-# {{{ test_caputo_fode
+# {{{ test_fode_caputo
 
 
 def fode_factory(
     cls: type[FractionalDifferentialEquationMethod[StateFunction]],
     *,
     wrap: bool = True,
+    graded: bool = False,
     **kwargs: Any,
 ) -> Any:
     nterms = kwargs.pop("nterms", 1)
@@ -107,11 +109,18 @@ def fode_factory(
         if has_source_jac:
             kwargs["source_jac"] = partial(source_jac, alpha=alpha)
 
-        from pycaputo.controller import make_fixed_controller
+        from pycaputo.controller import make_fixed_controller, make_graded_controller
+
+        if graded:
+            control = make_graded_controller(
+                dt, tstart=tspan[0], tfinal=tspan[1], alpha=max(alpha)
+            )
+        else:
+            control = make_fixed_controller(dt, tstart=tspan[0], tfinal=tspan[1])
 
         return cls(
             derivative_order=alpha,
-            control=make_fixed_controller(dt, tstart=tspan[0], tfinal=tspan[1]),
+            control=control,
             source=partial(source, alpha=alpha),
             y0=(y0,),
             **kwargs,
@@ -137,7 +146,7 @@ def fode_factory(
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
-def test_caputo_fode(
+def test_fode_caputo(
     factory: Callable[
         [float, int], FractionalDifferentialEquationMethod[StateFunction]
     ],
@@ -174,8 +183,6 @@ def test_caputo_fode(
 
         eoc.add_data_point(dt, error)
 
-    from dataclasses import replace
-
     eoc = replace(eoc, order=m.order)
     logger.info("\n%s", eoc)
 
@@ -187,7 +194,7 @@ def test_caputo_fode(
         from pycaputo.utils import figure
 
         dirname = pathlib.Path(__file__).parent
-        filename = f"test_caputo_fode_{m.name}_{alpha}".replace(".", "_").lower()
+        filename = f"test_fode_caputo_{m.name}_{alpha}".replace(".", "_").lower()
         with figure(dirname / filename) as fig:
             ax = fig.gca()
 
@@ -203,7 +210,7 @@ def test_caputo_fode(
 # }}}
 
 
-# {{{ test_caputo_fode_system
+# {{{ test_fode_caputo_system
 
 
 @pytest.mark.parametrize(
@@ -213,7 +220,7 @@ def test_caputo_fode(
         fode_factory(caputo.WeightedEuler, theta=0.5, nterms=3),
     ],
 )
-def test_caputo_fode_system(
+def test_fode_caputo_system(
     factory: Callable[
         [tuple[float, ...], int], FractionalDifferentialEquationMethod[StateFunction]
     ],
@@ -250,8 +257,6 @@ def test_caputo_fode_system(
 
         eoc.add_data_point(dt, error)
 
-    from dataclasses import replace
-
     eoc = replace(eoc, order=m.order)
     logger.info("\n%s", eoc)
 
@@ -259,6 +264,84 @@ def test_caputo_fode_system(
 
 
 # }}}
+
+
+# {{{ test_caputo_l1_convergence
+
+
+def singular_solution(t: float, *, alpha: float) -> Array:
+    return np.array([t**alpha])
+
+
+def singular_source(t: float, y: Array, *, alpha: float) -> Array:
+    from math import gamma
+
+    return np.array([gamma(1 + alpha)])
+
+
+@pytest.mark.parametrize("mesh_type", ["uniform", "graded"])
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
+def test_singular_caputo_l1(mesh_type: str, alpha: float, *, visualize: bool = False):
+    from pycaputo.events import StepCompleted, StepFailed
+    from pycaputo.utils import BlockTimer, EOCRecorder
+
+    if mesh_type == "uniform":
+        order = 1.0
+    elif mesh_type == "graded":
+        order = 2.0 - alpha
+    else:
+        raise ValueError(f"Unknown mesh type: {mesh_type}")
+
+    eoc = EOCRecorder(order=order)
+    graded = mesh_type == "graded"
+
+    for n in [32, 64, 128, 256, 512]:
+        m = fode_factory(caputo.L1, wrap=False, graded=graded)(alpha, n)
+        m = replace(m, source=partial(singular_source, alpha=alpha))
+
+        with BlockTimer(name=m.name) as bt:
+            ts = []
+            ys = []
+            for event in evolve(m):
+                if isinstance(event, StepFailed):
+                    raise ValueError("Step update failed")
+                elif isinstance(event, StepCompleted):
+                    ts.append(event.t)
+                    ys.append(event.y)
+
+        dt = np.max(np.diff(np.array(ts)))
+
+        y_ref = singular_solution(ts[-1], alpha=alpha)
+        error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
+        logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
+
+        eoc.add_data_point(dt, error)
+
+    logger.info("\n%s", eoc)
+
+    if visualize:
+        t = np.array(ts)
+        y = np.array(ys).squeeze()
+        y_ref = np.array([singular_solution(ti, alpha=alpha) for ti in t]).squeeze()
+
+        from pycaputo.utils import figure
+
+        dirname = pathlib.Path(__file__).parent
+        filename = f"test_fode_caputo_{m.name}_{alpha}_sing".replace(".", "_").lower()
+        with figure(dirname / filename) as fig:
+            ax = fig.gca()
+
+            ax.plot(t, y, label=f"{m.name}")
+            ax.plot(t, y_ref, "k--", label="Reference")
+            ax.set_xlabel("$t$")
+            ax.set_ylabel("$y$")
+            ax.legend()
+
+    assert order - 0.2 < eoc.estimated_order < order + 0.2
+
+
+# }}}
+
 
 if __name__ == "__main__":
     import sys

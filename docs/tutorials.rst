@@ -19,7 +19,7 @@ and use a simple test function
 
 .. math::
 
-    f(x) = \left(\frac{1}{2} + x\right)^4
+    f(x) = \left(\frac{1}{2} - x\right)^4
 
 and its Caputo fractional order derivative given by
 
@@ -47,9 +47,11 @@ follows
     :lineno-match:
     :language: python
 
-These methods are described by the :class:`~pycaputo.derivatives.CaputoDerivative`
-and :class:`~pycaputo.differentiation.caputo.L1` classes.
-We can then set up a grid and evaluate the derivative at all points
+The method uses the :class:`~pycaputo.derivatives.CaputoDerivative` operator
+and the :class:`~pycaputo.differentiation.caputo.L1` discretization. See
+:mod:`pycaputo.differentiation.caputo` for other methods for discretizing the
+Caputo derivative. We can then set up a grid and evaluate the derivative at
+all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
     :lines: 34-40
