@@ -73,73 +73,6 @@ def _normalize_time_span_triple(
     return dt, tfinal, nsteps
 
 
-def make_fixed_controller(
-    dt: float,
-    tstart: float = 0.0,
-    tfinal: float | None = None,
-    nsteps: int | None = None,
-) -> FixedController:
-    """Create a controller with a fixed time step.
-
-    This ensures that the following relation holds for all given values
-
-    .. code:: python
-
-        tfinal = tstart + nsteps * dt
-
-    This is achieved by small modifications to either *nsteps*, *dt* or *tfinal*.
-    If both *nsteps* and *tfinal* are given, then the smallest of
-    ``tstart + nsteps * dt`` and ``tfinal`` is taken as the final time and the
-    values are recalculated.
-
-    :arg dt: desired time step (chosen time step may be slightly smaller).
-    :arg tstart: start of the time span.
-    :arg tfinal: end of the time span.
-    :arg nsteps: number of time steps in the span.
-    """
-    if tfinal is None and nsteps is None:
-        raise ValueError("Must provide either 'tfinal' or 'nsteps' or both")
-
-    dt, tfinal, nsteps = _normalize_time_span_triple(dt, tstart, tfinal, nsteps)
-    return FixedController(tstart=tstart, tfinal=tfinal, nsteps=nsteps, dt=dt)
-
-
-def make_graded_controller(
-    dt: float | None = None,
-    tstart: float = 0.0,
-    tfinal: float | None = None,
-    nsteps: int | None = None,
-    *,
-    alpha: float | None = None,
-    r: float | None = None,
-) -> GradedController:
-    """Create a controller with a graded time step (see :func:`make_fixed_controller`).
-
-    :arg alpha: order of the fractional operator. The order is used to choose an
-        optimal grading *r* according to [Stynes2017]_.
-    :arg r: the degree of grading in the time step (see :class:`GradedController`).
-    """
-    if tfinal is None and nsteps is None:
-        raise ValueError("Must provide either 'tfinal' or 'nsteps' or both")
-
-    if r is None and alpha is None:
-        raise ValueError("Must provide either 'alpha' or 'r' or both to define grading")
-
-    if r is None:
-        assert alpha is not None
-        if 0.0 < alpha <= 1.0:
-            r = (2 - alpha) / alpha
-        else:
-            raise ValueError("Grading estimate is only valid for 'alpha' in (0, 1)")
-
-    if dt is None:
-        if tfinal is None or nsteps is None:
-            raise ValueError("Must provide both 'tfinal' and 'nsteps' with no 'dt'")
-    else:
-        dt, tfinal, nsteps = _normalize_time_span_triple(dt, tstart, tfinal, nsteps)
-    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=nsteps, r=r)
-
-
 def estimate_initial_time_step(
     t0: float,
     y0: Array,
@@ -342,6 +275,37 @@ def evaluate_timestep_reject(
 # {{{ FixedController
 
 
+def make_fixed_controller(
+    dt: float,
+    tstart: float = 0.0,
+    tfinal: float | None = None,
+    nsteps: int | None = None,
+) -> FixedController:
+    """Create a controller with a fixed time step.
+
+    This ensures that the following relation holds for all given values
+
+    .. code:: python
+
+        tfinal = tstart + nsteps * dt
+
+    This is achieved by small modifications to either *nsteps*, *dt* or *tfinal*.
+    If both *nsteps* and *tfinal* are given, then the smallest of
+    ``tstart + nsteps * dt`` and ``tfinal`` is taken as the final time and the
+    values are recalculated.
+
+    :arg dt: desired time step (chosen time step may be slightly smaller).
+    :arg tstart: start of the time span.
+    :arg tfinal: end of the time span.
+    :arg nsteps: number of time steps in the span.
+    """
+    if tfinal is None and nsteps is None:
+        raise ValueError("Must provide either 'tfinal' or 'nsteps' or both")
+
+    dt, tfinal, nsteps = _normalize_time_span_triple(dt, tstart, tfinal, nsteps)
+    return FixedController(tstart=tstart, tfinal=tfinal, nsteps=nsteps, dt=dt)
+
+
 @dataclass(frozen=True)
 class FixedController(Controller):
     """A fake controller with a fixed time step."""
@@ -394,6 +358,42 @@ def _evaluate_timestep_accept_fixed(
 
 
 # {{{ GradedController
+
+
+def make_graded_controller(
+    dt: float | None = None,
+    tstart: float = 0.0,
+    tfinal: float | None = None,
+    nsteps: int | None = None,
+    *,
+    alpha: float | None = None,
+    r: float | None = None,
+) -> GradedController:
+    """Create a controller with a graded time step (see :func:`make_fixed_controller`).
+
+    :arg alpha: order of the fractional operator. The order is used to choose an
+        optimal grading *r* according to [Stynes2017]_.
+    :arg r: the degree of grading in the time step (see :class:`GradedController`).
+    """
+    if tfinal is None and nsteps is None:
+        raise ValueError("Must provide either 'tfinal' or 'nsteps' or both")
+
+    if r is None and alpha is None:
+        raise ValueError("Must provide either 'alpha' or 'r' or both to define grading")
+
+    if r is None:
+        assert alpha is not None
+        if 0.0 < alpha <= 1.0:
+            r = (2 - alpha) / alpha
+        else:
+            raise ValueError("Grading estimate is only valid for 'alpha' in (0, 1)")
+
+    if dt is None:
+        if tfinal is None or nsteps is None:
+            raise ValueError("Must provide both 'tfinal' and 'nsteps' with no 'dt'")
+    else:
+        dt, tfinal, nsteps = _normalize_time_span_triple(dt, tstart, tfinal, nsteps)
+    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=nsteps, r=r)
 
 
 @dataclass(frozen=True)
