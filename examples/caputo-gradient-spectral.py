@@ -47,7 +47,7 @@ from pycaputo import grad
 from pycaputo.grid import make_jacobi_gauss_lobatto_points
 
 p = make_jacobi_gauss_lobatto_points(32, a=0.0, b=1.0)
-df_num = grad(f, p, x, method=method)
+df_num = grad(method, f, p, x)
 
 df_ref = df(x, alpha)
 print(

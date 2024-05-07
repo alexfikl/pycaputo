@@ -22,7 +22,7 @@ be structured as follows
         evaluate_timestep_reject)
 
     while t < tfinal:
-        # Evalute the solution and the truncation error at :math:`t_{n + 1}`
+        # Evaluate the solution and the truncation error at :math:`t_{n + 1}`
         # with the current estimate of the time step
         ynext, ytrunc = advance(...)
 

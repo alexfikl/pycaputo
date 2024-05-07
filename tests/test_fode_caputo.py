@@ -109,8 +109,13 @@ def fode_factory(
         if has_source_jac:
             kwargs["source_jac"] = partial(source_jac, alpha=alpha)
 
-        from pycaputo.controller import make_fixed_controller, make_graded_controller
+        from pycaputo.controller import (
+            Controller,
+            make_fixed_controller,
+            make_graded_controller,
+        )
 
+        control: Controller
         if graded:
             control = make_graded_controller(
                 dt, tstart=tspan[0], tfinal=tspan[1], alpha=max(alpha)
@@ -281,7 +286,9 @@ def singular_source(t: float, y: Array, *, alpha: float) -> Array:
 
 @pytest.mark.parametrize("mesh_type", ["uniform", "graded"])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
-def test_singular_caputo_l1(mesh_type: str, alpha: float, *, visualize: bool = False):
+def test_singular_caputo_l1(
+    mesh_type: str, alpha: float, *, visualize: bool = False
+) -> None:
     from pycaputo.events import StepCompleted, StepFailed
     from pycaputo.utils import BlockTimer, EOCRecorder
 
