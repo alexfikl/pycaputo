@@ -8,18 +8,20 @@ method (with included magic) is calling :func:`pycaputo.diff` as
 
 .. code:: python
 
-   df = diff(f, p, alpha)
+    df = diff(f, p, alpha)
 
 which will automatically select an appropriate method to use given the point set
-``p`` and the order ``alpha``. To manually select a method use e.g. the
-``method="CaputoL1Method"`` keyword. The lower level function call is given by
-:func:`pycaputo.differentiation.diff` which can be used as
+``p`` and the order ``alpha`` (see also
+:func:`pycaputo.differentiation.guess_method_for_order`). To manually call a
+specific method, use :func:`pycaputo.differentiation.diff` instead as
 
 .. code:: python
 
-   d = CaputoDerivative(order=alpha, side=Side.Left)
-   m = CaputoL1Method(d)
-   df = diff(m, f, p)
+    from pycaputo.differentiation import diff
+    from pycaputo.differentiation.caputo import L2C
+
+    m = L2C(alpha)
+    df = diff(m, f, p)
 
 This requires more setup, but gives more control over the method used to
 approximate the derivative. The :func:`pycaputo.differentiation.diff` method

@@ -8,31 +8,38 @@ recommended method (with included magic) is calling :func:`pycaputo.quad` as
 
 .. code:: python
 
-   df = quad(f, p, alpha)
+    qf = quad(f, p, alpha)
 
 which will automatically select an appropriate method to use given the point set
-``p`` and the order ``alpha``. To manually select a method use e.g. the
-``method="RiemannLiouvilleTrapezoidalMethod"`` keyword. The lower level function
-call is given by :func:`pycaputo.quadrature.quad` which can be used as
-(with a negative order ``alpha``)
+``p`` and the order ``alpha`` (see also
+:func:`~pycaputo.quadrature.guess_method_for_order`). To manually call a specific
+method, use :func:`pycaputo.quadrature.quad` instead as
 
 .. code:: python
 
-   d = RiemannLiouvilleDerivative(order=alpha, side=Side.Left)
-   m = RiemannLiouvilleTrapezoidalMethod(d)
-   qf = quad(m, f, p)
+    from pycaputo.quadrature import quad
+    from pycaputo.quadrature.riemann_liouville import Trapezoidal
+
+    m = Trapezoidal(alpha)
+    qf = quad(m, f, p)
 
 This requires more setup, but gives more control over the method used to
 approximate the integral. The :func:`pycaputo.quadrature.quad` method
 is based on the :func:`~functools.singledispatch` mechanism and can be easily
 extended to support additional methods.
 
+.. note::
+
+    Note that for integration, the order :math:`\alpha` must be negative. This is
+    because a single differential operator is used to define both the derivative
+    and the integral.
+
 Example
 -------
 
 We give here the skeleton for implementing a new custom
-:class:`~pycaputo.quadrature.QuadratureMethod`.
-First, all subclasses must be a :func:`~dataclasses.dataclass` as
+:class:`~pycaputo.quadrature.QuadratureMethod`. First, all subclasses must be a
+:func:`~dataclasses.dataclass` as
 
 .. literalinclude:: ../examples/example-custom-quad.py
     :lines: 14-24
