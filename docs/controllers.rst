@@ -10,6 +10,19 @@ uses the implementation from
 `OrdinaryDiffEq.jl <https://docs.sciml.ai/DiffEqDocs/latest/extras/timestepping/>`__
 as an inspiration.
 
+A controller must inherit from :class:`~pycaputo.controller.Controller` and
+implement the 4 following functions in an appropriate way:
+
+* :func:`~pycaputo.controller.evaluate_error_estimate`: evaluates a scaled
+  error estimate that can be used for time step control. The error estimate
+  should be :math:`E_{\text{est}} \in [0, 1]` if the step is meant to be accepted
+  and in :math:`(1, \infty)` otherwise.
+* :func:`~pycaputo.controller.evaluate_timestep_factor`: computes a factor to
+  increase or decrease the time step based on :math:`E_{\text{est}}`.
+* :func:`~pycaputo.controller.evaluate_timestep_accept` and
+  :func:`~pycaputo.controller.evaluate_timestep_reject`: evaluates the time
+  step for the next iteration.
+
 In broad strokes, an algorithm using the adaptive step size controllers should
 be structured as follows
 
