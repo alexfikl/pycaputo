@@ -87,24 +87,33 @@ class ForwardEuler(CaputoProductIntegrationMethod[StateFunctionT]):
         return 1.0
 
 
-def _update_caputo_forward_euler(
-    dy: Array,
+def _weights_quadrature_rectangular(
     m: CaputoProductIntegrationMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
 ) -> Array:
-    """Adds the Forward Euler right-hand side to *dy*."""
     # get time history
-    assert 0 < n <= len(history)
-    ts = history.ts[n] - history.ts[: n + 1]
+    ts = (history.ts[n] - history.ts[: n + 1]).reshape(-1, 1)
 
-    # sum up convolution
-    alpha = m.alpha.reshape(-1, 1)
-    g1p = gamma1p(m).reshape(-1, 1)
+    alpha = m.alpha
+    g1p = gamma1p(m)
     omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / g1p
-    dy += np.einsum("ij,ij->j", omega.T, history.storage[:n])
 
-    return dy
+    return np.array(omega)
+
+
+def _update_caputo_forward_euler(
+    out: Array,
+    m: CaputoProductIntegrationMethod[StateFunctionT],
+    history: ProductIntegrationHistory,
+    n: int,
+) -> Array:
+    """Adds the Forward Euler right-hand side to *out*."""
+    assert 0 < n <= len(history)
+    omega = _weights_quadrature_rectangular(m, history, n)
+
+    out += np.einsum("ij,ij->j", omega, history.storage[:n])
+    return out
 
 
 @advance.register(ForwardEuler)
@@ -210,33 +219,27 @@ class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
 
 
 def _update_caputo_weighted_euler(
-    dy: Array,
+    out: Array,
     m: WeightedEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
 ) -> tuple[Array, Array]:
-    """Adds the weighted Euler right-hand side to *dy*."""
-    # NOTE: this is implicit so we never want to compute the last term
+    """Adds the weighted Euler right-hand side to *out*."""
     assert 0 < n <= len(history)
-
-    ts = history.ts[n] - history.ts[: n + 1]
-    theta = m.theta
-
-    # add explicit terms
-    alpha = m.alpha.reshape(-1, 1)
-    g1p = gamma1p(m).reshape(-1, 1)
-    omega = ((ts[:-1] ** alpha - ts[1:] ** alpha) / g1p).T
+    omega = _weights_quadrature_rectangular(m, history, n)
 
     # add forward terms
+    theta = m.theta
     fs = history.storage[:n]
     if theta != 0.0:
-        dy += theta * np.einsum("ij,ij->j", omega, fs)
+        out += theta * np.einsum("ij,ij->j", omega, fs)
 
     # add backwards terms
     if theta != 1.0:
-        dy += (1 - theta) * np.einsum("ij,ij->j", omega[:-1], fs[1:])
+        # NOTE: this is implicit so we do not add the last term
+        out += (1 - theta) * np.einsum("ij,ij->j", omega[:-1], fs[1:])
 
-    return dy, omega[-1].squeeze()
+    return out, (1 - theta) * omega[-1].squeeze()
 
 
 @advance.register(WeightedEuler)
@@ -254,11 +257,11 @@ def _advance_caputo_weighted_euler(
     # add explicit terms
     fnext = np.zeros_like(y)
     fnext = _update_caputo_initial_condition(fnext, m.y0, t - tstart)
-    fnext, omega = _update_caputo_weighted_euler(fnext, m, history, n)
+    fnext, fac = _update_caputo_weighted_euler(fnext, m, history, n)
 
-    # solve implicit equation
     if m.theta != 1.0:  # noqa: SIM108
-        ynext = m.solve(t, y, omega * (1 - m.theta), fnext)
+        # NOTE: solve `y = fac * f(t, y) + fnext`
+        ynext = m.solve(t, y, fac, fnext)
     else:
         ynext = fnext
 
