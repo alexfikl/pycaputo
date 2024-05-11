@@ -24,11 +24,10 @@ logger = get_logger(__name__)
 
 
 def _update_caputo_initial_condition(
-    out: Array, m: CaputoProductIntegrationMethod[StateFunctionT], t: float
+    out: Array, y0: tuple[Array, ...], t: float
 ) -> Array:
-    """Adds the appropriate initial conditions to *dy*."""
-    t = t - m.control.tstart
-    for k, y0k in enumerate(m.y0):
+    """Adds the appropriate initial conditions to *out*."""
+    for k, y0k in enumerate(y0):
         out += t**k / gamma(k + 1) * y0k
 
     return out
@@ -117,11 +116,12 @@ def _advance_caputo_forward_euler(
 ) -> AdvanceResult:
     # set next time step
     n = len(history)
+    tstart = m.control.tstart
     t = history.ts[n] = history.ts[n - 1] + dt
 
     # compute solution
     ynext = np.zeros_like(y)
-    ynext = _update_caputo_initial_condition(ynext, m, t)
+    ynext = _update_caputo_initial_condition(ynext, m.y0, t - tstart)
     ynext = _update_caputo_forward_euler(ynext, m, history, n)
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
@@ -248,11 +248,12 @@ def _advance_caputo_weighted_euler(
 ) -> AdvanceResult:
     # set next time step
     n = len(history)
+    tstart = m.control.tstart
     t = history.ts[n] = history.ts[n - 1] + dt
 
     # add explicit terms
     fnext = np.zeros_like(y)
-    fnext = _update_caputo_initial_condition(fnext, m, t)
+    fnext = _update_caputo_initial_condition(fnext, m.y0, t - tstart)
     fnext, omega = _update_caputo_weighted_euler(fnext, m, history, n)
 
     # solve implicit equation
@@ -417,11 +418,12 @@ def _advance_caputo_predictor_corrector(
     alpha = single_valued(m.derivative_order)
 
     # set next time step
+    tstart = m.control.tstart
     t = history.ts[n] = history.ts[n - 1] + dt
 
     # add initial conditions
     y0 = np.zeros_like(y)
-    y0 = _update_caputo_initial_condition(y0, m, t)
+    y0 = _update_caputo_initial_condition(y0, m.y0, t - tstart)
 
     # predictor step (forward Euler)
     yp = np.copy(y0)
@@ -480,6 +482,7 @@ def _advance_caputo_modified_pece(
     gamma1 = gamma(1 + alpha)
 
     # set next time step
+    tstart = m.control.tstart
     t = history.ts[n] = history.ts[n - 1] + dt
 
     ts = history.ts[: n + 1]
@@ -488,7 +491,7 @@ def _advance_caputo_modified_pece(
 
     # compute common terms
     dy = np.zeros_like(y)
-    dy = _update_caputo_initial_condition(dy, m, t)
+    dy = _update_caputo_initial_condition(dy, m.y0, t - tstart)
 
     if n == 1:
         yp = _update_caputo_forward_euler(dy, m, history, len(history))
