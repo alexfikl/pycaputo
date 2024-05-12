@@ -144,6 +144,7 @@ def fode_factory(
         fode_factory(caputo.WeightedEuler, theta=0.0),
         fode_factory(caputo.WeightedEuler, theta=0.5),
         fode_factory(caputo.Trapezoidal),
+        # fode_factory(caputo.ExplicitTrapezoidal),
         fode_factory(caputo.PECE, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
         fode_factory(caputo.PEC, corrector_iterations=2),
@@ -174,7 +175,7 @@ def test_fode_caputo(
         with BlockTimer(name=m.name) as bt:
             ts = []
             ys = []
-            for event in evolve(m):
+            for event in evolve(m, dtinit=m.control.dt):
                 if isinstance(event, StepFailed):
                     raise ValueError("Step update failed")
                 elif isinstance(event, StepCompleted):
