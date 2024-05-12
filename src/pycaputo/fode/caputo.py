@@ -334,10 +334,11 @@ def _weights_quadrature_trapezoidal(
     m: CaputoProductIntegrationMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
+    p: int,
 ) -> tuple[Array, Array]:
     # get time history
-    ts = (history.ts[n] - history.ts[: n + 1]).reshape(-1, 1)
-    dt = np.diff(history.ts[:n + 1]).reshape(-1, 1)
+    ts = (history.ts[n] - history.ts[: p + 1]).reshape(-1, 1)
+    dt = np.diff(history.ts[: p + 1]).reshape(-1, 1)
 
     alpha = m.alpha
     r0 = ts**alpha / gamma1p(m)
@@ -354,10 +355,12 @@ def _update_caputo_trapezoidal(
     m: CaputoProductIntegrationMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
+    p: int,
 ) -> tuple[Array, Array]:
     assert 0 < n <= len(history)
-    omegal, omegar = _weights_quadrature_trapezoidal(m, history, n)
-    fs = history.storage[:n]
+    assert 0 < p <= n
+    omegal, omegar = _weights_quadrature_trapezoidal(m, history, n, p)
+    fs = history.storage[:p]
 
     # add forward terms
     out += np.einsum("ij,ij->j", omegal, fs)
@@ -382,7 +385,7 @@ def _advance_caputo_trapezoidal(
     # compute solution
     fnext = np.zeros_like(y)
     fnext = _update_caputo_initial_condition(fnext, m.y0, t - tstart)
-    fnext, fac = _update_caputo_trapezoidal(fnext, m, history, n)
+    fnext, fac = _update_caputo_trapezoidal(fnext, m, history, n, n)
 
     # solve `ynext = fac * f(t, ynext) + fnext`
     ynext = m.solve(t, y, fac, fnext)
@@ -418,11 +421,25 @@ def _advance_caputo_explicit_trapezoidal(
     t = history.ts[n] = history.ts[n - 1] + dt
 
     # compute solution
-    fnext = np.zeros_like(y)
-    fnext = _update_caputo_initial_condition(fnext, m.y0, t - tstart)
-    fnext, _ = _update_caputo_trapezoidal(fnext, m, history, n)
+    ynext = np.zeros_like(y)
+    ynext = _update_caputo_initial_condition(ynext, m.y0, t - tstart)
 
-    ynext = fnext
+    if n <= 1:
+        ynext = _update_caputo_forward_euler(ynext, m, history, n)
+    else:
+        ynext, omega = _update_caputo_trapezoidal(ynext, m, history, n, n - 1)
+
+        ts1 = t - history.ts[n - 1]
+        dt2 = history.ts[n - 1] - history.ts[n - 2]
+        fm1 = history.storage[n - 1]
+        fm2 = history.storage[n - 2]
+
+        omegal = -ts1 ** (1 + m.alpha) / gamma(2 + m.alpha) / dt2
+        ynext += (omega + omegal) * fm2
+        omegar = (
+            ts1 ** (1 + m.alpha) / gamma(2 + m.alpha) / dt2
+            + ts1**m.alpha / gamma(1 + m.alpha))
+        ynext += omegar * fm1
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
