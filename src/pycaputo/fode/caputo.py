@@ -434,11 +434,11 @@ def _advance_caputo_explicit_trapezoidal(
         fm1 = history.storage[n - 1]
         fm2 = history.storage[n - 2]
 
-        omegal = -ts1 ** (1 + m.alpha) / gamma(2 + m.alpha) / dt2
+        omegal = -(ts1 ** (1 + m.alpha)) / gamma(2 + m.alpha) / dt2
         ynext += (omega + omegal) * fm2
-        omegar = (
-            ts1 ** (1 + m.alpha) / gamma(2 + m.alpha) / dt2
-            + ts1**m.alpha / gamma(1 + m.alpha))
+        omegar = ts1 ** (1 + m.alpha) / gamma(2 + m.alpha) / dt2 + ts1**m.alpha / gamma(
+            1 + m.alpha
+        )
         ynext += omegar * fm1
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
