@@ -11,6 +11,10 @@ Features
   in :class:`~pycaputo.quadrature.riemann_liouville.SplineLagrange`. These methods
   require knowledge of the function :math:`f` being integrated, but can obtain
   high order :math:`> 3`.
+* Implement the implicit :class:`~pycaputo.fode.caputo.Trapezoidal` and
+  :class:`~pycaputo.fode.caputo.ExplicitTrapezoidal` methods. These methods are
+  closely related to the standard :class:`~pycaputo.fode.caputo.PECE` method.
+  The implicit method has better stability.
 
 Changes
 ^^^^^^^

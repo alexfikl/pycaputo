@@ -171,11 +171,12 @@ def test_fode_caputo(
 
     for n in [32, 64, 128, 256, 512]:
         m = factory(alpha, n)
+        dtinit = getattr(m.control, "dt", None)
 
         with BlockTimer(name=m.name) as bt:
             ts = []
             ys = []
-            for event in evolve(m, dtinit=m.control.dt):
+            for event in evolve(m, dtinit=dtinit):
                 if isinstance(event, StepFailed):
                     raise ValueError("Step update failed")
                 elif isinstance(event, StepCompleted):
