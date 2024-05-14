@@ -16,8 +16,12 @@ keywords = [
     "time-stepping",
 ]
 license = { text = "MIT" }
-maintainers = [{ name = "Alexandru Fikl", email = "alexfikl@gmail.com" }]
-authors = [{ name = "Alexandru Fikl", email = "alexfikl@gmail.com" }]
+maintainers = [
+    { name = "Alexandru Fikl", email = "alexfikl@gmail.com" },
+]
+authors = [
+    { name = "Alexandru Fikl", email = "alexfikl@gmail.com" },
+]
 requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -27,7 +31,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -40,10 +43,9 @@ dependencies = [
     "numpy>=1.17",
     "rich>=13",
     "scipy>=1.7",
-    'typing-extensions; python_version < "3.10"',
+    "typing-extensions; python_version<'3.10'",
 ]
-[project.optional-dependencies]
-dev = [
+optional-dependencies.dev = [
     "codespell",
     "differint",
     "doc8",
@@ -57,22 +59,27 @@ dev = [
     "types-dataclasses",
     "uv",
 ]
-docs = [
+optional-dependencies.docs = [
     "sphinx>=6",
     "sphinx-book-theme",
 ]
-vis = [
-    "SciencePlots",
+optional-dependencies.vis = [
+    "scienceplots",
 ]
-[project.urls]
-Documentation = "https://pycaputo.readthedocs.io"
-Repository = "https://github.com/alexfikl/pycaputo"
+urls.Documentation = "https://pycaputo.readthedocs.io"
+urls.Repository = "https://github.com/alexfikl/pycaputo"
 
 [tool.hatch.build.targets.sdist]
-exclude = [".github", ".ci", "docs/_build"]
+exclude = [
+    ".github",
+    ".ci",
+    "docs/_build",
+]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pycaputo"]
+packages = [
+    "src/pycaputo",
+]
 
 [tool.ruff]
 preview = true
@@ -81,46 +88,46 @@ line-length = 88
 
 [tool.ruff.lint]
 select = [
-    "A",        # flake8-builtins
-    "B",        # flake8-bugbear
-    "C4",       # flake8-comprehensions
-    "E",        # flake8
-    "F",        # flake8
-    "FBT",      # flake8-boolean-trap
-    "G",        # flake8-logging-format
-    "I",        # flake8-isort
-    "ISC",      # flake8-implicit-str-concat
-    "N",        # pep8-naming
-    "NPY",      # numpy
-    "PL",       # pylint
-    "PT",       # flake8-pytest-style
-    "Q",        # flake8-quotes
-    "RUF",      # ruff
-    "S",        # flake8-bandit
-    "SIM",      # flake8-simplify
-    "UP",       # pyupgrade
-    "W",        # flake8
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "E",   # flake8
+    "F",   # flake8
+    "FBT", # flake8-boolean-trap
+    "G",   # flake8-logging-format
+    "I",   # flake8-isort
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8-naming
+    "NPY", # numpy
+    "PL",  # pylint
+    "PT",  # flake8-pytest-style
+    "Q",   # flake8-quotes
+    "RUF", # ruff
+    "S",   # flake8-bandit
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+    "W",   # flake8
 ]
 ignore = [
-    "E203",     # whitespace-before-punctuation
-    "E402",     # module-import-not-at-top-of-file
-    "ISC001",   # single-line-implicit-string-concatenation
-    "N806",     # non-lowercase-variable-in-function
-    "N803",     # non-lowercase-argument
-    "PLC0415",  # import-outside-top-level
-    "PLC2801",  # unnecessary-dunder-call
-    "PLR0911",  # too-many-return-statements
-    "PLR0912",  # too-many-branches
-    "PLR0913",  # too-many-arguments
-    "PLR0914",  # too-many-locals
-    "PLR0915",  # too-many-statements
-    "PLR0917",  # too-many-positional
-    "PLR6301",  # no-self-use
-    "PLR6104",  # non-augmented-assignment
-    "PLR2004",  # magic-value-comparison
-    "S101",     # assert
-    "S102",     # exec-builtin
-    "UP037",    # quoted-annotation
+    "E203",    # whitespace-before-punctuation
+    "E402",    # module-import-not-at-top-of-file
+    "ISC001",  # single-line-implicit-string-concatenation
+    "N806",    # non-lowercase-variable-in-function
+    "N803",    # non-lowercase-argument
+    "PLC0415", # import-outside-top-level
+    "PLC2801", # unnecessary-dunder-call
+    "PLR0911", # too-many-return-statements
+    "PLR0912", # too-many-branches
+    "PLR0913", # too-many-arguments
+    "PLR0914", # too-many-locals
+    "PLR0915", # too-many-statements
+    "PLR0917", # too-many-positional
+    "PLR6301", # no-self-use
+    "PLR6104", # non-augmented-assignment
+    "PLR2004", # magic-value-comparison
+    "S101",    # assert
+    "S102",    # exec-builtin
+    "UP037",   # quoted-annotation
 ]
 
 [tool.ruff.lint.flake8-quotes]
@@ -129,7 +136,9 @@ inline-quotes = "double"
 multiline-quotes = "double"
 
 [tool.ruff.lint.isort]
-known-first-party = ["pycaputo"]
+known-first-party = [
+    "pycaputo",
+]
 force-wrap-aliases = true
 
 [tool.pytest.ini_options]
