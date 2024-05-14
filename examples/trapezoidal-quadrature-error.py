@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
+# SPDX-FileCopyrightText: 2024 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
 r"""This example reproduces the error curves for trapezoidal quadrature from
