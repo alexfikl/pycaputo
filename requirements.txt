@@ -6,7 +6,7 @@ mdurl==0.1.2
     # via markdown-it-py
 numpy==1.26.4
     # via scipy
-pygments==2.17.2
+pygments==2.18.0
     # via rich
 rich==13.7.1
 scipy==1.13.0
