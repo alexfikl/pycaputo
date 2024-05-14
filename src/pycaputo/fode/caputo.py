@@ -195,11 +195,7 @@ class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
         else:
             # NOTE: the default hybr does not use derivatives, so use lm instead
             # FIXME: will need to maybe benchmark these a bit?
-            return {
-                "rtol": 1.0e-12,
-                "xtol": 1.0e-12,
-                "method": "lm" if self.source_jac else None,
-            }
+            return {"method": "lm" if self.source_jac else None}
 
     def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
