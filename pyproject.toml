@@ -82,12 +82,11 @@ packages = [
 ]
 
 [tool.ruff]
-preview = true
 target-version = "py38"
 line-length = 88
 
-[tool.ruff.lint]
-select = [
+preview = true
+lint.select = [
     "A",   # flake8-builtins
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
@@ -108,12 +107,19 @@ select = [
     "UP",  # pyupgrade
     "W",   # flake8
 ]
-ignore = [
+lint.flake8-quotes.docstring-quotes = "double"
+lint.flake8-quotes.inline-quotes = "double"
+lint.flake8-quotes.multiline-quotes = "double"
+lint.isort.force-wrap-aliases = true
+lint.isort.known-first-party = [
+    "pycaputo",
+]
+lint.ignore = [
     "E203",    # whitespace-before-punctuation
     "E402",    # module-import-not-at-top-of-file
     "ISC001",  # single-line-implicit-string-concatenation
-    "N806",    # non-lowercase-variable-in-function
     "N803",    # non-lowercase-argument
+    "N806",    # non-lowercase-variable-in-function
     "PLC0415", # import-outside-top-level
     "PLC2801", # unnecessary-dunder-call
     "PLR0911", # too-many-return-statements
@@ -122,24 +128,13 @@ ignore = [
     "PLR0914", # too-many-locals
     "PLR0915", # too-many-statements
     "PLR0917", # too-many-positional
-    "PLR6301", # no-self-use
-    "PLR6104", # non-augmented-assignment
     "PLR2004", # magic-value-comparison
+    "PLR6104", # non-augmented-assignment
+    "PLR6301", # no-self-use
     "S101",    # assert
     "S102",    # exec-builtin
     "UP037",   # quoted-annotation
 ]
-
-[tool.ruff.lint.flake8-quotes]
-docstring-quotes = "double"
-inline-quotes = "double"
-multiline-quotes = "double"
-
-[tool.ruff.lint.isort]
-known-first-party = [
-    "pycaputo",
-]
-force-wrap-aliases = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
