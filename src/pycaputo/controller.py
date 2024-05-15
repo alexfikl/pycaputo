@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from functools import singledispatch
+from functools import cached_property, singledispatch
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -314,6 +314,10 @@ class FixedController(Controller):
     """Fixed time step used by the controller."""
 
     @property
+    def dtinit(self) -> float:
+        return self.dt
+
+    @property
     def is_adaptive(self) -> bool:
         return False
 
@@ -435,6 +439,15 @@ class GradedController(Controller):
     @property
     def is_adaptive(self) -> bool:
         return False
+
+    @property
+    def dtinit(self) -> float:
+        if self.tfinal is None or self.nsteps is None:
+            raise AttributeError(
+                f"type object '{type(self).__name__}' has no attribute 'dt'"
+            )
+
+        return (self.tfinal - self.tstart) / (self.nsteps - 1.0)
 
 
 @evaluate_error_estimate.register(GradedController)
@@ -929,6 +942,104 @@ def _evaluate_timestep_reject_jannelli(
         dt = min(dt, c.tfinal - state["t"]) + eps
 
     return dt
+
+
+# }}}
+
+
+# {{{ random controller
+
+
+@dataclass(frozen=True)
+class RandomController(Controller):
+    r"""A time step controller with random time steps.
+
+    This controller is meant for testing and should not be used otherwise. The
+    time steps are uniformly sampled in :math:`[\Delta t_{\text{min}},
+    \Delta t_{\text{max}}]`.
+    """
+
+    dtmin: float
+    """A minimum allowable time step."""
+    dtmax: float
+    """A maximum allowable time step."""
+    rng: np.random.Generator
+    """A random number generator for the time steps."""
+
+    @cached_property
+    def dts(self) -> Array:
+        assert self.tfinal is not None
+
+        n = int((self.tfinal - self.tstart) / self.dtmin)
+        dt = self.rng.uniform(self.dtmin, self.dtmax, size=n)
+        ts = np.cumsum(np.hstack([[0.0], dt]))
+
+        ts = ts[ts < self.tfinal][: self.nsteps]
+        if abs(ts[-1] - self.tfinal) > 1.0e-14:
+            ts = np.hstack([ts, [self.tfinal]])
+
+        return np.diff(ts)
+
+    @property
+    def dtinit(self) -> float:
+        return float(self.dts[0])
+
+
+def make_random_controller(
+    tstart: float = 0.0,
+    tfinal: float | None = None,
+    *,
+    dtmin: float = 1.0e-6,
+    dtmax: float = 1.0e-2,
+    rng: np.random.Generator | None = None,
+) -> RandomController:
+    """Construct a :class:`RandomController`."""
+    if tfinal is None:
+        raise ValueError(f"Must provide 'tfinal': value '{tfinal}'")
+
+    if rng is None:
+        rng = np.random.default_rng()
+
+    return RandomController(
+        tstart=tstart,
+        tfinal=tfinal,
+        nsteps=None,
+        dtmin=dtmin,
+        dtmax=dtmax,
+        rng=rng,
+    )
+
+
+@evaluate_error_estimate.register(RandomController)
+def _evaluate_error_estimate_random(
+    c: RandomController,
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    trunc: Array,
+    y: Array,
+    yprev: Array,
+) -> float:
+    return 0.0
+
+
+@evaluate_timestep_factor.register(RandomController)
+def _evaluate_timestep_factor_random(
+    c: RandomController,
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    eest: float,
+) -> float:
+    return 1.0
+
+
+@evaluate_timestep_accept.register(RandomController)
+def _evaluate_timestep_accept_random(
+    c: RandomController,
+    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    q: float,
+    dtprev: float,
+    state: dict[str, Any],
+) -> float:
+    n = state["n"]
+    return float(c.dts[n])
 
 
 # }}}
