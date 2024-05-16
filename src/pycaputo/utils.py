@@ -684,6 +684,10 @@ class BlockTimer:
     def __str__(self) -> str:
         return f"{self.name}: {self.t_wall:.3e}s wall, {self.t_cpu:.3f}x cpu"
 
+    def pretty(self) -> str:
+        # NOTE: this matches how MATLAB shows the time from `toc`.
+        return f"Elapsed time is {self.t_wall:.5f} seconds."
+
 
 # }}}
 
