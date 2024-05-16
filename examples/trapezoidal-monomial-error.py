@@ -9,16 +9,16 @@ import numpy.linalg as la
 
 from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, BlockTimer, gamma
+from pycaputo.utils import Array, BlockTimer, StateFunctionT, gamma
 
 logger = get_logger("trapezoidal")
 rng = np.random.default_rng(seed=42)
 
 
 @dataclass(frozen=True)
-class Trapezoidal(caputo.Trapezoidal):
+class Trapezoidal(caputo.Trapezoidal[StateFunctionT]):
     def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
-        return {"method": "newton"}
+        return {"method": "newton", "xtol": 1.0e-12, "rtol": 1.0e-12}
 
 
 # {{{ function
@@ -42,14 +42,14 @@ def func_f(
     y_ref = func_y(t, t0=t0, alpha=alpha, Yv=Yv, nu=nu)
     dy_ref = func_dy(t, t0=t0, alpha=alpha, Yv=Yv, nu=nu)
 
-    result = dy_ref + y_ref**beta - y**beta
+    result = dy_ref + (y_ref**beta - y**beta)
     return np.array(result)
 
 
 def func_f_jac(
     t: float, y: Array, *, t0: float, alpha: float, Yv: Array, nu: Array, beta: float
 ) -> Array:
-    return beta * y ** (beta - 1.0)
+    return -beta * y ** (beta - 1.0)
 
 
 # }}}
@@ -62,7 +62,7 @@ m = int(np.ceil(alpha))
 # right-hand side power
 beta = 1.5
 # time interval
-tstart, tfinal = 0.0, 2.0
+tstart, tfinal = 0.0, 4.0
 
 # construct an exact solution of the form
 #   sum Yv[i] * (t - t_0) ** nu[i]
@@ -86,10 +86,13 @@ from pycaputo.controller import (
     make_random_controller,
 )
 
-if True:
+grid_type = "random"
+if grid_type == "uniform":
     c = make_fixed_controller(1.0e-3, tstart=tstart, tfinal=tfinal)
-else:
+elif grid_type == "random":
     c = make_random_controller(tstart=tstart, tfinal=tfinal, rng=rng)
+else:
+    raise ValueError(f"Unknown grid type: '{grid_type}'")
 
 ex_stepper = caputo.ExplicitTrapezoidal(
     derivative_order=(alpha,),
@@ -126,15 +129,11 @@ with BlockTimer("evolve") as bt:
         assert abs(ex_event.t - im_event.t) < 1.0e-14
 
         if not np.any(np.isfinite(im_event.y)):
-            logger.error(
-                "%s | Implicit solution is not finite: %r", im_event, im_event.y
-            )
+            logger.error("%s | Implicit solution diverged: %r", im_event, im_event.y)
             break
 
         if not np.any(np.isfinite(ex_event.y)):
-            logger.error(
-                "%s | Explicit solution is not finite: %r", ex_event, ex_event.y
-            )
+            logger.error("%s | Explicit solution diverged: %r", ex_event, ex_event.y)
             break
 
         # compute exact solution
@@ -180,6 +179,7 @@ except ImportError as exc:
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
+basename = f"trapezoidal-monomial-{grid_type}-{beta * 100:03.0f}"
 
 logger.info("Yvs: %s", Yv)
 logger.info("nu:  %s / %s", nu, nu - alpha)
@@ -192,7 +192,7 @@ rn = np.array(rn_l).T
 mask = np.s_[1:]
 
 if isinstance(c, RandomController):
-    with figure("trapezoidal-monomial-timestep") as fig:
+    with figure(f"{basename}-timestep") as fig:
         ax = fig.gca()
 
         ax.semilogy(np.diff(t))
@@ -202,7 +202,7 @@ if isinstance(c, RandomController):
         ax.set_xlabel("$n$")
         ax.set_ylabel(r"$\Delta t_n$")
 
-with figure("trapezoidal-monomial-solution") as fig:
+with figure(f"{basename}-solution") as fig:
     ax = fig.gca()
 
     ax.plot(t[mask], y_im[0, mask], "-", label="Explicit")
@@ -212,13 +212,13 @@ with figure("trapezoidal-monomial-solution") as fig:
     ax.set_xlabel("$t$")
     ax.legend()
 
-with figure("trapezoidal-monomial-remainder") as fig:
+with figure(f"{basename}-remainder") as fig:
     ax = fig.gca()
 
-    e_ex = np.abs(y_ref[0, mask] - y_ex[0, mask]) / np.abs(y_ref[0, mask])
-    e_im = np.abs(y_ref[0, mask] - y_im[0, mask]) / np.abs(y_ref[0, mask])
+    e_ex = np.abs(y_ref[0, mask] - y_ex[0, mask])
+    e_im = np.abs(y_ref[0, mask] - y_im[0, mask])
     c_i = e_im[-1] / rn[-1]
-    c_i = 1.0
+    # c_i = 1.0
 
     ax.plot(t[mask], e_im, "-", label="Implicit")
     ax.semilogy(t[mask], e_ex, "--", label="Explicit")
