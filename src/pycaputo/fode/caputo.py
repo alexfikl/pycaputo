@@ -319,7 +319,7 @@ class Trapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
         """
         from pycaputo.implicit import solve
 
-        return solve(
+        result = solve(
             self.source,
             self.source_jac,
             t,
@@ -328,6 +328,9 @@ class Trapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
             r,
             **self._get_kwargs(scalar=y0.size == 1),
         )
+        assert np.linalg.norm(result - c * self.source(t, result) - r) < 1.0e-8
+
+        return result
 
 
 def _weights_quadrature_trapezoidal(
