@@ -89,11 +89,11 @@ class ForwardEuler(CaputoProductIntegrationMethod[StateFunctionT]):
 
 def _weights_quadrature_rectangular(
     m: CaputoProductIntegrationMethod[StateFunctionT],
-    history: ProductIntegrationHistory,
+    t: Array,
     n: int,
 ) -> Array:
     # get time history
-    ts = (history.ts[n] - history.ts[: n + 1]).reshape(-1, 1)
+    ts = (t[n] - t[: n + 1]).reshape(-1, 1)
 
     alpha = m.alpha
     g1p = gamma1p(m)
@@ -110,7 +110,7 @@ def _update_caputo_forward_euler(
 ) -> Array:
     """Adds the Forward Euler right-hand side to *out*."""
     assert 0 < n <= len(history)
-    omega = _weights_quadrature_rectangular(m, history, n)
+    omega = _weights_quadrature_rectangular(m, history.ts, n)
 
     out += np.einsum("ij,ij->j", omega, history.storage[:n])
     return out
@@ -226,7 +226,7 @@ def _update_caputo_weighted_euler(
 ) -> tuple[Array, Array]:
     """Adds the weighted Euler right-hand side to *out*."""
     assert 0 < n <= len(history)
-    omega = _weights_quadrature_rectangular(m, history, n)
+    omega = _weights_quadrature_rectangular(m, history.ts, n)
 
     # add forward terms
     theta = m.theta
@@ -335,13 +335,13 @@ class Trapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
 
 def _weights_quadrature_trapezoidal(
     m: CaputoProductIntegrationMethod[StateFunctionT],
-    history: ProductIntegrationHistory,
+    t: Array,
     n: int,
     p: int,
 ) -> tuple[Array, Array]:
     # get time history
-    ts = (history.ts[n] - history.ts[: p + 1]).reshape(-1, 1)
-    dt = np.diff(history.ts[: p + 1]).reshape(-1, 1)
+    ts = (t[n] - t[: p + 1]).reshape(-1, 1)
+    dt = np.diff(t[: p + 1]).reshape(-1, 1)
 
     alpha = m.alpha
     r0 = ts**alpha / gamma1p(m)
@@ -362,7 +362,7 @@ def _update_caputo_trapezoidal(
 ) -> tuple[Array, Array]:
     assert 0 < n <= len(history)
     assert 0 < p <= n
-    omegal, omegar = _weights_quadrature_trapezoidal(m, history, n, p)
+    omegal, omegar = _weights_quadrature_trapezoidal(m, history.ts, n, p)
     fs = history.storage[:p]
 
     # add forward terms
