@@ -214,12 +214,7 @@ with BlockTimer("evolve") as bt:
 
         # print iteration
         im_error = la.norm(y_ref - im_event.y, np.inf) / la.norm(y_ref, np.inf)
-        logger.info(
-            "%s | error im %.8e model %.8e",
-            im_event,
-            im_error,
-            error,
-        )
+        logger.info("%s | error im %.8e model %.8e", im_event, im_error, error)
 
         # append solutions
         t_l.append(t_n)
