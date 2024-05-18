@@ -12,7 +12,7 @@ from pycaputo.logging import get_logger
 from pycaputo.utils import Array, BlockTimer, StateFunctionT, gamma
 
 logger = get_logger("trapezoidal")
-rng = np.random.default_rng(seed=42)
+rng = np.random.default_rng()
 
 
 @dataclass(frozen=True)
@@ -30,26 +30,47 @@ def func_y(t: float, *, t0: float, alpha: float, Yv: Array, nu: Array) -> Array:
 
 
 def func_dy(t: float, *, t0: float, alpha: float, Yv: Array, nu: Array) -> Array:
+    mask = nu > 0.0
     gYv = gamma(1 + nu) / gamma(1 + nu - alpha) * Yv
-    result = np.sum(gYv[1:] * (t - t0) ** (nu[1:] - alpha))
+    result = np.sum(gYv[mask] * (t - t0) ** (nu[mask] - alpha))
 
     return np.array([result])
 
 
 def func_f(
-    t: float, y: Array, *, t0: float, alpha: float, Yv: Array, nu: Array, beta: float
+    t: float,
+    y: Array,
+    *,
+    t0: float,
+    alpha: float,
+    Yv: Array,
+    nu: Array,
+    beta: float,
+    c: float = 1.0,
 ) -> Array:
     y_ref = func_y(t, t0=t0, alpha=alpha, Yv=Yv, nu=nu)
     dy_ref = func_dy(t, t0=t0, alpha=alpha, Yv=Yv, nu=nu)
 
-    result = dy_ref + (y_ref**beta - y**beta)
+    result = dy_ref + c * (y_ref**beta - y**beta)
     return np.array(result)
 
 
 def func_f_jac(
-    t: float, y: Array, *, t0: float, alpha: float, Yv: Array, nu: Array, beta: float
+    t: float,
+    y: Array,
+    *,
+    t0: float,
+    alpha: float,
+    Yv: Array,
+    nu: Array,
+    beta: float,
+    c: float = 1.0,
 ) -> Array:
-    return -beta * y ** (beta - 1.0)
+    if c == 0:
+        return np.zeros_like(y)
+
+    result = -c * beta * y ** (beta - 1.0)
+    return result
 
 
 # }}}
@@ -62,14 +83,14 @@ m = int(np.ceil(alpha))
 # right-hand side power
 beta = 1.5
 # time interval
-tstart, tfinal = 0.0, 4.0
+tstart, tfinal = 0.0, 8.0
 
 # construct an exact solution of the form
 #   sum Yv[i] * (t - t_0) ** nu[i]
 nns = int(np.ceil(3 / alpha))
 nu = np.array([i + alpha * j for i in range(nns) for j in range(nns)])
 nu = np.sort(nu[nu <= 2.0 + alpha])
-Yv = rng.uniform(-5.0, 5.0, size=nu.size)
+Yv = rng.uniform(0.0, 1.0, size=nu.size)
 
 # construct initial problem
 kwargs = {"t0": tstart, "alpha": alpha, "Yv": Yv, "nu": nu}
@@ -81,25 +102,22 @@ y0 = solution(tstart)
 # {{{ evolve
 
 from pycaputo.controller import (
+    Controller,
     RandomController,
     make_fixed_controller,
+    make_graded_controller,
     make_random_controller,
 )
 
-grid_type = "random"
+grid_type = "uniform"
 if grid_type == "uniform":
-    c = make_fixed_controller(1.0e-3, tstart=tstart, tfinal=tfinal)
+    c: Controller = make_fixed_controller(5.0e-3, tstart=tstart, tfinal=tfinal)
+elif grid_type == "graded":
+    c = make_graded_controller(5.0e-3, tstart=tstart, tfinal=tfinal, alpha=alpha)
 elif grid_type == "random":
     c = make_random_controller(tstart=tstart, tfinal=tfinal, rng=rng)
 else:
     raise ValueError(f"Unknown grid type: '{grid_type}'")
-
-ex_stepper = caputo.ExplicitTrapezoidal(
-    derivative_order=(alpha,),
-    control=c,
-    source=partial(func_f, **kwargs, beta=beta),
-    y0=(y0,),
-)
 
 im_stepper = Trapezoidal(
     derivative_order=(alpha,),
@@ -109,31 +127,44 @@ im_stepper = Trapezoidal(
     y0=(y0,),
 )
 
+# Implicit stepper for `(t - t0)^{nu^star}` where `nu^star = 2 alpha`
+nustar = 3
+kwargs = {**kwargs, "Yv": np.array([Yv[nustar]]), "nu": np.array([nu[nustar]])}
+en_solution = partial(func_y, **kwargs)
+
+en_stepper = Trapezoidal(
+    derivative_order=(alpha,),
+    control=c,
+    source=partial(func_f, **kwargs, beta=beta, c=0.0),
+    source_jac=partial(func_f_jac, **kwargs, beta=beta, c=0.0),
+    y0=(en_solution(tstart),),
+)
+
 from pycaputo.events import StepCompleted
 from pycaputo.stepping import evolve
 
-t_l = []
-y_ex_l = []
-y_im_l = []
-y_ref_l = []
-rn_l = []
+t_l: list[float] = []
+y_im_l: list[Array] = []
+y_ref_l: list[Array] = []
+y_en_l: list[Array] = []
+en_l: list[Array] = []
+en_ref_l: list[Array] = []
+rn_l: list[Array] = []
+error_l: list[Array] = []
 dtmax = 0.0
 
 with BlockTimer("evolve") as bt:
-    for ex_event, im_event in zip(
-        evolve(ex_stepper, dtinit=c.dtinit),
-        evolve(im_stepper, dtinit=c.dtinit),
+    dtinit = getattr(c, "dtinit", None)
+    for im_event, en_event in zip(
+        evolve(im_stepper, dtinit=dtinit),
+        evolve(en_stepper, dtinit=dtinit),
     ):
         assert isinstance(im_event, StepCompleted)
-        assert isinstance(ex_event, StepCompleted)
-        assert abs(ex_event.t - im_event.t) < 1.0e-14
+        assert isinstance(en_event, StepCompleted)
+        assert abs(en_event.t - im_event.t) < 1.0e-14
 
         if not np.any(np.isfinite(im_event.y)):
             logger.error("%s | Implicit solution diverged: %r", im_event, im_event.y)
-            break
-
-        if not np.any(np.isfinite(ex_event.y)):
-            logger.error("%s | Explicit solution diverged: %r", ex_event, ex_event.y)
             break
 
         # compute exact solution
@@ -142,28 +173,63 @@ with BlockTimer("evolve") as bt:
 
         # compute error model
         dtmax = max(dtmax, im_event.dt)
-        mask = np.s_[1:]
-        if im_event.iteration == 0:
-            En = np.zeros_like(Yv[mask])
-        else:
-            En = np.where(
-                nu[mask] - alpha <= 1.0,
-                (t_n - tstart) ** (alpha - 1.0) * dtmax ** (nu[mask] - alpha + 1),
-                (t_n - tstart) ** (nu[mask] - 2.0) * dtmax**2,
+
+        En = np.abs(en_event.y - en_solution(en_event.t)).item()
+        En_ref = (
+            0.0
+            if en_event.iteration == 0
+            else ((t_n - tstart) ** (alpha - 1.0) * dtmax ** (nu[nustar] - alpha + 1))
+        )
+        Rn = Yv[nustar] * gamma(1 + nu[nustar]) / gamma(1 + nu[nustar] - alpha) * En
+
+        # compute global error
+        from pycaputo.fode.caputo import (
+            _weights_quadrature_trapezoidal,  # noqa: PLC2701
+        )
+
+        n = im_event.iteration
+        if n > 0:
+            source_jac = im_stepper.source_jac
+            assert source_jac is not None
+
+            # get weights
+            omegal, omegar = _weights_quadrature_trapezoidal(
+                im_stepper, np.hstack([t_l, [t_n]]), n, n
             )
-        Rn = np.sum(Yv[mask] * gamma(1 + nu[mask]) / gamma(1 + nu[mask] - alpha) * En)
+            # multiply error with jacobian
+            error = np.array([
+                source_jac(t_i, y_i) * e_i
+                for t_i, y_i, e_i in zip(t_l, y_im_l, error_l)
+            ]).reshape(-1, 1)
+            # add up the entire error
+            error = (
+                Rn
+                + np.einsum("ij,ij->j", omegal, error)
+                + np.einsum("ij,ij->j", omegar[:-1], error[1:])
+            ) / (1 - omegar[-1] * source_jac(t_n, im_event.y))
+
+            error = np.abs(error)
+        else:
+            error = np.array([0.0])
 
         # print iteration
-        ex_error = la.norm(y_ref - ex_event.y) / la.norm(y_ref)
-        im_error = la.norm(y_ref - im_event.y) / la.norm(y_ref)
-        logger.info("%s | error im %.8e ex %.8e", im_event, im_error, ex_error)
+        im_error = la.norm(y_ref - im_event.y, np.inf) / la.norm(y_ref, np.inf)
+        logger.info(
+            "%s | error im %.8e model %.8e",
+            im_event,
+            im_error,
+            error,
+        )
 
         # append solutions
         t_l.append(t_n)
-        y_ex_l.append(ex_event.y)
         y_im_l.append(im_event.y)
+        y_en_l.append(en_event.y)
         y_ref_l.append(y_ref)
         rn_l.append(Rn)
+        en_l.append(En)
+        en_ref_l.append(En_ref)
+        error_l.append(error)
 
 logger.info("%s", bt.pretty())
 
@@ -185,11 +251,16 @@ logger.info("Yvs: %s", Yv)
 logger.info("nu:  %s / %s", nu, nu - alpha)
 
 t = np.array(t_l)
-y_ex = np.array(y_ex_l).T
 y_im = np.array(y_im_l).T
+y_en = np.array(y_en_l).T
 y_ref = np.array(y_ref_l).T
 rn = np.array(rn_l).T
+en = np.array(en_l).T
+en_ref = np.array(en_ref_l).T
+error = np.array(error_l).T
 mask = np.s_[1:]
+
+y_en_ref = np.array([en_solution(t_j) for t_j in t])
 
 if isinstance(c, RandomController):
     with figure(f"{basename}-timestep") as fig:
@@ -202,30 +273,51 @@ if isinstance(c, RandomController):
         ax.set_xlabel("$n$")
         ax.set_ylabel(r"$\Delta t_n$")
 
+with figure(f"{basename}-enstar") as fig:
+    ax = fig.gca()
+
+    ax.plot(t[mask], y_en[0, mask], "-", label="Implicit")
+    ax.plot(t[mask], y_en_ref[mask], "k--", label="Exact")
+
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$y$")
+    ax.legend()
+
+with figure(f"{basename}-enstar-error") as fig:
+    ax = fig.gca()
+
+    ax.semilogy(t[mask], en[mask], "-", label="Error")
+    ax.semilogy(t[mask], en_ref[mask], "k--", label="Model")
+    ax.set_ylim([1.0e-10, 1.0e-1])
+
+    ax.set_xlabel("$t$")
+    ax.set_ylabel(r"$E_{n, \nu^\star - \alpha}$")
+    ax.legend()
+
+
 with figure(f"{basename}-solution") as fig:
     ax = fig.gca()
 
     ax.plot(t[mask], y_im[0, mask], "-", label="Explicit")
-    ax.plot(t[mask], y_ex[0, mask], "--", label="Implicit")
     ax.plot(t[mask], y_ref[0, mask], "k--", label="Exact")
 
     ax.set_xlabel("$t$")
+    ax.set_ylabel("$y$")
     ax.legend()
 
 with figure(f"{basename}-remainder") as fig:
     ax = fig.gca()
 
-    e_ex = np.abs(y_ref[0, mask] - y_ex[0, mask])
     e_im = np.abs(y_ref[0, mask] - y_im[0, mask])
-    c_i = e_im[-1] / rn[-1]
-    # c_i = 1.0
 
     ax.plot(t[mask], e_im, "-", label="Implicit")
-    ax.semilogy(t[mask], e_ex, "--", label="Explicit")
-    ax.semilogy(t[mask], c_i * rn[mask], "k--", label="Remainder")
+    ax.semilogy(t[mask], rn[mask], "k--", label="Remainder")
+    ax.semilogy(t[mask], error[0, mask], "r--", label="Global Error")
+    ax.set_ylim([1.0e-10, 1.0e-1])
 
     ax.set_xlim([tstart, tfinal])
     ax.set_xlabel("$t$")
+    ax.set_ylabel("Error")
     ax.legend()
 
 # }}}
