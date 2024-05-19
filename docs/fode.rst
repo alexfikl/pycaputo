@@ -10,3 +10,8 @@ Caputo Derivative Equations
 ---------------------------
 
 .. automodule:: pycaputo.fode.caputo
+
+Special Solutions
+-----------------
+
+.. automodule:: pycaputo.fode.special
