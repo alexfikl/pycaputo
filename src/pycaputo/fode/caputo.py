@@ -370,6 +370,9 @@ def _update_caputo_trapezoidal(
     # add backward terms
     out += np.einsum("ij,ij->j", omegar[:-1], fs[1:])
 
+    if p < n:
+        out += omegar[-1] * history.storage[p]
+
     return out, omegar[-1].squeeze()
 
 
@@ -411,6 +414,30 @@ class ExplicitTrapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
         return 1.0 + self.smallest_derivative_order
 
 
+def _update_caputo_explicit_trapezoidal(
+    out: Array,
+    m: CaputoProductIntegrationMethod[StateFunctionT],
+    t: Array,
+    f: Array,
+    n: int,
+) -> Array:
+    ts1 = t[n] - t[n - 1]
+    dt2 = t[n - 1] - t[n - 2]
+    fm1 = f[n - 1]
+    fm2 = f[n - 2]
+
+    # fmt: off
+    omegal = -(ts1 ** (1 + m.alpha)) / gamma(2 + m.alpha) / dt2
+    out += omegal * fm2
+    omegar = (
+        ts1 ** (1 + m.alpha) / (gamma(2 + m.alpha) * dt2)
+        + ts1 ** m.alpha / gamma(1 + m.alpha))
+    out += omegar * fm1
+    # fmt: on
+
+    return out
+
+
 @advance.register(ExplicitTrapezoidal)
 def _advance_caputo_explicit_trapezoidal(
     m: ExplicitTrapezoidal[StateFunctionT],
@@ -430,19 +457,10 @@ def _advance_caputo_explicit_trapezoidal(
     if n <= 1:
         ynext = _update_caputo_forward_euler(ynext, m, history, n)
     else:
-        ynext, omega = _update_caputo_trapezoidal(ynext, m, history, n, n - 1)
-
-        ts1 = t - history.ts[n - 1]
-        dt2 = history.ts[n - 1] - history.ts[n - 2]
-        fm1 = history.storage[n - 1]
-        fm2 = history.storage[n - 2]
-
-        omegal = -(ts1 ** (1 + m.alpha)) / gamma(2 + m.alpha) / dt2
-        ynext += (omega + omegal) * fm2
-        omegar = ts1 ** (1 + m.alpha) / gamma(2 + m.alpha) / dt2 + ts1**m.alpha / gamma(
-            1 + m.alpha
+        ynext, _ = _update_caputo_trapezoidal(ynext, m, history, n, n - 1)
+        ynext = _update_caputo_explicit_trapezoidal(
+            ynext, m, history.ts, history.storage, n
         )
-        ynext += omegar * fm1
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
