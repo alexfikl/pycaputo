@@ -7,6 +7,7 @@ import numpy as np
 import numpy.linalg as la
 
 from pycaputo.fode import caputo, special
+from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, BlockTimer, StateFunctionT, gamma
 
@@ -29,6 +30,8 @@ m = int(np.ceil(alpha))
 beta = 1.5
 # time interval
 tstart, tfinal = 0.0, 8.0
+
+ref_type = "monomial"
 
 # construct an exact solution of the form
 #   sum Yv[i] * (t - t_0) ** nu[i]
@@ -104,8 +107,10 @@ dtmax = 0.0
 
 with BlockTimer("evolve") as bt:
     dtinit = getattr(c, "dtinit", None)
+    history = ProductIntegrationHistory.empty_like(im_stepper.y0[0])
+
     for im_event, en_event in zip(
-        evolve(im_stepper, dtinit=dtinit),
+        evolve(im_stepper, history=history, dtinit=dtinit),
         evolve(en_stepper, dtinit=dtinit),
     ):
         assert isinstance(im_event, StepCompleted)
