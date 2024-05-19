@@ -305,6 +305,9 @@ def mittag_leffler_garrapa(
 # }}}
 
 
+# {{{ Mittag-Leffler
+
+
 def mittag_leffler_special(
     z: float | complex | Array,
     alpha: float = 1.0,
@@ -405,3 +408,38 @@ def mittag_leffler(
 
     ml = np.vectorize(lambda zi: 0j + func(zi, alpha=alpha, beta=beta))
     return np.array(ml(z))
+
+
+# }}}
+
+
+# {{{ sine / cosine
+
+
+def caputo_derivative_sine(t: float, alpha: float) -> float:
+    r"""Compute the :class:`~pycaputo.derivatives.CaputoDerivative` of the
+    sine function.
+
+    .. math::
+
+        D^\alpha_C[sin](t) =
+            \cos \left(\frac{n \pi}{2}\right) t^{1 + n - alpha} E_{2, 2 + n - \alpha}
+            + \sin \left(\frac{n \pi}{2}\right) t^{n - \alpha} E_{2, 1 + n - \alpha}
+
+    where :math:`E_{\alpha, \beta}` is the Mittag-Leffler function.
+    """
+    n = int(np.ceil(alpha))
+
+    if n % 2 == 0:
+        # sin(m pi / 2) == 0
+        Eab = mittag_leffler(-(t**2), 2, 2 + n - alpha)
+        result = np.cos(n * np.pi / 2) * t ** (1 + n - alpha) * Eab
+    else:
+        # cos(m pi / 2) == 0
+        Eab = mittag_leffler(-(t**2), 2, 1 + n - alpha)
+        result = np.sin(n * np.pi / 2) * t ** (n - alpha) * Eab
+
+    return float(result)
+
+
+# }}}
