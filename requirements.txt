@@ -5,8 +5,12 @@ markdown-it-py==3.0.0
 mdurl==0.1.2
     # via markdown-it-py
 numpy==1.26.4
-    # via scipy
+    # via
+    #   pycaputo (pyproject.toml)
+    #   scipy
 pygments==2.18.0
     # via rich
 rich==13.7.1
+    # via pycaputo (pyproject.toml)
 scipy==1.13.0
+    # via pycaputo (pyproject.toml)
