@@ -667,6 +667,7 @@ class BlockTimer:
         return self.t_proc / self.t_wall
 
     def __enter__(self) -> BlockTimer:
+        self.t_wall = self.t_proc = 0.0
         self.t_wall_start = time.perf_counter()
         self.t_proc_start = time.process_time()
 
