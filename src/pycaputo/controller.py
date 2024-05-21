@@ -978,7 +978,7 @@ class RandomController(Controller):
         if abs(ts[-1] - self.tfinal) > 1.0e-14:
             ts = np.hstack([ts, [self.tfinal]])
 
-        return ts
+        return np.array(ts)
 
     @cached_property
     def timesteps(self) -> Array:
@@ -1053,5 +1053,6 @@ def _evaluate_timestep_accept_random(
         dt = min(dt, c.tfinal - state["t"]) + eps
 
     return float(dt)
+
 
 # }}}

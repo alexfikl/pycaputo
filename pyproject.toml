@@ -107,13 +107,6 @@ lint.select = [
     "UP",  # pyupgrade
     "W",   # flake8
 ]
-lint.flake8-quotes.docstring-quotes = "double"
-lint.flake8-quotes.inline-quotes = "double"
-lint.flake8-quotes.multiline-quotes = "double"
-lint.isort.force-wrap-aliases = true
-lint.isort.known-first-party = [
-    "pycaputo",
-]
 lint.ignore = [
     "E203",    # whitespace-before-punctuation
     "E402",    # module-import-not-at-top-of-file
@@ -134,6 +127,14 @@ lint.ignore = [
     "S101",    # assert
     "S102",    # exec-builtin
     "UP037",   # quoted-annotation
+]
+
+lint.flake8-quotes.docstring-quotes = "double"
+lint.flake8-quotes.inline-quotes = "double"
+lint.flake8-quotes.multiline-quotes = "double"
+lint.isort.force-wrap-aliases = true
+lint.isort.known-first-party = [
+    "pycaputo",
 ]
 
 [tool.pytest.ini_options]

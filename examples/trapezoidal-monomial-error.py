@@ -168,7 +168,7 @@ with BlockTimer("evolve") as bt:
             del fs
             del ts
         else:
-            delta_e = delta_y = 1.0e-15
+            delta_e = delta_y = np.array([1.0e-15])
             En = np.abs(en_event.y - func_star(en_event.t)).item()
             Yvstar = np.array([Yvstar_ref])
             Rn = np.array([Rn_ref])
