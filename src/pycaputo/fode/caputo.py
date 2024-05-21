@@ -376,6 +376,24 @@ def _update_caputo_trapezoidal(
     return out, omegar[-1].squeeze()
 
 
+def _error_explicit_step(
+    m: ProductIntegrationMethod[StateFunctionT],
+    t: Array,
+    f: Array,
+) -> Array:
+    assert t.shape[0] == f.shape[0] == 3
+    alpha = m.alpha
+    dt = np.diff(t)
+
+    # numbering {f[0] = f_{n - 2}, f[1] = f_{n - 1}, f[2] = f_n}
+    c2 = dt[1] ** alpha / gamma2p(m)
+    c1 = -c2 * (dt[1] / dt[0] + alpha + 1)
+    c0 = c2 * dt[1] / dt[0]
+    result = c0 * f[0] + c1 * f[1] + c2 * f[2]
+
+    return np.array(result)
+
+
 @advance.register(Trapezoidal)
 def _advance_caputo_trapezoidal(
     m: Trapezoidal[StateFunctionT],
@@ -416,9 +434,9 @@ class ExplicitTrapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
 
 def _update_caputo_explicit_trapezoidal(
     out: Array,
-    m: CaputoProductIntegrationMethod[StateFunctionT],
     t: Array,
     f: Array,
+    alpha: Array,
     n: int,
 ) -> Array:
     ts1 = t[n] - t[n - 1]
@@ -427,11 +445,11 @@ def _update_caputo_explicit_trapezoidal(
     fm2 = f[n - 2]
 
     # fmt: off
-    omegal = -(ts1 ** (1 + m.alpha)) / gamma(2 + m.alpha) / dt2
+    omegal = -(ts1 ** (1 + alpha)) / gamma(2 + alpha) / dt2
     out += omegal * fm2
     omegar = (
-        ts1 ** (1 + m.alpha) / (gamma(2 + m.alpha) * dt2)
-        + ts1 ** m.alpha / gamma(1 + m.alpha))
+        ts1 ** (1 + alpha) / gamma(2 + alpha) / dt2
+        + ts1 ** alpha / gamma(1 + alpha))
     out += omegar * fm1
     # fmt: on
 
@@ -459,7 +477,7 @@ def _advance_caputo_explicit_trapezoidal(
     else:
         ynext, _ = _update_caputo_trapezoidal(ynext, m, history, n, n - 1)
         ynext = _update_caputo_explicit_trapezoidal(
-            ynext, m, history.ts, history.storage, n
+            ynext, history.ts, history.storage, m.alpha, n
         )
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)

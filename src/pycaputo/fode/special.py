@@ -110,10 +110,14 @@ class CaputoMonomial(Solution):
         return np.array([result])
 
     def source(self, t: float, y: Array) -> Array:
-        y_ref = self.function(t)
-        dy_ref = self.derivative(t)
+        if self.c == 0:
+            dy_ref = self.derivative(t)
+            result = dy_ref
+        else:
+            y_ref = self.function(t)
+            dy_ref = self.derivative(t)
+            result = dy_ref + self.c * (y_ref**self.beta - y**self.beta)
 
-        result = dy_ref + self.c * (y_ref**self.beta - y**self.beta)
         return np.array(result)
 
     def source_jac(self, t: float, y: Array) -> Array:
