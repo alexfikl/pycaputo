@@ -967,22 +967,26 @@ class RandomController(Controller):
     """A random number generator for the time steps."""
 
     @cached_property
-    def dts(self) -> Array:
+    def times(self) -> Array:
         assert self.tfinal is not None
 
-        n = int((self.tfinal - self.tstart) / self.dtmin)
+        n = int((self.tfinal - self.tstart) / self.dtmin) + 1
         dt = self.rng.uniform(self.dtmin, self.dtmax, size=n)
-        ts = np.cumsum(np.hstack([[0.0], dt]))
+        ts = self.tstart + np.cumsum(np.hstack([[0.0], dt]))
 
-        ts = ts[ts < self.tfinal][: self.nsteps]
+        ts = ts[ts < self.tfinal]
         if abs(ts[-1] - self.tfinal) > 1.0e-14:
             ts = np.hstack([ts, [self.tfinal]])
 
-        return np.diff(ts)
+        return ts
+
+    @cached_property
+    def timesteps(self) -> Array:
+        return np.diff(self.times)
 
     @property
     def dtinit(self) -> float:
-        return float(self.dts[0])
+        return float(self.timesteps[0])
 
 
 def make_random_controller(
@@ -1039,7 +1043,15 @@ def _evaluate_timestep_accept_random(
     state: dict[str, Any],
 ) -> float:
     n = state["n"]
-    return float(c.dts[n])
+    if n >= c.timesteps.size - 1:
+        # NOTE: this time step is not going to get used
+        return 0.0
 
+    dt = c.timesteps[n + 1]
+    if c.tfinal is not None:
+        eps = 5.0 * np.finfo(m.y0[0].dtype).eps
+        dt = min(dt, c.tfinal - state["t"]) + eps
+
+    return float(dt)
 
 # }}}
