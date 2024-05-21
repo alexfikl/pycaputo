@@ -176,6 +176,10 @@ def mittag_leffler_diethelm(
     if abs(z) == 0:
         return 1 / math.gamma(beta)
 
+    # NOTE: ensure z is complex (some of the operations below are not well defined
+    # otherwise e.g. z ** 1/k0 for negative z)
+    z = 0.0j + z
+
     if alpha > 1:
         k0 = math.floor(alpha) + 1
         z = z ** (1.0 / k0)
@@ -416,7 +420,9 @@ def mittag_leffler(
 # {{{ sine / cosine
 
 
-def caputo_derivative_sine(t: float, alpha: float) -> float:
+def caputo_derivative_sine(
+    t: float | Array, alpha: float, alg: Algorithm | None = None
+) -> Array:
     r"""Compute the :class:`~pycaputo.derivatives.CaputoDerivative` of the
     sine function.
 
@@ -432,14 +438,17 @@ def caputo_derivative_sine(t: float, alpha: float) -> float:
 
     if n % 2 == 0:
         # sin(m pi / 2) == 0
-        Eab = mittag_leffler(-(t**2), 2, 2 + n - alpha)
+        Eab = mittag_leffler(-(t**2), 2, 2 + n - alpha, alg=alg)
         result = np.cos(n * np.pi / 2) * t ** (1 + n - alpha) * Eab
     else:
         # cos(m pi / 2) == 0
-        Eab = mittag_leffler(-(t**2), 2, 1 + n - alpha)
+        Eab = mittag_leffler(-(t**2), 2, 1 + n - alpha, alg=alg)
         result = np.sin(n * np.pi / 2) * t ** (n - alpha) * Eab
 
-    return float(result)
+    result = np.array(result)
+    # assert np.linalg.norm(result.imag) < 5 * np.finfo(result.dtype).eps
+
+    return np.array(result.real)
 
 
 # }}}
