@@ -197,6 +197,7 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
 # {{{ test_mittag_leffler_sine_mathematica
 
 
+@pytest.mark.xfail()
 @pytest.mark.parametrize("iref", [0])
 @pytest.mark.parametrize("alg", [ml.Algorithm.Series, ml.Algorithm.Diethelm])
 def test_mittag_leffler_sine_mathematica(iref: int, alg: ml.Algorithm) -> None:
@@ -207,7 +208,7 @@ def test_mittag_leffler_sine_mathematica(iref: int, alg: ml.Algorithm) -> None:
     result = ml.caputo_derivative_sine(ref.z, alpha=ref.alpha, alg=alg)
     error = np.linalg.norm(result - ref.result) / np.linalg.norm(ref.result)
     logger.info("Error D^%g[sin]: %.12e", ref.alpha, error)
-    # assert error < 1.0e-5
+    assert error < 1.0e-12
 
 
 # }}}
