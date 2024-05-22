@@ -140,7 +140,7 @@ class CaputoMonomial(Solution):
         return result
 
     @classmethod
-    def random_singular_solution(
+    def random(
         cls,
         alpha: float,
         t0: float = 0.0,
@@ -158,16 +158,31 @@ class CaputoMonomial(Solution):
         This mimics the exact solution of fractional equations, where the
         it is known to have an asymptotic expansion of this fashion in a
         neighborhood of :math:`t_0`. For example, see Equation 5 in
-        [Garrappa2015b]_.
+        [Garrappa2015b]_ which gives
 
         .. math::
 
-            \nu \in \{i + j \alpha \mid i, j \in \mathbb{N}, i + j \alpha < p\}
-            \setminus \{0, \dots, m - 1\},
+            y(t) = \sum_{k = 0}^{m - 1} \frac{(t - t_0)^k}{\Gamma(1 + k)} y_0^{(k)}
+                    + \sum_{\nu \in \mathcal{A}_{p, m}} Y_{\nu} (t - t_0)^\nu
+                    + \mathcal{O}((t - t_0)^p)
 
-        where :math:`m - 1 \le \alpha < m`. The coefficients :math:`Y_{nu_i}`
+        where
+
+        .. math::
+
+            \mathcal{A}_{p, m} =
+                \{i + j \alpha \mid i, j \in \mathbb{N}, i + j \alpha < p\}
+                \setminus \{0, \dots, m - 1\},
+
+        and :math:`m - 1 \le \alpha < m`. The coefficients :math:`Y_{\nu}`
         are randomly generated and sorted in decreasing order, such that
         the term :math:`(t - t_0)^\alpha` has the largest coefficient.
+
+        .. note::
+
+            As can be seen from the expansion, the first-order derivative of the
+            solution will not be singular for :math:`\alpha > 1`. However, some
+            higher-order derivatives will always be singular.
 
         :arg p: the order of the expansion, taken to be :math:`m + 2` by default.
         :arg Ymin: minimum value of the coefficients.
