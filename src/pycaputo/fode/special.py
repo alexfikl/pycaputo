@@ -139,6 +139,64 @@ class CaputoMonomial(Solution):
         result = -self.c * self.beta * y ** (self.beta - 1.0)
         return result
 
+    @classmethod
+    def random_singular_solution(
+        cls,
+        alpha: float,
+        t0: float = 0.0,
+        *,
+        p: int | None = None,
+        Ymin: float = 0.0,
+        Ymax: float = 3.0,
+        beta: float = 2.0,
+        c: float = 1.0,
+        rng: np.random.Generator | None = None,
+    ) -> CaputoMonomial:
+        r"""Constructs a solution where the leading terms blow up in the
+        derivative.
+
+        This mimics the exact solution of fractional equations, where the
+        it is known to have an asymptotic expansion of this fashion in a
+        neighborhood of :math:`t_0`. For example, see Equation 5 in
+        [Garrappa2015b]_.
+
+        .. math::
+
+            \nu \in \{i + j \alpha \mid i, j \in \mathbb{N}, i + j \alpha < p\}
+            \setminus \{0, \dots, m - 1\},
+
+        where :math:`m - 1 \le \alpha < m`. The coefficients :math:`Y_{nu_i}`
+        are randomly generated and sorted in decreasing order, such that
+        the term :math:`(t - t_0)^\alpha` has the largest coefficient.
+
+        :arg p: the order of the expansion, taken to be :math:`m + 2` by default.
+        :arg Ymin: minimum value of the coefficients.
+        :arg Ymax: maximum value of the coefficients.
+        """
+        m = int(np.ceil(alpha))
+        if p is None:
+            p = m + 2
+
+        if rng is None:
+            rng = np.random.default_rng()
+
+        imax = p
+        jmax = int(np.ceil(p / alpha))
+
+        nu = np.array([i + alpha * j for i in range(imax) for j in range(jmax)])
+        Ap = nu[nu < p]
+        Apm = np.setdiff1d(Ap, np.arange(m, dtype=nu.dtype))
+        Yv = rng.uniform(Ymin, Ymax, size=Apm.size)
+
+        return CaputoMonomial(
+            Yv=np.sort(Yv)[::-1],
+            nu=np.sort(Apm),
+            t0=t0,
+            alpha=alpha,
+            beta=beta,
+            c=c,
+        )
+
 
 # }}}
 
