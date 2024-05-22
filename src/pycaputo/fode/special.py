@@ -12,7 +12,31 @@ from pycaputo.utils import Array, gamma
 
 
 @dataclass(frozen=True)
-class Solution(ABC):
+class Function(ABC):
+    r"""Abstract class for right-hand side functions of differential equations
+
+    .. math::
+
+        D^\alpha[y](t) = f(t, y(t)),
+
+    The right-hand side term is given by :meth:`source` and its Jacobian with
+    respect to the second argument is given by :meth:`source_jac`.
+    """
+
+    def __call__(self, t: float, y: Array) -> Array:
+        return self.source(t, y)
+
+    @abstractmethod
+    def source(self, t: float, y: Array) -> Array:
+        """Evaluates the right-hand side of the fractional equation."""
+
+    @abstractmethod
+    def source_jac(self, t: float, y: Array) -> Array:
+        """Evaluates the Jacobian of :meth:`source` with respect to *y*."""
+
+
+@dataclass(frozen=True)
+class Solution(Function):
     r"""An abstract solution to a fractional differential equation of the form
 
     .. math::
@@ -20,9 +44,8 @@ class Solution(ABC):
         D^\alpha[y](t) = f(t, y(t)),
 
     with appropriate initial conditions. The solution is given by :meth:`function`
-    and its fractional derivative is given by :meth:`derivative`. Then, the
-    right-hand side term is given by :meth:`source` and its Jacobian with
-    respect to the second argument is given by :meth:`source_jac`.
+    and its fractional derivative is given by :meth:`derivative`. This is a
+    subclass of :class:`Function` and can also be used to define the equation.
     """
 
     def __call__(self, t: float) -> Array:
@@ -35,14 +58,6 @@ class Solution(ABC):
     @abstractmethod
     def derivative(self, t: float) -> Array:
         """Evaluates the fractional derivative of the reference solution at *t*."""
-
-    @abstractmethod
-    def source(self, t: float, y: Array) -> Array:
-        """Evaluates the right-hand side of the fractional equation."""
-
-    @abstractmethod
-    def source_jac(self, t: float, y: Array) -> Array:
-        """Evaluates the Jacobian of :meth:`source` with respect to *y*."""
 
 
 # {{{ monomials
@@ -131,7 +146,7 @@ class CaputoMonomial(Solution):
 # }}}
 
 
-# {{{ sine
+# {{{ Sine
 
 
 @dataclass(frozen=True)
@@ -154,8 +169,11 @@ class CaputoSine(Solution):
     alpha: float
     """Order of the fractional derivative."""
 
-    def __call__(self, t: float) -> Array:
-        return self.function(t)
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.alpha <= 0:
+                raise ValueError(f"'alpha' must be positive: {self.alpha}")
 
     def function(self, t: float) -> Array:
         return np.array([np.sin(t)])
@@ -172,6 +190,104 @@ class CaputoSine(Solution):
 
     def source_jac(self, t: float, y: Array) -> Array:
         return np.zeros_like(y)
+
+
+# }}}
+
+
+# {{{ Brusselator
+
+
+@dataclass(frozen=True)
+class Brusselator(Function):
+    r"""Implements the right-hand side of the Brusselator system.
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            a - (\mu + 1) x + x^2 y + A \cos \omega t, \\
+        D^\alpha[y](t) & =
+            \mu x - x^2 y.
+        \end{aligned}
+    """
+
+    a: float
+    """Parameter in the Brusselator model."""
+    mu: float
+    """Parameter in the Brusselator model."""
+
+    amplitude: float
+    """Forcing amplitude."""
+    omega: float
+    """Angular velocity of the forcing."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.a < 0:
+                raise ValueError(f"'a' must be positive: {self.a}")
+
+            if self.mu < 0:
+                raise ValueError(f"'mu' must be positive: {self.a}")
+
+    def source(self, t: float, y: Array) -> Array:
+        f = self.amplitude * np.cos(self.omega * t)
+        return np.array([
+            self.a - (self.mu + 1) * y[0] + y[0] ** 2 * y[1] + f,
+            self.mu * y[0] - y[0] ** 2 * y[1],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-(self.mu + 1) + 2 * y[0] * y[1], y[0] ** 2],
+            [self.mu - 2 * y[0] * y[1], -(y[0] ** 2)],
+        ])
+
+
+# }}}
+
+
+# {{{ van der Pol
+
+
+@dataclass(frozen=True)
+class VanDerPol(Function):
+    r"""Implements the right-hand side of the van der Pol system.
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            y, \\
+        D^\alpha[y](t) & =
+            (1 - x^2) y - x + A \sin (\omega t).
+        \end{aligned}
+    """
+
+    mu: float
+    """Parameter indicating the strength of the nonlinearity and damping."""
+
+    amplitude: float
+    """Forcing amplitude."""
+    omega: float
+    """Angular velocity of the forcing."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.mu < 0:
+                raise ValueError(f"'mu' must be positive: {self.a}")
+
+    def source(self, t: float, y: Array) -> Array:
+        f = self.amplitude * np.cos(self.omega * t)
+        return np.array([y[1], self.mu * (1.0 - y[0] ** 2) * y[1] - y[0] + f])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [0.0, 1.0],
+            [-self.mu * 2.0 * y[0] * y[1] - 1.0, self.mu * (1.0 - y[0] ** 2)],
+        ])
 
 
 # }}}
