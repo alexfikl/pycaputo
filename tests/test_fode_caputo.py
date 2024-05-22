@@ -144,7 +144,8 @@ def fode_factory(
         fode_factory(caputo.WeightedEuler, theta=0.0),
         fode_factory(caputo.WeightedEuler, theta=0.5),
         fode_factory(caputo.Trapezoidal),
-        fode_factory(caputo.ExplicitTrapezoidal),
+        fode_factory(caputo.ExplicitTrapezoidal, variant=1),
+        fode_factory(caputo.ExplicitTrapezoidal, variant=2),
         fode_factory(caputo.PECE, corrector_iterations=1),
         # FIXME: this does not converge to the correct order with one iteration
         fode_factory(caputo.PEC, corrector_iterations=2),
