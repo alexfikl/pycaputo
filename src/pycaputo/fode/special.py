@@ -23,9 +23,6 @@ class Function(ABC):
     respect to the second argument is given by :meth:`source_jac`.
     """
 
-    def __call__(self, t: float, y: Array) -> Array:
-        return self.source(t, y)
-
     @abstractmethod
     def source(self, t: float, y: Array) -> Array:
         """Evaluates the right-hand side of the fractional equation."""
@@ -229,7 +226,7 @@ class Brusselator(Function):
                 raise ValueError(f"'a' must be positive: {self.a}")
 
             if self.mu < 0:
-                raise ValueError(f"'mu' must be positive: {self.a}")
+                raise ValueError(f"'mu' must be positive: {self.mu}")
 
     def source(self, t: float, y: Array) -> Array:
         f = self.amplitude * np.cos(self.omega * t)
@@ -277,7 +274,7 @@ class VanDerPol(Function):
 
         def __post_init__(self) -> None:
             if self.mu < 0:
-                raise ValueError(f"'mu' must be positive: {self.a}")
+                raise ValueError(f"'mu' must be positive: {self.mu}")
 
     def source(self, t: float, y: Array) -> Array:
         f = self.amplitude * np.cos(self.omega * t)
