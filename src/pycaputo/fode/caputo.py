@@ -427,19 +427,9 @@ class ExplicitTrapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
     an explicit method instead with decreased stability.
     """
 
-    variant: int
-    """Variant of the explicit trapezoidal method. There are two variants
-    implemented:
-
-    * ``1`` extrapolates the polynomial from :math:`[t_{n - 1}, t_n]`
-      to :math:`[t_n, t_{n + 1}]` and
-    * ``2`` uses the polynomial from :math:`[t_{n}, t_{n + 1}]` but extrapolates
-      the value :math:`f_{n + 1}` using the polynomial from :math:`[t_{n - 1}, t_n]`.
-    """
-
     @property
     def order(self) -> float:
-        return (1.0 if self.variant == 1 else 0.0) + self.smallest_derivative_order
+        return 1.0 + self.smallest_derivative_order
 
 
 def _update_caputo_explicit_trapezoidal(
@@ -448,11 +438,7 @@ def _update_caputo_explicit_trapezoidal(
     f: Array,
     alpha: Array,
     n: int,
-    *,
-    variant: int,
 ) -> Array:
-    assert variant in {1, 2}
-
     ts1 = t[n] - t[n - 1]
     dt2 = t[n - 1] - t[n - 2]
     fm1 = f[n - 1]
@@ -460,18 +446,12 @@ def _update_caputo_explicit_trapezoidal(
 
     # fmt: off
     omegal = -(ts1 ** (1 + alpha)) / gamma(2 + alpha) / dt2
-    if variant == 1:
-        omegar = (
-            ts1 ** (1 + alpha) / gamma(2 + alpha) / dt2
-            + ts1 ** alpha / gamma(1 + alpha))
-    else:
-        omegar = (
-            ts1 ** (1 + alpha) / gamma(2 + alpha) / dt2
-            + ts1 ** alpha / gamma(2 + alpha))
-    # fmt: on
-
     out += omegal * fm2
+    omegar = (
+        ts1 ** (1 + alpha) / gamma(2 + alpha) / dt2
+        + ts1 ** alpha / gamma(1 + alpha))
     out += omegar * fm1
+    # fmt: on
 
     return out
 
@@ -497,7 +477,7 @@ def _advance_caputo_explicit_trapezoidal(
     else:
         ynext, _ = _update_caputo_trapezoidal(ynext, m, history, n, n - 1)
         ynext = _update_caputo_explicit_trapezoidal(
-            ynext, history.ts, history.storage, m.alpha, n, variant=m.variant
+            ynext, history.ts, history.storage, m.alpha, n
         )
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
