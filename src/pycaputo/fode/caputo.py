@@ -420,11 +420,21 @@ def _advance_caputo_trapezoidal(
 
 @dataclass(frozen=True)
 class ExplicitTrapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
-    """An explicit trapezoidal method for discretizing the Caputo derivative.
+    r"""An explicit trapezoidal method for discretizing the Caputo derivative.
 
-    This is an explicit method described in [Garrappa2015b]_. Unlike
-    :class:`Trapezoidal`, the last step is estimate by extrapolation, making this
+    This is an explicit method described in [Garrappa2010]_. Unlike
+    :class:`Trapezoidal`, the last step is estimated by extrapolation, making this
     an explicit method instead with decreased stability.
+
+    .. warning::
+
+        The extrapolation from [Garrappa2010]_ does not match the one that is
+        used here even in the uniform case. To our knowledge, the paper has an
+        error and the last term in the second line from Equation 8 should be
+
+        .. math::
+
+            (2 \boldsymbol{+ \beta}) \alpha_0 f(t_{n - 1}, y_{n - 1}).
     """
 
     @property
