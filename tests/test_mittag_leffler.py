@@ -35,12 +35,14 @@ set_recommended_matplotlib()
     ],
 )
 def test_mittag_leffler_series(alpha: float, beta: float) -> None:
+    from pycaputo.mittagleffler import _mittag_leffler_series  # noqa: PLC2701
+
     rng = np.random.default_rng(seed=42)
     z = rng.random(128)
 
     result_ref = ml.mittag_leffler(z, alpha=alpha, beta=beta)
     result = np.vectorize(
-        lambda zi: 0j + ml.mittag_leffler_series(zi, alpha=alpha, beta=beta)
+        lambda zi: 0j + _mittag_leffler_series(zi, alpha=alpha, beta=beta)
     )(z)
 
     error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))
@@ -70,12 +72,14 @@ def test_mittag_leffler_series(alpha: float, beta: float) -> None:
     ],
 )
 def test_mittag_leffler_diethelm(alpha: float, beta: float) -> None:
+    from pycaputo.mittagleffler import _mittag_leffler_diethelm  # noqa: PLC2701
+
     rng = np.random.default_rng(seed=42)
     z = rng.random(128)
 
     result_ref = ml.mittag_leffler(z, alpha=alpha, beta=beta)
     result = np.vectorize(
-        lambda zi: 0j + ml.mittag_leffler_diethelm(zi, alpha=alpha, beta=beta)
+        lambda zi: 0j + _mittag_leffler_diethelm(zi, alpha=alpha, beta=beta)
     )(z)
 
     error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))

@@ -38,7 +38,7 @@ class Algorithm(enum.Enum):
 # {{{ series
 
 
-def mittag_leffler_series(
+def _mittag_leffler_series(
     z: complex,
     *,
     alpha: float,
@@ -47,7 +47,7 @@ def mittag_leffler_series(
     kmax: int | None = None,
 ) -> complex:
     if eps is None:
-        eps = 2 * float(np.finfo(np.array(z).dtype).eps)
+        eps = 5 * float(np.finfo(np.array(z).dtype).eps)
 
     if kmax is None:
         kmax = 2048
@@ -152,7 +152,7 @@ def _ml_quad_p(
     return complex(r)
 
 
-def mittag_leffler_diethelm(
+def _mittag_leffler_diethelm(
     z: complex,
     *,
     alpha: float,
@@ -161,13 +161,13 @@ def mittag_leffler_diethelm(
     zeta: float | None = None,
 ) -> complex:
     if eps is None:
-        eps = 2 * float(np.finfo(np.array(z).dtype).eps)
+        eps = 5 * float(np.finfo(np.array(z).dtype).eps)
 
     if zeta is None:
         zeta = 0.9
 
     if alpha == 0:
-        return mittag_leffler_series(z, alpha=alpha, beta=beta, eps=eps)
+        return _mittag_leffler_series(z, alpha=alpha, beta=beta, eps=eps)
 
     assert eps is not None
     assert zeta is not None
@@ -186,7 +186,7 @@ def mittag_leffler_diethelm(
         alpha = alpha / k0
 
         def rec_ml(k: int) -> complex:
-            return mittag_leffler_diethelm(
+            return _mittag_leffler_diethelm(
                 z * np.exp(2j * np.pi * k / k0),
                 alpha=alpha,
                 beta=beta,
@@ -265,10 +265,209 @@ def mittag_leffler_diethelm(
 # }}}
 
 
+# {{{ Garrappa
+
+
+def _find_optimal_bounded_param(
+    t: float,
+    phi_star0: float,
+    phi_star1: float,
+    p0: float,
+    q0: float,
+    *,
+    log_eps: float,
+    log_feps: float,
+) -> tuple[float, float, float]:
+    return 0.0, 0.0, 0.0
+
+
+def _find_optimal_unbounded_param(
+    t: float,
+    phi_star: float,
+    p: float,
+    *,
+    log_eps: float,
+    log_feps: float,
+) -> tuple[float, float, float]:
+    phi_star_sq = np.sqrt(phi_star)
+    phibar_star = (1.01 * phi_star) if phi_star > 0 else 0.01
+    phibar_star_sq = np.sqrt(phibar_star)
+
+    # search for fbar in [f_min, f_max]
+    found = False
+    f_min = 1
+    f_max = 10
+    f_tar = 5
+
+    while not found:
+        phi = phibar_star * t
+        log_eps_t = log_eps / phi
+
+        N: float = math.ceil(
+            phi / np.pi * (1 - 3 * log_eps_t / 2 + math.sqrt(1 - 2 * log_eps_t))
+        )
+        A = np.pi * N / phi
+
+        mu = phibar_star_sq * abs(4 - A) / abs(7 - math.sqrt(1 + 12 * A))
+        fbar = ((phibar_star_sq - phi_star_sq) / mu) ** (-p)
+
+        found = p < 1.0e-14 or f_min < fbar < f_max
+        if not found:
+            phibar_star_sq = f_tar ** (-1 / p) * mu + phi_star_sq
+            phibar_star = phibar_star_sq**2
+
+    mu = mu**2
+    h = (-3 * A - 2 + 2 * math.sqrt(1 + 12 * A)) / (4 - A) / N
+
+    # adjust integration parameters
+    threshold = (log_eps - log_feps) / t
+    if mu > threshold:
+        Q = 0.0 if abs(p) < log_feps else (f_tar ** (-1 / p) * math.sqrt(mu))
+        phibar_star = (Q + math.sqrt(phi_star)) ** 2
+
+        if phibar_star < threshold:
+            w = math.sqrt(log_feps / (log_feps - log_eps))
+            u = math.sqrt(-phibar_star * t / log_feps)
+
+            mu = threshold
+            N = math.ceil(w * log_eps / (2 * np.pi * (u * w - 1)))
+            h = w / N
+        else:
+            N = np.inf
+            h = 0
+
+    return mu, N, h
+
+
+def _laplace_transform_inversion(
+    t: float, z: complex, *, alpha: float, beta: float, eps: float
+) -> complex:
+    if abs(z) < eps:
+        return 1.0 / math.gamma(beta)
+
+    # get machine precision and epsilon differences
+    feps = np.finfo(np.array(z).dtype).eps
+
+    log_feps = math.log(feps)
+    log_eps = math.log(eps)
+    log_10 = math.log(10)
+    d_log_eps = log_eps - log_feps
+
+    import cmath
+
+    # evaluate relevant poles
+    theta = cmath.phase(z)
+    kmin = math.ceil(-alpha / 2 - theta / (2 * math.pi))
+    kmax = math.ceil(+alpha / 2 - theta / (2 * math.pi))
+    k = np.arange(kmin, kmax + 1)
+    s_star = abs(z) ** (1 / alpha) * cmath.exp(1j * (theta + 2 * math.pi * k) / alpha)
+
+    # sort poles
+    phi_star = (s_star.real + abs(s_star)) / 2
+    s_star_index = np.argsort(phi_star)
+    phi_star = phi_star[s_star_index]
+    s_star = s_star[s_star_index]
+
+    # filter out zero poles
+    s_star_mask = phi_star > eps
+    s_star = s_star[s_star_mask]
+    phi_star = phi_star[s_star_mask]
+
+    # add back the origin as a pole
+    s_star = np.insert(s_star, 0, 0.0)
+    phi_star = np.insert(phi_star, 0, 0.0)
+
+    # strength of the singularities
+    p = np.ones_like(s_star)
+    p[0] = max(0, -2 * (alpha - beta + 1))
+    q = np.ones_like(s_star)
+    q[-1] = np.inf
+    phi_star = np.insert(phi_star, phi_star.size, np.inf)
+
+    # find admissible regions
+    region_index = np.nonzero(
+        np.logical_and(
+            phi_star[:-1] < d_log_eps / t,
+            phi_star[:-1] < phi_star[2:],
+        )
+    )
+
+    # evaluate parameters for LT inversion in each admissible region
+    nregion = region_index[-1]
+    mu = np.full(nregion, np.inf, dtype=phi_star.dtype)
+    N = np.full(nregion, np.inf, dtype=phi_star.dtype)
+    h = np.full(nregion, np.inf, dtype=phi_star.dtype)
+
+    found_region = False
+    while not found_region:
+        for j in region_index:
+            if j < s_star.size:
+                mu[j], N[j], h[j] = _find_optimal_bounded_param(
+                    t,
+                    phi_star[j],
+                    phi_star[j + 1],
+                    p[j],
+                    q[j],
+                    log_eps=log_eps,
+                    log_feps=log_feps,
+                )
+            else:
+                mu[j], N[j], h[j] = _find_optimal_unbounded_param(
+                    t, phi_star[j], p[j], log_eps=log_eps, log_feps=log_feps
+                )
+
+        if np.min(N) > 200:
+            log_eps += log_10
+        else:
+            found_region = True
+
+    # select region that contains the minimum number of nodes
+    jmin = np.argmin(N)
+    N_min = N[jmin]
+    mu_min = mu[jmin]
+    h_min = h[jmin]
+
+    # evaluate inverse Laplace transform
+    k = np.arange(-N_min, N_min + 1)
+    hk = h_min * k
+    zk = mu_min * (1j * hk + 1) ** 2
+    zd = -2.0 * mu_min * hk + 2j * mu_min
+    zexp = np.exp(zk * t)
+    F = zk ** (alpha - beta) / (zk**alpha - z) * zd
+    S = F * zexp
+
+    integral = h_min * np.sum(S) / (2j * math.pi)
+
+    # evaluate residues
+    s_star_min = s_star[j + 1 :]
+    residues = np.sum(1 / alpha * s_star_min ** (1 - beta) * np.exp(s_star_min))
+
+    # sum up the results
+    result = residues + integral
+
+    return complex(result)
+
+
+def _mittag_leffler_garrapa(
+    z: complex, *, alpha: float, beta: float, eps: float | None = None
+) -> complex:
+    if eps is None:
+        eps = 5 * float(np.finfo(np.array(z).dtype).eps)
+
+    if abs(z) == 0:
+        return 1 / math.gamma(beta)
+
+    zinv = _laplace_transform_inversion(1.0, z, alpha=alpha, beta=beta, eps=eps)
+    return zinv
+
+
+# }}}
+
+
 # {{{ Ortigueira
 
 
-def mittag_leffler_ortigueira(
+def _mittag_leffler_ortigueira(
     z: complex,
     *,
     alpha: float,
@@ -277,7 +476,7 @@ def mittag_leffler_ortigueira(
     kmax: int | None = None,
 ) -> complex:
     if eps is None:
-        eps = 2 * float(np.finfo(np.array(z).dtype).eps)
+        eps = 10 * float(np.finfo(np.array(z).dtype).eps)
 
     if kmax is None:
         kmax = 2048
@@ -291,28 +490,10 @@ def mittag_leffler_ortigueira(
 # }}}
 
 
-# {{{ Garrappa
-
-
-def mittag_leffler_garrapa(
-    z: complex,
-    *,
-    alpha: float,
-    beta: float,
-) -> complex:
-    if abs(z) == 0:
-        return 1 / math.gamma(beta)
-
-    raise NotImplementedError
-
-
-# }}}
-
-
 # {{{ Mittag-Leffler
 
 
-def mittag_leffler_special(
+def _mittag_leffler_special(
     z: float | complex | Array,
     alpha: float = 1.0,
     beta: float = 1.0,
@@ -332,9 +513,9 @@ def mittag_leffler_special(
     z = np.array(z)
     if beta == 1:
         if alpha == 0:
-            return np.array(1 / (1 - z))
+            return 1 / (1 - z)
         if alpha == 1:
-            return np.array(np.exp(z))
+            return np.exp(z)  # type: ignore[no-any-return]
         if alpha == 2:
             return np.cosh(np.sqrt(z))  # type: ignore[no-any-return]
         if alpha == 3:
@@ -352,7 +533,7 @@ def mittag_leffler_special(
 
     if beta == 2:
         if alpha == 1:
-            return np.array((np.exp(z) - 1) / z)
+            return (np.exp(z) - 1) / z  # type: ignore[no-any-return]
         if alpha == 2:
             z = np.sqrt(z)
             return np.sinh(z) / z
@@ -390,27 +571,27 @@ def mittag_leffler(
         )
 
     if alg is None:
-        # NOTE: for now this algorithm should be faster
+        # NOTE: for now this algorithm should be faster / better
         alg = Algorithm.Diethelm
 
     if use_explicit:
-        result = mittag_leffler_special(z, alpha, beta)
+        result = _mittag_leffler_special(z, alpha, beta)
         if result is not None:
             return result
 
     func: Any
     if alg == Algorithm.Series:
-        func = mittag_leffler_series
+        func = _mittag_leffler_series
     elif alg == Algorithm.Diethelm:
-        func = mittag_leffler_diethelm
+        func = _mittag_leffler_diethelm
     elif alg == Algorithm.Garrappa:
-        func = mittag_leffler_garrapa
+        func = _mittag_leffler_garrapa
     elif alg == Algorithm.Ortigueira:
-        func = mittag_leffler_ortigueira
+        func = _mittag_leffler_ortigueira
     else:
         raise ValueError(f"Unknown algorithm: '{alg}'")
 
-    ml = np.vectorize(lambda zi: 0j + func(zi, alpha=alpha, beta=beta))
+    ml = np.vectorize(lambda zi: 0j + func(0j + zi, alpha=alpha, beta=beta))
     return np.array(ml(z))
 
 
@@ -429,8 +610,10 @@ def caputo_derivative_sine(
     .. math::
 
         D^\alpha_C[sin](t) =
-            \cos \left(\frac{n \pi}{2}\right) t^{1 + n - alpha} E_{2, 2 + n - \alpha}
-            + \sin \left(\frac{n \pi}{2}\right) t^{n - \alpha} E_{2, 1 + n - \alpha}
+            \cos \left(\frac{n \pi}{2}\right) t^{1 + n - \alpha}
+                E_{2, 2 + n - \alpha}(-t^2)
+            + \sin \left(\frac{n \pi}{2}\right) t^{n - \alpha}
+                E_{2, 1 + n - \alpha}(-t^2),
 
     where :math:`E_{\alpha, \beta}` is the Mittag-Leffler function.
     """

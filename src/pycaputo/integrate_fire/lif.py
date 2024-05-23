@@ -41,7 +41,7 @@ def _find_bracket(
 
 
 def _find_first_spike_time(p: LIF, V0: float = 0.0) -> float:
-    from pycaputo.mittagleffler import mittag_leffler_diethelm
+    from pycaputo.mittagleffler import _mittag_leffler_diethelm
 
     alpha = p.ref.alpha
 
@@ -49,7 +49,7 @@ def _find_first_spike_time(p: LIF, V0: float = 0.0) -> float:
         a = p.current + p.e_leak
         b = a - V0
 
-        E = mittag_leffler_diethelm(-(t**alpha), alpha=alpha, beta=1.0)
+        E = _mittag_leffler_diethelm(-(t**alpha), alpha=alpha, beta=1.0)
         result = a - b * E - p.v_peak
 
         return float(np.real_if_close(result))
