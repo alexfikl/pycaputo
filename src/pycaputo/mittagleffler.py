@@ -276,9 +276,102 @@ def _find_optimal_bounded_param(
     q0: float,
     *,
     log_eps: float,
-    log_feps: float,
+    log_machine_eps: float,
+    p_eps: float = 1.0e-14,
+    q_eps: float = 1.0e-14,
+    conservative_error_analysis: bool = False,
 ) -> tuple[float, float, float]:
-    return 0.0, 0.0, 0.0
+    fac = 1.01
+
+    # set maximum value of fbar (the ratio of the tolerance to the machine epsilon)
+    f_max = math.exp(log_eps - log_machine_eps)
+    threshold = 2 * np.sqrt((log_eps - log_machine_eps) / t)
+
+    # starting values
+    phi_star0_sq = np.sqrt(phi_star0)
+    phi_star1_sq = min(np.sqrt(phi_star1), threshold - phi_star0_sq)
+
+    # determine phibar and admissible region
+    if p0 < p_eps:
+        if q0 < q_eps:
+            phibar_star0_sq = phi_star0_sq
+            phibar_star1_sq = phi_star1_sq
+            adm_region = True
+        else:
+            phibar_star0_sq = phi_star0_sq
+            if phi_star0_sq > 0:
+                f_min = fac * (phi_star0_sq / (phi_star1_sq - phi_star0_sq)) ** q0
+            else:
+                f_min = fac
+
+            if f_min < f_max:
+                f_bar = f_min + f_min / f_max * (f_max - f_min)
+                fq = f_bar ** (-1 / q0)
+                phibar_star1_sq = (2 * phi_star1_sq - fq * phi_star0_sq) / (2 + fq)
+                adm_region = True
+            else:
+                adm_region = False
+    else:  # noqa: PLR5501
+        if q0 < q_eps:
+            phibar_star1_sq = phi_star1_sq
+            f_min = fac * (phi_star1_sq / (phi_star1_sq - phi_star0_sq)) ** p0
+            if f_min < f_max:
+                f_bar = f_min + f_min / f_max * (f_max - f_min)
+                fp = f_bar ** (-1 / p0)
+                phibar_star0_sq = (2 * phi_star0_sq - fp * phi_star1_sq) / (2 - fp)
+                adm_region = True
+            else:
+                adm_region = False
+        else:
+            f_min = (
+                fac
+                * (phi_star0_sq + phi_star1_sq)
+                / (phi_star1_sq - phi_star0_sq) ** max(p0, q0)
+            )
+            if f_min < f_max:
+                f_min = max(f_min, 1.5)
+                f_bar = f_min + f_min / f_max * (f_max - f_min)
+                fp = f_bar ** (-1 / p0)
+                fq = f_bar ** (-1 / q0)
+
+                if not conservative_error_analysis:
+                    w = -phi_star1 * t / log_eps
+                else:
+                    w = -2 * phi_star1 * t / (log_eps - phi_star1 * t)
+
+                den = 2 + w - (1 + w) * fp + fq
+                phibar_star0_sq = (
+                    (2 + w + fq) * phi_star0_sq + fp * phi_star1_sq
+                ) / den
+                phibar_star1_sq = (
+                    -(1 + w) * fq * phi_star0_sq + (2 + w - (1 + w) * fp) * phi_star1_sq
+                ) / den
+                adm_region = True
+            else:
+                adm_region = False
+
+    if adm_region:
+        log_eps = log_eps - math.log(f_bar)
+        if not conservative_error_analysis:
+            w = -(phibar_star1_sq**2) * t / log_eps
+        else:
+            w = -2 * phibar_star1_sq**2 * t / (log_eps - phibar_star1_sq**2 * t)
+
+        mu = (((1 + w) * phibar_star0_sq + phibar_star1_sq) / (2 + w)) ** 2
+        h = (
+            -2
+            * np.pi
+            / log_eps
+            * (phibar_star1_sq - phibar_star0_sq)
+            / ((1 + w) * phibar_star0_sq + phibar_star1_sq)
+        )
+        N = math.ceil(np.sqrt(1 - log_eps / t / mu) / h)
+    else:
+        mu = 0
+        h = 0
+        N = np.inf
+
+    return mu, N, h
 
 
 def _find_optimal_unbounded_param(
@@ -287,7 +380,7 @@ def _find_optimal_unbounded_param(
     p: float,
     *,
     log_eps: float,
-    log_feps: float,
+    log_machine_eps: float,
 ) -> tuple[float, float, float]:
     phi_star_sq = np.sqrt(phi_star)
     phibar_star = (1.01 * phi_star) if phi_star > 0 else 0.01
@@ -320,14 +413,14 @@ def _find_optimal_unbounded_param(
     h = (-3 * A - 2 + 2 * math.sqrt(1 + 12 * A)) / (4 - A) / N
 
     # adjust integration parameters
-    threshold = (log_eps - log_feps) / t
+    threshold = (log_eps - log_machine_eps) / t
     if mu > threshold:
-        Q = 0.0 if abs(p) < log_feps else (f_tar ** (-1 / p) * math.sqrt(mu))
+        Q = 0.0 if abs(p) < log_machine_eps else (f_tar ** (-1 / p) * math.sqrt(mu))
         phibar_star = (Q + math.sqrt(phi_star)) ** 2
 
         if phibar_star < threshold:
-            w = math.sqrt(log_feps / (log_feps - log_eps))
-            u = math.sqrt(-phibar_star * t / log_feps)
+            w = math.sqrt(log_machine_eps / (log_machine_eps - log_eps))
+            u = math.sqrt(-phibar_star * t / log_machine_eps)
 
             mu = threshold
             N = math.ceil(w * log_eps / (2 * np.pi * (u * w - 1)))
@@ -348,10 +441,10 @@ def _laplace_transform_inversion(
     # get machine precision and epsilon differences
     feps = np.finfo(np.array(z).dtype).eps
 
-    log_feps = math.log(feps)
+    log_machine_eps = math.log(feps)
     log_eps = math.log(eps)
     log_10 = math.log(10)
-    d_log_eps = log_eps - log_feps
+    d_log_eps = log_eps - log_machine_eps
 
     import cmath
 
@@ -409,11 +502,15 @@ def _laplace_transform_inversion(
                     p[j],
                     q[j],
                     log_eps=log_eps,
-                    log_feps=log_feps,
+                    log_machine_eps=log_machine_eps,
                 )
             else:
                 mu[j], N[j], h[j] = _find_optimal_unbounded_param(
-                    t, phi_star[j], p[j], log_eps=log_eps, log_feps=log_feps
+                    t,
+                    phi_star[j],
+                    p[j],
+                    log_eps=log_eps,
+                    log_machine_eps=log_machine_eps,
                 )
 
         if np.min(N) > 200:
