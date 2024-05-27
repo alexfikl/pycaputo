@@ -439,9 +439,9 @@ def _laplace_transform_inversion(
         return 1.0 / math.gamma(beta)
 
     # get machine precision and epsilon differences
-    feps = np.finfo(np.array(z).dtype).eps
+    machine_eps = np.finfo(np.array(z).dtype).eps
 
-    log_machine_eps = math.log(feps)
+    log_machine_eps = math.log(machine_eps)
     log_eps = math.log(eps)
     log_10 = math.log(10)
     d_log_eps = log_eps - log_machine_eps
@@ -451,9 +451,9 @@ def _laplace_transform_inversion(
     # evaluate relevant poles
     theta = cmath.phase(z)
     kmin = math.ceil(-alpha / 2 - theta / (2 * math.pi))
-    kmax = math.ceil(+alpha / 2 - theta / (2 * math.pi))
+    kmax = math.floor(+alpha / 2 - theta / (2 * math.pi))
     k = np.arange(kmin, kmax + 1)
-    s_star = abs(z) ** (1 / alpha) * cmath.exp(1j * (theta + 2 * math.pi * k) / alpha)
+    s_star = abs(z) ** (1 / alpha) * np.exp(1j * (theta + 2 * np.pi * k) / alpha)
 
     # sort poles
     phi_star = (s_star.real + abs(s_star)) / 2
@@ -478,15 +478,15 @@ def _laplace_transform_inversion(
     phi_star = np.insert(phi_star, phi_star.size, np.inf)
 
     # find admissible regions
-    region_index = np.nonzero(
+    region_index, = np.nonzero(
         np.logical_and(
             phi_star[:-1] < d_log_eps / t,
-            phi_star[:-1] < phi_star[2:],
+            phi_star[:-1] < phi_star[1:],
         )
     )
 
     # evaluate parameters for LT inversion in each admissible region
-    nregion = region_index[-1]
+    nregion = region_index[-1] + 1
     mu = np.full(nregion, np.inf, dtype=phi_star.dtype)
     N = np.full(nregion, np.inf, dtype=phi_star.dtype)
     h = np.full(nregion, np.inf, dtype=phi_star.dtype)
@@ -517,6 +517,9 @@ def _laplace_transform_inversion(
             log_eps += log_10
         else:
             found_region = True
+
+        if log_eps >= 0.0:
+            raise ValueError("Failed to find admissible region")
 
     # select region that contains the minimum number of nodes
     jmin = np.argmin(N)

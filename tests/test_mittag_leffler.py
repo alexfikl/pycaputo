@@ -96,7 +96,14 @@ def test_mittag_leffler_diethelm(alpha: float, beta: float) -> None:
 
 
 @pytest.mark.parametrize("iref", [0, 1, 2, 3, 4])
-@pytest.mark.parametrize("alg", [ml.Algorithm.Series, ml.Algorithm.Diethelm])
+@pytest.mark.parametrize(
+    "alg",
+    [
+        ml.Algorithm.Series,
+        ml.Algorithm.Diethelm,
+        ml.Algorithm.Garrappa,
+    ],
+)
 def test_mittag_leffler_mathematica(iref: int, alg: ml.Algorithm) -> None:
     from mittag_leffler_ref import MATHEMATICA_RESULTS
 
@@ -106,7 +113,7 @@ def test_mittag_leffler_mathematica(iref: int, alg: ml.Algorithm) -> None:
     if alg == ml.Algorithm.Series and not is_on_unit_disk:
         pytest.skip("Series representation is not valid for z >= 1")
 
-    result = ml.mittag_leffler(ref.z, alpha=ref.alpha, beta=ref.beta)
+    result = ml.mittag_leffler(ref.z, alpha=ref.alpha, beta=ref.beta, alg=alg)
     error = np.linalg.norm(result - ref.result) / np.linalg.norm(ref.result)
     logger.info("Error E[%g, %g]: %.12e", ref.alpha, ref.beta, error)
     assert error < 1.0e-5
