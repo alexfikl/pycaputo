@@ -46,6 +46,7 @@ def _mittag_leffler_series(
     eps: float | None = None,
     kmax: int | None = None,
 ) -> complex:
+    z = complex(z)
     if eps is None:
         eps = 5 * float(np.finfo(np.array(z).dtype).eps)
 
@@ -66,7 +67,9 @@ def _mittag_leffler_series(
         k += 1
 
     if abs(term) > eps:
-        logger.error("Series did not converge for E[%g, %g](%g)", alpha, beta, z)
+        logger.error(
+            "Series did not converge for E[%g, %g](%g+%gj)", alpha, beta, z.real, z.imag
+        )
 
     return result
 
@@ -272,17 +275,16 @@ def _find_optimal_bounded_param(
     t: float,
     phi_star0: float,
     phi_star1: float,
-    p0: float,
-    q0: float,
+    p: float,
+    q: float,
     *,
     log_eps: float,
     log_machine_eps: float,
+    fac: float = 1.01,
     p_eps: float = 1.0e-14,
     q_eps: float = 1.0e-14,
     conservative_error_analysis: bool = False,
 ) -> tuple[float, float, float]:
-    fac = 1.01
-
     # set maximum value of fbar (the ratio of the tolerance to the machine epsilon)
     f_max = math.exp(log_eps - log_machine_eps)
     threshold = 2 * np.sqrt((log_eps - log_machine_eps) / t)
@@ -292,32 +294,32 @@ def _find_optimal_bounded_param(
     phi_star1_sq = min(np.sqrt(phi_star1), threshold - phi_star0_sq)
 
     # determine phibar and admissible region
-    if p0 < p_eps:
-        if q0 < q_eps:
+    if p < p_eps:
+        if q < q_eps:
             phibar_star0_sq = phi_star0_sq
             phibar_star1_sq = phi_star1_sq
             adm_region = True
         else:
             phibar_star0_sq = phi_star0_sq
             if phi_star0_sq > 0:
-                f_min = fac * (phi_star0_sq / (phi_star1_sq - phi_star0_sq)) ** q0
+                f_min = fac * (phi_star0_sq / (phi_star1_sq - phi_star0_sq)) ** q
             else:
                 f_min = fac
 
             if f_min < f_max:
                 f_bar = f_min + f_min / f_max * (f_max - f_min)
-                fq = f_bar ** (-1 / q0)
+                fq = f_bar ** (-1 / q)
                 phibar_star1_sq = (2 * phi_star1_sq - fq * phi_star0_sq) / (2 + fq)
                 adm_region = True
             else:
                 adm_region = False
     else:  # noqa: PLR5501
-        if q0 < q_eps:
+        if q < q_eps:
             phibar_star1_sq = phi_star1_sq
-            f_min = fac * (phi_star1_sq / (phi_star1_sq - phi_star0_sq)) ** p0
+            f_min = fac * (phi_star1_sq / (phi_star1_sq - phi_star0_sq)) ** p
             if f_min < f_max:
                 f_bar = f_min + f_min / f_max * (f_max - f_min)
-                fp = f_bar ** (-1 / p0)
+                fp = f_bar ** (-1 / p)
                 phibar_star0_sq = (2 * phi_star0_sq - fp * phi_star1_sq) / (2 - fp)
                 adm_region = True
             else:
@@ -325,14 +327,14 @@ def _find_optimal_bounded_param(
         else:
             f_min = (
                 fac
-                * (phi_star0_sq + phi_star1_sq)
-                / (phi_star1_sq - phi_star0_sq) ** max(p0, q0)
+                * (phi_star1_sq + phi_star0_sq)
+                / (phi_star1_sq - phi_star0_sq) ** max(p, q)
             )
             if f_min < f_max:
                 f_min = max(f_min, 1.5)
                 f_bar = f_min + f_min / f_max * (f_max - f_min)
-                fp = f_bar ** (-1 / p0)
-                fq = f_bar ** (-1 / q0)
+                fp = f_bar ** (-1 / p)
+                fq = f_bar ** (-1 / q)
 
                 if not conservative_error_analysis:
                     w = -phi_star1 * t / log_eps
@@ -381,9 +383,11 @@ def _find_optimal_unbounded_param(
     *,
     log_eps: float,
     log_machine_eps: float,
+    fac: float = 1.01,
+    p_eps: float = 1.0e-14,
 ) -> tuple[float, float, float]:
     phi_star_sq = np.sqrt(phi_star)
-    phibar_star = (1.01 * phi_star) if phi_star > 0 else 0.01
+    phibar_star = (fac * phi_star) if phi_star > 0 else 0.01
     phibar_star_sq = np.sqrt(phibar_star)
 
     # search for fbar in [f_min, f_max]
@@ -404,7 +408,7 @@ def _find_optimal_unbounded_param(
         mu = phibar_star_sq * abs(4 - A) / abs(7 - math.sqrt(1 + 12 * A))
         fbar = ((phibar_star_sq - phi_star_sq) / mu) ** (-p)
 
-        found = p < 1.0e-14 or f_min < fbar < f_max
+        found = p < p_eps or f_min < fbar < f_max
         if not found:
             phibar_star_sq = f_tar ** (-1 / p) * mu + phi_star_sq
             phibar_star = phibar_star_sq**2
@@ -415,7 +419,7 @@ def _find_optimal_unbounded_param(
     # adjust integration parameters
     threshold = (log_eps - log_machine_eps) / t
     if mu > threshold:
-        Q = 0.0 if abs(p) < log_machine_eps else (f_tar ** (-1 / p) * math.sqrt(mu))
+        Q = 0.0 if abs(p) < p_eps else (f_tar ** (-1 / p) * math.sqrt(mu))
         phibar_star = (Q + math.sqrt(phi_star)) ** 2
 
         if phibar_star < threshold:
@@ -433,7 +437,13 @@ def _find_optimal_unbounded_param(
 
 
 def _laplace_transform_inversion(
-    t: float, z: complex, *, alpha: float, beta: float, eps: float
+    t: float,
+    z: complex,
+    *,
+    alpha: float,
+    beta: float,
+    eps: float,
+    fac: float = 1.01,
 ) -> complex:
     if abs(z) < eps:
         return 1.0 / math.gamma(beta)
@@ -471,14 +481,14 @@ def _laplace_transform_inversion(
     phi_star = np.insert(phi_star, 0, 0.0)
 
     # strength of the singularities
-    p = np.ones_like(s_star)
+    p = np.ones(s_star.shape, dtype=s_star.real.dtype)
     p[0] = max(0, -2 * (alpha - beta + 1))
-    q = np.ones_like(s_star)
+    q = np.ones(s_star.shape, dtype=s_star.real.dtype)
     q[-1] = np.inf
     phi_star = np.insert(phi_star, phi_star.size, np.inf)
 
     # find admissible regions
-    region_index, = np.nonzero(
+    (region_index,) = np.nonzero(
         np.logical_and(
             phi_star[:-1] < d_log_eps / t,
             phi_star[:-1] < phi_star[1:],
@@ -494,7 +504,7 @@ def _laplace_transform_inversion(
     found_region = False
     while not found_region:
         for j in region_index:
-            if j < s_star.size:
+            if j < s_star.size - 1:
                 mu[j], N[j], h[j] = _find_optimal_bounded_param(
                     t,
                     phi_star[j],
@@ -503,6 +513,7 @@ def _laplace_transform_inversion(
                     q[j],
                     log_eps=log_eps,
                     log_machine_eps=log_machine_eps,
+                    fac=fac,
                 )
             else:
                 mu[j], N[j], h[j] = _find_optimal_unbounded_param(
@@ -511,6 +522,7 @@ def _laplace_transform_inversion(
                     p[j],
                     log_eps=log_eps,
                     log_machine_eps=log_machine_eps,
+                    fac=fac,
                 )
 
         if np.min(N) > 200:
@@ -539,8 +551,8 @@ def _laplace_transform_inversion(
     integral = h_min * np.sum(S) / (2j * math.pi)
 
     # evaluate residues
-    s_star_min = s_star[j + 1 :]
-    residues = np.sum(1 / alpha * s_star_min ** (1 - beta) * np.exp(s_star_min))
+    s_star_min = s_star[jmin + 1 :]
+    residues = np.sum(1 / alpha * s_star_min ** (1 - beta) * np.exp(t * s_star_min))
 
     # sum up the results
     result = residues + integral
@@ -553,6 +565,7 @@ def _mittag_leffler_garrapa(
 ) -> complex:
     if eps is None:
         eps = 5 * float(np.finfo(np.array(z).dtype).eps)
+        eps = 1.0e-15
 
     if abs(z) == 0:
         return 1 / math.gamma(beta)
@@ -593,7 +606,7 @@ def _mittag_leffler_ortigueira(
 # {{{ Mittag-Leffler
 
 
-def _mittag_leffler_special(
+def mittag_leffler_special(
     z: float | complex | Array,
     alpha: float = 1.0,
     beta: float = 1.0,
@@ -611,20 +624,21 @@ def _mittag_leffler_special(
     #       https://arxiv.org/abs/0909.0230
 
     z = np.array(z)
+    if alpha == 0 and np.all(np.abs(z) < 1):
+        return 1 / (1 - z) / math.gamma(beta)
+
     if beta == 1:
-        if alpha == 0:
-            return 1 / (1 - z)
         if alpha == 1:
             return np.exp(z)  # type: ignore[no-any-return]
         if alpha == 2:
-            return np.cosh(np.sqrt(z))  # type: ignore[no-any-return]
+            return np.cosh(z ** (1 / 2))  # type: ignore[no-any-return]
         if alpha == 3:
-            z = np.cbrt(z)
+            z3 = z ** (1 / 3)
             return (  # type: ignore[no-any-return]
-                np.exp(z) + 2 * np.exp(-z / 2) * np.cos(np.sqrt(3) * z / 2)
+                np.exp(z3) + 2 * np.exp(-z3 / 2) * np.cos(np.sqrt(3) * z3 / 2)
             ) / 3
         if alpha == 4:
-            z = np.sqrt(np.sqrt(z))
+            z = z ** (1 / 4)
             return (np.cos(z) + np.cosh(z)) / 2  # type: ignore[no-any-return]
         if alpha == 0.5:
             from scipy.special import erfc
@@ -635,11 +649,8 @@ def _mittag_leffler_special(
         if alpha == 1:
             return (np.exp(z) - 1) / z  # type: ignore[no-any-return]
         if alpha == 2:
-            z = np.sqrt(z)
-            return np.sinh(z) / z
-
-    if alpha == 0 and np.all(np.abs(z) < 1):
-        return 1 / (1 - z) / math.gamma(beta)
+            z = z ** (1 / 2)
+            return np.sinh(z) / z  # type: ignore[no-any-return]
 
     return None
 
@@ -675,7 +686,7 @@ def mittag_leffler(
         alg = Algorithm.Diethelm
 
     if use_explicit:
-        result = _mittag_leffler_special(z, alpha, beta)
+        result = mittag_leffler_special(z, alpha, beta)
         if result is not None:
             return result
 
