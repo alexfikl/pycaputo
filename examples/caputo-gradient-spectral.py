@@ -1,6 +1,23 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+r"""This example computes the gradient of a simple function
+
+.. math::
+
+    f(\mathbf{x}) = \sum_{k = 0}^{n - 1} \left(\frac{1}{2} - x_k\right)^4
+
+The gradient is defined in a standard fashion from the literature, see for
+example [Wei2020].
+
+It uses a spectral method based on Jacobi polynomials to compute the gradient.
+
+.. [Wei2020] Y. Wei, Y. Kang, W. Yin, Y. Wang,
+    *Generalization of the Gradient Method With Fractional Order Gradient Direction*,
+    Journal of the Franklin Institute, Vol. 357, pp. 2514--2532, 2020,
+    `DOI <https://doi.org/10.1016/j.jfranklin.2020.01.008>`__.
+"""
+
 from __future__ import annotations
 
 import math

@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+r"""Solve the fractional Brusselator model for a standard choice of parameters
+where it exhibits a limit cycle.
+
+The example uses the PECE method with a fixed step size.
+"""
+
 from functools import partial
 
 import numpy as np

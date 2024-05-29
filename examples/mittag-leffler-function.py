@@ -1,15 +1,6 @@
 # SPDX-FileCopyrightText: 2024 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-from __future__ import annotations
-
-import numpy as np
-
-from pycaputo.logging import get_logger
-from pycaputo.mittagleffler import mittag_leffler
-
-logger = get_logger("ml")
-
 r"""
 This reproduces Figure 10 and Figure 11 from [Diethelm2005]_. It plots
 :math:`E_{\alpha, \beta}(-x^\alpha)` for various values of :math:`\alpha` and
@@ -20,6 +11,15 @@ This reproduces Figure 10 and Figure 11 from [Diethelm2005]_. It plots
     Computer Methods in Applied Mechanics and Engineering, Vol. 194, pp. 743--773, 2005,
     `DOI <https://doi.org/10.1016/j.cma.2004.06.006>`__.
 """
+
+from __future__ import annotations
+
+import numpy as np
+
+from pycaputo.logging import get_logger
+from pycaputo.mittagleffler import mittag_leffler
+
+logger = get_logger("ml")
 
 # {{{ evaluate
 

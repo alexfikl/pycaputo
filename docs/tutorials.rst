@@ -34,7 +34,7 @@ and its Caputo fractional order derivative given by
 In code, we can write them as below
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 16-26
+    :lines: 22-32
     :lineno-match:
     :language: python
 
@@ -43,7 +43,7 @@ To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 follows
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 29-32
+    :lines: 35-38
     :lineno-match:
     :language: python
 
@@ -54,7 +54,7 @@ Caputo derivative. We can then set up a grid and evaluate the derivative at
 all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 34-40
+    :lines: 40-46
     :lineno-match:
     :language: python
 
@@ -97,7 +97,7 @@ system has a stable limit cycle, which we can observe (see [Garrappa2015b]_).
 The right-hand side for this system can be implemented as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 16-20
+    :lines: 22-26
     :lineno-match:
     :language: python
 
@@ -106,7 +106,7 @@ Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
 by :class:`~pycaputo.fode.caputo.PECE`. The solver is then set up as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 28-42
+    :lines: 34-48
     :lineno-match:
     :language: python
 
@@ -121,7 +121,7 @@ time step to get all the solutions. This will use the :func:`pycaputo.stepping.e
 iterator as follows
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 44-61
+    :lines: 50-67
     :lineno-match:
     :language: python
 
@@ -176,7 +176,7 @@ cycle of the oscillator (see e.g. [Jannelli2020]_). The right-hand side for this
 system is implemented as
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 21-29
+    :lines: 32-40
     :lineno-match:
     :language: python
 
@@ -188,7 +188,7 @@ results from [Jannelli2020]_ and implemented in
 set up as follows
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 37-48
+    :lines: 48-59
     :lineno-match:
     :language: python
 
@@ -200,7 +200,7 @@ used to normalize the Jannelli error estimator. Then, we can set up the solver
 itself
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 50-59
+    :lines: 61-70
     :lineno-match:
     :language: python
 
@@ -210,7 +210,7 @@ adaptive scheme, it is important to also get an estimate for the initial time
 step. This can be done using
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 61-68
+    :lines: 72-79
     :lineno-match:
     :language: python
 
@@ -220,7 +220,7 @@ error estimate and the time step in time. Here, we will only gather this informa
 for accepted steps.
 
 .. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 87-98
+    :lines: 98-109
     :lineno-match:
     :language: python
 

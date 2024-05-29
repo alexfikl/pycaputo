@@ -1,17 +1,6 @@
 # SPDX-FileCopyrightText: 2024 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-from __future__ import annotations
-
-import numpy as np
-from scipy.special import erfc
-
-from pycaputo.logging import get_logger
-from pycaputo.mittagleffler import mittag_leffler
-from pycaputo.utils import Array
-
-logger = get_logger("ml")
-
 r"""
 This reproduces Figure 4 from [Garrappa2015]_. It evaluates the Mittag-Leffler
 function
@@ -29,8 +18,20 @@ and the algorithm from Diethelm2005 also fails.
     `DOI <https://doi.org/10.1137/140971191>`__.
 """
 
+from __future__ import annotations
+
+import numpy as np
+from scipy.special import erfc
+
+from pycaputo.logging import get_logger
+from pycaputo.mittagleffler import mittag_leffler
+from pycaputo.utils import Array
+
+logger = get_logger("ml")
+
 
 def pointwise_error(ref: Array, a: Array) -> Array:
+    # NOTE: this is the error used in Equation 4.1 from [Garrappa2015]_.
     return np.abs(a - ref) / (1 + np.abs(ref))  # type: ignore[no-any-return]
 
 

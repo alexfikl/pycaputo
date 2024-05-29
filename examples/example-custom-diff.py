@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+"""This example showcases how to create a new differentiation method.
+
+The definition is given by registering a new method using ``diff.register``.
+"""
+
 from dataclasses import dataclass
 
 import numpy as np

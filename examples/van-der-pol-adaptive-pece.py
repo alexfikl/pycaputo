@@ -1,8 +1,19 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# NOTE: the parameters and general setup for this are taken from Jannelli2020
-# NOTE: the figures should be compared to Figure 6 and surrounding text
+"""
+This attempts to reproduce Figure 6 from [Jannelli2020]_ using the fractional
+van der Pol oscillator. The setup is not exactly the same as the error indicator
+is changed.
+
+This example uses the PECE method to solve the equation, while [Jannelli2020]_
+uses the implicit trapezoidal PI method.
+
+.. [Jannelli2020] A. Jannelli,
+    *A Novel Adaptive Procedure for Solving Fractional Differential Equations*,
+    Journal of Computational Science, Vol. 47, pp. 101220--101220, 2020,
+    `DOI <https://doi.org/10.1016/j.jocs.2020.101220>`__.
+"""
 
 from __future__ import annotations
 

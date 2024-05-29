@@ -133,10 +133,16 @@ with figure(f"trapezoidal-quadrature-{100 * beta:03.0f}-df") as fig:
 with figure(f"trapezoidal-quadrature-{100 * beta:03.0f}-t") as fig:
     ax = fig.gca()
 
-    ax.semilogy(p.x, e, label="Approx")
-    ax.semilogy(p.x, e_ref, "k--", label="Model")
+    ax.semilogy(p.x, e, label="Error")
+    ax.semilogy(
+        p.x,
+        e_ref,
+        "k--",
+        label=r"$(t - t_0)^{\alpha + \beta - 2} \Delta t_{\text{max}}^2$",
+    )
 
-    ax.set_xlabel("$x$")
+    ax.set_title(rf"$\alpha = {alpha:.2f} ~/~ \beta = {beta:.2f} $")
+    ax.set_xlabel("$t$")
     ax.set_ylabel("Error")
     ax.legend()
 

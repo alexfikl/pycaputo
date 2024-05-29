@@ -1,6 +1,13 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+r"""Compute the fractional derivative of a quadratic function for multiple
+values of :math:`\alpha` to showcase how the fractional derivative smoothly
+interpolates between the integer orders.
+
+This uses a spectral method with Jacobi polynomials for the added accuracy.
+"""
+
 import numpy as np
 
 from pycaputo.differentiation import diff
@@ -22,7 +29,7 @@ def f(x: Array) -> Array:
     return x**2
 
 
-with figure("caputo-derivative-quadratic.pdf") as fig:
+with figure("caputo-derivative-quadratic") as fig:
     ax = fig.gca()
 
     alphas = [

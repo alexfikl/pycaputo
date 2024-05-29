@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+"""Compute the fractional Caputo derivative of a function using the L1
+method. This is a simple example showcasing how the API can be used.
+
+Other methods are available at :mod:`pycaputo.differentiation`.
+"""
+
 import math
 
 import numpy as np

@@ -1,6 +1,19 @@
 # SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
+"""This example tries to approximate the Lipschitz constant of a given function
+with the methods described in [Wood1996]_.
+
+The main difficulty is fitting the Weibull distribution, which we do by making
+use of ``scipy``. This example gives an example of how well this approximation
+does.
+
+.. [Wood1996] G. R. Wood, B. P. Zhang,
+    *Estimation of the Lipschitz Constant of a Function*,
+    Journal of Global Optimization, Vol. 8, 1996,
+    `DOI <https://doi.org/10.1007/bf00229304>`__.
+"""
+
 import numpy as np
 import scipy.stats as ss
 
