@@ -54,9 +54,12 @@ def _mittag_leffler_series(
         kmax = 2048
 
     if abs(z) >= 1.0:
-        raise ValueError(
+        from warnings import warn
+
+        warn(
             "The series expansion of the Mittag-Leffler function "
-            "only converges for |z| < 1"
+            "converges very slowly for z > 1. Use a more appropriate method.",
+            stacklevel=2,
         )
 
     result, term = 0j, 1j
@@ -660,7 +663,7 @@ def mittag_leffler(
     alpha: float = 1.0,
     beta: float = 1.0,
     *,
-    alg: Algorithm | None = None,
+    alg: Algorithm | str | None = None,
     use_explicit: bool = True,
 ) -> Array:
     r"""Evaluate the Mittag-Leffler function :math:`E_{\alpha, \beta}(z)`.
@@ -684,6 +687,12 @@ def mittag_leffler(
     if alg is None:
         # NOTE: for now this algorithm should be faster / better
         alg = Algorithm.Diethelm
+
+    if isinstance(alg, str):
+        try:
+            alg = Algorithm[alg.capitalize()]
+        except KeyError:
+            raise ValueError(f"Unknown algorithm: '{alg}'") from None
 
     if use_explicit:
         result = mittag_leffler_special(z, alpha, beta)

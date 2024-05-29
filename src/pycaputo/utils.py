@@ -465,7 +465,7 @@ def set_recommended_matplotlib(
         },
         "savefig": {"format": savefig_format},
         "text": {"usetex": use_tex},
-        "legend": {"fontsize": 32},
+        "legend": {"fontsize": 20},
         "lines": {"linewidth": 2, "markersize": 10},
         "axes": {
             "labelsize": 28,
