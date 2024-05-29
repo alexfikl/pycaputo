@@ -15,6 +15,7 @@ Features
   :class:`~pycaputo.fode.caputo.ExplicitTrapezoidal` methods. These methods are
   closely related to the standard :class:`~pycaputo.fode.caputo.PECE` method.
   The implicit method has better stability.
+* Implement the Mittag-Leffler algorithm from [Garrappa2015]_.
 
 Changes
 ^^^^^^^
@@ -31,6 +32,8 @@ Changes
   on the smoothness of the operand.
 * The :mod:`pycaputo.quadrature` module went through similar changes to the
   differentiation one.
+* The :mod:`pycaputo.fode` module went through similar changes to the
+  differentiation and quadrature ones.
 
 pycaputo 0.5.0 (April 19, 2024)
 -------------------------------
