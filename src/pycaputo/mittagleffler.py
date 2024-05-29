@@ -95,7 +95,7 @@ def _ml_quad_k(
     delta: float | None = None,
 ) -> complex:
     if delta is None:
-        delta = 1.0e2 * math.sqrt(eps)
+        delta = 1.0e-2 * math.sqrt(eps)
 
     sin_pb = math.sin(np.pi * (1 - beta))
     sin_ab = math.sin(np.pi * (1 - beta + alpha))
