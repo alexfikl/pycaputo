@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import enum
 import math
+from functools import partial
 from typing import Any
 
 import numpy as np
@@ -94,7 +95,7 @@ def _ml_quad_k(
     delta: float | None = None,
 ) -> complex:
     if delta is None:
-        delta = 1.0e-2 * math.sqrt(eps)
+        delta = 1.0e2 * math.sqrt(eps)
 
     sin_pb = math.sin(np.pi * (1 - beta))
     sin_ab = math.sin(np.pi * (1 - beta + alpha))
@@ -110,8 +111,6 @@ def _ml_quad_k(
         )
 
         return complex(chi**inv_ab * math.exp(-(chi**inv_aa)) * r)
-
-    from functools import partial
 
     from scipy.integrate import quad
 
@@ -686,7 +685,7 @@ def mittag_leffler(
 
     if alg is None:
         # NOTE: for now this algorithm should be faster / better
-        alg = Algorithm.Diethelm
+        alg = Algorithm.Garrappa
 
     if isinstance(alg, str):
         try:
