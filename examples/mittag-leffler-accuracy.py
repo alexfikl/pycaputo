@@ -20,6 +20,9 @@ function
 
     E_{\frac{1}{2}, 1}(z) = \exp(z^2) \erfc(-z)
 
+In this regime, the series expansion will fail to converge for :math:`|z| > 5`
+and the algorithm from Diethelm2005 also fails.
+
 .. [Garrappa2015] R. Garrappa,
     *Numerical Evaluation of Two and Three Parameter Mittag-Leffler Functions*,
     SIAM Journal on Numerical Analysis, Vol. 53, pp. 1350--1369, 2015,
