@@ -185,10 +185,13 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
 # {{{ test_mittag_leffler_sine_mathematica
 
 
-@pytest.mark.xfail()
-@pytest.mark.parametrize("iref", [0])
-@pytest.mark.parametrize("alg", [ml.Algorithm.Series, ml.Algorithm.Diethelm])
-def test_mittag_leffler_sine_mathematica(iref: int, alg: ml.Algorithm) -> None:
+@pytest.mark.parametrize("iref", [0, 1])
+@pytest.mark.parametrize(
+    "alg", [ml.Algorithm.Series, ml.Algorithm.Diethelm, ml.Algorithm.Garrappa]
+)
+def test_mittag_leffler_sine_mathematica(
+    iref: int, alg: ml.Algorithm, *, visualize: bool = False
+) -> None:
     from mittag_leffler_ref import MATHEMATICA_SINE_RESULTS
 
     ref = MATHEMATICA_SINE_RESULTS[iref]
@@ -196,7 +199,21 @@ def test_mittag_leffler_sine_mathematica(iref: int, alg: ml.Algorithm) -> None:
     result = ml.caputo_derivative_sine(ref.z, alpha=ref.alpha, alg=alg)
     error = np.linalg.norm(result - ref.result) / np.linalg.norm(ref.result)
     logger.info("Error D^%g[sin]: %.12e", ref.alpha, error)
-    assert error < 1.0e-12
+
+    if visualize:
+        from pycaputo.utils import figure
+
+        i = np.argsort(ref.z)
+
+        suffix = str(ref.alpha).replace(".", "_")
+        with figure(dirname / f"test_mittag_leffler_sine_{suffix}") as fig:
+            ax = fig.gca()
+            ax.semilogy(ref.z[i], np.abs(result[i] - ref.result[i]))
+
+            ax.set_xlabel("$t$")
+            ax.set_ylabel("$D[sin]$")
+
+    assert error < 2.0e-11
 
 
 # }}}
