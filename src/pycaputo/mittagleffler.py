@@ -728,7 +728,7 @@ def caputo_derivative_sine(
 
     .. math::
 
-        D^\alpha_C[sin](t) =
+        D^\alpha_C[\sin](t) =
             \cos \left(\frac{n \pi}{2}\right) t^{1 + n - \alpha}
                 E_{2, 2 + n - \alpha}(-t^2)
             + \sin \left(\frac{n \pi}{2}\right) t^{n - \alpha}

@@ -1,8 +1,8 @@
 Changelog
 =========
 
-pycaputo [unreleased] (TBD)
----------------------------
+pycaputo 0.6.0 (May 30, 2024)
+-----------------------------
 
 Features
 ^^^^^^^^
