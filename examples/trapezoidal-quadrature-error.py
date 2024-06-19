@@ -52,15 +52,15 @@ def func_df(x: Array, *, alpha: float, beta: float = 2.0, x0: float = 0.0) -> Ar
 
 from pycaputo.quadrature import quad, riemann_liouville
 
-alpha = 0.8
-beta = 2.5
+alpha = 0.2
+beta = 0.85
 m = riemann_liouville.Trapezoidal(-alpha)
 
-from pycaputo.grid import make_stretched_points
+from pycaputo.grid import make_uniform_points
 
 n = 128
-xa, xb = 1.5, np.pi
-p = make_stretched_points(n, xa, xb)
+xa, xb = 1.5, 3 * np.pi
+p = make_uniform_points(n, xa, xb)
 
 f_ref = func_f(p.x, beta=beta, x0=xa)
 df_ref = func_df(p.x, alpha=alpha, beta=beta, x0=xa)
@@ -79,7 +79,7 @@ from pycaputo.utils import EOCRecorder
 eoc = EOCRecorder(order=min(2.0, 1 + beta))
 
 for n in [32, 64, 128, 256, 384, 512]:
-    p = make_stretched_points(n, xa, xb)
+    p = make_uniform_points(n, xa, xb)
 
     f_ref = func_f(p.x, beta=beta, x0=xa)
     df_ref = func_df(p.x, alpha=alpha, beta=beta, x0=xa)
@@ -111,8 +111,10 @@ hmax = np.max(p.dx)
 
 if beta < 1.0:
     e_ref = (p.x - xa) ** (alpha - 1.0) * hmax ** (1 + beta)
+    e_label = r"$(t - t_0)^{\alpha - 1} \Delta t_{\text{max}}^{1 + \beta}$"
 else:
     e_ref = (p.x - xa) ** (alpha + beta - 2) * hmax**2
+    e_label = r"$(t - t_0)^{\alpha + \beta - 2} \Delta t_{\text{max}}^2$"
 
 # NOTE: ensure the constant is the same
 e_ref[0] = 0.0
@@ -134,12 +136,7 @@ with figure(f"trapezoidal-quadrature-{100 * beta:03.0f}-t") as fig:
     ax = fig.gca()
 
     ax.semilogy(p.x, e, label="Error")
-    ax.semilogy(
-        p.x,
-        e_ref,
-        "k--",
-        label=r"$(t - t_0)^{\alpha + \beta - 2} \Delta t_{\text{max}}^2$",
-    )
+    ax.semilogy(p.x, e_ref, "k--", label=e_label)
 
     ax.set_title(rf"$\alpha = {alpha:.2f} ~/~ \beta = {beta:.2f} $")
     ax.set_xlabel("$t$")
