@@ -230,6 +230,10 @@ def test_fode_caputo(
     [
         fode_factory(caputo.ForwardEuler, nterms=3),
         fode_factory(caputo.WeightedEuler, theta=0.5, nterms=3),
+        fode_factory(caputo.Trapezoidal, nterms=3),
+        fode_factory(caputo.ExplicitTrapezoidal, nterms=3),
+        fode_factory(caputo.PECE, corrector_iterations=1, nterms=3),
+        fode_factory(caputo.ModifiedPECE, corrector_iterations=1, nterms=3),
     ],
 )
 def test_fode_caputo_system(
