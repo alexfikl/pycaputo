@@ -1,6 +1,21 @@
 Changelog
 =========
 
+pycaputo (TDB)
+--------------
+
+Features
+^^^^^^^^
+
+* Extend :class:`~pycaputo.fode.caputo.PECE`, :class:`~pycaputo.fode.caputo.PEC`
+  and :class:`~pycaputo.fode.caputo.ModifiedPECE` to support systems with different
+  orders (:ghpr:`46` and :ghissue:`17`).
+
+Fixes
+^^^^^
+
+* Fix convergence of :class:`~pycaputo.fode.caputo.ModifiedPECE` (:ghissue:`15`).
+
 pycaputo 0.6.0 (May 30, 2024)
 -----------------------------
 
