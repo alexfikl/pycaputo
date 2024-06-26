@@ -442,17 +442,17 @@ class ExplicitTrapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
         return 1.0 + self.smallest_derivative_order
 
 
-def _update_caputo_explicit_trapezoidal(
+def _update_caputo_trapezoidal_extrapolation(
     out: Array,
-    t: Array,
-    f: Array,
-    alpha: Array,
+    m: CaputoProductIntegrationMethod[StateFunctionT],
+    history: ProductIntegrationHistory,
     n: int,
 ) -> Array:
-    ts1 = t[n] - t[n - 1]
-    dt2 = t[n - 1] - t[n - 2]
-    fm1 = f[n - 1]
-    fm2 = f[n - 2]
+    alpha = m.alpha
+    ts1 = history.ts[n] - history.ts[n - 1]
+    dt2 = history.ts[n - 1] - history.ts[n - 2]
+    fm1 = history.storage[n - 1]
+    fm2 = history.storage[n - 2]
 
     # fmt: off
     omegal = -(ts1 ** (1 + alpha)) / gamma(2 + alpha) / dt2
@@ -486,9 +486,7 @@ def _advance_caputo_explicit_trapezoidal(
         ynext = _update_caputo_forward_euler(ynext, m, history, n)
     else:
         ynext, _ = _update_caputo_trapezoidal(ynext, m, history, n, n - 1)
-        ynext = _update_caputo_explicit_trapezoidal(
-            ynext, history.ts, history.storage, m.alpha, n
-        )
+        ynext = _update_caputo_trapezoidal_extrapolation(ynext, m, history, n)
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
@@ -579,60 +577,6 @@ class PEC(CaputoPredictorCorrectorMethod[StateFunctionT]):
     """
 
 
-def _update_caputo_adams_bashforth2(
-    dy: Array,
-    history: ProductIntegrationHistory,
-    alpha: float,
-    *,
-    n: int | None = None,
-) -> tuple[Array, float]:
-    is_n = n is not None
-    n = len(history) if n is None else n
-
-    gamma1 = gamma(1 + alpha)
-    gamma2 = gamma(2 + alpha)
-    assert n is not None
-
-    ts = history.ts[: n + 1]
-    dt = np.diff(ts)
-    ts = history.ts[n] - ts
-
-    for k in range(n - 1):
-        omega = (
-            ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
-            - ts[k] ** (alpha + 1) / gamma2 / dt[k]
-            + ts[k] ** alpha / gamma1
-        )
-        dy += omega * history.storage[k]
-
-        omega = (
-            ts[k] ** (alpha + 1) / gamma2 / dt[k]
-            - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
-            - ts[k + 1] ** alpha / gamma1
-        )
-        dy += omega * history.storage[k + 1]
-
-    if not is_n and n == len(history):
-        k = n - 1
-
-        omega = (
-            ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
-            - ts[k] ** (alpha + 1) / gamma2 / dt[k]
-            + ts[k] ** alpha / gamma1
-        )
-        dy += omega * history.storage[k]
-
-    # NOTE: always compute the weight for the last step in the history
-    k = len(history) - 1
-    omega = (
-        ts[k] ** (alpha + 1) / gamma2 / dt[k]
-        - ts[k + 1] ** (alpha + 1) / gamma2 / dt[k]
-        - ts[k + 1] ** alpha / gamma1
-    )
-
-    return dy, omega
-
-
 @advance.register(CaputoPredictorCorrectorMethod)
 def _advance_caputo_predictor_corrector(
     m: CaputoPredictorCorrectorMethod[StateFunctionT],
@@ -640,12 +584,8 @@ def _advance_caputo_predictor_corrector(
     y: Array,
     dt: float,
 ) -> AdvanceResult:
-    from pycaputo.utils import single_valued
-
-    n = len(history)
-    alpha = single_valued(m.derivative_order)
-
     # set next time step
+    n = len(history)
     tstart = m.control.tstart
     t = history.ts[n] = history.ts[n - 1] + dt
 
@@ -655,17 +595,17 @@ def _advance_caputo_predictor_corrector(
 
     # predictor step (forward Euler)
     yp = np.copy(y0)
-    yp = _update_caputo_forward_euler(yp, m, history, len(history))
+    yp = _update_caputo_forward_euler(yp, m, history, n)
 
-    # corrector step (Adams-Bashforth 2)
+    # corrector step (Adams-Bashforth 2 i.e. Trapezoidal)
     yc_explicit = np.copy(y0)
-    yc_explicit, omega = _update_caputo_adams_bashforth2(yc_explicit, history, alpha)
+    yc_explicit, fac = _update_caputo_trapezoidal(yc_explicit, m, history, n, n)
 
     # corrector iterations
     yc = yp
     for _ in range(m.corrector_iterations):
         fp = m.source(t, yc)
-        yc = yc_explicit + omega * fp
+        yc = yc_explicit + fac * fp
 
     ynext = yc
     f = fp if isinstance(m, PEC) else m.source(t, ynext)
@@ -685,8 +625,8 @@ class ModifiedPECE(CaputoPredictorCorrectorMethod[StateFunctionT]):
     r"""A modified Predict-Evaluate-Correct-Evaluate (PECE) discretization of the
     Caputo derivative.
 
-    This method is described in [Garrappa2010]_ as a modification to the standard
-    :class:`PECE` with improved performance due to reusing the
+    This method is described in [Garrappa2010]_ Equation 8 as a modification to
+    the standard :class:`PECE` with improved performance due to reusing the
     convolution weights.
 
     Note that this method has an improved order, i.e. it achieves
@@ -702,62 +642,35 @@ def _advance_caputo_modified_pece(
     y: Array,
     dt: float,
 ) -> AdvanceResult:
-    from pycaputo.utils import single_valued
-
     n = len(history)
-    alpha = single_valued(m.derivative_order)
-    gamma2 = gamma(2 + alpha)
-    gamma1 = gamma(1 + alpha)
 
     # set next time step
     tstart = m.control.tstart
     t = history.ts[n] = history.ts[n - 1] + dt
 
-    ts = history.ts[: n + 1]
-    ds = np.diff(ts)
-    ts = history.ts[n] - ts
-
     # compute common terms
     dy = np.zeros_like(y)
     dy = _update_caputo_initial_condition(dy, m.y0, t - tstart)
 
+    # compute predictor
+    omegal, omegar = _weights_quadrature_trapezoidal(m, history.ts, n, n)
+    fs = history.storage[:n]
+
     if n == 1:
-        yp = _update_caputo_forward_euler(dy, m, history, len(history))
+        yp = _update_caputo_forward_euler(dy, m, history, n)
     else:
-        dy, _ = _update_caputo_adams_bashforth2(dy, history, alpha, n=n)
+        dy += np.einsum("ij,ij->j", omegal[:-1], fs[:-1])
+        dy += np.einsum("ij,ij->j", omegar[:-1], fs[1:])
 
-        # compute predictor
         yp = np.copy(dy)
-
-        k = n - 1
-
-        omega = (
-            # fmt: off
-            ts[k] ** (alpha + 1) / gamma2 / ds[k] + ts[k] ** alpha / gamma1
-            # fmt: on
-        )
-        yp += omega * history.storage[k - 1]
-
-        omega = -(ts[k] ** (alpha + 1)) / gamma2 / ds[k]
-        yp += omega * history.storage[k]
+        yp = _update_caputo_trapezoidal_extrapolation(yp, m, history, n)
 
     # compute corrector
     ynext = np.copy(dy)
-
-    k = n - 1
-    omega = (
-        ts[k + 1] ** (alpha + 1) / gamma2 / ds[k]
-        - ts[k] ** (alpha + 1) / gamma2 / ds[k]
-        + ts[k] ** alpha / gamma1
-    )
-    ynext += omega * history.storage[k]
+    ynext += omegal[-1] * fs[-1]
 
     # corrector iterations
-    omega = (
-        ts[k] ** (alpha + 1) / gamma2 / ds[k]
-        - ts[k + 1] ** (alpha + 1) / gamma2 / ds[k]
-        - ts[k + 1] ** alpha / gamma1
-    )
+    omega = omegar[-1].squeeze()
     yc = yp
     for _ in range(m.corrector_iterations):
         fp = m.source(t, yc)
