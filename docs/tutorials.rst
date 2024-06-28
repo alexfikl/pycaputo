@@ -194,7 +194,7 @@ set up as follows
 
 We can see here that we have chosen a time interval of :math:`[0, 4]` to see
 the start of the limit cycle. We have also used other parameters better described
-in [Jannelli2020]. Briefly, ``qmin`` and ``qmax`` are used to decrease or
+in [Jannelli2020]_. Briefly, ``sigma`` and ``rho`` are used to decrease or
 increase the time step by a fixed value, while ``chimin`` and ``chimax`` are
 used to normalize the Jannelli error estimator. Then, we can set up the solver
 itself
@@ -249,7 +249,8 @@ Below we have the value of the scalar error estimator and the values of the
 Jannelli error estimator for each component. We can see here that the error is
 generally maintained in :math:`[0, 1]` for all accepted steps, which is
 equivalent to keeping the error in :math:`[\chi_{min}, \chi_{max}]` before
-rescaling.
+rescaling. We can also see that the :math:`y` component clearly dominates the
+error estimate for this example.
 
 .. image:: van-der-pol-adaptive-pece-eest-light.svg
     :class: only-light
