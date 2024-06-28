@@ -53,8 +53,8 @@ def main(outdir: pathlib.Path) -> int:
 
             with tempfile.TemporaryDirectory() as cwd:
                 try:
-                    subprocess.run(
-                        ["python", str(script)],  # noqa: S603, S607
+                    subprocess.run(  # noqa: S603
+                        ["python", str(script)],  # noqa: S607
                         cwd=cwd,
                         env=env,
                         check=True,

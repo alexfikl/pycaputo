@@ -39,10 +39,11 @@ Example
 
 We give here the skeleton for implementing a new custom
 :class:`~pycaputo.quadrature.QuadratureMethod`. First, all subclasses must be a
-:func:`~dataclasses.dataclass` as
+:func:`~dataclasses.dataclass` and implement the abstract methods for the base
+class. For example,
 
 .. literalinclude:: ../examples/example-custom-quad.py
-    :lines: 14-24
+    :lines: 19-32
     :language: python
     :linenos:
 
@@ -50,7 +51,7 @@ Then, we can implement the :func:`~pycaputo.quadrature.quad` method by
 registering it with the :func:`~functools.singledispatch` mechanism as
 
 .. literalinclude:: ../examples/example-custom-quad.py
-    :lines: 27-34
+    :lines: 40-50
     :language: python
     :linenos:
 

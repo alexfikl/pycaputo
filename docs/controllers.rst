@@ -75,6 +75,11 @@ this fashion.
     :class:`~pycaputo.controller.JannelliIntegralController` has been tested
     and published in the literature.
 
+    If in doubt, use one of the fixed step size controllers, such as
+    :class:`~pycaputo.controller.FixedController` or
+    :class:`~pycaputo.controller.GradedController`, to compare your results
+    against.
+
 API Reference
 -------------
 

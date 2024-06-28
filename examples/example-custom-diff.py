@@ -6,14 +6,18 @@
 The definition is given by registering a new method using ``diff.register``.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: I001
 
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.differentiation import DerivativeMethod, diff
 from pycaputo.grid import Points
 from pycaputo.utils import Array, ArrayOrScalarFunction
+
+
+# {{{
+
+from pycaputo.differentiation import DerivativeMethod
 
 
 @dataclass(frozen=True)
@@ -29,6 +33,14 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
         return RiemannLiouvilleDerivative(self.alpha, side=Side.Left)
 
 
+# }}}
+
+
+# {{{
+
+from pycaputo.differentiation import diff
+
+
 @diff.register(RiemannLiouvilleDerivativeMethod)
 def _diff_rl(
     m: RiemannLiouvilleDerivativeMethod,
@@ -37,6 +49,9 @@ def _diff_rl(
 ) -> Array:
     fx = f(p.x) if callable(f) else f
     return np.zeros_like(fx)
+
+
+# }}}
 
 
 m = RiemannLiouvilleDerivativeMethod(alpha=0.9)

@@ -33,10 +33,11 @@ Example
 
 We give here the skeleton for implementing a new custom
 :class:`~pycaputo.differentiation.DerivativeMethod`.
-First, all subclasses must be a :func:`~dataclasses.dataclass` as
+First, all subclasses must be a :func:`~dataclasses.dataclass` and implement the
+abstract methods of the base class. For example,
 
 .. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 14-24
+    :lines: 20-33
     :language: python
     :linenos:
 
@@ -44,7 +45,7 @@ Then, we can implement the :func:`~pycaputo.differentiation.diff` method by
 registering it with the :func:`~functools.singledispatch` mechanism as
 
 .. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 27-34
+    :lines: 41-51
     :language: python
     :linenos:
 
