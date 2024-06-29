@@ -44,7 +44,7 @@ set_recommended_matplotlib()
     ],
 )
 def test_mittag_leffler_special(alpha: float, beta: float, alg: ml.Algorithm) -> None:
-    rng = np.random.default_rng(seed=None)
+    rng = np.random.default_rng(seed=42)
 
     z = rng.uniform(-4.0, 5.0, 128) + 1j * rng.uniform(-5.0, 4.0, 128)
     if alpha == 0 or alg == ml.Algorithm.Series:
