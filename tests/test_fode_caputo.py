@@ -161,6 +161,13 @@ def test_fode_caputo(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Test convergence of the methods for single-order Caputo FODEs.
+
+    The convergence is checked in the :math:`\ell^2` norm for
+    :func:`garrappa2009_solution`.
+    """
+
     from pycaputo.events import StepCompleted, StepFailed
     from pycaputo.utils import BlockTimer, EOCRecorder
 
@@ -243,6 +250,13 @@ def test_fode_caputo_system(
     *,
     visualize: bool = False,
 ) -> None:
+    """
+    Test convergence of the methods for single-order Caputo systems FODEs.
+
+    This checks a simple system of 3 equations with the same right-hand side,
+    but different fractional order for each equation.
+    """
+
     from pycaputo.events import StepCompleted, StepFailed
     from pycaputo.utils import BlockTimer, EOCRecorder
 
@@ -300,6 +314,14 @@ def singular_source(t: float, y: Array, *, alpha: float) -> Array:
 def test_singular_caputo_l1(
     mesh_type: str, alpha: float, *, visualize: bool = False
 ) -> None:
+    """
+    Test convergence of the L1 method when the solution is singular.
+
+    The L1 method should degrade from order :math:`2 - \alpha` to order :math:`1`
+    on a uniform mesh. The optimal convergence should be recovered on a graded
+    mesh.
+    """
+
     from pycaputo.events import StepCompleted, StepFailed
     from pycaputo.utils import BlockTimer, EOCRecorder
 

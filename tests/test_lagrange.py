@@ -16,6 +16,10 @@ set_recommended_matplotlib()
 
 
 def test_vandermonde_matrix() -> None:
+    """
+    Check that we correctly compute the Vandermonde matrix.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
 
     n = 24

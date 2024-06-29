@@ -22,6 +22,10 @@ def quad_monomial(k: int, a: float, b: float) -> float:
 
 
 def test_jacobi_weights() -> None:
+    """
+    Test that the Jacobi weights can integrate up to :math:`2n - 1`.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
 
     a = -4.0
@@ -67,6 +71,10 @@ def test_jacobi_weights() -> None:
     ],
 )
 def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) -> None:
+    """
+    Check that the Jacobi polynomials are evaluated correctly.
+    """
+
     from scipy.special import jacobi
 
     from pycaputo.grid import make_jacobi_gauss_lobatto_points, make_uniform_points
@@ -113,6 +121,10 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
     ],
 )
 def test_jacobi_project(alpha: float, beta: float, rtol: float = 5.0e-13) -> None:
+    """
+    Check that we can project a function to the Jacobi basis.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.jacobi import jacobi_polynomial, jacobi_project
 
@@ -138,6 +150,11 @@ def test_jacobi_project(alpha: float, beta: float, rtol: float = 5.0e-13) -> Non
 
 
 def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
+    """
+    Check that we correctly compute the Riemann-Liouville integral of the
+    Jacobi polynomial.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.jacobi import jacobi_riemann_liouville_integral
 
@@ -267,6 +284,10 @@ def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
 
 
 def test_jacobi_caputo_derivative(*, visualize: bool = False) -> None:
+    """
+    Check that we correctly compute the Caputo derivative of the Jacobi polynomial.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.jacobi import jacobi_caputo_derivative
 

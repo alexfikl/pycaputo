@@ -67,6 +67,11 @@ def test_riemann_liouville_lmethods(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Test convergence of the LXXX methods for the Riemann-Liouville derivative.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+    """
+
     from pycaputo.grid import make_points_from_name
 
     if name in {"L2", "L2C"}:
@@ -127,3 +132,12 @@ def test_riemann_liouville_lmethods(
 
 
 # }}}
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) > 1:
+        exec(sys.argv[1])
+    else:
+        pytest.main([__file__])

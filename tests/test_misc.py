@@ -21,6 +21,10 @@ set_recommended_matplotlib()
 
 
 def test_lipschitz_uniform_sample(*, visualize: bool = False) -> None:
+    """
+    Check uniform sampling on the :math:`[a, b] \times [a, b]` diagonal.
+    """
+
     from pycaputo.lipschitz import uniform_diagonal_sample
 
     a = -1.0
@@ -90,6 +94,10 @@ def test_estimate_lischitz_constant(
     *,
     visualize: bool = False,
 ) -> None:
+    """
+    Check that the Lipschitz constant is correctly estimated for known functions.
+    """
+
     nbatches = [25, 50, 75, 100]
     nslopes = [3, 5, 7, 9, 11]
     delta = 0.05
@@ -148,6 +156,10 @@ class MyFrozenClass:
 
 @pytest.mark.parametrize("cls", [MyClass, MyFrozenClass])
 def test_cached_on_first_arg(cls: type) -> None:
+    """
+    Check function caching behaviour.
+    """
+
     from pycaputo.utils import cached_on_first_arg
 
     flag = [0]

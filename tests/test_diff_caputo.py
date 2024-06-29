@@ -69,6 +69,11 @@ def test_caputo_lmethods(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Test convergence of the LXXX methods for the Caputo derivative.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+    """
+
     from pycaputo.grid import make_points_from_name
 
     if name in {"L2", "L2C"}:
@@ -154,6 +159,14 @@ def test_caputo_spectral(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Test convergence of the spectral methods for the Caputo derivative.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+
+    This method is tested separately from :func:`test_caputo_lmethods` because
+    it requires a slightly different setup.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.utils import EOCRecorder, savefig
 
@@ -286,6 +299,14 @@ def test_caputo_vs_differint(
     *,
     visualize: bool = False,
 ) -> None:
+    """
+    Compare the Caputo derivative approximations with the :mod:`differint` library.
+
+    The L2 and L2C methods are implemented differently by us, so those will not
+    compare well. In particular, boundary terms use a biased stencil instead of
+    the same centered stencil.
+    """
+
     pytest.importorskip("differint")
 
     if name in {"L2", "L2C"}:

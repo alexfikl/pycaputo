@@ -22,6 +22,10 @@ set_recommended_matplotlib()
 def test_lubich_bdf_weights(
     order: int, alpha: float, *, visualize: bool = False
 ) -> None:
+    """
+    Check that the Lubich weights can integrate a smooth function.
+    """
+
     from pycaputo.generating_functions import (
         lubich_bdf_starting_weights,
         lubich_bdf_weights,

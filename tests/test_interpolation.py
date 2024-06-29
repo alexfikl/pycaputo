@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from pycaputo.interpolation import (
     InterpStencil,
@@ -43,6 +44,10 @@ def interpolation_convergence(s: InterpStencil) -> float:
 
 
 def test_interpolation_lagrange(*, visualize: bool = False) -> None:
+    """
+    Check that the uniform Lagrange interpolation converges as expected.
+    """
+
     stencils = [
         # (
         #     make_lagrange_approximation((0, 1), 0.5),
@@ -73,3 +78,12 @@ def test_interpolation_lagrange(*, visualize: bool = False) -> None:
 
 
 # }}}
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) > 1:
+        exec(sys.argv[1])
+    else:
+        pytest.main([__file__])

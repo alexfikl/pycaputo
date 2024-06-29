@@ -6,6 +6,7 @@ from __future__ import annotations
 import pathlib
 
 import numpy as np
+import pytest
 
 from pycaputo.finite_difference import (
     DiffStencil,
@@ -47,6 +48,13 @@ def finite_difference_convergence(d: DiffStencil) -> float:
 
 
 def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
+    r"""
+    Test accuracy and consistency of constructed finite difference stencils.
+
+    Accuracy is checked by applying the stencil to a sine function and checking
+    convergence in the :math:`\ell^2` norm.
+    """
+
     stencils = [
         (
             make_taylor_approximation(1, (-2, 2)),
@@ -149,3 +157,12 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
 
 
 # }}}
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) > 1:
+        exec(sys.argv[1])
+    else:
+        pytest.main([__file__])

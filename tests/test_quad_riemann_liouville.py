@@ -14,6 +14,7 @@ from pycaputo.quadrature import quad, riemann_liouville
 from pycaputo.utils import Array, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_quad_riemann_liouville")
+dirname = pathlib.Path(__file__).parent
 set_recommended_matplotlib()
 
 
@@ -62,6 +63,11 @@ def test_riemann_liouville_quad(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Check the convergence of approximations for the Riemann--Liouville integral.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+    """
+
     from pycaputo.grid import make_points_from_name
     from pycaputo.utils import EOCRecorder, savefig
 
@@ -118,7 +124,6 @@ def test_riemann_liouville_quad(
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        dirname = pathlib.Path(__file__).parent
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
@@ -150,6 +155,14 @@ def test_riemann_liouville_quad_spectral(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Test convergence of the spectral methods for the RL integral.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+
+    This method is tested separately from :func:`test_riemann_liouville_quad` because
+    it requires a slightly different setup.
+    """
+
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.utils import EOCRecorder, savefig
 
@@ -188,7 +201,6 @@ def test_riemann_liouville_quad_spectral(
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        dirname = pathlib.Path(__file__).parent
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
@@ -211,6 +223,14 @@ def test_riemann_liouville_spline(
     *,
     visualize: bool = False,
 ) -> None:
+    r"""
+    Test convergence of the Lagrange spline methods for the RL integral.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+
+    This method is tested separately from :func:`test_riemann_liouville_quad` because
+    it requires a slightly different setup.
+    """
+
     from pycaputo.grid import make_uniform_points
     from pycaputo.utils import EOCRecorder, savefig
 
@@ -247,7 +267,6 @@ def test_riemann_liouville_spline(
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        dirname = pathlib.Path(__file__).parent
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 

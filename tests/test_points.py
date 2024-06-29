@@ -17,6 +17,10 @@ set_recommended_matplotlib()
 
 
 def test_points(*, visualize: bool = False) -> None:
+    """
+    Check that grids are correctly constructed.
+    """
+
     from pycaputo.grid import REGISTERED_POINTS, make_points_from_name
     from pycaputo.utils import savefig
 

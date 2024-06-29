@@ -44,6 +44,10 @@ set_recommended_matplotlib()
     ],
 )
 def test_mittag_leffler_special(alpha: float, beta: float, alg: ml.Algorithm) -> None:
+    """
+    Check the ML evaluation for known special cases.
+    """
+
     rng = np.random.default_rng(seed=42)
 
     z = rng.uniform(-4.0, 5.0, 128) + 1j * rng.uniform(-5.0, 4.0, 128)
@@ -81,6 +85,9 @@ def test_mittag_leffler_special(alpha: float, beta: float, alg: ml.Algorithm) ->
     ],
 )
 def test_mittag_leffler_mathematica(iref: int, alg: ml.Algorithm) -> None:
+    """
+    Check the results of our ML evaluations against Mathematica.
+    """
     from mittag_leffler_ref import MATHEMATICA_RESULTS
 
     ref = MATHEMATICA_RESULTS[iref]
@@ -137,6 +144,13 @@ def opt_func(t: float, a: float, b: float, *, alpha: float) -> float:
 
 @pytest.mark.parametrize("alpha", [0.9, 0.95])
 def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
+    """
+    Test an optimization problem with the Mittag-Leffler function.
+
+    This is used in :mod:`pycaputo.integrate_fire.lif` to get the first spike
+    time for the Leaky model.
+    """
+
     rng = np.random.default_rng(seed=42)
 
     import scipy.optimize as so
@@ -192,6 +206,11 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
 def test_mittag_leffler_sine_mathematica(
     iref: int, alg: ml.Algorithm, *, visualize: bool = False
 ) -> None:
+    """
+    Check the evaluation of the Caputo derivative of the Sine function against
+    known results from Mathematica.
+    """
+
     from mittag_leffler_ref import MATHEMATICA_SINE_RESULTS
 
     ref = MATHEMATICA_SINE_RESULTS[iref]

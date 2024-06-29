@@ -21,6 +21,10 @@ set_recommended_matplotlib()
 
 
 def test_history_growth(*, visualize: bool = False) -> None:
+    """
+    Test that :class:`ProductIntegrationHistory` can grow its storage accordingly.
+    """
+
     from pycaputo.history import ProductIntegrationHistory
 
     history = ProductIntegrationHistory.empty(n=32, shape=(2,), dtype=np.float64)
@@ -56,6 +60,10 @@ def test_history_growth(*, visualize: bool = False) -> None:
 
 
 def test_history_append() -> None:
+    """
+    Test that :class:`ProductIntegrationHistory` can grow and append items.
+    """
+
     from pycaputo.history import ProductIntegrationHistory
 
     n = 32
@@ -141,6 +149,10 @@ def _check_fixed_controller_evolution(c: Controller, dt: float) -> None:
 
 
 def test_fixed_controller() -> None:
+    """
+    Test that the :class:`FixedController` computes the correct timestep.
+    """
+
     from pycaputo.controller import make_fixed_controller
 
     dt = 1.0e-2
@@ -162,6 +174,10 @@ def test_fixed_controller() -> None:
 
 
 def test_graded_controller() -> None:
+    """
+    Test that the :class:`GradedController` computes the correct time steps.
+    """
+
     from pycaputo.controller import evaluate_timestep_accept, make_graded_controller
 
     with pytest.raises(ValueError, match="Must provide"):

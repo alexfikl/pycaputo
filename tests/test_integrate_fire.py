@@ -21,6 +21,11 @@ set_recommended_matplotlib()
 
 
 def test_ad_ex_parameters() -> None:
+    """
+    Check the consistency of the AdEx parameters.
+    Check that the non-dimensionalization is performed according to expectations.
+    """
+
     from pycaputo.integrate_fire.ad_ex import AD_EX_PARAMS, AdEx, AdExDim
 
     def ad_ex_func(p: AdEx, y: Array) -> Array:
@@ -117,11 +122,17 @@ def ad_ex_zero(a: float, tau_w: float, h: Array) -> Array:
 
 
 def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
+    """
+    Check that the zeros of the Lambert functions are found.
+
+    This checks that all the parameter bundles that we have allow solving the
+    equation at least in the case of equal fractional orders.
+    """
+
     from math import gamma
 
     from pycaputo.integrate_fire.ad_ex import AD_EX_PARAMS
 
-    dirname = pathlib.Path(__file__).parent
     alpha = 0.9
     a, b = 0, gamma(2 - alpha)
 
@@ -160,6 +171,11 @@ def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
 
 @pytest.mark.xfail()
 def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
+    """
+    Check that the max time step can be found from the Lambert function and it
+    is between the expected limits.
+    """
+
     from math import gamma
 
     from pycaputo.controller import make_jannelli_controller
@@ -248,6 +264,10 @@ def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
 
 
 def test_ad_ex_solve() -> None:
+    """
+    Check that the implicit equation for the AdEx model can be solved.
+    """
+
     from pycaputo.controller import make_jannelli_controller
     from pycaputo.integrate_fire.ad_ex import (
         AD_EX_PARAMS,
@@ -305,6 +325,10 @@ def test_ad_ex_solve() -> None:
     ],
 )
 def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None:
+    """
+    Check that the PIF model converges for known solutions.
+    """
+
     from pycaputo.integrate_fire import StepAccepted, pif
 
     # time interval
@@ -406,6 +430,10 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
 
 
 def test_spike_time_estimate_linear() -> None:
+    """
+    Check the linear time step estimate.
+    """
+
     from pycaputo.integrate_fire.spikes import estimate_spike_time_linear
 
     rng = np.random.default_rng(seed=42)
@@ -424,6 +452,10 @@ def test_spike_time_estimate_linear() -> None:
 
 
 def test_spike_time_estimate_quadratic() -> None:
+    """
+    Check the quadratic time step estimate.
+    """
+
     from pycaputo.integrate_fire.spikes import estimate_spike_time_quadratic
 
     rng = np.random.default_rng(seed=42)
@@ -446,6 +478,10 @@ def test_spike_time_estimate_quadratic() -> None:
 
 
 def test_spike_time_estimate_exponential() -> None:
+    """
+    Check the exponential time step estimate.
+    """
+
     from pycaputo.integrate_fire.spikes import estimate_spike_time_exp
 
     rng = np.random.default_rng(seed=42)
