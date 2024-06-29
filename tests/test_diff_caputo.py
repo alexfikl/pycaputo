@@ -278,7 +278,6 @@ def _diff_differint_l2c(m: DifferIntCaputoL2C, f: ScalarFunction, p: Points) -> 
     return df
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize("name", ["L1", "L2", "L2C"])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
 def test_caputo_vs_differint(
@@ -313,7 +312,7 @@ def test_caputo_vs_differint(
     df_num_di = diff(differint_meth, f_test, p)
 
     error_vs_ref = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
-    error_di_vs_ref = la.norm(df_num_di[1:] - df_ref[1:]) / la.norm(df_ref[1:])
+    error_di_vs_ref = la.norm(df_num_di[1:-1] - df_ref[1:-1]) / la.norm(df_ref[1:-1])
     error_vs_di = la.norm(df_num[4:-4] - df_num_di[4:-4]) / la.norm(df_num_di[4:-4])
     logger.info(
         "error: vs ref %.12e vs differint %.12e differint vs ref %.12e",
@@ -342,7 +341,12 @@ def test_caputo_vs_differint(
         savefig(fig, dirname / filename.lower())
 
     assert error_vs_ref < 1.0e-2
-    assert error_vs_di < 1.0e-12
+    if name == "L1":
+        assert error_vs_di < 1.0e-12
+    else:
+        # NOTE: we use slightly different boundary handling for the L2 methods
+        # so these get larger errors compared to differint
+        assert error_vs_di < 1.0e-2
 
 
 # }}}
