@@ -169,7 +169,6 @@ def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
 # {{{ test_ad_ex_lambert_limits
 
 
-@pytest.mark.xfail()
 def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
     """
     Check that the max time step can be found from the Lambert function and it
@@ -189,7 +188,7 @@ def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
 
     alpha = (0.9, 0.4)
     tn = 0.0
-    dt = 1.0e-2
+    dt = 1.0e1
 
     def ad_ex_coeff(t: float, tprev: float) -> Array:
         return np.array([
@@ -203,13 +202,13 @@ def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
         )
         return float(d2 / d0 * np.exp(-d1 / d0 + 1.0))
 
-    rng = np.random.default_rng(seed=45)
+    rng = np.random.default_rng(seed=42)
 
     for name, dim in AD_EX_PARAMS.items():
         param = dim.nondim(alpha)
         ad_ex = AdExModel(param)
 
-        y0 = np.array([rng.uniform(param.v_reset, param.v_peak), rng.uniform()])
+        y0 = np.array([rng.uniform(param.v_reset, param.v_peak) - 10, rng.uniform()])
         r = np.array([dt**a / gamma(1 - a) * yi for a, yi in zip(alpha, y0)])
 
         method = CaputoAdExIntegrateFireL1Model(
@@ -219,28 +218,29 @@ def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
             source=ad_ex,
         )
 
+        # evaluate the function and check that it has a root
+        tspike = tn + np.logspace(-10.0, -0.3, 128)
+        f = np.array([func(ad_ex, t, y0, r) for t in tspike])
+        assert np.any(f < 1.0)
+
         # check that the solution is actually complex
         h = ad_ex_coeff(tn + dt, tn)
         ynext = method.solve(tn + dt, y0, h, y0 - h * r)
-        assert np.any(np.iscomplex(ynext))
         logger.info("%s: %s", name, np.iscomplex(ynext))
-
-        tspike = tn + np.logspace(-10.0, -0.3, 256)
-        f = np.array([func(ad_ex, t, y0, r) for t in tspike])
-        # assert np.any(f < 1.0)
+        assert np.any(np.iscomplex(ynext))
 
         imax = np.argmax(f > 1.0) - 1
         logger.info("max tspike: t %.12e f %.12e", tspike[imax - 1], f[imax - 1])
 
-        try:
-            dt_opt = 0.9 * find_maximum_time_step_lambert(ad_ex, tn + dt, tn, y0, r)
-        except ValueError:
-            dt_opt = 0.5
+        # find the maximum time step
+        dt_opt = 0.9 * find_maximum_time_step_lambert(ad_ex, tn + dt, tn, y0, r)
 
+        # check that it's larger than the function root estimate
         tspike_opt = tn + dt_opt
         logger.info("opt tspike: %.12e", tspike_opt)
-        # assert tspike[imax - 1] <= tspike_opt <= 1.0, tspike_opt
+        assert tspike[imax - 1] <= tspike_opt, tspike_opt
 
+        # check that the solution at the new time step is not complex anymore
         h = ad_ex_coeff(tspike_opt, tn)
         ynext = method.solve(tspike_opt, y0, h, y0 - h * r)
         assert not np.any(np.iscomplex(ynext)), ynext
