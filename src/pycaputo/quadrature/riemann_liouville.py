@@ -11,7 +11,12 @@ import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
+from pycaputo.utils import (
+    Array,
+    ArrayOrScalarFunction,
+    DifferentiableScalarFunction,
+    ScalarFunction,
+)
 
 from .base import QuadratureMethod, quad
 
@@ -565,6 +570,140 @@ def _quad_rl_conv(
     else:
         for n in range(1, qf.size):
             qf[n] = dxa * np.sum(w[:n][::-1] * fx[:n])
+
+    return qf
+
+
+# }}}
+
+
+# {{{ Diffusive
+
+
+@dataclass(frozen=True)
+class YuanAgrawal(RiemannLiouvilleMethod):
+    """Riemann-Liouville integral approximation using the diffusive approximation
+    from [Yuan2002]_.
+
+    This method is described in Section 3 of [Yuan2002]_. It is slightly
+    modified here by using the generalized Gauss-Laguerre quadrature rule. The
+    method from the paper can be retrieved by setting :attr:`beta` to 1.
+    """
+
+    quad_order: int
+    """Order of the generalized Gauss-Laguerre quadrature used in the approximation."""
+
+    beta: float
+    """Power in the definition of the Gauss-Laguerre weight
+    :math:`x^{-\beta} e^{-x}` (must be :math:`> -1`).
+    """
+
+    method: str
+    """Numerical method used to solve the initial value problems for the
+    diffusive representation. This method is passed to
+    :func:`scipy.integrate.solve_ivp`.
+    """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if self.alpha <= -1:
+                raise ValueError(
+                    f"The {type(self).__name__!r} method is only valid for "
+                    f"-1 < alpha < 0: {self.alpha}"
+                )
+
+            if self.beta <= -1:
+                raise ValueError(f"Power must be larger than -1: {self.beta}")
+
+            from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
+
+            if self.method not in METHODS:
+                raise ValueError(
+                    "Unsupported method: '{}'. Known methods are: '{}'".format(
+                        self.method, "', '".join(METHODS)
+                    )
+                )
+
+    @classmethod
+    def estimate_origin_power(cls, alpha: float) -> float:
+        r"""This gives an optimal estimate for the choice of :attr:`beta`.
+
+        The estimate is based on Theorem 5 from [Diethelm2008]. A simple
+        extension shows that the optimal value of :math:`\beta` (referred to
+        as :math:`\gamma`) is
+
+        .. math::
+
+            \beta = 1 - 2 \alpha.
+        """
+        assert 0 <= alpha <= 1
+
+        return 1 - 2.0 * alpha
+
+
+def _yuan_agrawal_solve_ivp(
+    m: YuanAgrawal,
+    f: ScalarFunction,
+    p: Points,
+    omega: Array,
+) -> Array:
+    from scipy.integrate import solve_ivp
+
+    alpha = -m.alpha
+
+    def fun(t: Array, phi: Array) -> Array:
+        return omega ** (1 - 2 * alpha) * f(t) - omega**2 * phi
+
+    def fun_jac(t: float, phi: Array) -> Array:
+        return np.diag(-(omega**2))
+
+    phi0 = np.zeros_like(omega)
+
+    result = solve_ivp(
+        fun,
+        (p.a, p.b),
+        phi0,
+        method=m.method,
+        t_eval=p.x[1:],
+        jac=fun_jac,
+        rtol=1.0e-5,
+        atol=1.0e-8,
+    )
+
+    return np.array(result.y)
+
+
+@quad.register(YuanAgrawal)
+def _quad_rl_yuan_agrawal(
+    m: YuanAgrawal,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    if not callable(f):
+        raise TypeError(
+            f"{type(m).__name__!r} requires a callable: " f"f is a {type(f).__name__!r}"
+        )
+
+    x = p.x
+    alpha = -m.alpha
+    dtype = np.array(f(p.x[0])).dtype
+
+    from scipy.special import roots_genlaguerre
+
+    # get quadrature rule
+    omega, w = roots_genlaguerre(m.quad_order, m.beta)
+    w = 2.0 * np.sin(alpha * np.pi) / np.pi * omega ** (-m.beta) * np.exp(omega) * w
+
+    # solve ODE
+    phi = _yuan_agrawal_solve_ivp(m, f, p, omega)
+
+    # compute RL integral
+    qf = np.empty_like(x, dtype=dtype)
+    qf[0] = np.nan
+    qf[1:] = np.einsum("i,ij->j", w, phi)
 
     return qf
 
