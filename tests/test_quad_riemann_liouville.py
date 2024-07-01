@@ -47,6 +47,8 @@ def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
         ("Trapezoidal", "stretch"),
         ("Simpson", "uniform"),
         ("CubicHermite", "uniform"),
+        ("YuanAgrawal", "uniform"),
+        ("YuanAgrawal", "stynes"),
         ("Lubich1", "uniform"),
         # ("Lubich2", "uniform"),
         # ("Lubich3", "uniform"),
@@ -84,6 +86,12 @@ def test_riemann_liouville_quad(
     elif name == "CubicHermite":
         meth = riemann_liouville.CubicHermite(-alpha)
         order = 4.0
+    elif name == "YuanAgrawal":
+        beta = 1 - 2 * alpha
+        meth = riemann_liouville.YuanAgrawal(
+            -alpha, quad_order=32, beta=beta, method="Radau"
+        )
+        order = 1.0
     elif name.startswith("Lubich"):
         order = int(name[6:])
         meth = riemann_liouville.Lubich(-alpha, quad_order=order, beta=np.inf)

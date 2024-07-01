@@ -17,10 +17,20 @@ Literature
     Nonlinear Dynamics, Vol. 29, pp. 3--22, 2002,
     `DOI <https://doi.org/10.1023/a:1016592219341>`__.
 
+.. [Yuan2002] L. Yuan, O. P. Agrawal,
+    *A Numerical Scheme for Dynamic Systems Containing Fractional Derivatives*,
+    Journal of Vibration and Acoustics, Vol. 124, pp. 321--324, 2002,
+    `DOI <https://doi.org/10.1115/1.1448322>`__.
+
 .. [Diethelm2005] K. Diethelm, N. J. Ford, A. D. Freed, Y. Luchko,
     *Algorithms for the Fractional Calculus: A Selection of Numerical Methods*,
     Computer Methods in Applied Mechanics and Engineering, Vol. 194, pp. 743-773, 2005,
     `DOI <https://doi.org/10.1016/j.cma.2004.06.006>`__.
+
+.. [Diethelm2008] K. Diethelm,
+    *An Investigation of Some Nonclassical Methods for the Numerical Approximation of Caputo-Type Fractional Derivatives*,
+    Numerical Algorithms, Vol. 47, pp. 361--390, 2008,
+    `DOI <https://doi.org/10.1007/s11075-008-9193-8>`__.
 
 .. [Shen2011] J. Shen, T. Tang, L.-L. Wang,
     *Spectral Methods - Algorithms, Analysis and Applications*,
