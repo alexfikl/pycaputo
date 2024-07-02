@@ -47,8 +47,6 @@ def qf_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
         ("Trapezoidal", "stretch"),
         ("Simpson", "uniform"),
         ("CubicHermite", "uniform"),
-        ("YuanAgrawal", "uniform"),
-        ("YuanAgrawal", "stynes"),
         ("Lubich1", "uniform"),
         # ("Lubich2", "uniform"),
         # ("Lubich3", "uniform"),
@@ -86,12 +84,6 @@ def test_riemann_liouville_quad(
     elif name == "CubicHermite":
         meth = riemann_liouville.CubicHermite(-alpha)
         order = 4.0
-    elif name == "YuanAgrawal":
-        beta = 1 - 2 * alpha
-        meth = riemann_liouville.YuanAgrawal(
-            -alpha, quad_order=32, beta=beta, method="Radau"
-        )
-        order = 1.0
     elif name.startswith("Lubich"):
         order = int(name[6:])
         meth = riemann_liouville.Lubich(-alpha, quad_order=order, beta=np.inf)
@@ -282,6 +274,88 @@ def test_riemann_liouville_spline(
 
     kappa = la.cond(vandermonde(meth.xi))
     assert eoc.estimated_order > order or eoc.max_error < 1.0e-15 * kappa
+
+
+# }}}
+
+
+# {{{ test_riemann_liouville_diffusive
+
+
+@pytest.mark.parametrize(
+    ("name", "grid_type"),
+    [
+        ("YuanAgrawal", "uniform"),
+        ("YuanAgrawal", "stynes"),
+    ],
+)
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 0.75, 0.95])
+def test_riemann_liouville_diffusive(
+    name: str,
+    grid_type: str,
+    alpha: float,
+    *,
+    visualize: bool = False,
+) -> None:
+    r"""
+    Check the convergence of diffusive approximations.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+    """
+
+    from pycaputo.grid import make_points_from_name
+    from pycaputo.utils import EOCRecorder, savefig
+
+    meth: riemann_liouville.RiemannLiouvilleMethod
+    resolutions = [8, 16, 24, 32, 48, 64]
+
+    n = 128
+    p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
+    qf_ref = qf_test(p.x, alpha=alpha)
+
+    eoc = EOCRecorder()
+    if visualize:
+        import matplotlib.pyplot as mp
+
+        fig = mp.figure()
+        ax = fig.gca()
+
+    for quad_order in resolutions:
+        if name == "YuanAgrawal":
+            beta = riemann_liouville.YuanAgrawal.estimate_origin_power(alpha)
+            meth = riemann_liouville.YuanAgrawal(
+                -alpha,
+                beta=beta,
+                quad_order=quad_order,
+                method="Radau",
+            )
+            order = 1.0 - beta
+        else:
+            raise ValueError(f"Unsupported method: '{name}'")
+
+        qf_num = quad(meth, f_test, p)
+
+        h = 1.0 / quad_order
+        e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
+        eoc.add_data_point(h, e)
+        logger.info("n %4d h %.5e e %.12e", n, h, e)
+
+        if visualize:
+            ax.plot(p.x[1:], qf_num[1:])
+
+    from dataclasses import replace
+
+    eoc = replace(eoc, order=order)
+    logger.info("\n%s", eoc)
+
+    if visualize:
+        ax.plot(p.x[1:], qf_ref[1:], "k--")
+        ax.set_xlabel("$x$")
+        ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
+
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
+        savefig(fig, dirname / filename.lower())
+
+    assert order - 0.25 < eoc.estimated_order < order + 1.0
 
 
 # }}}
