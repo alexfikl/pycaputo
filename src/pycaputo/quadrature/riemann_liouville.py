@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import math
+from abc import abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 
@@ -57,14 +58,13 @@ class DiffusiveRiemannLiouvilleMethod(RiemannLiouvilleMethod):
     to evaluate the integral above (see :meth:`nodes_and_weights`).
     """
 
+    @abstractmethod
     def nodes_and_weights(self) -> tuple[Array, Array]:
-        r"""Compute the nodes and weights for the modified Gauss-Jacobi quadrature
-        used by the method.
+        r"""Compute the nodes and weights for the quadrature used by the method.
 
         :returns: a tuple of ``(omega, w)`` of nodes and weights to be used by
-            the method. It is assumed that the underlying method is Gauss-Jacobi.
+            the method.
         """
-        raise NotImplementedError
 
 
 # {{{ Rectangular
