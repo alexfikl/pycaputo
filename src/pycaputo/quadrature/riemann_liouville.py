@@ -762,6 +762,8 @@ class Diethelm(DiffusiveRiemannLiouvilleMethod):
     .. math::
 
         (1 - \omega)^{1 - 2 \alpha} (1 + \omega)^{2 \alpha - 1}.
+
+    This method is only valid for :math:`0 < \alpha < 1`.
     """
 
     quad_order: int
@@ -858,6 +860,8 @@ class BirkSong(DiffusiveRiemannLiouvilleMethod):
     .. math::
 
         (1 - \omega)^{3 - 4 \alpha} (1 + \omega)^{1 - 4 \alpha}.
+
+    This method is only valid for :math:`0 < \alpha < 1`.
     """
 
     quad_order: int
