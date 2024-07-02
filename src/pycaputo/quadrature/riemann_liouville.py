@@ -582,12 +582,28 @@ def _quad_rl_conv(
 
 @dataclass(frozen=True)
 class YuanAgrawal(RiemannLiouvilleMethod):
-    """Riemann-Liouville integral approximation using the diffusive approximation
+    r"""Riemann-Liouville integral approximation using the diffusive approximation
     from [Yuan2002]_.
+
+    The method relies on approximating the integral
+
+    .. math::
+
+        D_{RL}^\alpha[f](x) = 2 \frac{\sin \alpha \pi}{\pi}
+            \int_0^\infty \phi(x; \omega) \,\mathrm{d} \omega,
+
+    where the auxiliary variable :math:`\phi` satisfies the following ordinary
+    differential equation
+
+    .. math::
+
+        \frac{\partial \phi}{\partial \xi}(\xi; \omega) =
+            \omega^{1 - 2 \alpha} f(\xi)
+            - \omega^2 \phi(\xi; \omega).
 
     This method is described in Section 3 of [Yuan2002]_. It is slightly
     modified here by using the generalized Gauss-Laguerre quadrature rule. The
-    method from the paper can be retrieved by setting :attr:`beta` to 1.
+    method from the paper can be retrieved by setting :attr:`beta` to 0.
     """
 
     quad_order: int
@@ -629,7 +645,7 @@ class YuanAgrawal(RiemannLiouvilleMethod):
 
     @classmethod
     def estimate_origin_power(cls, alpha: float) -> float:
-        r"""This gives an optimal estimate for the choice of :attr:`beta`.
+        r"""Compute optimal estimate for the choice of :attr:`beta`.
 
         The estimate is based on Theorem 5 from [Diethelm2008]. A simple
         extension shows that the optimal value of :math:`\beta` (referred to
@@ -642,6 +658,26 @@ class YuanAgrawal(RiemannLiouvilleMethod):
         assert 0 <= alpha <= 1
 
         return 1 - 2.0 * alpha
+
+    @classmethod
+    def estimate_maximum_timestep(cls, omega: Array) -> float:
+        r"""Compute maximum time step estimate based on Gauss-Laguerre nodes.
+
+        For diffusive approximations, the ODE for :math:`\phi` is linear, so
+        we can approximate the maximum time step by looking at the eigenvalues
+        of the matrix. Usual caveats apply:
+
+        * this does not consider the source term, which may change the behavior.
+        * this is an estimate for backward Euler, so other methods may allow
+          larger time steps while still maintaining the required properties.
+
+        :arg omega: the nodes in the (generalized) Gauss-Laguerre quadrature rule.
+        """
+
+        # NOTE: the time step needs to satisfy `h L < 1`, where L is the Lipschitz
+        # constant for `fun`. In this case, that's linear
+        #   L = `max(omega) = omega[-1]`
+        return float(1.0 / np.max(omega) ** 2)
 
 
 def _yuan_agrawal_solve_ivp(
@@ -660,8 +696,9 @@ def _yuan_agrawal_solve_ivp(
     def fun_jac(t: float, phi: Array) -> Array:
         return np.diag(-(omega**2))
 
-    phi0 = np.zeros_like(omega)
+    quad_error_est = 1.0 / m.quad_order ** (1.0 - m.beta)
 
+    phi0 = np.zeros_like(omega)
     result = solve_ivp(
         fun,
         (p.a, p.b),
@@ -669,8 +706,8 @@ def _yuan_agrawal_solve_ivp(
         method=m.method,
         t_eval=p.x[1:],
         jac=fun_jac,
-        rtol=1.0e-5,
-        atol=1.0e-8,
+        rtol=1.0e-3 * quad_error_est,
+        atol=1.0e-6 * quad_error_est,
     )
 
     return np.array(result.y)
