@@ -32,6 +32,11 @@ Literature
     Numerical Algorithms, Vol. 47, pp. 361--390, 2008,
     `DOI <https://doi.org/10.1007/s11075-008-9193-8>`__.
 
+.. [Birk2010] C. Birk, C. Song,
+    *An Improved Non-Classical Method for the Solution of Fractional Differential Equations*,
+    Computational Mechanics, Vol. 46, pp. 721--734, 2010,
+    `DOI <https://doi.org/10.1007/s00466-010-0510-4>`__.
+
 .. [Shen2011] J. Shen, T. Tang, L.-L. Wang,
     *Spectral Methods - Algorithms, Analysis and Applications*,
     Springer, 2011.

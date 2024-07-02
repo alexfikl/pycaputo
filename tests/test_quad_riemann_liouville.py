@@ -287,6 +287,10 @@ def test_riemann_liouville_spline(
     [
         ("YuanAgrawal", "uniform"),
         ("YuanAgrawal", "stynes"),
+        ("Diethelm", "uniform"),
+        ("Diethelm", "stynes"),
+        ("BirkSong", "uniform"),
+        ("BirkSong", "stynes"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.75, 0.95])
@@ -321,14 +325,23 @@ def test_riemann_liouville_diffusive(
 
     for quad_order in resolutions:
         if name == "YuanAgrawal":
-            beta = riemann_liouville.YuanAgrawal.estimate_origin_power(alpha)
             meth = riemann_liouville.YuanAgrawal(
                 -alpha,
-                beta=beta,
                 quad_order=quad_order,
                 method="Radau",
             )
+            beta = 1.0 - 2.0 * alpha
             order = 1.0 - beta
+        elif name == "Diethelm":
+            meth = riemann_liouville.Diethelm(
+                -alpha, quad_order=quad_order, method="Radau"
+            )
+            order = None
+        elif name == "BirkSong":
+            meth = riemann_liouville.BirkSong(
+                -alpha, quad_order=quad_order, method="Radau"
+            )
+            order = None
         else:
             raise ValueError(f"Unsupported method: '{name}'")
 
@@ -355,7 +368,10 @@ def test_riemann_liouville_diffusive(
         filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
-    assert order - 0.25 < eoc.estimated_order < order + 1.0
+    if order is not None:
+        assert order - 0.25 < eoc.estimated_order < order + 1.0
+    else:
+        assert eoc.estimated_order > 2.0
 
 
 # }}}
