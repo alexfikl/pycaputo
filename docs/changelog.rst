@@ -14,6 +14,10 @@ Features
   :class:`~pycaputo.quadrature.riemann_liouville.YuanAgrawal`,
   :class:`~pycaputo.quadrature.riemann_liouville.Diethelm`,
   :class:`~pycaputo.quadrature.riemann_liouville.BirkSong`.
+* Implement diffusive methods for evaluating the Caputo derivative:
+  :class:`~pycaputo.differentiation.caputo.YuanAgrawal`,
+  :class:`~pycaputo.differentiation.caputo.Diethelm`,
+  :class:`~pycaputo.differentiation.caputo.BirkSong`.
 
 Fixes
 ^^^^^
