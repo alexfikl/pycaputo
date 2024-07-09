@@ -37,15 +37,14 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
         return RiemannLiouvilleDerivative(self.alpha, side=Side.Left)
 
 
-# {{{ RiemannLiouvilleFromCaputoDerivativeMethod
+# {{{ RiemannLiouvilleFromCaputoMethod
 
 
 @dataclass(frozen=True)
-class RiemannLiouvilleFromCaputoDerivativeMethod(RiemannLiouvilleDerivativeMethod):
+class RiemannLiouvilleFromCaputoMethod(RiemannLiouvilleDerivativeMethod):
     r"""Implements approximations of the Riemann-Liouville derivative based on
-    existing approximations of the Caputo derivative.
-
-    For smooth functions, we have that
+    existing approximations of the Caputo derivative. For smooth functions,
+    we have that
 
     .. math::
 
@@ -65,7 +64,7 @@ class RiemannLiouvilleFromCaputoDerivativeMethod(RiemannLiouvilleDerivativeMetho
 
 
 @dataclass(frozen=True)
-class L1(RiemannLiouvilleFromCaputoDerivativeMethod):
+class L1(RiemannLiouvilleFromCaputoMethod):
     r"""A discretization based on the :class:`~pycaputo.differentiation.caputo.L1`
     method.
     """
@@ -76,7 +75,7 @@ class L1(RiemannLiouvilleFromCaputoDerivativeMethod):
 
 
 @dataclass(frozen=True)
-class L2(RiemannLiouvilleFromCaputoDerivativeMethod):
+class L2(RiemannLiouvilleFromCaputoMethod):
     r"""A discretization based on the :class:`~pycaputo.differentiation.caputo.L2`
     method.
     """
@@ -87,7 +86,7 @@ class L2(RiemannLiouvilleFromCaputoDerivativeMethod):
 
 
 @dataclass(frozen=True)
-class L2C(RiemannLiouvilleFromCaputoDerivativeMethod):
+class L2C(RiemannLiouvilleFromCaputoMethod):
     r"""A discretization based on the :class:`~pycaputo.differentiation.caputo.L2C`
     method.
     """
@@ -101,7 +100,7 @@ class L2C(RiemannLiouvilleFromCaputoDerivativeMethod):
 @diff.register(L2)
 @diff.register(L2C)
 def _diff_rl_from_caputo(
-    m: RiemannLiouvilleFromCaputoDerivativeMethod,
+    m: RiemannLiouvilleFromCaputoMethod,
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
