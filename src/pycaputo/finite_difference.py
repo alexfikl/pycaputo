@@ -10,7 +10,7 @@ from typing import Any, NamedTuple
 
 import numpy as np
 
-from pycaputo.utils import Array
+from pycaputo.utils import Array, ScalarFunction
 
 
 class Truncation(NamedTuple):
@@ -70,6 +70,19 @@ def apply_derivative(s: DiffStencil, f: Array, h: float = 1.0) -> Array:
     """
     a = s.padded_coeffs.astype(f.dtype)
     return np.convolve(f, a, mode="same") / h**s.derivative
+
+
+def apply_function_derivative(
+    s: DiffStencil, f: ScalarFunction, x: Array, h: float = 1.0
+) -> float:
+    """Compute derivative of a function *f* at *x* with a step size *h*.
+
+    :returns: derivative of *f*.
+    """
+    xi = x + s.offsets * h
+    fx = f(xi)
+
+    return float(s.coeffs * fx / h**s.derivative)
 
 
 def determine_stencil_truncation_error(
@@ -169,3 +182,31 @@ def make_taylor_approximation(
         coeffs=x,
         offsets=offsets,
     )
+
+
+def make_central_taylor_approximation(
+    derivative: int,
+    order: int,
+    *,
+    dtype: np.dtype[Any] | None = None,
+) -> DiffStencil:
+    r"""Construct a standard central stencil for the *derivative*-th derivative
+    of order *order*.
+
+    In general, for the :math:`m`-th derivative with accuracy order :math:`n`,
+    we have
+
+    .. math::
+
+        2 p + 1 = 2 \left\lfloor \frac{m + 1}{2} \right\rfloor + n - 1
+
+    Note that centered stencils can only have even orders of accuracy.
+    """
+
+    if order % 2:
+        raise ValueError(f"Order is not even: '{order}'")
+
+    nterms = 2 * math.floor((derivative + 1) / 2) - 1 + order
+    p = (nterms - 1) // 2
+
+    return make_taylor_approximation(derivative, (-p, p), dtype=dtype)
