@@ -40,33 +40,6 @@ class RiemannLiouvilleMethod(QuadratureMethod):
         return RiemannLiouvilleDerivative(self.alpha, side=Side.Left)
 
 
-@dataclass(frozen=True)
-class DiffusiveRiemannLiouvilleMethod(RiemannLiouvilleMethod):
-    r"""Quadrature method for the Riemann-Liouville integral based on diffusive
-    approximations.
-
-    This class of methods is very different from the standard product integration
-    rules (e.g. :class:`Rectangular`). For a description, see Section 3.4 in
-    [Li2020]_. In general, we assume that the integral can be written as
-
-    .. math::
-
-        D_{RL}^\alpha[f](x) = \int_0^\infty \phi(x, \omega) \,\mathrm{d} \omega
-
-    where the auxiliary function :math:`\phi` has some desired properties and
-    can be computed by other methods. Then, a quadrature rule can be constructed
-    to evaluate the integral above (see :meth:`nodes_and_weights`).
-    """
-
-    @abstractmethod
-    def nodes_and_weights(self) -> tuple[Array, Array]:
-        r"""Compute the nodes and weights for the quadrature used by the method.
-
-        :returns: a tuple of ``(omega, w)`` of nodes and weights to be used by
-            the method.
-        """
-
-
 # {{{ Rectangular
 
 
@@ -605,13 +578,46 @@ def _quad_rl_conv(
 # }}}
 
 
+# {{{
+
+
+@dataclass(frozen=True)
+class DiffusiveRiemannLiouvilleMethod(RiemannLiouvilleMethod):
+    r"""Quadrature method for the Riemann-Liouville integral based on diffusive
+    approximations.
+
+    This class of methods is very different from the standard product integration
+    rules (e.g. :class:`Rectangular`). For a description, see Section 3.4 in
+    [Li2020]_. In general, we assume that the integral can be written as
+
+    .. math::
+
+        D_{RL}^\alpha[f](x) = \int_0^\infty \phi(x, \omega) \,\mathrm{d} \omega
+
+    where the auxiliary function :math:`\phi` has some desired properties and
+    can be computed by other methods. Then, a quadrature rule can be constructed
+    to evaluate the integral above (see :meth:`nodes_and_weights`).
+    """
+
+    @abstractmethod
+    def nodes_and_weights(self) -> tuple[Array, Array]:
+        r"""Compute the nodes and weights for the quadrature used by the method.
+
+        :returns: a tuple of ``(omega, w)`` of nodes and weights to be used by
+            the method.
+        """
+
+
+# }}}
+
+
 # {{{ YuanAgrawal
 
 
 def _diffusive_gamma_max_timestep(omega: Array) -> float:
     # NOTE: the time step needs to satisfy `h L < 1`, where L is the Lipschitz
     # constant for `fun`. In this case, that's linear
-    #   L = `max(omega) = omega[-1]`
+    #   L = `max(omega^2) = omega[-1]^2`
     return float(1.0 / np.max(omega) ** 2)
 
 
@@ -627,12 +633,15 @@ def _diffusive_gamma_solve_ivp(
     from scipy.integrate import solve_ivp
 
     alpha = -m.alpha
+    omega_a = omega ** (1 - 2 * alpha)
+    omega_b = -(omega**2)
+    omega_jac = np.diag(omega_b)
 
     def fun(t: Array, phi: Array) -> Array:
-        return omega ** (1 - 2 * alpha) * f(t) - omega**2 * phi
+        return omega_a * f(t) + omega_b * phi
 
     def fun_jac(t: float, phi: Array) -> Array:
-        return np.diag(-(omega**2))
+        return omega_jac
 
     phi0 = np.zeros_like(omega)
     result = solve_ivp(
@@ -672,14 +681,15 @@ class YuanAgrawal(DiffusiveRiemannLiouvilleMethod):
     This method is only valid for :math:`0 < \alpha < 1`.
     """
 
-    quad_order: int
-    """Order of the generalized Gauss-Laguerre quadrature used in the approximation."""
-
     method: str
     """Numerical method used to solve the initial value problems for the
     diffusive representation. This method is passed to
     :func:`scipy.integrate.solve_ivp`.
     """
+
+    quad_order: int
+    """Order of the quadrature method used in the approximation
+    (see :meth:`nodes_and_weights`)."""
 
     if __debug__:
 
@@ -700,6 +710,11 @@ class YuanAgrawal(DiffusiveRiemannLiouvilleMethod):
                         self.method, "', '".join(METHODS)
                     )
                 )
+
+    @property
+    def _qtol(self) -> float:
+        # NOTE: Theorem 4 in [Diethelm2008] gives the estimate quadrature error
+        return float(0.75 * self.quad_order ** (2.0 * self.alpha))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_genlaguerre
@@ -731,12 +746,9 @@ def _quad_rl_yuan_agrawal(
     x = p.x
     dtype = np.array(f(p.x[0])).dtype
 
-    # NOTE: Theorem 4 in [Diethelm2008] gives the estimate quadrature error
-    qtol = 0.75 * m.quad_order ** (2.0 * m.alpha)
-
     # solve ODE at quadrature nodes
     omega, w = m.nodes_and_weights()
-    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=qtol)
+    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=m._qtol)
 
     # compute RL integral
     qf = np.empty_like(x, dtype=dtype)
@@ -753,7 +765,7 @@ def _quad_rl_yuan_agrawal(
 
 
 @dataclass(frozen=True)
-class Diethelm(DiffusiveRiemannLiouvilleMethod):
+class Diethelm(YuanAgrawal):
     r"""Riemann-Liouville integral approximation using the diffusive approximation
     from [Diethelm2008]_.
 
@@ -766,34 +778,11 @@ class Diethelm(DiffusiveRiemannLiouvilleMethod):
     This method is only valid for :math:`0 < \alpha < 1`.
     """
 
-    quad_order: int
-    """Order of the Gauss-Jacobi quadrature used in the approximation."""
-
-    method: str
-    """Numerical method used to solve the initial value problems for the
-    diffusive representation. This method is passed to
-    :func:`scipy.integrate.solve_ivp`.
-    """
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            super().__post_init__()
-
-            if self.alpha <= -1:
-                raise ValueError(
-                    f"The {type(self).__name__!r} method is only valid for "
-                    f"-1 < alpha < 0: {self.alpha}"
-                )
-
-            from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
-
-            if self.method not in METHODS:
-                raise ValueError(
-                    "Unsupported method: '{}'. Known methods are: '{}'".format(
-                        self.method, "', '".join(METHODS)
-                    )
-                )
+    @property
+    def _qtol(self) -> float:
+        # FIXME: in this case, the error should be spectral, so it's not clear what
+        # to use here. This seems to work well for the test case
+        return float(1.0 * self.quad_order ** (2 * self.alpha - 2))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_jacobi
@@ -814,36 +803,6 @@ class Diethelm(DiffusiveRiemannLiouvilleMethod):
         return omega, w
 
 
-@quad.register(Diethelm)
-def _quad_rl_diethelm(
-    m: Diethelm,
-    f: ArrayOrScalarFunction,
-    p: Points,
-) -> Array:
-    if not callable(f):
-        raise TypeError(
-            f"{type(m).__name__!r} requires a callable: " f"f is a {type(f).__name__!r}"
-        )
-
-    x = p.x
-    dtype = np.array(f(p.x[0])).dtype
-
-    # FIXME: in this case, the error should be spectral, so it's not clear what
-    # to use here. This seems to work well for the test case
-    qtol = 1.0 * m.quad_order ** (2 * m.alpha - 2)
-
-    # solve ODEs at omega
-    omega, w = m.nodes_and_weights()
-    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=qtol)
-
-    # compute RL integral
-    qf = np.empty_like(x, dtype=dtype)
-    qf[0] = np.nan
-    qf[1:] = np.einsum("i,ij->j", w, phi)
-
-    return qf
-
-
 # }}}
 
 
@@ -851,7 +810,7 @@ def _quad_rl_diethelm(
 
 
 @dataclass(frozen=True)
-class BirkSong(DiffusiveRiemannLiouvilleMethod):
+class BirkSong(YuanAgrawal):
     r"""Riemann-Liouville integral approximation using the diffusive approximation
     from [Birk2010]_.
 
@@ -859,39 +818,18 @@ class BirkSong(DiffusiveRiemannLiouvilleMethod):
 
     .. math::
 
-        (1 - \omega)^{3 - 4 \alpha} (1 + \omega)^{1 - 4 \alpha}.
+        (1 - \omega)^{\bar{\alpha}} (1 + \omega)^{-\bar{\alpha}},
+
+    where :math:`\bar{\alpha} = 1 - 2 \alpha`.
 
     This method is only valid for :math:`0 < \alpha < 1`.
     """
 
-    quad_order: int
-    """Order of the Gauss-Jacobi quadrature used in the approximation."""
-
-    method: str
-    """Numerical method used to solve the initial value problems for the
-    diffusive representation. This method is passed to
-    :func:`scipy.integrate.solve_ivp`.
-    """
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            super().__post_init__()
-
-            if self.alpha <= -1:
-                raise ValueError(
-                    f"The {type(self).__name__!r} method is only valid for "
-                    f"-1 < alpha < 0: {self.alpha}"
-                )
-
-            from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
-
-            if self.method not in METHODS:
-                raise ValueError(
-                    "Unsupported method: '{}'. Known methods are: '{}'".format(
-                        self.method, "', '".join(METHODS)
-                    )
-                )
+    @property
+    def _qtol(self) -> float:
+        # FIXME: in this case, the error should be spectral, so it's not clear what
+        # to use here. This seems to work well for the test case
+        return float(1.0 * self.quad_order ** (2 * self.alpha - 2))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_jacobi
@@ -904,42 +842,12 @@ class BirkSong(DiffusiveRiemannLiouvilleMethod):
 
         omega, w = roots_jacobi(self.quad_order, beta, gamma)
 
-        # transform for Diethelm method
+        # transform for BirkSong method
         fac = 8.0 * np.sin(alpha * np.pi) / np.pi
         w = fac * w / (1 - omega) ** (beta - 1) / (1 + omega) ** (gamma + 3)
         omega = ((1 - omega) / (1 + omega)) ** 2
 
         return omega, w
-
-
-@quad.register(BirkSong)
-def _quad_rl_birk_song(
-    m: BirkSong,
-    f: ArrayOrScalarFunction,
-    p: Points,
-) -> Array:
-    if not callable(f):
-        raise TypeError(
-            f"{type(m).__name__!r} requires a callable: " f"f is a {type(f).__name__!r}"
-        )
-
-    x = p.x
-    dtype = np.array(f(p.x[0])).dtype
-
-    # FIXME: in this case, the error should be spectral, so it's not clear what
-    # to use here. This seems to work well for the test case
-    qtol = 1.0 * m.quad_order ** (2 * m.alpha - 2)
-
-    # solve ODEs at omega
-    omega, w = m.nodes_and_weights()
-    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=qtol)
-
-    # compute RL integral
-    qf = np.empty_like(x, dtype=dtype)
-    qf[0] = np.nan
-    qf[1:] = np.einsum("i,ij->j", w, phi)
-
-    return qf
 
 
 # }}}
