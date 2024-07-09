@@ -36,7 +36,7 @@ lint: ruff mypy doc8 reuse codespell 					## Run all linting scripts
 .PHONY: lint
 
 ruff:			## Run ruff checks over the source code
-	ruff check src tests examples scripts scripts
+	ruff check src tests examples docs scripts
 	@echo -e "\e[1;32mruff lint clean!\e[0m"
 .PHONY: ruff
 
