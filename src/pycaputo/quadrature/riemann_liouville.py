@@ -714,7 +714,8 @@ class YuanAgrawal(DiffusiveRiemannLiouvilleMethod):
     @property
     def _qtol(self) -> float:
         # NOTE: Theorem 4 in [Diethelm2008] gives the estimate quadrature error
-        return float(0.75 * self.quad_order ** (2.0 * self.alpha))
+        alphabar = 1.0 + 2 * self.alpha
+        return float(0.75 * self.quad_order ** (alphabar - 1))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_genlaguerre
@@ -782,7 +783,8 @@ class Diethelm(YuanAgrawal):
     def _qtol(self) -> float:
         # FIXME: in this case, the error should be spectral, so it's not clear what
         # to use here. This seems to work well for the test case
-        return float(1.0 * self.quad_order ** (2 * self.alpha - 2))
+        alphabar = 1.0 + 2 * self.alpha
+        return float(0.75 * self.quad_order ** (alphabar - 3))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_jacobi
@@ -829,7 +831,8 @@ class BirkSong(YuanAgrawal):
     def _qtol(self) -> float:
         # FIXME: in this case, the error should be spectral, so it's not clear what
         # to use here. This seems to work well for the test case
-        return float(1.0 * self.quad_order ** (2 * self.alpha - 2))
+        alphabar = 1.0 + 2 * self.alpha
+        return float(0.75 * self.quad_order ** (alphabar - 3))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_jacobi

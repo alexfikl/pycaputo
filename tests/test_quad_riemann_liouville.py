@@ -309,7 +309,7 @@ def test_riemann_liouville_diffusive(
     from pycaputo.grid import make_points_from_name
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth: riemann_liouville.RiemannLiouvilleMethod
+    meth: riemann_liouville.DiffusiveRiemannLiouvilleMethod
     resolutions = [8, 16, 24, 32, 48, 64]
 
     n = 128

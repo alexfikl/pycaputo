@@ -360,6 +360,7 @@ class DiffusiveCaputoMethod(CaputoMethod):
             the method.
         """
 
+
 # }}}
 
 
@@ -452,6 +453,12 @@ class YuanAgrawal(DiffusiveCaputoMethod):
                     )
                 )
 
+    @property
+    def _qtol(self) -> float:
+        # NOTE: Theorem 4 in [Diethelm2008] gives the estimate quadrature error
+        alphabar = 2 * self.alpha - 2 * self.d.n + 1
+        return float(0.75 * self.quad_order ** (alphabar - 1))
+
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_genlaguerre
 
@@ -484,12 +491,9 @@ def _diff_caputo_yuan_agrawal(
     x = p.x
     dtype = np.array(f(p.x[0], d=0)).dtype
 
-    # NOTE: Theorem 4 in [Diethelm2008] gives the estimate quadrature error
-    qtol = 0.75 * m.quad_order ** (2.0 * m.alpha)
-
     # solve ODE at quadrature nodes
     omega, w = m.nodes_and_weights()
-    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=qtol)
+    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=m._qtol)
 
     # compute RL integral
     qf = np.empty_like(x, dtype=dtype)
@@ -518,6 +522,13 @@ class Diethelm(YuanAgrawal):
 
     where :math:`\bar{\alpha} = 2 \alpha - 2 m + 1`.
     """
+
+    @property
+    def _qtol(self) -> float:
+        # FIXME: in this case, the error should be spectral, so it's not clear what
+        # to use here. This seems to work well for the test case
+        alphabar = 2 * self.alpha - 2 * self.d.n + 1
+        return float(0.75 * self.quad_order ** (alphabar - 3))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_jacobi
@@ -558,6 +569,13 @@ class BirkSong(YuanAgrawal):
 
     where :math:`\bar{\alpha} = 2 \alpha - 2 m + 1`.
     """
+
+    @property
+    def _qtol(self) -> float:
+        # FIXME: in this case, the error should be spectral, so it's not clear what
+        # to use here. This seems to work well for the test case
+        alphabar = 2 * self.alpha - 2 * self.d.n + 1
+        return float(0.75 * self.quad_order ** (alphabar - 3))
 
     def nodes_and_weights(self) -> tuple[Array, Array]:
         from scipy.special import roots_jacobi
