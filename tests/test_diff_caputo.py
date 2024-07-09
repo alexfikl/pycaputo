@@ -19,11 +19,17 @@ dirname = pathlib.Path(__file__).parent
 logger = get_logger("pycaputo.test_diff_caputo")
 set_recommended_matplotlib()
 
+
 # {{{ test_caputo_lmethods
 
 
-def f_test(x: Array, *, mu: float = 3.5) -> Array:
-    return (0.5 - x) ** mu
+def f_test(x: Array, d: int = 0, *, mu: float = 3.5) -> Array:
+    if d == 0:
+        return (0.5 - x) ** mu
+    elif d == 1:
+        return -mu * (0.5 - x) ** (mu - 1)
+    else:
+        raise NotImplementedError
 
 
 def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
@@ -211,6 +217,100 @@ def test_caputo_spectral(
         savefig(fig, dirname / filename.replace(".", "_").replace("-", "m").lower())
 
     assert eoc.estimated_order > 5.0
+
+
+# }}}
+
+
+# {{{ test_caputo_diffusive
+
+
+@pytest.mark.parametrize(
+    ("name", "grid_type"),
+    [
+        ("YuanAgrawal", "uniform"),
+        ("YuanAgrawal", "stynes"),
+        ("Diethelm", "uniform"),
+        ("Diethelm", "stynes"),
+        ("BirkSong", "uniform"),
+        ("BirkSong", "stynes"),
+    ],
+)
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 0.75, 0.95])
+def test_caputo_diffusive(
+    name: str,
+    grid_type: str,
+    alpha: float,
+    *,
+    visualize: bool = False,
+) -> None:
+    r"""
+    Check the convergence of diffusive approximations.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+    """
+
+    from pycaputo.grid import make_points_from_name
+    from pycaputo.utils import EOCRecorder, savefig
+
+    meth: caputo.DiffusiveCaputoMethod
+    resolutions = [8, 16, 24, 32, 48, 64]
+
+    n = 128
+    p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
+    df_ref = df_test(p.x, alpha=alpha)
+
+    eoc = EOCRecorder()
+    if visualize:
+        import matplotlib.pyplot as mp
+
+        fig = mp.figure()
+        ax = fig.gca()
+
+    for quad_order in resolutions:
+        if name == "YuanAgrawal":
+            meth = caputo.YuanAgrawal(
+                alpha,
+                quad_order=quad_order,
+                method="Radau",
+            )
+            beta = 2.0 * alpha - 1.0
+            order = 1.0 - beta
+        elif name == "Diethelm":
+            meth = caputo.Diethelm(alpha, quad_order=quad_order, method="Radau")
+            order = None
+        elif name == "BirkSong":
+            meth = caputo.BirkSong(alpha, quad_order=quad_order, method="Radau")
+            order = None
+        else:
+            raise ValueError(f"Unsupported method: '{name}'")
+
+        df_num = diff(meth, f_test, p)
+
+        h = 1.0 / quad_order
+        e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
+        eoc.add_data_point(h, e)
+        logger.info("n %4d h %.5e e %.12e", n, h, e)
+
+        if visualize:
+            ax.plot(p.x[1:], df_num[1:])
+
+    from dataclasses import replace
+
+    eoc = replace(eoc, order=order)
+    logger.info("\n%s", eoc)
+
+    if visualize:
+        ax.plot(p.x[1:], df_ref[1:], "k--")
+        ax.set_xlabel("$x$")
+        ax.set_ylabel(rf"$D^{{{alpha}}}_{{C}} f$")
+
+        filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
+        savefig(fig, dirname / filename.lower())
+
+    if order is not None:
+        assert order - 0.25 < eoc.estimated_order < order + 1.0
+    else:
+        assert eoc.estimated_order > 1.9
 
 
 # }}}
