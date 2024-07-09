@@ -48,7 +48,7 @@ def test_caputo_diff(name: str, grid_type: str, benchmark: BenchmarkFixture) -> 
     if name in {"L2", "L2C"}:
         alpha += 1
 
-    meth: caputo.CaputoDerivativeMethod
+    meth: caputo.CaputoMethod
     if name == "L1":
         meth = caputo.L1(alpha=alpha)
     elif name == "ModifiedL1":

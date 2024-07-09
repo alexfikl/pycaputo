@@ -81,7 +81,7 @@ def test_caputo_lmethods(
 
     from pycaputo.utils import EOCRecorder, savefig, stringify_eoc
 
-    meth: caputo.CaputoDerivativeMethod
+    meth: caputo.CaputoMethod
     if name == "L1":
         meth = caputo.L1(alpha=alpha)
         order = 2.0 - alpha
@@ -220,7 +220,7 @@ def test_caputo_spectral(
 
 
 @dataclass(frozen=True)
-class DifferIntCaputoL1(caputo.CaputoDerivativeMethod):
+class DifferIntCaputoL1(caputo.CaputoMethod):
     pass
 
 
@@ -244,7 +244,7 @@ def _diff_differint_l1(m: DifferIntCaputoL1, f: ScalarFunction, p: Points) -> Ar
 
 
 @dataclass(frozen=True)
-class DifferIntCaputoL2(caputo.CaputoDerivativeMethod):
+class DifferIntCaputoL2(caputo.CaputoMethod):
     pass
 
 
@@ -268,7 +268,7 @@ def _diff_differint_l2(m: DifferIntCaputoL2, f: ScalarFunction, p: Points) -> Ar
 
 
 @dataclass(frozen=True)
-class DifferIntCaputoL2C(caputo.CaputoDerivativeMethod):
+class DifferIntCaputoL2C(caputo.CaputoMethod):
     pass
 
 
@@ -313,8 +313,8 @@ def test_caputo_vs_differint(
         alpha += 1
 
     if name == "L1":
-        meth: caputo.CaputoDerivativeMethod = caputo.L1(alpha=alpha)
-        differint_meth: caputo.CaputoDerivativeMethod = DifferIntCaputoL1(alpha=alpha)
+        meth: caputo.CaputoMethod = caputo.L1(alpha=alpha)
+        differint_meth: caputo.CaputoMethod = DifferIntCaputoL1(alpha=alpha)
     elif name == "L2":
         meth = caputo.L2(alpha=alpha)
         differint_meth = DifferIntCaputoL2(alpha=alpha)

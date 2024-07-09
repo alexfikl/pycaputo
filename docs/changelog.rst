@@ -158,7 +158,7 @@ Features
   standard 4th order method.
 * Implement differentiation methods for the Riemann-Liouville derivatives based
   on the Caputo derivative in
-  :class:`~pycaputo.differentiation.riemann_liouville.RiemannLiouvilleFromCaputoDerivativeMethod`.
+  :class:`~pycaputo.differentiation.riemann_liouville.RiemannLiouvilleFromCaputoMethod`.
 * Support different fractional orders for FODE systems in
   :class:`~pycaputo.fode.caputo.ForwardEuler`,
   :class:`~pycaputo.fode.caputo.WeightedEuler` and others.

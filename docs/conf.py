@@ -15,6 +15,7 @@ author = m["Author-email"]
 copyright = f"2023 {author}"  # noqa: A001
 version = m["Version"]
 release = version
+url = "https://github.com/alexfikl/pycaputo"
 
 # }}}
 
@@ -85,9 +86,7 @@ def linkcode_resolve(domain, info):
     else:
         linestart, linestop = lineno, lineno + len(source) - 1
 
-    return "https://github.com/alexfikl/pycaputo/blob/main/src/{}#L{}-L{}".format(
-        filepath, linestart, linestop
-    )
+    return f"{url}/blob/main/src/{filepath}#L{linestart}-L{linestop}"
 
 
 def setup(app) -> None:
@@ -127,7 +126,7 @@ pygments_style = "sphinx"
 html_theme = "sphinx_book_theme"
 html_title = project
 html_theme_options = {
-    "show_toc_level": 2,
+    "show_toc_level": 3,
     "use_source_button": True,
     "use_repository_button": True,
     "navigation_with_keys": True,
