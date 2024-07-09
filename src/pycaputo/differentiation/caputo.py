@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import math
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Iterator
 
@@ -12,7 +13,7 @@ import numpy as np
 from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import Points, UniformMidpoints, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.utils import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
 
 from .base import DerivativeMethod, diff
 
@@ -20,7 +21,7 @@ logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
-class CaputoDerivativeMethod(DerivativeMethod):
+class CaputoMethod(DerivativeMethod):
     """A method used to evaluate a :class:`~pycaputo.derivatives.CaputoDerivative`."""
 
     alpha: float
@@ -41,7 +42,7 @@ class CaputoDerivativeMethod(DerivativeMethod):
 
 
 @dataclass(frozen=True)
-class L1(CaputoDerivativeMethod):
+class L1(CaputoMethod):
     r"""Implements the L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
@@ -101,7 +102,7 @@ def _diff_l1_method(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
 
 
 @dataclass(frozen=True)
-class ModifiedL1(CaputoDerivativeMethod):
+class ModifiedL1(CaputoMethod):
     r"""Implements the modified L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
@@ -170,7 +171,7 @@ def _diff_modified_l1_method(
 
 
 @dataclass(frozen=True)
-class L2(CaputoDerivativeMethod):
+class L2(CaputoMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
@@ -234,7 +235,7 @@ def _diff_l2_method(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
 
 
 @dataclass(frozen=True)
-class L2C(CaputoDerivativeMethod):
+class L2C(CaputoMethod):
     r"""Implements the L2C method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
@@ -290,7 +291,7 @@ def _diff_l2c_method(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
 
 
 @dataclass(frozen=True)
-class SpectralJacobi(CaputoDerivativeMethod):
+class SpectralJacobi(CaputoMethod):
     r"""Caputo derivative approximation using spectral methods based
     on Jacobi polynomials.
 
@@ -334,6 +335,248 @@ def _diff_jacobi(m: SpectralJacobi, f: ArrayOrScalarFunction, p: Points) -> Arra
         df += fhat[n] * Dhat
 
     return df
+
+
+# }}}
+
+
+# {{{
+
+
+@dataclass(frozen=True)
+class DiffusiveCaputoMethod(CaputoMethod):
+    r"""Quadrature method for the Caputo derivative based on diffusive approximations.
+
+    See :class:`~pycaputo.quadrature.riemann_liouville.DiffusiveRiemannLiouvilleMethod`
+    for details on the method itself. Approximations for the Caputo derivative
+    generally follow the same construction.
+    """
+
+    @abstractmethod
+    def nodes_and_weights(self) -> tuple[Array, Array]:
+        r"""Compute the nodes and weights for the quadrature used by the method.
+
+        :returns: a tuple of ``(omega, w)`` of nodes and weights to be used by
+            the method.
+        """
+
+# }}}
+
+
+# {{{ YuanAgrawal
+
+
+def _diffusive_gamma_solve_ivp(
+    m: DiffusiveCaputoMethod,
+    f: DifferentiableScalarFunction,
+    p: Points,
+    omega: Array,
+    *,
+    method: str = "Radau",
+    qtol: float = 1.0,
+) -> Array:
+    from scipy.integrate import solve_ivp
+
+    # construct coefficients
+    alpha = m.alpha
+    n = m.d.n
+    omega_a = omega ** (2 * alpha - 2 * n + 1)
+    omega_b = -(omega**2)
+    omega_jac = np.diag(omega_b)
+
+    def fun(t: Array, phi: Array) -> Array:
+        return omega_a * f(t, d=n) + omega_b * phi
+
+    def fun_jac(t: float, phi: Array) -> Array:
+        return omega_jac
+
+    phi0 = np.zeros_like(omega)
+    result = solve_ivp(
+        fun,
+        (p.a, p.b),
+        phi0,
+        method=method,
+        t_eval=p.x[1:],
+        jac=fun_jac,
+        # NOTE: qtol is used to further decrease the error based on the expected
+        # quadrature error in the method.
+        rtol=1.0e-3 * qtol,
+        atol=1.0e-6 * qtol,
+    )
+
+    return np.array(result.y)
+
+
+@dataclass(frozen=True)
+class YuanAgrawal(DiffusiveCaputoMethod):
+    r"""Caputo derivative approximation using the diffusive approximation
+    from [Yuan2002]_.
+
+    See the approximation for the Riemann-Liouville fractional integral from
+    :class:`~pycaputo.quadrature.riemann_liouville.YuanAgrawal` for details
+    on the method. The main difference is that the ODE for :math:`\phi` is
+
+    .. math::
+
+        \frac{\partial \phi}{\partial \xi}(\xi; \omega) =
+            \omega^{2 \alpha - 2 m + 1} f^{(m)}(\xi)
+            - \omega^2 \phi(\xi; \omega),
+
+    where :math:`m` is the integer part of :math:`\alpha`. As such, this problem
+    has the added difficulty of computing :math:`f^{(m)}(\xi)`. The current
+    implementation requires an analytical expression for the derivative
+    (see :class:`~pycaputo.utils.DifferentiableScalarFunction`).
+    """
+
+    method: str
+    """Numerical method used to solve the initial value problems for the
+    diffusive representation. This method is passed to
+    :func:`scipy.integrate.solve_ivp`.
+    """
+
+    quad_order: int
+    """Order of the quadrature method used in the approximation
+    (see :meth:`nodes_and_weights`)."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
+
+            if self.method not in METHODS:
+                raise ValueError(
+                    "Unsupported method: '{}'. Known methods are: '{}'".format(
+                        self.method, "', '".join(METHODS)
+                    )
+                )
+
+    def nodes_and_weights(self) -> tuple[Array, Array]:
+        from scipy.special import roots_genlaguerre
+
+        # get Gauss-Laguerre quadrature
+        alpha = self.alpha
+        n = self.d.n
+        beta = 2.0 * alpha - 2 * n + 1
+
+        omega, w = roots_genlaguerre(self.quad_order, beta)
+
+        # transform for Yuan-Agrawal method
+        fac = 2.0 * (-1) ** (n - 1) * np.sin(alpha * np.pi) / np.pi
+        w = fac * omega ** (-beta) * np.exp(omega) * w
+
+        return omega, w
+
+
+@diff.register(YuanAgrawal)
+def _diff_caputo_yuan_agrawal(
+    m: YuanAgrawal,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    if not isinstance(f, DifferentiableScalarFunction):
+        raise TypeError(
+            f"{type(m).__name__!r} requires a 'DifferentiableScalarFunction': "
+            f"f is a {type(f).__name__!r}"
+        )
+
+    x = p.x
+    dtype = np.array(f(p.x[0], d=0)).dtype
+
+    # NOTE: Theorem 4 in [Diethelm2008] gives the estimate quadrature error
+    qtol = 0.75 * m.quad_order ** (2.0 * m.alpha)
+
+    # solve ODE at quadrature nodes
+    omega, w = m.nodes_and_weights()
+    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=qtol)
+
+    # compute RL integral
+    qf = np.empty_like(x, dtype=dtype)
+    qf[0] = np.nan
+    qf[1:] = np.einsum("i,ij->j", w, phi)
+
+    return qf
+
+
+# }}}
+
+
+# {{{ Diethelm
+
+
+@dataclass(frozen=True)
+class Diethelm(YuanAgrawal):
+    r"""Caputo derivative approximation using the diffusive approximation
+    from [Diethelm2008]_.
+
+    This method uses the weights
+
+    .. math::
+
+        (1 - \omega)^{\bar{\alpha}} (1 + \omega)^{-\bar{\alpha}},
+
+    where :math:`\bar{\alpha} = 2 \alpha - 2 m + 1`.
+    """
+
+    def nodes_and_weights(self) -> tuple[Array, Array]:
+        from scipy.special import roots_jacobi
+
+        # get Gauss-Jacobi quadrature rule
+        alpha = self.alpha
+        n = self.d.n
+        alphabar = 2.0 * alpha - 2 * n + 1
+        beta = alphabar
+        gamma = -alphabar
+
+        omega, w = roots_jacobi(self.quad_order, beta, gamma)
+
+        # transform for Diethelm method
+        fac = 4.0 * np.sin(alpha * np.pi) / np.pi
+        w = fac * w / (1 - omega) ** beta / (1 + omega) ** (gamma + 2)
+        omega = (1 - omega) / (1 + omega)
+
+        return omega, w
+
+
+# }}}
+
+
+# {{{ BirkSong
+
+
+@dataclass(frozen=True)
+class BirkSong(YuanAgrawal):
+    r"""Caputo derivative approximation using the diffusive approximation
+    from [Birk2010]_.
+
+    This method uses the weights
+
+    .. math::
+
+        (1 - \omega)^{2 \bar{\alpha} + 1} (1 + \omega)^{-(2 \bar{\alpha} - 1)},
+
+    where :math:`\bar{\alpha} = 2 \alpha - 2 m + 1`.
+    """
+
+    def nodes_and_weights(self) -> tuple[Array, Array]:
+        from scipy.special import roots_jacobi
+
+        # get Gauss-Jacobi quadrature rule
+        alpha = self.alpha
+        n = self.d.n
+        alphabar = 2.0 * alpha - 2 * n + 1
+        beta = 2 * alphabar + 1
+        gamma = -(2 * alphabar - 1)
+
+        omega, w = roots_jacobi(self.quad_order, beta, gamma)
+
+        # transform for BirkSong method
+        fac = 8.0 * np.sin(alpha * np.pi) / np.pi
+        w = fac * w / (1 - omega) ** (beta - 1) / (1 + omega) ** (gamma + 3)
+        omega = ((1 - omega) / (1 + omega)) ** 2
+
+        return omega, w
 
 
 # }}}
