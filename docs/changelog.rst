@@ -10,11 +10,11 @@ Features
 * Extend :class:`~pycaputo.fode.caputo.PECE`, :class:`~pycaputo.fode.caputo.PEC`
   and :class:`~pycaputo.fode.caputo.ModifiedPECE` to support systems with different
   orders (:ghpr:`46` and :ghissue:`17`).
-* Implement diffusive methods for evaluating the Riemann-Liouville integral:
+* Implement diffusive methods for evaluating the Riemann-Liouville integral (:ghpr:`48`):
   :class:`~pycaputo.quadrature.riemann_liouville.YuanAgrawal`,
   :class:`~pycaputo.quadrature.riemann_liouville.Diethelm`,
   :class:`~pycaputo.quadrature.riemann_liouville.BirkSong`.
-* Implement diffusive methods for evaluating the Caputo derivative:
+* Implement diffusive methods for evaluating the Caputo derivative (:ghpr:`49`):
   :class:`~pycaputo.differentiation.caputo.YuanAgrawal`,
   :class:`~pycaputo.differentiation.caputo.Diethelm`,
   :class:`~pycaputo.differentiation.caputo.BirkSong`.
