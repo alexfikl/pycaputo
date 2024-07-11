@@ -210,12 +210,16 @@ def test_mittag_leffler_sine_mathematica(
     Check the evaluation of the Caputo derivative of the Sine function against
     known results from Mathematica.
     """
-
     from mittag_leffler_ref import MATHEMATICA_SINE_RESULTS
+
+    from pycaputo.derivatives import CaputoDerivative, Side
+    from pycaputo.special import _sin_derivative_caputo  # noqa: PLC2701
 
     ref = MATHEMATICA_SINE_RESULTS[iref]
 
-    result = ml.caputo_derivative_sine(ref.z, alpha=ref.alpha, alg=alg)
+    d = CaputoDerivative(ref.alpha, side=Side.Left)
+    result = _sin_derivative_caputo(d, ref.z, omega=1.0, alg=alg)
+
     error = np.linalg.norm(result - ref.result) / np.linalg.norm(ref.result)
     logger.info("Error D^%g[sin]: %.12e", ref.alpha, error)
 
