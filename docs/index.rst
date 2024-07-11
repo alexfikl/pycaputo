@@ -23,7 +23,20 @@ pycaputo documentation
     timestepping
     fode
     integrate_fire
-    misc
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: Miscellaneous
+
+    grids
+    special
+    lagrange
+    jacobi
+    integer
+    generating_functions
+    lipschitz
+    others
 
 .. warning::
 

@@ -108,3 +108,8 @@ Literature
     *A MATLAB Implementation of Spline Collocation Methods for Fractional Differential Equations*,
     Computational Science and Its Applications – ICCSA 2021, pp. 387--401, 2021,
     `DOI <https://doi.org/10.1007/978-3-030-86653-2_29>`__.
+
+.. [Garrappa2019] R. Garrappa, E. Kaslik, M. Popolizio,
+    *Evaluation of Fractional Integrals and Derivatives of Elementary Functions: Overview and Tutorial*,
+    Mathematics, Vol. 7, pp. 407--407, 2019,
+    `DOI <https://doi.org/10.3390/math7050407>`__.
