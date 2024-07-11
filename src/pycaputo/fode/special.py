@@ -8,7 +8,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pycaputo.utils import Array, gamma
+from pycaputo.derivatives import FractionalOperator
+from pycaputo.utils import Array
 
 
 @dataclass(frozen=True)
@@ -61,8 +62,8 @@ class Solution(Function):
 
 
 @dataclass(frozen=True)
-class CaputoMonomial(Solution):
-    r"""A monomial solution to the Caputo fractional differential equation.
+class Monomial(Solution):
+    r"""A monomial solution to a fractional differential equation.
 
     .. math::
 
@@ -72,7 +73,7 @@ class CaputoMonomial(Solution):
 
     .. math::
 
-        D^\alpha_C[y](t) = D^\alpha_C[y_{\text{ref}}](t)
+        D^\alpha_*[y](t) = D^\alpha_*[y_{\text{ref}}](t)
                            + c (y_{\text{ref}}^\beta(t) - y^\beta(t)),
 
     where the last term is added to make the equation more complex. Note that
@@ -80,18 +81,20 @@ class CaputoMonomial(Solution):
     complex and fail.
     """
 
+    d: FractionalOperator
+    """The fractional operator used in the fractional differential equation."""
+
     Yv: Array
     """Coefficient array for the reference solution."""
     nu: Array
     """Powers of the monomials in the reference solution."""
 
     t0: float
-    """The starting time for the equation."""
-    alpha: float
     """Order of the fractional derivative."""
     beta: float
     """Power used in the right-hand side source term. A lower value results in
-    less smoothness in the right-hand side and can give larger errors."""
+    less smoothness in the right-hand side and can give larger errors.
+    """
     c: float
     """Factor for the included term in the right-hand side."""
 
@@ -104,8 +107,8 @@ class CaputoMonomial(Solution):
                     f"{self.Yv.shape} and {self.nu.shape}"
                 )
 
-            if self.alpha <= 0:
-                raise ValueError(f"'alpha' must be positive: {self.alpha}")
+            if np.any(self.nu < 0.0):
+                raise ValueError(f"Powers 'nu' cannot be negative: {self.nu}")
 
             if self.beta <= 0:
                 raise ValueError(f"'beta' must be positive: {self.beta}")
@@ -115,9 +118,12 @@ class CaputoMonomial(Solution):
         return np.array([result])
 
     def derivative(self, t: float) -> Array:
-        mask = self.nu > 0.0
-        gYv = gamma(1 + self.nu) / gamma(1 + self.nu - self.alpha) * self.Yv
-        result = np.sum(gYv[mask] * (t - self.t0) ** (self.nu[mask] - self.alpha))
+        from pycaputo.special import pow_derivative
+
+        result = np.sum([
+            self.Yv[i] * pow_derivative(self.d, t, t0=self.t0, omega=self.nu[i])
+            for i in range(self.nu.size)
+        ])
 
         return np.array([result])
 
@@ -151,7 +157,7 @@ class CaputoMonomial(Solution):
         beta: float = 2.0,
         c: float = 1.0,
         rng: np.random.Generator | None = None,
-    ) -> CaputoMonomial:
+    ) -> Monomial:
         r"""Constructs a solution where the leading terms blow up in the
         derivative.
 
@@ -188,7 +194,10 @@ class CaputoMonomial(Solution):
         :arg Ymin: minimum value of the coefficients.
         :arg Ymax: maximum value of the coefficients.
         """
-        m = int(np.ceil(alpha))
+        from pycaputo.derivatives import CaputoDerivative, Side
+
+        d = CaputoDerivative(alpha, side=Side.Left)
+        m = d.n
         if p is None:
             p = m + 2
 
@@ -203,11 +212,11 @@ class CaputoMonomial(Solution):
         Apm = np.setdiff1d(Ap, np.arange(m, dtype=nu.dtype))
         Yv = rng.uniform(Ymin, Ymax, size=Apm.size)
 
-        return CaputoMonomial(
+        return Monomial(
+            d=d,
             Yv=np.sort(Yv)[::-1],
             nu=np.sort(Apm),
             t0=t0,
-            alpha=alpha,
             beta=beta,
             c=c,
         )
@@ -220,7 +229,7 @@ class CaputoMonomial(Solution):
 
 
 @dataclass(frozen=True)
-class CaputoSine(Solution):
+class Sine(Solution):
     r"""A (smooth) sine solution to the fractional differential equation.
 
     .. math::
@@ -234,29 +243,23 @@ class CaputoSine(Solution):
         D^\alpha_C[y](t) = D^\alpha_C[y_{\text{ref}}](t).
     """
 
+    d: FractionalOperator
+    """Fractional operator used in the fractional differential equation."""
+
     t0: float
     """The starting time for the equation."""
-    alpha: float
-    """Order of the fractional derivative."""
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            if self.alpha <= 0:
-                raise ValueError(f"'alpha' must be positive: {self.alpha}")
 
     def function(self, t: float) -> Array:
         return np.array([np.sin(t)])
 
     def derivative(self, t: float) -> Array:
-        from pycaputo.mittagleffler import caputo_derivative_sine
+        from pycaputo.special import sin_derivative
 
-        result = caputo_derivative_sine(t - self.t0, self.alpha)
+        result = sin_derivative(self.d, t, t0=self.t0, omega=1.0)
         return np.array([result])
 
     def source(self, t: float, y: Array) -> Array:
-        dy_ref = self.function(t)
-        return dy_ref
+        return self.function(t)
 
     def source_jac(self, t: float, y: Array) -> Array:
         return np.zeros_like(y)
