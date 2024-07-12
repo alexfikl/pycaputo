@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import gamma
 
 import numpy as np
 
@@ -59,6 +60,10 @@ def _diff_grunwald_letnikov_method(
     alpha = m.alpha
     fx = f(p.x) if callable(f) else f
 
+    # NOTE: subtract f(a) to ensure that the function is always zero at 0
+    fa = fx[0]
+    fx = fx - fa
+
     df = np.empty(fx.shape, dtype=fx.dtype)
     df[0] = np.nan
 
@@ -70,6 +75,9 @@ def _diff_grunwald_letnikov_method(
 
     for n in range(1, df.size):
         df[n] = np.sum(omega[-n - 1 :] * fx[: n + 1])
+
+    # NOTE: add back correction for subtracting f(a)
+    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
 
     return df
 
@@ -115,9 +123,11 @@ def _diff_shifted_grunwald_letnikov_method(
 
     h = p.dx[0]
     if callable(f):
-        fx = f(p.x + m.shift * h)
+        fa = f(p.a)
+        fx = f(p.x + m.shift * h) - fa
     else:
-        fx = f
+        fa = f[0]
+        fx = f - fa
         raise NotImplementedError
 
     alpha = m.alpha
@@ -131,6 +141,9 @@ def _diff_shifted_grunwald_letnikov_method(
 
     for n in range(1, df.size):
         df[n] = np.sum(omega[-n - 1 :] * fx[: n + 1])
+
+    # NOTE: add back correction for subtracting f(a)
+    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
 
     return df
 
