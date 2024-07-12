@@ -18,6 +18,9 @@ Features
   :class:`~pycaputo.differentiation.caputo.YuanAgrawal`,
   :class:`~pycaputo.differentiation.caputo.Diethelm`,
   :class:`~pycaputo.differentiation.caputo.BirkSong`.
+* Add derivatives of some known elementary functions in :mod:`pycaputo.special`:
+  ``exp``, ``sin``, ``cos`` and ``pow``. They're mainly based on the Mittag-Leffler
+  function.
 
 Fixes
 ^^^^^
