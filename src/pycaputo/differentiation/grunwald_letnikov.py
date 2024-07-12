@@ -77,7 +77,7 @@ def _diff_grunwald_letnikov_method(
         df[n] = np.sum(omega[-n - 1 :] * fx[: n + 1])
 
     # NOTE: add back correction for subtracting f(a)
-    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
+    df[1:] = df[1:] + (p.x[1:] - p.a) ** (-alpha) / gamma(1 - alpha) * fa
 
     return df
 
@@ -150,7 +150,7 @@ def _diff_shifted_grunwald_letnikov_method(
         df[n] = np.sum(omega[-n - 1 :] * fx[: n + 1])
 
     # NOTE: add back correction for subtracting f(a)
-    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
+    df[1:] = df[1:] + (p.x[1:] - p.a) ** (-alpha) / gamma(1 - alpha) * fa
 
     return df
 
@@ -237,6 +237,7 @@ def _diff_tian_zhou_deng_2(
     omega = (-1) ** k * binom(alpha, k)
 
     for n in range(1, df.size):
+        # FIXME: the indices here don't match [Li2020] Equation 5.94
         # fmt: off
         df[n] = (
             w_p * np.sum(omega[-n - 1 :] * fx_p[: n + 1])
@@ -245,7 +246,7 @@ def _diff_tian_zhou_deng_2(
         # fmt: on
 
     # NOTE: add back correction for subtracting f(a)
-    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
+    df[1:] = df[1:] + (p.x[1:] - p.a) ** (-alpha) / gamma(1 - alpha) * fa
 
     return df
 
@@ -345,16 +346,15 @@ def _diff_tian_zhou_deng_3(
     omega = (-1) ** k * binom(alpha, k)
 
     for n in range(1, df.size):
-        # fmt: off
+        # FIXME: the indices here don't match [Li2020] Equation 5.105
         df[n] = (
             w_p * np.sum(omega[-n - 1 :] * fx_p[: n + 1])
             + w_q * np.sum(omega[-n - 1 :] * fx_q[: n + 1])
             + w_r * np.sum(omega[-n - 1 :] * fx_r[: n + 1])
         )
-        # fmt: on
 
     # NOTE: add back correction for subtracting f(a)
-    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
+    df[1:] = df[1:] + (p.x[1:] - p.a) ** (-alpha) / gamma(1 - alpha) * fa
 
     return df
 
