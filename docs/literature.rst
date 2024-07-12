@@ -113,3 +113,8 @@ Literature
     *Evaluation of Fractional Integrals and Derivatives of Elementary Functions: Overview and Tutorial*,
     Mathematics, Vol. 7, pp. 407--407, 2019,
     `DOI <https://doi.org/10.3390/math7050407>`__.
+
+.. [Tian2015] W. Tian, H. Zhou, W. Deng,
+    *A Class of Second Order Difference Approximations for Solving Space Fractional Diffusion Equations*,
+    Mathematics of Computation, Vol. 84, pp. 1703--1727, 2015,
+    `DOI <https://doi.org/10.1090/s0025-5718-2015-02917-2>`__.
