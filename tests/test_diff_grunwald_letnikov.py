@@ -7,7 +7,8 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo.differentiation import diff, grunwald_letnikov
+from pycaputo.differentiation import diff
+from pycaputo.differentiation import grunwald_letnikov as gl
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array, set_recommended_matplotlib
 
@@ -35,6 +36,7 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     [
         "GrunwaldLetnikov",
         "ShiftedGrunwaldLetnikov",
+        "WeightedGrunwaldLetnikov",
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -51,18 +53,21 @@ def test_grunwald_letnikov(
 
     from pycaputo.grid import make_uniform_points
 
-    if name in {"L2", "L2C"}:
-        alpha += 1
-
-    meth: grunwald_letnikov.GrunwaldLetnikovMethod
+    meth: gl.GrunwaldLetnikovMethod
     if name == "GrunwaldLetnikov":
-        meth = grunwald_letnikov.GrunwaldLetnikov(alpha=alpha)
+        meth = gl.GrunwaldLetnikov(alpha=alpha)
         order = 1.0
     elif name == "ShiftedGrunwaldLetnikov":
-        shift = grunwald_letnikov.ShiftedGrunwaldLetnikov.optimal_shift_for_alpha(alpha)
+        shift = gl.ShiftedGrunwaldLetnikov.recommended_shift_for_alpha(alpha)
         assert shift is not None
 
-        meth = grunwald_letnikov.ShiftedGrunwaldLetnikov(alpha=alpha, shift=shift)
+        meth = gl.ShiftedGrunwaldLetnikov(alpha=alpha, shift=shift)
+        order = 2.0
+    elif name == "WeightedGrunwaldLetnikov":
+        shift = gl.WeightedGrunwaldLetnikov.recommended_shift_for_alpha(alpha)
+        assert shift is not None
+
+        meth = gl.WeightedGrunwaldLetnikov(alpha=alpha, shift=shift)
         order = 2.0
     else:
         raise ValueError(f"Unsupported method: {name}")

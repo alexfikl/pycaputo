@@ -677,12 +677,6 @@ def mittag_leffler(
     :arg use_explicit: if *True*, explicit formulae are used for some known
         sets of parameters. These can be significantly faster.
     """
-    if alpha < 0 or beta < 0:
-        raise NotImplementedError(
-            "Negative parameters are not implemented: "
-            f"alpha '{alpha}' and beta '{beta}'"
-        )
-
     if alg is None:
         # NOTE: for now this algorithm should be faster / better
         alg = Algorithm.Garrappa

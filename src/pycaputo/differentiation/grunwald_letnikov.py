@@ -103,14 +103,23 @@ class ShiftedGrunwaldLetnikov(GrunwaldLetnikovMethod):
     shift: float
     """Desired shift in the formula."""
 
-    @classmethod
-    def optimal_shift_for_alpha(cls, alpha: float) -> float | None:
-        r"""Compute the optimal shift for a given fractional order :math:`\alpha`.
+    if __debug__:
 
-        :returns: the optimal shift or *None*, if no shift is known for that
-            range of :math:`\alpha`. In that case, using
-            :class:`GrunwaldLetnikov` is recommended.
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if not 0.0 <= self.shift <= 1.0:
+                raise ValueError(f"Shift must be in 0 <= shift <= 1: {self.shift}")
+
+    @classmethod
+    def recommended_shift_for_alpha(cls, alpha: float) -> float | None:
+        r"""Provide a recommended shift for a given order :math:`\alpha`.
+
+        :returns: a recommended shift or *None*, if no shift is known for that
+            range of :math:`\alpha`. If no shift is known, the Grünwald-Letnikov
+            methods may not work very well.
         """
+
         return alpha / 2.0 if 0.0 < alpha < 2.0 else None
 
 
@@ -126,8 +135,6 @@ def _diff_shifted_grunwald_letnikov_method(
         fa = f(p.a)
         fx = f(p.x + m.shift * h) - fa
     else:
-        fa = f[0]
-        fx = f - fa
         raise NotImplementedError
 
     alpha = m.alpha
@@ -141,6 +148,101 @@ def _diff_shifted_grunwald_letnikov_method(
 
     for n in range(1, df.size):
         df[n] = np.sum(omega[-n - 1 :] * fx[: n + 1])
+
+    # NOTE: add back correction for subtracting f(a)
+    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
+
+    return df
+
+
+# }}}
+
+
+# {{{ WeightedGrunwaldLetnikov
+
+
+@dataclass(frozen=True)
+class WeightedGrunwaldLetnikov(GrunwaldLetnikovMethod):
+    r"""Approximate the Grünwald-Letnikov derivative using a weighted method.
+
+    Note that the shifted method requires knowledge of a point outside the
+    interval :math:`[a, b]` at :math:`b + s h`, where :math:`s` is the
+    :attr:`shift`. If the function value is not available, this value is
+    computed by extrapolation.
+
+    This method is described in Section 5.3.3 from [Li2020]_ for uniform grids.
+    A more detailed analysis can be found in [Tian2015]_.
+    """
+
+    shift: tuple[float, float]
+    """Desired shifts in the formula, referred to as :math:`(p, q)` in [Li20202]_."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if not all(-1.0 <= s <= 1.0 for s in self.shift):
+                raise ValueError(f"Shift must be in 0 <= shift <= 1: {self.shift}")
+
+            if abs(self.shift[0] - self.shift[1]) < 1.0e-14:
+                raise ValueError(f"Shifts cannot be equal: {self.shift}")
+
+    @classmethod
+    def recommended_shift_for_alpha(cls, alpha: float) -> tuple[float, float] | None:
+        r"""Provide a recommended shift for a given order :math:`\alpha`.
+
+        :returns: a recommended shift or *None*, if no shift is known for that
+            range of :math:`\alpha`. If no shift is known, the Grünwald-Letnikov
+            methods may not work very well.
+        """
+        if 0.0 < alpha < 1.0:
+            # NOTE: [Tian2015] doesn't really talk about 0 < alpha < 1? They just
+            # say that taking this (p, q) pair gives the centered difference
+            # scheme when alpha -> 1^+.
+            return (1.0, 0.0)
+        elif 1.0 < alpha < 2.0:
+            return (1.0, -1.0)
+        else:
+            return None
+
+
+@diff.register(WeightedGrunwaldLetnikov)
+def _diff_weighted_grunwald_letnikov_method(
+    m: WeightedGrunwaldLetnikov, f: ArrayOrScalarFunction, p: Points
+) -> Array:
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"{type(m).__name__!r} only supports uniform grids")
+
+    h = p.dx[0]
+    s0, s1 = m.shift
+
+    if callable(f):
+        fa = f(p.a)
+        fx0 = f(p.x + s0 * h) - fa
+        fx1 = f(p.x + s1 * h) - fa
+    else:
+        raise NotImplementedError
+
+    alpha = m.alpha
+    df = np.empty(fx0.shape, dtype=fx0.dtype)
+    df[0] = np.nan
+
+    from scipy.special import binom
+
+    w_p = 0.5 * (alpha - 2 * s1) / (s0 - s1) / h**alpha
+    w_q = 0.5 * (2 * s0 - alpha) / (s0 - s1) / h**alpha
+
+    k = np.arange(df.size - 1, -1, -1)
+    omega = (-1) ** k * binom(alpha, k)
+
+    for n in range(1, df.size):
+        # fmt: off
+        df[n] = (
+            w_p * np.sum(omega[-n - 1 :] * fx0[: n + 1])
+            + w_q * np.sum(omega[-n - 1 :] * fx1[: n + 1])
+        )
+        # fmt: on
 
     # NOTE: add back correction for subtracting f(a)
     df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
