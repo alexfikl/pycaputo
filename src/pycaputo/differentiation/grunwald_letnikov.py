@@ -132,7 +132,7 @@ def _diff_shifted_grunwald_letnikov_method(
 
     h = p.dx[0]
     if callable(f):
-        fa = f(p.a)
+        fa = f(p.x[0])
         fx = f(p.x + m.shift * h) - fa
     else:
         raise NotImplementedError
@@ -158,11 +158,11 @@ def _diff_shifted_grunwald_letnikov_method(
 # }}}
 
 
-# {{{ WeightedGrunwaldLetnikov
+# {{{ TianZhouDeng2
 
 
 @dataclass(frozen=True)
-class WeightedGrunwaldLetnikov(GrunwaldLetnikovMethod):
+class TianZhouDeng2(GrunwaldLetnikovMethod):
     r"""Approximate the Grünwald-Letnikov derivative using a weighted method.
 
     Note that the shifted method requires knowledge of a point outside the
@@ -207,31 +207,31 @@ class WeightedGrunwaldLetnikov(GrunwaldLetnikovMethod):
             return None
 
 
-@diff.register(WeightedGrunwaldLetnikov)
-def _diff_weighted_grunwald_letnikov_method(
-    m: WeightedGrunwaldLetnikov, f: ArrayOrScalarFunction, p: Points
+@diff.register(TianZhouDeng2)
+def _diff_tian_zhou_deng_2(
+    m: TianZhouDeng2, f: ArrayOrScalarFunction, p: Points
 ) -> Array:
     if not isinstance(p, UniformPoints):
         raise TypeError(f"{type(m).__name__!r} only supports uniform grids")
 
     h = p.dx[0]
-    s0, s1 = m.shift
+    s_p, s_q = m.shift
 
     if callable(f):
-        fa = f(p.a)
-        fx0 = f(p.x + s0 * h) - fa
-        fx1 = f(p.x + s1 * h) - fa
+        fa = f(p.x[0])
+        fx_p = f(p.x + s_p * h) - fa
+        fx_q = f(p.x + s_q * h) - fa
     else:
         raise NotImplementedError
 
     alpha = m.alpha
-    df = np.empty(fx0.shape, dtype=fx0.dtype)
+    df = np.empty(fx_p.shape, dtype=fx_p.dtype)
     df[0] = np.nan
 
     from scipy.special import binom
 
-    w_p = 0.5 * (alpha - 2 * s1) / (s0 - s1) / h**alpha
-    w_q = 0.5 * (2 * s0 - alpha) / (s0 - s1) / h**alpha
+    w_p = 0.5 * (alpha - 2 * s_q) / (s_p - s_q) / h**alpha
+    w_q = 0.5 * (2 * s_p - alpha) / (s_p - s_q) / h**alpha
 
     k = np.arange(df.size - 1, -1, -1)
     omega = (-1) ** k * binom(alpha, k)
@@ -239,8 +239,117 @@ def _diff_weighted_grunwald_letnikov_method(
     for n in range(1, df.size):
         # fmt: off
         df[n] = (
-            w_p * np.sum(omega[-n - 1 :] * fx0[: n + 1])
-            + w_q * np.sum(omega[-n - 1 :] * fx1[: n + 1])
+            w_p * np.sum(omega[-n - 1 :] * fx_p[: n + 1])
+            + w_q * np.sum(omega[-n - 1 :] * fx_q[: n + 1])
+        )
+        # fmt: on
+
+    # NOTE: add back correction for subtracting f(a)
+    df = df + (p.x - p.a) ** (-alpha) / gamma(1 - alpha) * fa
+
+    return df
+
+
+# }}}
+
+
+# {{{ TianZhouDeng3
+
+
+@dataclass(frozen=True)
+class TianZhouDeng3(GrunwaldLetnikovMethod):
+    r"""Approximate the Grünwald-Letnikov derivative using a weighted method.
+
+    Note that the shifted method requires knowledge of a point outside the
+    interval :math:`[a, b]` at :math:`b + s h`, where :math:`s` is the
+    :attr:`shift`. If the function value is not available, this value is
+    computed by extrapolation.
+
+    This method is described in Section 5.3.3 from [Li2020]_ for uniform grids.
+    A more detailed analysis can be found in [Tian2015]_.
+    """
+
+    shift: tuple[float, float, float]
+    """Desired shifts in the formula, referred to as :math:`(p, q, r)` in [Li20202]_."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if not all(-1.0 <= s <= 1.0 for s in self.shift):
+                raise ValueError(f"Shift must be in 0 <= shift <= 1: {self.shift}")
+
+            p, q, r = self.shift
+            if abs(p - q) < 1.0e-14 and abs(p - r) < 1.0e-14:
+                raise ValueError(f"Shifts cannot be equal: {self.shift}")
+
+    @classmethod
+    def recommended_shift_for_alpha(
+        cls, alpha: float
+    ) -> tuple[float, float, float] | None:
+        r"""Provide a recommended shift for a given order :math:`\alpha`.
+
+        :returns: a recommended shift or *None*, if no shift is known for that
+            range of :math:`\alpha`. If no shift is known, the Grünwald-Letnikov
+            methods may not work very well.
+        """
+        if 0.0 < alpha < 2.0:
+            # NOTE: [Tian2015] doesn't really talk about 0 < alpha < 1?
+            return (1.0, 0.0, -1.0)
+        else:
+            return None
+
+
+@diff.register(TianZhouDeng3)
+def _diff_tian_zhou_deng_3(
+    m: TianZhouDeng3, f: ArrayOrScalarFunction, p: Points
+) -> Array:
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"{type(m).__name__!r} only supports uniform grids")
+
+    h = p.dx[0]
+    s_p, s_q, s_r = m.shift
+
+    if callable(f):
+        fa = f(p.x[0])
+        fx_p = f(p.x + s_p * h) - fa
+        fx_q = f(p.x + s_q * h) - fa
+        fx_r = f(p.x + s_r * h) - fa
+    else:
+        raise NotImplementedError
+
+    alpha = m.alpha
+    df = np.empty(fx_p.shape, dtype=fx_p.dtype)
+    df[0] = np.nan
+
+    from scipy.special import binom
+
+    w_p = (
+        (12 * s_q * s_r - (6 * s_q + 6 * s_r + 1) * alpha + 3 * alpha**2)
+        / (s_q * s_r - s_p * s_q - s_p * s_r + s_p**2)
+        / (12 * h**alpha)
+    )
+    w_q = (
+        (12 * s_p * s_r - (6 * s_p + 6 * s_r + 1) * alpha + 3 * alpha**2)
+        / (s_p * s_r - s_p * s_q - s_q * s_r + s_q**2)
+        / (12 * h**alpha)
+    )
+    w_r = (
+        (12 * s_p * s_q - (6 * s_p + 6 * s_q + 1) * alpha + 3 * alpha**2)
+        / (s_p * s_q - s_p * s_r - s_q * s_r + s_r**2)
+        / (12 * h**alpha)
+    )
+
+    k = np.arange(df.size - 1, -1, -1)
+    omega = (-1) ** k * binom(alpha, k)
+
+    for n in range(1, df.size):
+        # fmt: off
+        df[n] = (
+            w_p * np.sum(omega[-n - 1 :] * fx_p[: n + 1])
+            + w_q * np.sum(omega[-n - 1 :] * fx_q[: n + 1])
+            + w_r * np.sum(omega[-n - 1 :] * fx_r[: n + 1])
         )
         # fmt: on
 
