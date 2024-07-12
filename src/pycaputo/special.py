@@ -65,6 +65,10 @@ def pow_derivative(
     * For the (left) Caputo derivative see Equation 24 in [Garrappa2019]_.
     """
 
+    side = getattr(d, "side", None)
+    if side != ds.Side.Left:
+        raise ValueError(f"Unsupported derivative side: {side}")
+
     if isinstance(d, ds.CaputoDerivative):
         return _pow_derivative_caputo(d, t - t0, omega)
     elif isinstance(d, ds.RiemannLiouvilleDerivative):
@@ -130,6 +134,10 @@ def exp_derivative(
       see Proposition 9 in [Garrappa2019]_.
     * For the (left) Caputo derivative see Proposition 9 in [Garrappa2019]_.
     """
+
+    side = getattr(d, "side", None)
+    if side != ds.Side.Left:
+        raise ValueError(f"Unsupported derivative side: {side}")
 
     if isinstance(d, ds.CaputoDerivative):
         return _exp_derivative_caputo(d, t - t0, omega)
@@ -207,6 +215,10 @@ def sin_derivative(
     * For the (left) Caputo derivative see Proposition 14 in [Garrappa2019]_.
     """
 
+    side = getattr(d, "side", None)
+    if side != ds.Side.Left:
+        raise ValueError(f"Unsupported derivative side: {side}")
+
     if isinstance(d, ds.CaputoDerivative):
         return _sin_derivative_caputo(d, t - t0, omega)
     elif isinstance(d, ds.RiemannLiouvilleDerivative):
@@ -277,6 +289,10 @@ def cos_derivative(
       see Proposition 15 in [Garrappa2019]_.
     * For the (left) Caputo derivative see Proposition 15 in [Garrappa2019]_.
     """
+
+    side = getattr(d, "side", None)
+    if side != ds.Side.Left:
+        raise ValueError(f"Unsupported derivative side: {side}")
 
     if isinstance(d, ds.CaputoDerivative):
         return _cos_derivative_caputo(d, t - t0, omega)

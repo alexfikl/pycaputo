@@ -19,14 +19,15 @@ set_recommended_matplotlib()
 
 
 def f_test(x: Array, *, mu: float = 3.5) -> Array:
-    # NOTE: this is a smooth function so that the GL methods get optimal order
-    return x**mu
+    return np.cos(mu * x)
 
 
 def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
-    from scipy.special import gamma
+    from pycaputo.derivatives import GrunwaldLetnikovDerivative, Side
+    from pycaputo.special import cos_derivative
 
-    return np.array(gamma(1 + mu) / gamma(mu - alpha + 1) * x ** (mu - alpha))
+    d = GrunwaldLetnikovDerivative(alpha=alpha, side=Side.Left)
+    return cos_derivative(d, x, t0=x[0], omega=mu)
 
 
 @pytest.mark.parametrize(
@@ -77,7 +78,7 @@ def test_grunwald_letnikov(
         ax = fig.gca()
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
-        p = make_uniform_points(n, a=0.0, b=0.5)
+        p = make_uniform_points(n, a=0.0, b=1.0)
         df_num = diff(meth, f_test, p)
         df_ref = df_test(p.x, alpha=alpha)
 
