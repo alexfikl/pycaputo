@@ -53,9 +53,10 @@ def pow_derivative(
     r"""Evaluates the application of the fractional operator *d* to the power
     function.
 
-    The function evaluates the derivative of :math:`(t - t_0)^\omega`.
-    This assumes that the integral in the fractional operator is evaluated on
-    :math:`[t_0, t]`.
+    .. math::
+
+        D_{t_0}^*[(s - t_0)^\omega](t)
+            = \int_{t_0}^t k(t, s) (s - t_0)^\omega \,\mathrm{d}s.
 
     The following implementations are available:
 
@@ -118,9 +119,10 @@ def exp_derivative(
     r"""Evaluates the application of the fractional operator *d* to the exponential
     function.
 
-    The function evaluates the derivative of :math:`\exp \omega (t - t_0)`.
-    This assumes that the integral in the fractional operator is evaluated on
-    :math:`[t_0, t]`.
+    .. math::
+
+        D_{t_0}^*[\exp(\omega (s - t_0))](t)
+            = \int_{t_0}^t k(t, s) \exp(\omega (s - t_0)) \,\mathrm{d}s.
 
     The following implementations are available:
 
@@ -193,9 +195,10 @@ def sin_derivative(
 ) -> Array:
     r"""Evaluates the application of the fractional operator *d* to the sine function.
 
-    The function evaluates the derivative of :math:`\sin \omega (t - t_0)`.
-    This assumes that the integral in the fractional operator is evaluated on
-    :math:`[t_0, t]`.
+    .. math::
+
+        D_{t_0}^*[\sin(\omega (s - t_0))](t)
+            = \int_{t_0}^t k(t, s) \sin(\omega (s - t_0)) \,\mathrm{d}s.
 
     The following implementations are available:
 
@@ -263,9 +266,10 @@ def cos_derivative(
 ) -> Array:
     r"""Evaluates the application of the fractional operator *d* to the cosine function.
 
-    The function evaluates the derivative of :math:`\cos \omega (t - t_0)`.
-    This assumes that the integral in the fractional operator is evaluated on
-    :math:`[t_0, t]`.
+    .. math::
+
+        D_{t_0}^*[\cos(\omega (s - t_0))](t)
+            = \int_{t_0}^t k(t, s) \cos(\omega (s - t_0)) \,\mathrm{d}s.
 
     The following implementations are available:
 
