@@ -20,7 +20,7 @@ set_recommended_matplotlib()
 
 
 def f_test(x: Array, *, mu: float = 3.5) -> Array:
-    return np.cos(mu * x)
+    return np.array(np.cos(mu * x))
 
 
 def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
@@ -36,7 +36,8 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     [
         "GrunwaldLetnikov",
         "ShiftedGrunwaldLetnikov",
-        "WeightedGrunwaldLetnikov",
+        "TianZhouDeng2",
+        "TianZhouDeng3",
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -63,12 +64,18 @@ def test_grunwald_letnikov(
 
         meth = gl.ShiftedGrunwaldLetnikov(alpha=alpha, shift=shift)
         order = 2.0
-    elif name == "WeightedGrunwaldLetnikov":
-        shift = gl.WeightedGrunwaldLetnikov.recommended_shift_for_alpha(alpha)
-        assert shift is not None
+    elif name == "TianZhouDeng2":
+        shift2 = gl.TianZhouDeng2.recommended_shift_for_alpha(alpha)
+        assert shift2 is not None
 
-        meth = gl.WeightedGrunwaldLetnikov(alpha=alpha, shift=shift)
+        meth = gl.TianZhouDeng2(alpha=alpha, shift=shift2)
         order = 2.0
+    elif name == "TianZhouDeng3":
+        shift3 = gl.TianZhouDeng3.recommended_shift_for_alpha(alpha)
+        assert shift3 is not None
+
+        meth = gl.TianZhouDeng3(alpha=alpha, shift=shift3)
+        order = 3.0
     else:
         raise ValueError(f"Unsupported method: {name}")
 
