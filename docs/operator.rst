@@ -1,4 +1,4 @@
-Fractional Derivative Types
-===========================
+Fractional Operators
+====================
 
 .. automodule:: pycaputo.derivatives
