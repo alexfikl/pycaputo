@@ -1,8 +1,13 @@
 Changelog
 =========
 
-pycaputo (TDB)
---------------
+pycaputo 0.7.0 (July 13, 2024)
+------------------------------
+
+Dependencies
+^^^^^^^^^^^^
+
+* Official support for numpy 2.0. Everything works and is tested on the CI!
 
 Features
 ^^^^^^^^
@@ -12,21 +17,28 @@ Features
   orders (:ghpr:`46` and :ghissue:`17`).
 * Implement diffusive methods for evaluating the Riemann-Liouville integral (:ghpr:`48`):
   :class:`~pycaputo.quadrature.riemann_liouville.YuanAgrawal`,
-  :class:`~pycaputo.quadrature.riemann_liouville.Diethelm`,
+  :class:`~pycaputo.quadrature.riemann_liouville.Diethelm`, and
   :class:`~pycaputo.quadrature.riemann_liouville.BirkSong`.
 * Implement diffusive methods for evaluating the Caputo derivative (:ghpr:`49`):
   :class:`~pycaputo.differentiation.caputo.YuanAgrawal`,
-  :class:`~pycaputo.differentiation.caputo.Diethelm`,
+  :class:`~pycaputo.differentiation.caputo.Diethelm`, and
   :class:`~pycaputo.differentiation.caputo.BirkSong`.
 * Implement approximations of the Grünwald-Letnikov derivative (:ghpr:`51`):
   :class:`~pycaputo.differentiation.grunwald_letnikov.GrunwaldLetnikov`,
   :class:`~pycaputo.differentiation.grunwald_letnikov.ShiftedGrunwaldLetnikov`,
   :class:`~pycaputo.differentiation.grunwald_letnikov.TianZhouDeng2`, and
   :class:`~pycaputo.differentiation.grunwald_letnikov.TianZhouDeng3`.
-  :class:`~pycaputo.differentiation.grunwald_letnikov.ShiftedGrunwaldLetnikov`,
 * Add derivatives of some known elementary functions in :mod:`pycaputo.special`
   (:ghpr:`50`): ``exp``, ``sin``, ``cos`` and ``pow``. They're mainly based on
   the Mittag-Leffler function.
+
+Changes
+^^^^^^^
+
+* Renamed ``RiemannLiouvilleFromCaputoDerivativeMethod`` to
+  :class:`~pycaputo.differentiation.riemann_liouville.RiemannLiouvilleFromCaputoMethod`.
+* Renamed ``CaputoDerivativeMethod`` to
+  :class:`~pycaputo.differentiation.caputo.CaputoMethod`.
 
 Fixes
 ^^^^^
