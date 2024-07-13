@@ -21,7 +21,8 @@ Features
 * Implement approximations of the Grünwald-Letnikov derivative (:ghpr:`51`):
   :class:`~pycaputo.differentiation.grunwald_letnikov.GrunwaldLetnikov`,
   :class:`~pycaputo.differentiation.grunwald_letnikov.ShiftedGrunwaldLetnikov`,
-  :class:`~pycaputo.differentiation.grunwald_letnikov.`,
+  :class:`~pycaputo.differentiation.grunwald_letnikov.TianZhouDeng2`, and
+  :class:`~pycaputo.differentiation.grunwald_letnikov.TianZhouDeng3`.
   :class:`~pycaputo.differentiation.grunwald_letnikov.ShiftedGrunwaldLetnikov`,
 * Add derivatives of some known elementary functions in :mod:`pycaputo.special`
   (:ghpr:`50`): ``exp``, ``sin``, ``cos`` and ``pow``. They're mainly based on

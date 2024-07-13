@@ -105,11 +105,10 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
     .. math::
 
         D_{GL}^\alpha[f](x) = \lim_{h \to 0^+} \frac{1}{h^\alpha}
-            \sum_{k = 0}^{N(h)} (-1)^k
-            \frac{\Gamma(\alpha + 1)}{\Gamma(k + 1) \Gamma(\alpha + 1 - k)}
-            f(x - k h),
+            \sum_{k = 0}^{N(h)} (-1)^k \binom{\alpha}{k} f(x - k h),
 
-    where :math:`N(h) = (x - a) / h`. The upper derivative is similarly defined.
+    where :math:`N(h)` is a function that goes to infinity as :math:`h \to 0^+`.
+    The upper derivative is similarly defined.
     """
 
     alpha: float

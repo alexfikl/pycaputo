@@ -68,3 +68,8 @@ Riemann-Liouville Derivative
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pycaputo.differentiation.riemann_liouville
+
+Grünwald-Letnikov Derivative
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pycaputo.differentiation.grunwald_letnikov

@@ -21,7 +21,11 @@ logger = get_logger(__name__)
 @dataclass(frozen=True)
 class GrunwaldLetnikovMethod(DerivativeMethod):
     """A method used to evaluate a
-    :class:`~pycaptuo.derivative.GrunwaldLetnikovDerivative`.
+    :class:`~pycaputo.derivatives.GrunwaldLetnikovDerivative`.
+
+    Note that for sufficiently smooth functions, the Grünwald-Letnikov derivative
+    coincides with the Riemann-Liouville derivative. Therefore, these methods
+    can also be used to approximate the Riemann-Liouville derivative.
     """
 
     alpha: float
@@ -47,6 +51,7 @@ class GrunwaldLetnikov(GrunwaldLetnikovMethod):
     truncating the limit.
 
     This method is defined in Section 5.3.1 from [Li2020]_ for uniform grids.
+    The method is first-order for smooth functions.
     """
 
 
@@ -98,6 +103,8 @@ class ShiftedGrunwaldLetnikov(GrunwaldLetnikovMethod):
     computed by extrapolation.
 
     This method is described in Section 5.3.2 from [Li2020]_ for uniform grids.
+    The method is second-order for smooth functions with the shift
+    :math:`\alpha / 2` (see :meth:`recommended_shift_for_alpha`).
     """
 
     shift: float
@@ -172,10 +179,13 @@ class TianZhouDeng2(GrunwaldLetnikovMethod):
 
     This method is described in Section 5.3.3 from [Li2020]_ for uniform grids.
     A more detailed analysis can be found in [Tian2015]_.
+
+    The method is second-order for smooth functions with appropriate shifts
+    (see :meth:`recommended_shift_for_alpha`).
     """
 
     shift: tuple[float, float]
-    """Desired shifts in the formula, referred to as :math:`(p, q)` in [Li20202]_."""
+    """Desired shifts in the formula, referred to as :math:`(p, q)` in [Li2020]_."""
 
     if __debug__:
 
@@ -268,10 +278,13 @@ class TianZhouDeng3(GrunwaldLetnikovMethod):
 
     This method is described in Section 5.3.3 from [Li2020]_ for uniform grids.
     A more detailed analysis can be found in [Tian2015]_.
+
+    The method is third-order for smooth functions with appropriate shifts
+    (see :meth:`recommended_shift_for_alpha`).
     """
 
     shift: tuple[float, float, float]
-    """Desired shifts in the formula, referred to as :math:`(p, q, r)` in [Li20202]_."""
+    """Desired shifts in the formula, referred to as :math:`(p, q, r)` in [Li2020]_."""
 
     if __debug__:
 
