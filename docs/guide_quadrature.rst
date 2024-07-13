@@ -1,0 +1,4 @@
+A New Quadrature Method
+=======================
+
+??

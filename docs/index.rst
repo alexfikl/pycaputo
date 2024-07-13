@@ -11,6 +11,16 @@ pycaputo documentation
     literature
 
 .. toctree::
+    :maxdepth: 1
+    :hidden:
+    :caption: Developer Guides
+
+    guide_derivative
+    guide_differentiation
+    guide_quadrature
+    guide_timestepping
+
+.. toctree::
     :maxdepth: 2
     :hidden:
     :caption: API Reference
