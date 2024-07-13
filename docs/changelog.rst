@@ -18,9 +18,14 @@ Features
   :class:`~pycaputo.differentiation.caputo.YuanAgrawal`,
   :class:`~pycaputo.differentiation.caputo.Diethelm`,
   :class:`~pycaputo.differentiation.caputo.BirkSong`.
-* Add derivatives of some known elementary functions in :mod:`pycaputo.special`:
-  ``exp``, ``sin``, ``cos`` and ``pow``. They're mainly based on the Mittag-Leffler
-  function.
+* Implement approximations of the Grünwald-Letnikov derivative (:ghpr:`51`):
+  :class:`~pycaputo.differentiation.grunwald_letnikov.GrunwaldLetnikov`,
+  :class:`~pycaputo.differentiation.grunwald_letnikov.ShiftedGrunwaldLetnikov`,
+  :class:`~pycaputo.differentiation.grunwald_letnikov.`,
+  :class:`~pycaputo.differentiation.grunwald_letnikov.ShiftedGrunwaldLetnikov`,
+* Add derivatives of some known elementary functions in :mod:`pycaputo.special`
+  (:ghpr:`50`): ``exp``, ``sin``, ``cos`` and ``pow``. They're mainly based on
+  the Mittag-Leffler function.
 
 Fixes
 ^^^^^
