@@ -1,5 +1,5 @@
-pycaputo documentation
-======================
+PYCAPUTO: Fractional Calculus Toolkit
+=====================================
 
 .. toctree::
     :maxdepth: 1
