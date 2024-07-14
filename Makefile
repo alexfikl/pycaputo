@@ -126,14 +126,7 @@ ctags:			## Regenerate ctags
 .PHONY: ctags
 
 generate-doc-figures:		## Regenerate figures used in the docs.
-	$(PYTHON) scripts/generate-doc-figures.py doc
-	@export PYCAPUTO_SAVEFIG=svg
-	@export PYCAPUTO_LOGGING_LEVEL=ERROR
-	@export PYCAPUTO_DARK=no
-	$(PYTHON) examples/van-der-pol-adaptive-pece.py
-
-	export PYCAPUTO_DARK=no
-	$(PYTHON) examples/van-der-pol-adaptive-pece.py
+	$(PYTHON) scripts/generate-doc-figures.py doc/_static
 
 # }}}
 
