@@ -148,23 +148,35 @@ def make_uniform_points(n: int, a: float = 0.0, b: float = 1.0) -> UniformPoints
 
 
 @dataclass(frozen=True)
-class UniformMidpoints(Points):
-    """A set of points on :math:`[a, b]` formed from midpoints of a uniform grid.
+class MidPoints(Points):
+    """A set of points on :math:`[a, b]` formed from midpoints of another grid.
 
     This set of points consists of :math:`x_0 = a` and :math:`x_j` are the
-    midpoints of the uniform grid :class:`UniformPoints`
+    midpoints of another grid.
     """
 
 
-def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> UniformMidpoints:
-    """Construct a :class:`UniformMidpoints` on :math:`[a, b]`.
+def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> MidPoints:
+    """Construct a :class:`MidPoints` on :math:`[a, b]`.
 
     :arg n: number of points in :math:`[a, b]`.
     """
     x = np.linspace(a, b, n)
     x[1:] = (x[1:] + x[:-1]) / 2
 
-    return UniformMidpoints(a=a, b=b, x=x)
+    return MidPoints(a=a, b=b, x=x)
+
+
+def make_midpoints_from(p: Points) -> MidPoints:
+    """Construct a grid of midpoints from a given set of points *p*.
+
+    The new grid will contain the point :math:`x_0` and the midpoints of *p*.
+    """
+    x = np.empty_like(p.x)
+    x[0] = p.x[0]
+    x[1:] = p.xm
+
+    return MidPoints(a=p.a, b=p.b, x=x)
 
 
 # }}}
