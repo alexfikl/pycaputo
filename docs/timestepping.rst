@@ -22,6 +22,6 @@ This section provides an API reference for the time stepping interface of
     :maxdepth: 1
     :caption: Time Stepping
 
-    interface
-    history
-    controllers
+    timestepping_interface
+    timestepping_history
+    timestepping_controller
