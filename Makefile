@@ -126,7 +126,7 @@ ctags:			## Regenerate ctags
 .PHONY: ctags
 
 generate-doc-figures:		## Regenerate figures used in the docs.
-	$(PYTHON) scripts/generate-doc-figures.py doc/_static
+	$(PYTHON) scripts/generate-doc-figures.py docs/_static
 
 # }}}
 
