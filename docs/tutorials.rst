@@ -61,13 +61,13 @@ all points
 For the chosen number of points, this gives an error of about :math:`10^{-3}`.
 The resulting approximation can be see below
 
-.. image:: caputo-derivative-l1-light.svg
+.. image:: _static/caputo-derivative-l1-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Approximation of the Caputo derivative using the L1 method
 
-.. image:: caputo-derivative-l1-dark.svg
+.. image:: _static/caputo-derivative-l1-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -127,13 +127,13 @@ iterator as follows
 
 The solution as a function of time can be seen below.
 
-.. image:: brusselator-predictor-corrector-light.svg
+.. image:: _static/brusselator-predictor-corrector-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Solution of the Brusselator system using the Predictor-Corrector method.
 
-.. image:: brusselator-predictor-corrector-dark.svg
+.. image:: _static/brusselator-predictor-corrector-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -141,13 +141,13 @@ The solution as a function of time can be seen below.
 
 The limit cycle can be better visualized in phase space as shown below.
 
-.. image:: brusselator-predictor-corrector-cycle-light.svg
+.. image:: _static/brusselator-predictor-corrector-cycle-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Stable limit cycle of the Brusselator system.
 
-.. image:: brusselator-predictor-corrector-cycle-dark.svg
+.. image:: _static/brusselator-predictor-corrector-cycle-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -226,13 +226,13 @@ for accepted steps.
 
 We can now look at the solution and the corresponding time steps below.
 
-.. image:: van-der-pol-adaptive-pece-solution-light.svg
+.. image:: _static/van-der-pol-adaptive-pece-solution-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Adaptive solution of the van der Pol system using the Predictor-Corrector method.
 
-.. image:: van-der-pol-adaptive-pece-solution-dark.svg
+.. image:: _static/van-der-pol-adaptive-pece-solution-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -252,13 +252,13 @@ equivalent to keeping the error in :math:`[\chi_{min}, \chi_{max}]` before
 rescaling. We can also see that the :math:`y` component clearly dominates the
 error estimate for this example.
 
-.. image:: van-der-pol-adaptive-pece-eest-light.svg
+.. image:: _static/van-der-pol-adaptive-pece-eest-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Jannelli error estimator for the van der Pol system.
 
-.. image:: van-der-pol-adaptive-pece-eest-dark.svg
+.. image:: _static/van-der-pol-adaptive-pece-eest-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
