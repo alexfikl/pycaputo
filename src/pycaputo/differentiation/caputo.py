@@ -6,12 +6,11 @@ from __future__ import annotations
 import math
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Iterator
 
 import numpy as np
 
 from pycaputo.derivatives import CaputoDerivative
-from pycaputo.grid import Points, UniformMidpoints, UniformPoints
+from pycaputo.grid import MidPoints, Points, UniformPoints, make_midpoints_from
 from pycaputo.logging import get_logger
 from pycaputo.typing import (
     Array,
@@ -109,11 +108,22 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
 
 @diff.register(L1)
 def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
-    fx = f(p.x) if callable(f) else f
+    if callable(f):
+        fx = f(p.x)
+    elif isinstance(f, np.ndarray):
+        if f.shape[0] != p.size:
+            raise ValueError(
+                f"Shape of 'f' does match points: got {f.shape} expected{p.shape}"
+            )
+        fx = f
+    else:
+        raise TypeError(f"Unknown type for 'f': {type(f)}")
 
     df = np.empty_like(fx)
     df[0] = np.nan
 
+    # FIXME: in the uniform case, we can also do an FFT, but we need different
+    # weights for that, so we leave it like this for now
     for n in range(1, df.size):
         w = quadrature_weights(m, p, n + 1)
         df[n] = np.sum(w * fx[: n + 1])
@@ -132,8 +142,9 @@ class ModifiedL1(CaputoMethod):
     r"""Implements the modified L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
-    This method is defined in Section 4.1.1 (III) from [Li2020]_ for quasi-uniform
-    grids. These grids can be constructed by :class:`~pycaputo.grid.UniformMidpoints`.
+    This method is defined in Section 4.1.1 (III) from [Li2020]_. Note that this
+    method evaluates the fractional derivative at the midpoints
+    :math:`(x_i + x_{i - 1}) / 2` for any given input grid.
     """
 
     if __debug__:
@@ -146,48 +157,48 @@ class ModifiedL1(CaputoMethod):
                 )
 
 
-def _weights_modified_l1(m: ModifiedL1, p: Points) -> Iterator[Array]:
-    if not isinstance(p, UniformMidpoints):
-        raise NotImplementedError(
-            f"'{type(m).__name__}' does not implement 'weights' for"
-            f" '{type(p).__name__}' grids"
-        )
+@quadrature_weights.register(ModifiedL1)
+def _quadrature_weights_caputo_modified_l1(m: ModifiedL1, p: Points, n: int) -> Array:
+    if isinstance(p, MidPoints):
+        return quadrature_weights.dispatch(L1)(m, p, n)
+    else:
+        p = make_midpoints_from(p)
+        w = quadrature_weights.dispatch(L1)(m, p, n)
 
-    # NOTE: weights from [Li2020] Equation 4.51
-    # FIXME: this does not use the formula from the book; any benefit to it?
-    alpha = m.alpha
-    wc = 1 / math.gamma(2 - alpha) / p.dx[-1] ** alpha
-    k = np.arange(p.x.size)
+        # FIXME: not clear if this does anything? Might be the same as just
+        # doing L1 on the original grid..
+        wp = np.empty((n + 1,), dtype=w.dtype)
+        wp[0] = w[0] / 2.0
+        wp[-1] = w[-1] / 2.0
+        wp[1:-1] = (w[1:] + w[:-1]) / 2.0
 
-    # NOTE: first interval has a size of h / 2 and is weighted differently
-    w0 = 2 * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
+        return wp
 
-    for n in range(1, p.x.size):
-        w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-        w[0] = w0[n - 1]
 
-        yield wc * w
+@diffs.register(ModifiedL1)
+def _diffs_caputo_modified_l1(
+    m: ModifiedL1, f: ArrayOrScalarFunction, p: Points, n: int
+) -> Scalar:
+    if not isinstance(p, MidPoints):
+        p = make_midpoints_from(p)
+
+        if not callable(f):
+            f[1:] = (f[:-1] + f[1]) / 2.0
+
+    return diffs.dispatch(L1)(m, f, p, n)
 
 
 @diff.register(ModifiedL1)
-def _diff_modified_l1_method(
+def _diff_caputo_modified_l1(
     m: ModifiedL1, f: ArrayOrScalarFunction, p: Points
 ) -> Array:
-    if not isinstance(p, UniformMidpoints):
-        raise NotImplementedError(
-            f"'{type(m).__name__}' does not implement 'diff' for '{type(p).__name__}'"
-            " grids"
-        )
+    if not isinstance(p, MidPoints):
+        p = make_midpoints_from(p)
 
-    dfx = np.diff(f(p.x) if callable(f) else f)
+        if not callable(f):
+            f[1:] = (f[:-1] + f[1]) / 2.0
 
-    df = np.empty(p.x.size)
-    df[0] = np.nan
-
-    for n, w in enumerate(_weights_modified_l1(m, p)):
-        df[n + 1] = np.sum(w * dfx[: n + 1])
-
-    return df
+    return diff.dispatch(L1)(m, f, p)
 
 
 # }}}
