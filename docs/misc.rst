@@ -9,11 +9,12 @@ or move to a separate library.
     :maxdepth: 1
     :caption: Table of Contents
 
-    grids
-    special
-    lagrange
-    jacobi
-    integer
+    finite_difference
     generating_functions
+    grids
+    interpolation
+    jacobi
+    lagrange
     lipschitz
+    special
     others

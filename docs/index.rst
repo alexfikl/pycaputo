@@ -28,8 +28,6 @@ pycaputo documentation
     operator
     quadrature
     differentiation
-    history
-    controllers
     timestepping
     fode
     integrate_fire
