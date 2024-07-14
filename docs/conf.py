@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-2024 Alexandru Fikl <alexfikl@gmail.com>
+# SPDX-License-Identifier: CC0-1.0
+
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
 

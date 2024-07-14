@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2024 Alexandru Fikl <alexfikl@gmail.com>
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+SPDX-PackageName = "pycaputo"
+SPDX-PackageSupplier = "Alexandru Fikl <alexfikl@gmail.com>"
+SPDX-PackageDownloadLocation = "https://github.com/alexfikl/pycaputo"
+
+[[annotations]]
+path = [
+    "docs/*.rst",
+    "docs/Makefile",
+    "docs/_static/*.svg",
+    "docs/_static/css/custom.css",
+    "docs/benchmarks/**.json",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Alexandru Fikl <alexfikl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [
+    ".readthedocs.yml",
+    ".codespell-ignore",
+    "Makefile",
+    "README.rst",
+    "pyproject.toml",
+    "requirements*.txt",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 Alexandru Fikl <alexfikl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".gitignore", ".broken.gitlab-ci.yml", ".github/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Alexandru Fikl <alexfikl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
