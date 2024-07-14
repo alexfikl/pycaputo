@@ -51,7 +51,7 @@ class RiemannLiouvilleDerivative(FractionalOperator):
     alpha: float
     """Order of the Riemann-Liouville derivative."""
 
-    side: Side
+    side: Side = Side.Left
     """Side on which to compute the derivative."""
 
     @property
@@ -83,7 +83,7 @@ class CaputoDerivative(FractionalOperator):
     alpha: float
     """Order of the Caputo derivative."""
 
-    side: Side
+    side: Side = Side.Left
     """Side on which to compute the derivative."""
 
     @property
@@ -114,7 +114,7 @@ class GrunwaldLetnikovDerivative(FractionalOperator):
     alpha: float
     """Order of the Grünwald-Letnikov derivative."""
 
-    side: Side
+    side: Side = Side.Left
     """Side on which to compute the derivative."""
 
     @property
@@ -143,7 +143,7 @@ class HadamardDerivative(FractionalOperator):
     alpha: float
     """Order of the Hadamard derivative."""
 
-    side: Side
+    side: Side = Side.Left
     """Side on which to compute the derivative."""
 
     @property
@@ -172,7 +172,7 @@ class CaputoHadamardDerivative(FractionalOperator):
     alpha: float
     """Order of the Caputo-Hadamard derivative."""
 
-    side: Side
+    side: Side = Side.Left
     """Side on which to compute the derivative."""
 
     @property
