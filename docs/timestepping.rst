@@ -20,7 +20,7 @@ This section provides an API reference for the time stepping interface of
 
 .. toctree::
     :maxdepth: 1
-    :caption: Time Stepping
+    :caption: Table of Contents
 
     timestepping_interface
     timestepping_history

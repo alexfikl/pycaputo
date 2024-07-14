@@ -9,12 +9,12 @@ or move to a separate library.
     :maxdepth: 1
     :caption: Table of Contents
 
-    finite_difference
-    generating_functions
-    grids
-    interpolation
-    jacobi
-    lagrange
-    lipschitz
-    special
-    others
+    misc_finite_difference
+    misc_generating_functions
+    misc_grids
+    misc_interpolation
+    misc_jacobi
+    misc_lagrange
+    misc_lipschitz
+    misc_special
+    misc_others
