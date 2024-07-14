@@ -10,12 +10,17 @@ from typing import Iterator
 
 import numpy as np
 
-from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.derivatives import CaputoDerivative
 from pycaputo.grid import Points, UniformMidpoints, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
+from pycaputo.typing import (
+    Array,
+    ArrayOrScalarFunction,
+    DifferentiableScalarFunction,
+    Scalar,
+)
 
-from .base import DerivativeMethod, diff
+from .base import DerivativeMethod, diff, diffs, quadrature_weights
 
 logger = get_logger(__name__)
 
@@ -35,7 +40,7 @@ class CaputoMethod(DerivativeMethod):
 
     @property
     def d(self) -> CaputoDerivative:
-        return CaputoDerivative(self.alpha, side=Side.Left)
+        return CaputoDerivative(self.alpha)
 
 
 # {{{ L1
@@ -60,37 +65,58 @@ class L1(CaputoMethod):
                 )
 
 
-def _weights_l1(m: L1, p: Points) -> Iterator[Array]:
-    x, dx = p.x, p.dx
+@quadrature_weights.register(L1)
+def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
     alpha = m.alpha
-    w0 = 1 / math.gamma(2 - alpha)
+    x, dx = p.x[:n], p.dx[: n - 1]
+    xn = x[-1]
 
-    # NOTE: weights given in [Li2020] Equation 4.20
-    if isinstance(p, UniformPoints):
-        w0 = w0 / p.dx[0] ** alpha
-        k = np.arange(x.size - 1)
+    w = np.empty_like(x)
+    w[n - 1] = 0.0
+    w[: n - 1] = (
+        ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
+        / dx
+        / math.gamma(2 - alpha)
+    )
+    w[1:n] = w[: n - 1] - w[1:n]
+    w[0] = -w[0]
 
-        for n in range(1, x.size):
-            w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-            yield w0 * w
-    else:
-        for n in range(1, x.size):
-            w = (
-                (x[n] - x[:n]) ** (1 - alpha) - (x[n] - x[1 : n + 1]) ** (1 - alpha)
-            ) / dx[:n]
+    return w
 
-            yield w0 * w
+
+@diffs.register(L1)
+def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 1:
+        return np.array([np.nan])
+
+    w = quadrature_weights(m, p, n + 1)
+    fx = f(p.x[: n + 1]) if callable(f) else f
+
+    return np.sum(w * fx)  # type: ignore[no-any-return]
 
 
 @diff.register(L1)
-def _diff_l1_method(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
-    dfx = np.diff(f(p.x) if callable(f) else f)
+def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
+    fx = f(p.x) if callable(f) else f
 
-    df = np.empty(p.x.shape, dtype=dfx.dtype)
+    df = np.empty_like(fx)
     df[0] = np.nan
 
-    for n, w in enumerate(_weights_l1(m, p)):
-        df[n + 1] = np.sum(w * dfx[: n + 1])
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n + 1)
+        df[n] = np.sum(w * fx[: n + 1])
 
     return df
 

@@ -3,8 +3,13 @@
 
 from __future__ import annotations
 
-from pycaputo.derivatives import FractionalOperator, Side
-from pycaputo.differentiation.base import DerivativeMethod, diff
+from pycaputo.derivatives import FractionalOperator
+from pycaputo.differentiation.base import (
+    DerivativeMethod,
+    diff,
+    diffs,
+    quadrature_weights,
+)
 from pycaputo.grid import Points
 
 
@@ -22,7 +27,7 @@ def guess_method_for_order(
 
     :arg p: a set of points on which to evaluate the fractional operator.
     :arg d: a fractional operator to discretize. If only a float is given, the
-        common Caputo derivative is used.
+        common (left) Caputo derivative is used.
     """
     from pycaputo import grid
     from pycaputo.derivatives import CaputoDerivative, RiemannLiouvilleDerivative
@@ -31,7 +36,7 @@ def guess_method_for_order(
 
     m: DerivativeMethod | None = None
     if not isinstance(d, FractionalOperator):
-        d = CaputoDerivative(alpha=d, side=Side.Left)
+        d = CaputoDerivative(alpha=d)
 
     if isinstance(d, CaputoDerivative):
         if isinstance(p, grid.JacobiGaussLobattoPoints):
@@ -61,5 +66,7 @@ def guess_method_for_order(
 __all__ = (
     "DerivativeMethod",
     "diff",
+    "diffs",
     "guess_method_for_order",
+    "quadrature_weights",
 )
