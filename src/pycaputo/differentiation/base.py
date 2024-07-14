@@ -9,7 +9,7 @@ from functools import singledispatch
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ class DerivativeMethod(ABC):
 
 
 @singledispatch
-def quadrature_weights(m: DerivativeMethod, p: Array) -> Array:
+def quadrature_weights(m: DerivativeMethod, p: Points, n: int) -> Array:
     r"""Evaluate the quadrature weights for the method *m* with points *p*.
 
     In general, a fractional operator is an integral operator that we can write
@@ -44,6 +44,9 @@ def quadrature_weights(m: DerivativeMethod, p: Array) -> Array:
     where :math:`w_{n, k}` is a row of the weight matrix that is computed by this
     function. In some cases of interest, e.g. uniform, it is sufficient to
     compute the :math:`w_{N, k}` row and perform the convolution by FFT.
+
+    :arg p: a grid on which to compute the quadrature weights at the point
+        ``p.x[n]``.
     """
     raise NotImplementedError(
         f"Cannot evaluate quadrature weights for method '{type(m).__name__}'"
@@ -51,7 +54,7 @@ def quadrature_weights(m: DerivativeMethod, p: Array) -> Array:
 
 
 @singledispatch
-def diffs(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
+def diffs(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
     r"""Evaluate the fractional derivative of *f* using method *m* at the point
     *p.a* with the underlying grid.
 
