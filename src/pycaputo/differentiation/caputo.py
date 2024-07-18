@@ -64,6 +64,26 @@ class L1(CaputoMethod):
                 )
 
 
+def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Array:
+    r"""Computes the integrals
+
+    .. math::
+
+        a_{nk} = \int_{x_k}^{x_{k + 1}} \frac{1}{(x_n - s)^\alpha} ds
+
+    for :math:`0 \le k \le n - 1`.
+    """
+
+    x, dx = p.x[:n], p.dx[: n - 1]
+    xn = x[-1]
+
+    return (
+        ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
+        / dx
+        / math.gamma(2 - alpha)
+    )
+
+
 @quadrature_weights.register(L1)
 def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
     if n < 0:
@@ -72,17 +92,9 @@ def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
-    alpha = m.alpha
-    x, dx = p.x[:n], p.dx[: n - 1]
-    xn = x[-1]
-
-    w = np.empty_like(x)
+    w = np.empty(n, dtype=p.x.dtype)
     w[n - 1] = 0.0
-    w[: n - 1] = (
-        ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
-        / dx
-        / math.gamma(2 - alpha)
-    )
+    w[: n - 1] = _caputo_piecewise_constant_integral(p, n, m.alpha)
     w[1:n] = w[: n - 1] - w[1:n]
     w[0] = -w[0]
 
@@ -97,27 +109,22 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
-    if n == 1:
+    if n == 0:
         return np.array([np.nan])
 
     w = quadrature_weights(m, p, n + 1)
-    fx = f(p.x[: n + 1]) if callable(f) else f
+    fx = f(p.x[: n + 1]) if callable(f) else f[:n + 1]
 
     return np.sum(w * fx)  # type: ignore[no-any-return]
 
 
 @diff.register(L1)
 def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
-    if callable(f):
-        fx = f(p.x)
-    elif isinstance(f, np.ndarray):
-        if f.shape[0] != p.size:
-            raise ValueError(
-                f"Shape of 'f' does match points: got {f.shape} expected{p.shape}"
-            )
-        fx = f
-    else:
-        raise TypeError(f"Unknown type for 'f': {type(f)}")
+    fx = f(p.x) if callable(f) else f
+    if fx.shape[0] != p.size:
+        raise ValueError(
+            f"Shape of 'f' does match points: got {f.shape} expected {p.shape}"
+        )
 
     df = np.empty_like(fx)
     df[0] = np.nan
@@ -145,6 +152,10 @@ class ModifiedL1(CaputoMethod):
     This method is defined in Section 4.1.1 (III) from [Li2020]_. Note that this
     method evaluates the fractional derivative at the midpoints
     :math:`(x_i + x_{i - 1}) / 2` for any given input grid.
+
+    As noted in [Li2020]_, this method has the same order of convergence as the
+    standard L1 method. However the weights can be used to construct a
+    Crank-Nicolson type method.
     """
 
     if __debug__:
@@ -223,6 +234,90 @@ class L2(CaputoMethod):
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
                 )
+
+
+def _caputo_d2_coefficients(x: Array) -> Array:
+    x0, x1, x2, x3 = x[:4]
+    a0 = 2.0 * (3.0 * x0 - x1 - x2 - x3) / ((x0 - x1) * (x0 - x2) * (x0 - x3))
+    b0 = 2.0 * (x3 - 2.0 * x0 + x2) / ((x0 - x1) * (x1 - x2) * (x1 - x3))
+    c0 = 2.0 * (x3 - 2.0 * x0 + x1) / ((x0 - x2) * (x2 - x1) * (x2 - x3))
+    d0 = 2.0 * (x2 - 2.0 * x0 + x1) / ((x0 - x3) * (x3 - x1) * (x3 - x2))
+
+    return np.array([a0, b0, c0, d0])
+
+
+@quadrature_weights.register(L2)
+def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    dx = p.dx[:n - 1]
+    dxm = (dx[1:] + dx[:-1]) / 2.0
+
+    # get finite difference coefficients for center stencil
+    a = 1.0 / (dx[:-2] * dxm)
+    b = 1.0 / (dx[1:-1] * dxm)
+
+    # get finite difference coefficients for boundary stencils
+    a_l, b_l, c_l, d_l = _caputo_d2_coefficients(p.x)
+    d_r, c_r, b_r, a_r = _caputo_d2_coefficients(p.x[::-1])
+
+    wi = _caputo_piecewise_constant_integral(p, n, m.alpha)
+
+    w = np.empty_like(p.x[:n])
+    # center stencil
+    w[2:n - 1] = a * wi[2:] - (a + b) * w[1:-1] + b * w[:-2]
+    # add left boundary stencil
+    w[0] = a_l + a[1] * wi[1]
+    w[1] = b_l + a[2] * wi[2] - (a[1] + b[1]) * wi[1]
+    w[2] += c_l
+    w[3] += d_l
+    # add right-boundary stencil
+    if n == p.size:
+        w[-4] += d_r
+        w[-3] += c_r
+        w[-2] = b_r + a[-2] * wi[-2] - (a[-1] + b[-1]) * wi[-1]
+        w[-1] = a_r + a[-1] * wi[-1]
+
+    return w
+
+
+@diffs.register(L2)
+def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Array:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([np.nan])
+
+    w = quadrature_weights(m, p, n + 1)
+    fx = f(p.x[: n + 1]) if callable(f) else f[:n + 1]
+
+    return np.sum(w * fx)  # type: ignore[no-any-return]
+
+
+@diff.register(L2)
+def _diff_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
+    fx = f(p.x) if callable(f) else f
+    if fx.shape[0] != p.size:
+        raise ValueError(
+            f"Shape of 'f' does match points: got {f.shape} expected {p.shape}"
+        )
+
+    df = np.empty_like(fx)
+    df[0] = np.nan
+
+    # FIXME: in the uniform case, we can also do an FFT, but we need different
+    # weights for that, so we leave it like this for now
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n + 1)
+        df[n] = np.sum(w * fx[: n + 1])
 
 
 def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
@@ -377,7 +472,7 @@ def _diff_jacobi(m: SpectralJacobi, f: ArrayOrScalarFunction, p: Points) -> Arra
 # }}}
 
 
-# {{{
+# {{{ DiffusiveCaputoMethod
 
 
 @dataclass(frozen=True)
