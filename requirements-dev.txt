@@ -12,8 +12,6 @@ chardet==5.2.0
     # via
     #   binaryornot
     #   python-debian
-codespell==2.3.0
-    # via pycaputo (pyproject.toml)
 colorama==0.4.6 ; sys_platform == 'win32'
     # via pytest
 contourpy==1.2.1
@@ -28,7 +26,7 @@ docutils==0.20.1
     # via
     #   doc8
     #   restructuredtext-lint
-exceptiongroup==1.2.1 ; python_version < '3.11'
+exceptiongroup==1.2.2 ; python_version < '3.11'
     # via pytest
 fonttools==4.53.1
     # via matplotlib
@@ -99,7 +97,7 @@ reuse==4.0.3
     # via pycaputo (pyproject.toml)
 rich==13.7.1
     # via pycaputo (pyproject.toml)
-ruff==0.5.1
+ruff==0.5.2
     # via pycaputo (pyproject.toml)
 scipy==1.13.1
     # via pycaputo (pyproject.toml)
@@ -113,7 +111,7 @@ tomli==2.0.1 ; python_version < '3.11'
     #   mypy
     #   pyproject-fmt
     #   pytest
-tomlkit==0.12.5
+tomlkit==0.13.0
     # via reuse
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml)
@@ -121,7 +119,9 @@ typing-extensions==4.12.2
     # via
     #   pycaputo (pyproject.toml)
     #   mypy
-uv==0.2.23
+typos==1.23.2
+    # via pycaputo (pyproject.toml)
+uv==0.2.26
     # via pycaputo (pyproject.toml)
 zipp==3.19.2 ; python_version < '3.10'
     # via importlib-resources
