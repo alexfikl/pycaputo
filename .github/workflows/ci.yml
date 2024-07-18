@@ -15,6 +15,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  reuse:
+    name: Licensing (REUSE)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: fsfe/reuse-action@v4
+
+  typos:
+    name: Spelling (typos)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: crate-ci/typos@master
+
   ruff:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Linting (ruff)
