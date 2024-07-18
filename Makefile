@@ -32,7 +32,7 @@ pyproject:		## Run pyproject-fmt over the configuration
 	@echo -e "\e[1;32mpyproject clean!\e[0m"
 .PHONY: pyproject
 
-lint: ruff mypy doc8 reuse codespell 					## Run all linting scripts
+lint: ruff mypy doc8 reuse typos					## Run all linting scripts
 .PHONY: lint
 
 ruff:			## Run ruff checks over the source code
@@ -55,14 +55,10 @@ reuse:			## Check REUSE license compliance
 	@echo -e "\e[1;32mREUSE compliant!\e[0m"
 .PHONY: reuse
 
-codespell:		## Run codespell over the source code and documentation
-	@codespell --summary \
-		--skip _build \
-		--uri-ignore-words-list '*' \
-		--ignore-words .codespell-ignore \
-		src tests examples docs scripts
-	@echo -e "\e[1;32mcodespell clean!\e[0m"
-.PHONY: codespell
+typos:			## Run typos over the source code and documentation
+	@typos
+	@echo -e "\e[1;32mtypos clean!\e[0m"
+.PHONY: typos
 
 # }}}
 
@@ -86,7 +82,7 @@ requirements.txt: pyproject.toml
 pin: $(REQUIREMENTS)	## Pin dependencies versions to requirements.txt
 .PHONY: pin
 
-pip-install:			## Install pinned depdencies from requirements.txt
+pip-install:			## Install pinned dependencies from requirements.txt
 	$(PYTHON) -m pip install --upgrade pip hatchling wheel
 	$(PYTHON) -m pip install -r requirements-dev.txt -e .
 .PHONY: pip-install
@@ -116,7 +112,10 @@ examples:				## Run examples
 
 # {{{ development
 
-ctags:			## Regenerate ctags
+generate-doc-figures:		## Regenerate figures used in the docs.
+	$(PYTHON) scripts/generate-doc-figures.py docs/_static
+
+ctags:						## Regenerate ctags
 	ctags --recurse=yes \
 		--tag-relative=yes \
 		--exclude=.git \
@@ -125,8 +124,15 @@ ctags:			## Regenerate ctags
 		--language-force=python
 .PHONY: ctags
 
-generate-doc-figures:		## Regenerate figures used in the docs.
-	$(PYTHON) scripts/generate-doc-figures.py docs/_static
+clean:						## Remove various build artifacts
+	rm -rf *.png
+	rm -rf build dist
+	rm -rf docs/_build
+.PHONY: clean
+
+purge: clean				## Remove various temporary files
+	rm -rf .ruff_cache .pytest_cache .mypy_cache
+.PHONY: purge
 
 # }}}
 
