@@ -102,7 +102,7 @@ jobs:
         make examples
 
   deploy:
-    needs: [ruff, mypy, pytest, examples]
+    needs: [reuse, typos, ruff, mypy, pytest, examples]
     name: PyPI deploy
     environment: pypi
     permissions:
