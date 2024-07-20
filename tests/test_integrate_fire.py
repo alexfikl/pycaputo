@@ -117,7 +117,7 @@ def ad_ex_lambert_zero_roots(
     return h_min - delta, h_min + delta
 
 
-def ad_ex_zero(a: float, tau_w: float, h: Array) -> Array:
+def ad_ex_zero(a: float, tau_w: float, h: float) -> float:
     return (1 + (1 + a * h / (h + tau_w)) * h) / h
 
 
@@ -159,7 +159,7 @@ def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
             with figure(dirname / f"test_ad_ex_lambert_arg_{name}") as fig:
                 ax = fig.gca()
 
-                ax.plot(h, func(h))
+                ax.plot(h, np.vectorize(func)(h))
                 ax.plot([hm, hmin, hp], [func(hm), func(hmin), func(hp)], "ro")
 
 
