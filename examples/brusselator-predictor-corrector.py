@@ -7,6 +7,8 @@ where it exhibits a limit cycle.
 The example uses the PECE method with a fixed step size.
 """
 
+from __future__ import annotations
+
 from functools import partial
 
 import numpy as np

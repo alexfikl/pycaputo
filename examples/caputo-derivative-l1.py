@@ -7,6 +7,8 @@ method. This is a simple example showcasing how the API can be used.
 Other methods are available at :mod:`pycaputo.differentiation`.
 """
 
+from __future__ import annotations
+
 import math
 
 import numpy as np

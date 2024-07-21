@@ -3,6 +3,8 @@
 
 """This example showcases how to define a new fractional operator."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from pycaputo.derivatives import FractionalOperator

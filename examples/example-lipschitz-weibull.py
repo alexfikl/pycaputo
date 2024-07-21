@@ -14,6 +14,8 @@ does.
     `DOI <https://doi.org/10.1007/bf00229304>`__.
 """
 
+from __future__ import annotations
+
 import numpy as np
 import scipy.stats as ss
 

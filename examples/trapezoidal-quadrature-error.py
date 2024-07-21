@@ -24,6 +24,8 @@ we should expect the error to scale as
     `DOI <https://doi.org/10.1023/b:numa.0000027736.85078.be>`__.
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 from pycaputo.logging import get_logger

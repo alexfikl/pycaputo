@@ -4,6 +4,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
 
+from __future__ import annotations
+
 import os
 import sys
 from importlib import metadata

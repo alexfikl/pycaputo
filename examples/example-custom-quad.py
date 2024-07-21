@@ -6,17 +6,18 @@
 The definition is given by registering a new method using ``quad.register``.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass  # noqa: I001
 
 import numpy as np
 
 from pycaputo.derivatives import HadamardDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction
 
 # {{{
-
 from pycaputo.quadrature import QuadratureMethod
+from pycaputo.utils import Array, ArrayOrScalarFunction
 
 
 @dataclass(frozen=True)

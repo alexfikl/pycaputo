@@ -8,6 +8,8 @@ interpolates between the integer orders.
 This uses a spectral method with Jacobi polynomials for the added accuracy.
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 from pycaputo.differentiation import diff
