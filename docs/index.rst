@@ -53,10 +53,3 @@ At the moment, performance is not an important focus, but fractional-order
 operators are generally more computationally intensive than their integer-order
 counterparts. Once a solid framework is worked out, more care will be given to
 this aspect as well.
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
