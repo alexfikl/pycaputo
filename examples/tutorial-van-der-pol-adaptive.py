@@ -19,8 +19,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from pycaputo.controller import estimate_initial_time_step, make_jannelli_controller
-from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
@@ -29,6 +27,7 @@ logger = get_logger("tutorial")
 # {{{ van der Pol oscillator
 
 
+# [tutorial-func-start]
 def van_der_pol(t: float, y: Array, *, mu: float = 4.0) -> Array:
     return np.array([y[1], mu * (1.0 - y[0] ** 2) * y[1] - y[0]])
 
@@ -38,12 +37,17 @@ def van_der_pol_jac(t: float, y: Array, *, mu: float = 4.0) -> Array:
         [0.0, 1.0],
         [-mu * 2.0 * y[0] * y[1] - 1.0, mu * (1.0 - y[0] ** 2)],
     ])
+    # [tutorial-func-end]
 
 
 # }}}
 
 
 # {{{ set up problem
+
+# [tutorial-controller-start]
+from pycaputo.controller import make_jannelli_controller
+from pycaputo.fode import caputo
 
 tstart, tfinal = 0.0, 4.0
 c = make_jannelli_controller(
@@ -57,7 +61,9 @@ c = make_jannelli_controller(
     chimax=0.3,
     abstol=1.0e-12,
 )
+# [tutorial-controller-end]
 
+# [tutorial-method-start]
 alpha = 0.8
 y0 = np.array([1.0, 0.0])
 
@@ -68,6 +74,10 @@ m = caputo.PECE(
     y0=(y0,),
     corrector_iterations=2,
 )
+# [tutorial-method-end]
+
+# [tutorial-estimate-start]
+from pycaputo.controller import estimate_initial_time_step
 
 dtinit = 1.0e-1
 dtest = estimate_initial_time_step(
@@ -77,6 +87,7 @@ dtest = estimate_initial_time_step(
     m.smallest_derivative_order,
     trunc=m.order,
 )
+# [tutorial-estimate-end]
 logger.info("Initial time step %.8e estimate %.8e", dtinit, dtest)
 
 # }}}
@@ -85,6 +96,7 @@ logger.info("Initial time step %.8e estimate %.8e", dtinit, dtest)
 # {{{ evolve
 
 
+# [tutorial-evolve-start]
 from pycaputo.events import StepAccepted, StepRejected
 from pycaputo.stepping import evolve
 
@@ -110,7 +122,7 @@ for event in evolve(m, dtinit=dtinit):
 
     logger.info(
         "%s[%06d] t = %.5e dt = %.5e (eest %+.5e q %.5e) energy %.5e",
-        "[green][A][/]" if event.eest <= 1.0 else "[red][R][/]",
+        "[green][A][/]" if isinstance(event, StepAccepted) else "[red][R][/]",
         event.iteration,
         event.t,
         event.dt,
@@ -118,6 +130,7 @@ for event in evolve(m, dtinit=dtinit):
         event.q,
         np.linalg.norm(event.y),
     )
+    # [tutorial-evolve-end]
 
 # }}}
 
@@ -127,6 +140,7 @@ for event in evolve(m, dtinit=dtinit):
 try:
     import matplotlib  # noqa: F401
 except ImportError as exc:
+    logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
 from pycaputo.utils import figure, set_recommended_matplotlib
@@ -136,15 +150,7 @@ t = np.array(ts)
 y = np.array(ys).T
 trunc = np.array(truncs).T
 
-with figure("van-der-pol-adaptive-pece-phase") as fig:
-    ax = fig.gca()
-
-    ax.plot(y[0], y[1], "o", ms=3, fillstyle="none")
-    ax.set_xlabel("$x$")
-    ax.set_ylabel("$y$")
-    # ax.set_aspect("equal")
-
-with figure("van-der-pol-adaptive-pece-solution", nrows=2, figsize=(8, 8)) as fig:
+with figure("tutorial-van-der-pol-adaptive-solution", nrows=2, figsize=(8, 8)) as fig:
     ax = fig.axes
 
     ax[0].plot(t, y[0], "o-", ms=3, fillstyle="none", label="$x$")
@@ -156,7 +162,7 @@ with figure("van-der-pol-adaptive-pece-solution", nrows=2, figsize=(8, 8)) as fi
     ax[1].set_ylabel(r"$\Delta t$")
     ax[1].set_ylim([c.dtmin, dtinit])
 
-with figure("van-der-pol-adaptive-pece-eest", nrows=2, figsize=(8, 8)) as fig:
+with figure("tutorial-van-der-pol-adaptive-eest", nrows=2, figsize=(8, 8)) as fig:
     ax = fig.axes
 
     ax[0].plot(t, trunc[0], "o-", ms=3, fillstyle="none")

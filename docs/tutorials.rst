@@ -33,19 +33,21 @@ and its Caputo fractional order derivative given by
 
 In code, we can write them as below
 
-.. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 24-34
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-caputo-l1.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-func-start]
+    :end-before: [tutorial-func-end]
 
 To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 [Li2020]_ or Chapter 3 in [Karniadakis2019]_). The methods are set up as
 follows
 
-.. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 37-40
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-caputo-l1.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-method-start]
+    :end-before: [tutorial-method-end]
 
 The method uses the :class:`~pycaputo.derivatives.CaputoDerivative` operator
 and the :class:`~pycaputo.differentiation.caputo.L1` discretization. See
@@ -53,21 +55,22 @@ and the :class:`~pycaputo.differentiation.caputo.L1` discretization. See
 Caputo derivative. We can then set up a grid and evaluate the derivative at
 all points
 
-.. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 42-48
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-caputo-l1.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-evaluate-start]
+    :end-before: [tutorial-evaluate-end]
 
 For the chosen number of points, this gives an error of about :math:`10^{-3}`.
 The resulting approximation can be see below
 
-.. image:: _static/caputo-derivative-l1-light.svg
+.. image:: _static/tutorial-caputo-l1-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Approximation of the Caputo derivative using the L1 method
 
-.. image:: _static/caputo-derivative-l1-dark.svg
+.. image:: _static/tutorial-caputo-l1-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -75,7 +78,7 @@ The resulting approximation can be see below
 
 
 The complete example can be found in
-:download:`examples/caputo-derivative-l1.py <../examples/caputo-derivative-l1.py>`.
+:download:`examples/tutorial-caputo-l1.py <../examples/tutorial-caputo-l1.py>`.
 
 Solving Differential Equations
 ------------------------------
@@ -96,19 +99,21 @@ initial conditions :math:`(x_0, y_0) = (1, 2)`. For these parameters, the
 system has a stable limit cycle, which we can observe (see [Garrappa2015b]_).
 The right-hand side for this system can be implemented as
 
-.. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 24-28
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-brusselator.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-func-start]
+    :end-before: [tutorial-func-end]
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
 by :class:`~pycaputo.fode.caputo.PECE`. The solver is then set up as
 
-.. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 36-50
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-brusselator.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-method-start]
+    :end-before: [tutorial-method-end]
 
 We can see here that we have chosen to use a solver for the Caputo derivative
 an order :math:`\alpha`. The solver will use a fixed time step of :math:`10^{-2}`
@@ -120,20 +125,21 @@ Now that the solver is set up, we can simply evolve the equation time step by
 time step to get all the solutions. This will use the :func:`pycaputo.stepping.evolve`
 iterator as follows
 
-.. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 52-69
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-brusselator.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-evolve-start]
+    :end-before: [tutorial-evolve-end]
 
 The solution as a function of time can be seen below.
 
-.. image:: _static/brusselator-predictor-corrector-light.svg
+.. image:: _static/tutorial-brusselator-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Solution of the Brusselator system using the Predictor-Corrector method.
 
-.. image:: _static/brusselator-predictor-corrector-dark.svg
+.. image:: _static/tutorial-brusselator-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -141,20 +147,20 @@ The solution as a function of time can be seen below.
 
 The limit cycle can be better visualized in phase space as shown below.
 
-.. image:: _static/brusselator-predictor-corrector-cycle-light.svg
+.. image:: _static/tutorial-brusselator-cycle-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Stable limit cycle of the Brusselator system.
 
-.. image:: _static/brusselator-predictor-corrector-cycle-dark.svg
+.. image:: _static/tutorial-brusselator-cycle-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
     :alt: Stable limit cycle of the Brusselator system.
 
 The complete example can be found in
-:download:`examples/brusselator-predictor-corrector.py <../examples/brusselator-predictor-corrector.py>`.
+:download:`examples/tutorial-brusselator.py <../examples/tutorial-brusselator.py>`.
 
 Adaptive Time Stepping
 ----------------------
@@ -175,10 +181,11 @@ to be :math:`(x_0, y_0) = (1, 0)`. As we will see, this is close to a limit
 cycle of the oscillator (see e.g. [Jannelli2020]_). The right-hand side for this
 system is implemented as
 
-.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 32-40
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-van-der-pol-adaptive.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-func-start]
+    :end-before: [tutorial-func-end]
 
 We can now start setting up our numerical solver based on the standard
 Predictor-Corrector method (PECE) implemented in
@@ -187,10 +194,11 @@ results from [Jannelli2020]_ and implemented in
 :class:`~pycaputo.controller.JannelliIntegralController`. The controller is
 set up as follows
 
-.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 48-59
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-van-der-pol-adaptive.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-controller-start]
+    :end-before: [tutorial-controller-end]
 
 We can see here that we have chosen a time interval of :math:`[0, 4]` to see
 the start of the limit cycle. We have also used other parameters better described
@@ -199,40 +207,43 @@ increase the time step by a fixed value, while ``chimin`` and ``chimax`` are
 used to normalize the Jannelli error estimator. Then, we can set up the solver
 itself
 
-.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 61-70
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-van-der-pol-adaptive.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-method-start]
+    :end-before: [tutorial-method-end]
 
 For the solver we set the desired order ``alpha`` and choose two corrector
 iterations, to be sure that the second-order accuracy is achieved. For an
 adaptive scheme, it is important to also get an estimate for the initial time
 step. This can be done using
 
-.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 72-79
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-van-der-pol-adaptive.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-estimate-start]
+    :end-before: [tutorial-estimate-end]
 
 Having set everything up, we can evolve our equation and gather any relevant data.
 For the adaptive case, we are interested also in showing the behavior of the
 error estimate and the time step in time. Here, we will only gather this information
 for accepted steps.
 
-.. literalinclude:: ../examples/van-der-pol-adaptive-pece.py
-    :lines: 98-109
-    :lineno-match:
+.. literalinclude:: ../examples/tutorial-van-der-pol-adaptive.py
     :language: python
+    :lineno-match:
+    :start-after: [tutorial-evolve-start]
+    :end-before: [tutorial-evolve-end]
 
 We can now look at the solution and the corresponding time steps below.
 
-.. image:: _static/van-der-pol-adaptive-pece-solution-light.svg
+.. image:: _static/tutorial-van-der-pol-adaptive-solution-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Adaptive solution of the van der Pol system using the Predictor-Corrector method.
 
-.. image:: _static/van-der-pol-adaptive-pece-solution-dark.svg
+.. image:: _static/tutorial-van-der-pol-adaptive-solution-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
@@ -252,17 +263,17 @@ equivalent to keeping the error in :math:`[\chi_{min}, \chi_{max}]` before
 rescaling. We can also see that the :math:`y` component clearly dominates the
 error estimate for this example.
 
-.. image:: _static/van-der-pol-adaptive-pece-eest-light.svg
+.. image:: _static/tutorial-van-der-pol-adaptive-eest-light.svg
     :class: only-light
     :width: 75%
     :align: center
     :alt: Jannelli error estimator for the van der Pol system.
 
-.. image:: _static/van-der-pol-adaptive-pece-eest-dark.svg
+.. image:: _static/tutorial-van-der-pol-adaptive-eest-dark.svg
     :class: only-dark
     :width: 75%
     :align: center
     :alt: Jannelli error estimator for the van der Pol system.
 
 The complete example can be found in
-:download:`examples/van-der-pol-adaptive-pece.py <../examples/van-der-pol-adaptive-pece.py>`.
+:download:`examples/tutorial-van-der-pol-adaptive.py <../examples/tutorial-van-der-pol-adaptive.py>`.

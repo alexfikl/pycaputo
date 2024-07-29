@@ -21,6 +21,7 @@ logger = get_logger("tutorial")
 # {{{ evaluate
 
 
+# [tutorial-func-start]
 def f(x: Array) -> Array:
     return (0.5 - x) ** 4
 
@@ -32,13 +33,17 @@ def df(x: Array, alpha: float) -> Array:
         - 12 * x ** (3 - alpha) / math.gamma(4 - alpha)
         + 24 * x ** (4 - alpha) / math.gamma(5 - alpha)
     )
+    # [tutorial-func-end]
 
 
+# [tutorial-method-start]
 from pycaputo.differentiation.caputo import L1
 
 alpha = 0.9
 method = L1(alpha=alpha)
+# [tutorial-method-end]
 
+# [tutorial-evaluate-start]
 from pycaputo.grid import make_uniform_points
 
 p = make_uniform_points(256, a=0.0, b=1.0)
@@ -46,6 +51,7 @@ p = make_uniform_points(256, a=0.0, b=1.0)
 from pycaputo.differentiation import diff
 
 df_num = diff(method, f, p)
+# [tutorial-evaluate-end]
 
 df_ref = df(p.x, alpha)
 logger.info(
@@ -61,13 +67,14 @@ logger.info(
 try:
     import matplotlib  # noqa: F401
 except ImportError as exc:
+    logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
 
-with figure("caputo-derivative-l1") as fig:
+with figure("tutorial-caputo-l1") as fig:
     ax = fig.gca()
 
     ax.plot(p.x, df_num, lw=5, label="L1 Method")

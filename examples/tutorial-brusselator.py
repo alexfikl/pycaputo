@@ -21,11 +21,13 @@ logger = get_logger("tutorial")
 # {{{ Brusselator
 
 
+# [tutorial-func-start]
 def brusselator(t: float, y: Array, *, a: float, mu: float) -> Array:
     return np.array([
         a - (mu + 1) * y[0] + y[0] ** 2 * y[1],
         mu * y[0] - y[0] ** 2 * y[1],
     ])
+    # [tutorial-func-end]
 
 
 # }}}
@@ -33,6 +35,7 @@ def brusselator(t: float, y: Array, *, a: float, mu: float) -> Array:
 
 # {{{ solve
 
+# [tutorial-method-start]
 from pycaputo.controller import make_fixed_controller
 from pycaputo.fode import caputo
 
@@ -48,7 +51,9 @@ stepper = caputo.PECE(
     y0=(y0,),
     corrector_iterations=1,
 )
+# [tutorial-method-end]
 
+# [tutorial-evolve-start]
 from pycaputo.events import StepCompleted
 from pycaputo.stepping import evolve
 
@@ -67,6 +72,7 @@ for event in evolve(stepper):
         event.dt,
         np.linalg.norm(event.y),
     )
+# [tutorial-evolve-end]
 
 # }}}
 
@@ -76,6 +82,7 @@ for event in evolve(stepper):
 try:
     import matplotlib  # noqa: F401
 except ImportError as exc:
+    logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
 from pycaputo.utils import figure, set_recommended_matplotlib
@@ -84,7 +91,7 @@ set_recommended_matplotlib()
 t = np.array(ts)
 y = np.array(ys).T
 
-with figure("brusselator-predictor-corrector") as fig:
+with figure("tutorial-brusselator") as fig:
     ax = fig.gca()
 
     ax.plot(t, y[1], "--", lw=3, label="$y$")
@@ -93,7 +100,7 @@ with figure("brusselator-predictor-corrector") as fig:
     ax.set_xlabel("$t$")
     ax.legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
 
-with figure("brusselator-predictor-corrector-cycle") as fig:
+with figure("tutorial-brusselator-cycle") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[1], ls="--")
