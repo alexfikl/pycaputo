@@ -19,16 +19,16 @@ logger.addHandler(rich.logging.RichHandler())
 
 EXAMPLES_DIR = pathlib.Path("examples").resolve()
 ARTIFACTS = {
-    "van-der-pol-adaptive-pece.py": {
-        "van-der-pol-adaptive-pece-eest.svg",
-        "van-der-pol-adaptive-pece-solution.svg",
+    "tutorial-van-der-pol-adaptive.py": {
+        "tutorial-van-der-pol-adaptive-eest.svg",
+        "tutorial-van-der-pol-adaptive-solution.svg",
     },
-    "brusselator-predictor-corrector.py": {
-        "brusselator-predictor-corrector.svg",
-        "brusselator-predictor-corrector-cycle.svg",
+    "tutorial-brusselator.py": {
+        "tutorial-brusselator.svg",
+        "tutorial-brusselator-cycle.svg",
     },
-    "caputo-derivative-l1.py": {
-        "caputo-derivative-l1.svg",
+    "tutorial-caputo-l1.py": {
+        "tutorial-caputo-l1.svg",
     },
 }
 
