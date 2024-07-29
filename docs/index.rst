@@ -16,8 +16,8 @@ PYCAPUTO: Fractional Calculus Toolkit
     :caption: Developer Guides
 
     guide_derivative
-    guide_differentiation
     guide_quadrature
+    guide_differentiation
     guide_timestepping
 
 .. toctree::

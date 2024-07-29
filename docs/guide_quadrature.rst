@@ -41,7 +41,7 @@ We give here the skeleton for implementing a new custom
 class. For example,
 
 .. literalinclude:: ../examples/example-custom-quad.py
-    :lines: 19-32
+    :lines: 21-34
     :language: python
     :linenos:
 
@@ -49,7 +49,7 @@ Then, we can implement the :func:`~pycaputo.quadrature.quad` method by
 registering it with the :func:`~functools.singledispatch` mechanism as
 
 .. literalinclude:: ../examples/example-custom-quad.py
-    :lines: 40-50
+    :lines: 42-53
     :language: python
     :linenos:
 

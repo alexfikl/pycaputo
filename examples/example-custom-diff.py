@@ -49,6 +49,7 @@ def _diff_rl(
     p: Points,
 ) -> Array:
     fx = f(p.x) if callable(f) else f
+    # ... add an actual implementation here ...
     return np.zeros_like(fx)
 
 

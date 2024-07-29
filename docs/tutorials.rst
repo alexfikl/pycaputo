@@ -34,7 +34,7 @@ and its Caputo fractional order derivative given by
 In code, we can write them as below
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 22-32
+    :lines: 24-34
     :lineno-match:
     :language: python
 
@@ -43,7 +43,7 @@ To estimate the derivative, we use the classical L1 method (see Chapter 4.1 in
 follows
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 35-38
+    :lines: 37-40
     :lineno-match:
     :language: python
 
@@ -54,7 +54,7 @@ Caputo derivative. We can then set up a grid and evaluate the derivative at
 all points
 
 .. literalinclude:: ../examples/caputo-derivative-l1.py
-    :lines: 40-46
+    :lines: 42-48
     :lineno-match:
     :language: python
 
@@ -97,7 +97,7 @@ system has a stable limit cycle, which we can observe (see [Garrappa2015b]_).
 The right-hand side for this system can be implemented as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 22-26
+    :lines: 24-28
     :lineno-match:
     :language: python
 
@@ -106,7 +106,7 @@ Predictor-Corrector method (PECE) described in [Diethelm2002]_ and implemented
 by :class:`~pycaputo.fode.caputo.PECE`. The solver is then set up as
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 34-48
+    :lines: 36-50
     :lineno-match:
     :language: python
 
@@ -121,7 +121,7 @@ time step to get all the solutions. This will use the :func:`pycaputo.stepping.e
 iterator as follows
 
 .. literalinclude:: ../examples/brusselator-predictor-corrector.py
-    :lines: 50-67
+    :lines: 52-69
     :lineno-match:
     :language: python
 

@@ -16,7 +16,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
-logger = get_logger("brusselator")
+logger = get_logger("tutorial")
 
 # {{{ Brusselator
 

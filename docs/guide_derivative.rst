@@ -39,7 +39,7 @@ previous Riemann-Liouville integral.
 This operator has a total of 4 parameters and can be simply implemented as below.
 
 .. literalinclude:: ../examples/example-custom-derivative.py
-    :lines: 6-21
+    :lines: 8-23
     :lineno-match:
     :language: python
 

@@ -35,7 +35,7 @@ First, all subclasses must be a :func:`~dataclasses.dataclass` and implement the
 abstract methods of the base class. For example,
 
 .. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 20-33
+    :lines: 21-34
     :language: python
     :linenos:
 
@@ -43,7 +43,7 @@ Then, we can implement the :func:`~pycaputo.differentiation.diff` method by
 registering it with the :func:`~functools.singledispatch` mechanism as
 
 .. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 41-51
+    :lines: 42-53
     :language: python
     :linenos:
 

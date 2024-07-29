@@ -24,7 +24,7 @@ from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.utils import Array
 
-logger = get_logger("van-der-pol-adaptive")
+logger = get_logger("tutorial")
 
 # {{{ van der Pol oscillator
 
