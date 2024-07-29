@@ -10,15 +10,17 @@ For example, the Riemann--Liouville derivative is defined as follows in
 :class:`~pycaputo.derivatives.RiemannLiouvilleDerivative`.
 
 .. literalinclude:: ../src/pycaputo/derivatives.py
-    :lines: 33-55
-    :lineno-match:
     :language: python
+    :lineno-match:
+    :pyobject: RiemannLiouvilleDerivative
 
 As we can see, the Riemann-Liouville operator is defined by its order :math:`\alpha`
 and by the side of the integration. The class itself is not meant to implement
 any logic and is just used to hold the information about the operator itself.
 Many places can then be generic with respect to the operator type, e.g.
 :func:`~pycaputo.special.sin_derivative`.
+
+For a complete list of already defined operators see :mod:`pycaputo.derivatives`.
 
 To showcase how a new and more complex fractional operator can be added to the
 library, we briefly implement the Prabhakar integral (see [Karniadakis2019]_).
@@ -38,9 +40,11 @@ previous Riemann-Liouville integral.
 
 This operator has a total of 4 parameters and can be simply implemented as below.
 
-.. literalinclude:: ../examples/example-custom-derivative.py
-    :lines: 8-23
-    :lineno-match:
+.. literalinclude:: ../examples/guide-derivative.py
     :language: python
+    :lineno-match:
+    :start-after: [class-definition-start]
+    :end-before: [class-definition-end]
 
-For a complete list of already defined operators see :mod:`pycaputo.derivatives`.
+The complete example can be found in
+:download:`examples/guide-derivative.py <../examples/guide-derivative.py>`.

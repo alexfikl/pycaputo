@@ -18,6 +18,7 @@ from pycaputo.utils import Array, ArrayOrScalarFunction
 
 # {{{
 
+# [class-definition-start]
 from pycaputo.differentiation import DerivativeMethod
 
 
@@ -32,6 +33,7 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
     @property
     def d(self) -> RiemannLiouvilleDerivative:
         return RiemannLiouvilleDerivative(self.alpha, side=Side.Left)
+        # [class-definition-end]
 
 
 # }}}
@@ -39,6 +41,7 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
 
 # {{{
 
+# [register-start]
 from pycaputo.differentiation import diff
 
 
@@ -51,6 +54,7 @@ def _diff_rl(
     fx = f(p.x) if callable(f) else f
     # ... add an actual implementation here ...
     return np.zeros_like(fx)
+    # [register-end]
 
 
 # }}}

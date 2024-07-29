@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pycaputo.derivatives import FractionalOperator
 
 
+# [class-definition-start]
 @dataclass(frozen=True)
 class PrabhakarIntegral(FractionalOperator):
     alpha: float
@@ -21,6 +22,7 @@ class PrabhakarIntegral(FractionalOperator):
 
     mu: float
     """Scaling used in the Prabhakar function argument."""
+    # [class-definition-end]
 
 
 d = PrabhakarIntegral(alpha=0.5, beta=0.5, gamma=0.9, mu=1.0)

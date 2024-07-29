@@ -34,18 +34,20 @@ We give here the skeleton for implementing a new custom
 First, all subclasses must be a :func:`~dataclasses.dataclass` and implement the
 abstract methods of the base class. For example,
 
-.. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 21-34
+.. literalinclude:: ../examples/guide-differentiation.py
     :language: python
-    :linenos:
+    :lineno-match:
+    :start-after: [class-definition-start]
+    :end-before: [class-definition-end]
 
 Then, we can implement the :func:`~pycaputo.differentiation.diff` method by
 registering it with the :func:`~functools.singledispatch` mechanism as
 
-.. literalinclude:: ../examples/example-custom-diff.py
-    :lines: 42-53
+.. literalinclude:: ../examples/guide-differentiation.py
     :language: python
-    :linenos:
+    :lineno-match:
+    :start-after: [register-start]
+    :end-before: [register-end]
 
 The complete example can be found in
-:download:`examples/example-custom-diff.py <../examples/example-custom-diff.py>`.
+:download:`examples/guide-differentiation.py <../examples/guide-differentiation.py>`.

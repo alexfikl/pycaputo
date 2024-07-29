@@ -18,6 +18,7 @@ from pycaputo.utils import Array, ArrayOrScalarFunction
 
 # {{{
 
+# [class-definition-start]
 from pycaputo.quadrature import QuadratureMethod
 
 
@@ -32,6 +33,7 @@ class HadamardQuadratureMethod(QuadratureMethod):
     @property
     def d(self) -> HadamardDerivative:
         return HadamardDerivative(self.alpha, side=Side.Left)
+        # [class-definition-end]
 
 
 # }}}
@@ -39,6 +41,7 @@ class HadamardQuadratureMethod(QuadratureMethod):
 
 # {{{
 
+# [register-start]
 from pycaputo.quadrature import quad
 
 
@@ -51,6 +54,7 @@ def _quad_hadamard(
     fx = f(p.x) if callable(f) else f
     # ... add an actual implementation here ...
     return np.zeros_like(fx)
+    # [register-end]
 
 
 # }}}
