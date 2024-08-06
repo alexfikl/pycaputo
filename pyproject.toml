@@ -108,6 +108,7 @@ lint.select = [
     "W",   # flake8
 ]
 lint.ignore = [
+    "A005",    # shadowing-builtin-module
     "E203",    # whitespace-before-punctuation
     "E402",    # module-import-not-at-top-of-file
     "ISC001",  # single-line-implicit-string-concatenation
@@ -151,6 +152,7 @@ addopts = [
 
 [tool.mypy]
 strict = true
+python_version = "3.9"
 hide_error_codes = false
 warn_unused_ignores = true
 local_partial_types = true

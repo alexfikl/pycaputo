@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 import os
 import pathlib
+import sys
 import time
 from contextlib import contextmanager, suppress
 from dataclasses import Field, dataclass, field, is_dataclass
@@ -27,11 +28,10 @@ from typing import (
 
 import numpy as np
 
-try:
-    # NOTE: available in Python >=3.10
+if sys.version_info >= (3, 10):
     from typing import Concatenate, ParamSpec
-except ImportError:
-    from typing_extensions import Concatenate, ParamSpec  # type: ignore[assignment]
+else:
+    from typing_extensions import Concatenate, ParamSpec
 
 from pycaputo.logging import get_logger
 
