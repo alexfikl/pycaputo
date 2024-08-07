@@ -10,55 +10,55 @@ help: 			## Show this help
 
 # {{{ linting
 
-format: black isort pyproject							## Run all formatting scripts
+format: isort black pyproject		## Run all formatting scripts
 .PHONY: format
 
 fmt: format
 .PHONY: fmt
 
-black:			## Run ruff format over the source code
+black:								## Run ruff format over the source code
 	ruff format src tests examples docs scripts
 	@echo -e "\e[1;32mruff format clean!\e[0m"
 .PHONY: black
 
-isort:			## Run ruff isort fixes over the source code
+isort:								## Run ruff isort fixes over the source code
 	ruff check --fix --select=I src tests examples scripts docs
 	ruff check --fix --select=RUF022 src
 	@echo -e "\e[1;32mruff isort clean!\e[0m"
 .PHONY: isort
 
-pyproject:		## Run pyproject-fmt over the configuration
+pyproject:							## Run pyproject-fmt over the configuration
 	$(PYTHON) -m pyproject_fmt --indent 4 pyproject.toml
 	@echo -e "\e[1;32mpyproject clean!\e[0m"
 .PHONY: pyproject
 
-lint: ruff mypy doc8 reuse typos					## Run all linting scripts
+lint: typos reuse ruff doc8 mypy	## Run all linting scripts
 .PHONY: lint
 
-ruff:			## Run ruff checks over the source code
-	ruff check src tests examples docs scripts
-	@echo -e "\e[1;32mruff lint clean!\e[0m"
-.PHONY: ruff
-
-mypy:			## Run mypy checks over the source code
-	$(PYTHON) -m mypy src tests examples scripts
-	@echo -e "\e[1;32mmypy clean!\e[0m"
-.PHONY: mypy
-
-doc8:			## Run doc8 checks over the source code
-	$(PYTHON) -m doc8 src docs
-	@echo -e "\e[1;32mdoc8 clean!\e[0m"
-.PHONY: doc8
+typos:			## Run typos over the source code and documentation
+	@typos
+	@echo -e "\e[1;32mtypos clean!\e[0m"
+.PHONY: typos
 
 reuse:			## Check REUSE license compliance
 	$(PYTHON) -m reuse lint
 	@echo -e "\e[1;32mREUSE compliant!\e[0m"
 .PHONY: reuse
 
-typos:			## Run typos over the source code and documentation
-	@typos
-	@echo -e "\e[1;32mtypos clean!\e[0m"
-.PHONY: typos
+ruff:			## Run ruff checks over the source code
+	ruff check src tests examples docs scripts
+	@echo -e "\e[1;32mruff lint clean!\e[0m"
+.PHONY: ruff
+
+doc8:			## Run doc8 checks over the source code
+	$(PYTHON) -m doc8 src docs
+	@echo -e "\e[1;32mdoc8 clean!\e[0m"
+.PHONY: doc8
+
+mypy:			## Run mypy checks over the source code
+	$(PYTHON) -m mypy src tests examples scripts
+	@echo -e "\e[1;32mmypy clean!\e[0m"
+.PHONY: mypy
 
 # }}}
 
