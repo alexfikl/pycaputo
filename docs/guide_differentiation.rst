@@ -1,8 +1,8 @@
 A New Differentiation Method
 ============================
 
-Computing the derivative of a function can be done in two ways. The recommended
-method (with included magic) is calling :func:`pycaputo.diff` as
+Computing the fractional derivative of a function can be done in two ways. The
+recommended method (with included magic) is calling :func:`pycaputo.diff` as
 
 .. code:: python
 
@@ -10,8 +10,8 @@ method (with included magic) is calling :func:`pycaputo.diff` as
 
 which will automatically select an appropriate method to use given the point set
 ``p`` and the order ``alpha`` (see also
-:func:`pycaputo.differentiation.guess_method_for_order`). To manually call a
-specific method, use :func:`pycaputo.differentiation.diff` instead as
+:func:`~pycaputo.differentiation.guess_method_for_order`). To manually call a
+specific method, use the lower level :func:`pycaputo.differentiation.diff` instead as
 
 .. code:: python
 
@@ -40,8 +40,31 @@ abstract methods of the base class. For example,
     :start-after: [class-definition-start]
     :end-before: [class-definition-end]
 
-Then, we can implement the :func:`~pycaputo.differentiation.diff` method by
-registering it with the :func:`~functools.singledispatch` mechanism as
+Then, we have defined a set of functions useful for working with a discrete
+fractional operator approximations. As mentioned above, the main functionality
+is provided by the :func:`~pycaputo.differentiation.diff` method. However, we
+also have
+
+* :func:`~pycaputo.differentiation.quadrature_weights`: a function that can provide
+  the underlying quadrature weights for a given method. Note that not all methods
+  can be efficiently expressed as a weighted sum with quadrature weights, so they
+  should not implement this method. However, for those that can, this offers a
+  pleasant way of reusing and analyzing the weights.
+
+* :func:`~pycaputo.differentiation.diffs`: a method very similar to
+  :func:`~pycaputo.differentiation.diff`, but that only computes the fractional
+  operator at a given point on the grid. Note that not all methods can efficiently
+  evaluate the fractional operator at a single point (e.g. global spectral methods),
+  so they should not implement this functionality.
+
+* :func:`~pycaputo.differentiation.diff`: for many methods, the ``diff`` function
+  is a simple wrapper around :func:`~pycaputo.differentiation.diffs`, but this
+  doesn't always make sense. For example, if we want to compute the Caputo
+  fractional derivative on a uniform grid, this can be evaluated more efficiently
+  using the FFT.
+
+These methods are all registered with the :func:`~functools.singledispatch` mechanism.
+An example setup is provided below.
 
 .. literalinclude:: ../examples/guide-differentiation.py
     :language: python

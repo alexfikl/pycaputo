@@ -42,7 +42,28 @@ class RiemannLiouvilleDerivativeMethod(DerivativeMethod):
 # {{{
 
 # [register-start]
-from pycaputo.differentiation import diff
+from pycaputo.differentiation import diff, diffs, quadrature_weights
+
+
+@quadrature_weights.register(RiemannLiouvilleDerivativeMethod)
+def _quadrature_weights_rl(
+    m: RiemannLiouvilleDerivativeMethod,
+    p: Points,
+    n: int,
+) -> Array:
+    # ... add an actual implementation here ...
+    return np.zeros(n, dtype=p.x.dtype)
+
+
+@diffs.register(RiemannLiouvilleDerivativeMethod)
+def _diffs_rl(
+    m: RiemannLiouvilleDerivativeMethod,
+    f: ArrayOrScalarFunction,
+    p: Points,
+) -> Array:
+    fx = f(p.x) if callable(f) else f
+    # ... add an actual implementation here ...
+    return np.zeros_like(fx)
 
 
 @diff.register(RiemannLiouvilleDerivativeMethod)

@@ -77,7 +77,7 @@ def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Arra
     x, dx = p.x[:n], p.dx[: n - 1]
     xn = x[-1]
 
-    return (
+    return np.array(
         ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
         / dx
         / math.gamma(2 - alpha)
@@ -113,7 +113,7 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
         return np.array([np.nan])
 
     w = quadrature_weights(m, p, n + 1)
-    fx = f(p.x[: n + 1]) if callable(f) else f[:n + 1]
+    fx = f(p.x[: n + 1]) if callable(f) else f[: n + 1]
 
     return np.sum(w * fx)  # type: ignore[no-any-return]
 
@@ -123,7 +123,7 @@ def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     fx = f(p.x) if callable(f) else f
     if fx.shape[0] != p.size:
         raise ValueError(
-            f"Shape of 'f' does match points: got {f.shape} expected {p.shape}"
+            f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
         )
 
     df = np.empty_like(fx)
@@ -254,7 +254,7 @@ def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
-    dx = p.dx[:n - 1]
+    dx = p.dx[: n - 1]
     dxm = (dx[1:] + dx[:-1]) / 2.0
 
     # get finite difference coefficients for center stencil
@@ -269,7 +269,7 @@ def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
 
     w = np.empty_like(p.x[:n])
     # center stencil
-    w[2:n - 1] = a * wi[2:] - (a + b) * w[1:-1] + b * w[:-2]
+    w[2 : n - 1] = a * wi[2:] - (a + b) * w[1:-1] + b * w[:-2]
     # add left boundary stencil
     w[0] = a_l + a[1] * wi[1]
     w[1] = b_l + a[2] * wi[2] - (a[1] + b[1]) * wi[1]
@@ -297,7 +297,7 @@ def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Arra
         return np.array([np.nan])
 
     w = quadrature_weights(m, p, n + 1)
-    fx = f(p.x[: n + 1]) if callable(f) else f[:n + 1]
+    fx = f(p.x[: n + 1]) if callable(f) else f[: n + 1]
 
     return np.sum(w * fx)  # type: ignore[no-any-return]
 
@@ -307,7 +307,7 @@ def _diff_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
     fx = f(p.x) if callable(f) else f
     if fx.shape[0] != p.size:
         raise ValueError(
-            f"Shape of 'f' does match points: got {f.shape} expected {p.shape}"
+            f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
         )
 
     df = np.empty_like(fx)
@@ -318,6 +318,8 @@ def _diff_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
     for n in range(1, df.size):
         w = quadrature_weights(m, p, n + 1)
         df[n] = np.sum(w * fx[: n + 1])
+
+    return df
 
 
 def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
