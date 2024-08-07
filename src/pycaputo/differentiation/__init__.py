@@ -3,14 +3,18 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.differentiation.base import (
     DerivativeMethod,
     diff,
+    differentiation_matrix,
     diffs,
     quadrature_weights,
 )
 from pycaputo.grid import Points
+from pycaputo.utils import Array, ArrayOrScalarFunction, Scalar
 
 
 def guess_method_for_order(
@@ -63,10 +67,119 @@ def guess_method_for_order(
     return m
 
 
+def quadrature_weights_fallback(m: DerivativeMethod, p: Points, n: int) -> Array:
+    """Evaluate the quadrature weights for the method *m* at the points *p.x[n]*.
+
+    This function attempts to construct the quadrature weights using
+    :func:`~pycaputo.differentiation.quadrature_weights`. If not available, it
+    falls back to constructing the full differentiation matrix using
+    :func:`~pycaputo.differentiation.differentiation_matrix` and selecting
+    the *nth* row.
+
+    .. warning::
+
+        Falling back to :func:`~pycaputo.differentiation.differentiation_matrix`
+        will be significantly slower, as it required computing the full matrix.
+        Use this function with care.
+    """
+
+    try:
+        return quadrature_weights(m, p, n)
+    except NotImplementedError:
+        pass
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    W = differentiation_matrix(m, p)
+    return W[n, : n + 1]
+
+
+def differentiation_matrix_fallback(m: DerivativeMethod, p: Points) -> Array:
+    """Evaluate the differentiation matrix for the method *m* at points *p*.
+
+    This function attempts to constructs the differentiation matrix using
+    :func:`~pycaputo.differentiation.differentiation_matrix`. If not available,
+    it falls back to :func:`~pycaputo.differentiation.quadrature_weights`.
+    """
+    try:
+        return differentiation_matrix(m, p)
+    except NotImplementedError:
+        pass
+
+    n = p.size
+    W = np.zeros((n, n))
+    W[0, :] = np.nan
+
+    for i in range(2, n):
+        W[i, : i + 1] = quadrature_weights(m, p, i + 1)
+
+    return W
+
+
+def diffs_fallback(
+    m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points, n: int
+) -> Scalar:
+    """Evaluate the fractional derivative of *f* using method *m* at the point
+    *p.x[n]* using the underlying grid.
+
+    This function attempts to evaluate the fractional derivative using
+    :func:`~pycaputo.differentiation.diffs`. If not available, it falls back
+    to evaluating the derivative at all points using
+    :func:`~pycaputo.differentiation.diff` and selecting the desired point.
+
+    .. warning::
+
+        Falling back to the ``diff`` function will be significantly slower,
+        since all the points on the grid *p* are evaluated. Use this function
+        with care.
+    """
+    try:
+        return diffs(m, f, p, n)
+    except NotImplementedError:
+        pass
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    result = diff(m, f, p)
+    return np.array(result[n])
+
+
+def diff_fallback(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
+    """Evaluate the fractional derivative of *f* at *p* using method *m*.
+
+    This function attempts to evaluate the fractional derivative using
+    :func:`~pycaputo.differentiation.diff`. If not available, it falls back
+    to evaluating the derivative point by points using
+    :func:`~pycaputo.differentiation.diffs`.
+    """
+    try:
+        return diff(m, f, p)
+    except NotImplementedError:
+        pass
+
+    n = 1
+    df1 = diffs(m, f, p, n + 1)
+    df = np.empty((p.size, *df1.shape), dtype=df1.dtype)
+    df[0] = np.nan
+    df[1] = df1
+
+    for n in range(2, df.size):
+        df[n] = diffs(m, f, p, n + 1)
+
+    return df
+
+
 __all__ = (
     "DerivativeMethod",
     "diff",
+    "diff_fallback",
+    "differentiation_matrix",
+    "differentiation_matrix_fallback",
     "diffs",
+    "diffs_fallback",
     "guess_method_for_order",
     "quadrature_weights",
+    "quadrature_weights_fallback",
 )
