@@ -70,7 +70,7 @@ REQUIREMENTS=\
 
 requirements-dev.txt: pyproject.toml
 	uv pip compile --upgrade --universal --python-version '3.9' \
-		--extra dev \
+		--extra dev --extra docs \
 		-o $@ $<
 .PHONY: requirements-dev.txt
 
