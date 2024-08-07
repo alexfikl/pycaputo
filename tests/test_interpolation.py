@@ -12,10 +12,8 @@ from pycaputo.interpolation import (
     make_lagrange_approximation,
 )
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_interpolation")
-set_recommended_matplotlib()
 
 
 # {{{ test_interpolation_lagrange

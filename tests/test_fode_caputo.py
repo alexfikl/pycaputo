@@ -16,10 +16,8 @@ from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod, evolve
 from pycaputo.typing import Array, StateFunction
-from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_fode_caputo")
-set_recommended_matplotlib()
 
 # {{{ solution: Section 3.3.1, Example 2 [Li2015]
 

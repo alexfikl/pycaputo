@@ -16,10 +16,8 @@ from pycaputo.finite_difference import (
     modified_wavenumber,
 )
 from pycaputo.logging import get_logger
-from pycaputo.utils import savefig, set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_finite_difference")
-set_recommended_matplotlib()
 
 # {{{ test_finite_difference_taylor
 
@@ -131,6 +129,8 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
             ax.set_ylabel(r"$\tilde{k} h$")  # noqa: RUF027
             ax.set_xlim(0.0, float(np.pi))
             ax.set_ylim(0.0, float(sign * np.pi**s.derivative))
+
+            from pycaputo.utils import savefig
 
             dirname = pathlib.Path(__file__).parent
             filename = f"test_diff_fd_{s.derivative}_{s.trunc.order}"

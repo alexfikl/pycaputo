@@ -12,10 +12,8 @@ import pytest
 from pycaputo.differentiation import diff, riemann_liouville
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
-from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_diff_riemann_liouville")
-set_recommended_matplotlib()
 
 
 # {{{ test_riemann_liouville_lmethods
