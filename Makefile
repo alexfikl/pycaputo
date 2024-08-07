@@ -108,6 +108,11 @@ examples:				## Run examples
 	done
 .PHONY: examples
 
+docs:					## Generate documentation
+	@rm -rf docs/_build
+	make -C docs html SPHINXOPTS='-W --keep-going -n'
+.PHONY: docs
+
 # }}}
 
 # {{{ development
