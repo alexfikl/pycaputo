@@ -25,7 +25,7 @@ from scipy.special import erfc
 
 from pycaputo.logging import get_logger
 from pycaputo.mittagleffler import mittag_leffler
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 logger = get_logger("ml")
 

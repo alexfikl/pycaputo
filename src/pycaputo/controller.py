@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from pycaputo.utils import Array, StateFunction, StateFunctionT
+from pycaputo.typing import Array, StateFunction, StateFunctionT
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import

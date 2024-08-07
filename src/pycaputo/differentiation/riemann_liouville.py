@@ -10,7 +10,7 @@ from functools import cached_property
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction
 
 from . import caputo
 from .base import DerivativeMethod, diff

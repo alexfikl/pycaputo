@@ -21,7 +21,7 @@ from pycaputo.stepping import (
     gamma2m,
     make_initial_condition,
 )
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

@@ -11,7 +11,8 @@ import pytest
 
 from pycaputo.logging import get_logger
 from pycaputo.quadrature import quad, riemann_liouville
-from pycaputo.utils import Array, set_recommended_matplotlib
+from pycaputo.typing import Array
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_quad_riemann_liouville")
 dirname = pathlib.Path(__file__).parent

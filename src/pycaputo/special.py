@@ -7,7 +7,7 @@ import numpy as np
 
 from pycaputo import derivatives as ds
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

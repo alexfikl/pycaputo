@@ -13,7 +13,7 @@ import numpy as np
 from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import Points, UniformMidpoints, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
 
 from .base import DerivativeMethod, diff
 
@@ -426,7 +426,7 @@ class YuanAgrawal(DiffusiveCaputoMethod):
     where :math:`m` is the integer part of :math:`\alpha`. As such, this problem
     has the added difficulty of computing :math:`f^{(m)}(\xi)`. The current
     implementation requires an analytical expression for the derivative
-    (see :class:`~pycaputo.utils.DifferentiableScalarFunction`).
+    (see :class:`~pycaputo.typing.DifferentiableScalarFunction`).
     """
 
     method: str

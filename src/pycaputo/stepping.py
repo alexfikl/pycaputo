@@ -13,7 +13,8 @@ import numpy as np
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.events import Event
 from pycaputo.history import History
-from pycaputo.utils import Array, StateFunctionT, cached_on_first_arg, gamma
+from pycaputo.typing import Array, StateFunctionT
+from pycaputo.utils import cached_on_first_arg, gamma
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import

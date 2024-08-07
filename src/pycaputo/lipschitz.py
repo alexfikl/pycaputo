@@ -7,7 +7,7 @@ import numpy as np
 import scipy.stats
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ScalarFunction
+from pycaputo.typing import Array, ScalarFunction
 
 logger = get_logger(__name__)
 

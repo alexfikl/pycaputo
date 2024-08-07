@@ -13,7 +13,7 @@ from pycaputo.derivatives import (
 )
 from pycaputo.differentiation import DerivativeMethod
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction, ScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction, ScalarFunction
 
 
 def diff(

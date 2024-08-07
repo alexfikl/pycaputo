@@ -12,7 +12,7 @@ import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import (
+from pycaputo.typing import (
     Array,
     ArrayOrScalarFunction,
     DifferentiableScalarFunction,

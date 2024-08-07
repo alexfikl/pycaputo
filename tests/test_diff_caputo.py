@@ -13,7 +13,8 @@ import pytest
 from pycaputo.differentiation import caputo, diff
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ScalarFunction, set_recommended_matplotlib
+from pycaputo.typing import Array, ScalarFunction
+from pycaputo.utils import set_recommended_matplotlib
 
 dirname = pathlib.Path(__file__).parent
 logger = get_logger("pycaputo.test_diff_caputo")

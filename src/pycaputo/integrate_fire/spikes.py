@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 # {{{ linear spike time estimate
 

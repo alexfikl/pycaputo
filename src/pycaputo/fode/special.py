@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 
 @dataclass(frozen=True)

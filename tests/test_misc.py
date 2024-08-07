@@ -10,7 +10,8 @@ import numpy as np
 import pytest
 
 from pycaputo.logging import get_logger, stringify_table
-from pycaputo.utils import Array, ScalarFunction, set_recommended_matplotlib
+from pycaputo.typing import Array, ScalarFunction
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_misc")
 dirname = pathlib.Path(__file__).parent

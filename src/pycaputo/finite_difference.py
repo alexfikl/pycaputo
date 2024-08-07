@@ -10,7 +10,7 @@ from typing import Any, NamedTuple
 
 import numpy as np
 
-from pycaputo.utils import Array, ScalarFunction
+from pycaputo.typing import Array, ScalarFunction
 
 
 class Truncation(NamedTuple):

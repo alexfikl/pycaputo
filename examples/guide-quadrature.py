@@ -14,7 +14,7 @@ import numpy as np
 
 from pycaputo.derivatives import HadamardDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction
 
 # {{{
 

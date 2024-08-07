@@ -9,7 +9,7 @@ from functools import singledispatch
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction
 
 
 @dataclass(frozen=True)
@@ -35,7 +35,7 @@ def quad(m: QuadratureMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
     :arg f: a simple function for which to evaluate the integral. If the
         method requires higher-order derivatives (e.g. for Hermite interpolation),
         this function can also be a
-        :class:`~pycaputo.utils.DifferentiableScalarFunction`.
+        :class:`~pycaputo.typing.DifferentiableScalarFunction`.
     :arg p: an array of points at which to evaluate the integral.
     """
 

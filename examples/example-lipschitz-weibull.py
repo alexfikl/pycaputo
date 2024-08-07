@@ -20,7 +20,8 @@ import numpy as np
 import scipy.stats as ss
 
 from pycaputo.lipschitz import fit_reverse_weibull, uniform_sample_maximum_slopes
-from pycaputo.utils import Array, figure, set_recommended_matplotlib
+from pycaputo.typing import Array
+from pycaputo.utils import figure, set_recommended_matplotlib
 
 
 def f(x: Array) -> Array:

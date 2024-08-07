@@ -10,7 +10,7 @@ import numpy as np
 
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ScalarFunction
+from pycaputo.typing import Array, ScalarFunction
 
 logger = get_logger(__name__)
 

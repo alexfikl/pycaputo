@@ -17,7 +17,7 @@ from pycaputo.stepping import (
     evolve,
     make_initial_condition,
 )
-from pycaputo.utils import Array, StateFunctionT
+from pycaputo.typing import Array, StateFunctionT
 
 logger = get_logger(__name__)
 

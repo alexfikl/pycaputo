@@ -12,7 +12,8 @@ import pytest
 from pycaputo.differentiation import diff
 from pycaputo.differentiation import grunwald_letnikov as gl
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, set_recommended_matplotlib
+from pycaputo.typing import Array
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_diff_grunwald_letnikov")
 set_recommended_matplotlib()

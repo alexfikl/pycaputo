@@ -18,7 +18,8 @@ from pycaputo.fode.product_integration import (
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, gamma1p, gamma2m, gamma2p, make_initial_condition
-from pycaputo.utils import Array, StateFunctionT, gamma
+from pycaputo.typing import Array, StateFunctionT
+from pycaputo.utils import gamma
 
 logger = get_logger(__name__)
 

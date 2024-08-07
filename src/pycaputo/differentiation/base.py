@@ -9,7 +9,7 @@ from functools import singledispatch
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction
 
 
 @dataclass(frozen=True)

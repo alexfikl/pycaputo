@@ -7,7 +7,7 @@ from typing import Iterator
 
 import numpy as np
 
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 # {{{ Lubich1986 weights
 

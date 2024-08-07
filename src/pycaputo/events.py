@@ -6,7 +6,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

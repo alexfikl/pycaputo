@@ -10,7 +10,7 @@ from typing import Any, Callable
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

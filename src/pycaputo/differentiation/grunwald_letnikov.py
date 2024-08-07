@@ -11,7 +11,7 @@ import numpy as np
 from pycaputo.derivatives import GrunwaldLetnikovDerivative, Side
 from pycaputo.grid import Points, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction
 
 from .base import DerivativeMethod, diff
 

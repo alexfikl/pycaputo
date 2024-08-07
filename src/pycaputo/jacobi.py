@@ -8,7 +8,7 @@ from typing import Iterator
 import numpy as np
 
 from pycaputo.grid import JacobiGaussLobattoPoints, Points
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 # {{{ Jacobi polynomial related coefficients
 

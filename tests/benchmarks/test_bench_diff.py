@@ -9,7 +9,7 @@ import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
 from pycaputo.differentiation import caputo, diff
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 
 def func(x: Array, *, alpha: float) -> Array:

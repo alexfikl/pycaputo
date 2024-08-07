@@ -24,7 +24,7 @@ import math
 
 import numpy as np
 
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 # {{{ evaluate
 

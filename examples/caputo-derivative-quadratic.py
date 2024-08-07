@@ -15,7 +15,7 @@ import numpy as np
 from pycaputo.differentiation import diff
 from pycaputo.differentiation.caputo import SpectralJacobi
 from pycaputo.grid import make_jacobi_gauss_lobatto_points
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 try:
     import matplotlib  # noqa: F401
@@ -70,5 +70,3 @@ with figure("caputo-derivative-quadratic") as fig:
     ax.set_xlabel("$x$")
     ax.set_ylabel(r"$D^\alpha_C[f](x)$")
     ax.legend()
-
-# }}}

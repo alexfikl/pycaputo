@@ -16,7 +16,7 @@ from pycaputo.integrate_fire.base import (
 )
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance
-from pycaputo.utils import Array, dc_stringify
+from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 
@@ -66,6 +66,8 @@ class PIFDim(NamedTuple):
     """Reset potential :math:`V_r` (in millivolts: *mV*)."""
 
     def __str__(self) -> str:
+        from pycaputo.utils import dc_stringify
+
         return dc_stringify(
             {
                 "I      (current / pA)": self.current,
@@ -176,6 +178,8 @@ class PIF(NamedTuple):
         return ts
 
     def __str__(self) -> str:
+        from pycaputo.utils import dc_stringify
+
         return dc_stringify(
             {
                 "I      (current)": self.current,

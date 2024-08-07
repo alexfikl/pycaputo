@@ -10,7 +10,7 @@ from typing import Any, Iterator
 
 import numpy as np
 
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 
 @dataclass(frozen=True)

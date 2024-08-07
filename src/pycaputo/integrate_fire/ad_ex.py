@@ -17,7 +17,7 @@ from pycaputo.integrate_fire.base import (
 )
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance
-from pycaputo.utils import Array, dc_stringify
+from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 
@@ -87,6 +87,8 @@ class AdExDim(NamedTuple):
     """Adaptation current reset offset :math:`b` (in picoamperes *pA*)."""
 
     def __str__(self) -> str:
+        from pycaputo.utils import dc_stringify
+
         return dc_stringify(
             {
                 "I      (current / pA)": self.current,
@@ -180,6 +182,8 @@ class AdEx(NamedTuple):
     """Adaptation current reset offset :math:`b`."""
 
     def __str__(self) -> str:
+        from pycaputo.utils import dc_stringify
+
         return dc_stringify(
             {
                 "I      (current)": self.current,

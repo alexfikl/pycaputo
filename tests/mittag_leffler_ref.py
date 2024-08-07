@@ -7,7 +7,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from pycaputo.utils import Array
+from pycaputo.typing import Array
 
 
 class Reference(NamedTuple):

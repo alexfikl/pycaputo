@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import Array, StateFunction
+from pycaputo.typing import Array, StateFunction
 
 logger = get_logger(__name__)
 
