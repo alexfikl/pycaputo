@@ -160,7 +160,7 @@ def diff_fallback(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> A
         pass
 
     n = 1
-    df1 = diffs(m, f, p, n + 1)
+    df1 = np.array(diffs(m, f, p, n + 1))
     df = np.empty((p.size, *df1.shape), dtype=df1.dtype)
     df[0] = np.nan
     df[1] = df1

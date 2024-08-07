@@ -69,7 +69,9 @@ def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Arra
 
     .. math::
 
-        a_{nk} = \int_{x_k}^{x_{k + 1}} \frac{1}{(x_n - s)^\alpha} ds
+        a_{nk} =
+            \frac{1}{\Gamma(1 - \alpha) (x_{k + 1} - x_k)}
+            \int_{x_k}^{x_{k + 1}} \frac{1}{(x_n - s)^\alpha} ds
 
     for :math:`0 \le k \le n - 1`.
     """
@@ -151,7 +153,8 @@ class ModifiedL1(CaputoMethod):
 
     This method is defined in Section 4.1.1 (III) from [Li2020]_. Note that this
     method evaluates the fractional derivative at the midpoints
-    :math:`(x_i + x_{i - 1}) / 2` for any given input grid.
+    :math:`(x_i + x_{i - 1}) / 2` for any given input grid except
+    :class:`~pycaputo.grids.MidPoints`.
 
     As noted in [Li2020]_, this method has the same order of convergence as the
     standard L1 method. However the weights can be used to construct a
@@ -223,7 +226,13 @@ class L2(CaputoMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
-    This method is defined in Section 4.1.2 from [Li2020]_ for uniform grids.
+    This method is defined in Section 4.1.2 from [Li2020]_ for general
+    non-uniform grids.
+
+    .. note::
+
+        Unlike the method from [Li2020_], we do not assume knowledge of points
+        outside of the domain. Instead a biased stencil is used at the boundary.
     """
 
     if __debug__:
@@ -232,18 +241,21 @@ class L2(CaputoMethod):
             super().__post_init__()
             if not 1 < self.alpha < 2:
                 raise ValueError(
-                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                    f"'{type(self).__name__}' only supports 1 < alpha < 2: {self.alpha}"
                 )
 
 
-def _caputo_d2_coefficients(x: Array) -> Array:
+def _caputo_d2_coefficients(x: Array, s: Scalar) -> tuple[Scalar, ...]:
+    """Get coefficients for a fourth-order approximation of the second derivative
+    at the boundary.
+    """
     x0, x1, x2, x3 = x[:4]
-    a0 = 2.0 * (3.0 * x0 - x1 - x2 - x3) / ((x0 - x1) * (x0 - x2) * (x0 - x3))
-    b0 = 2.0 * (x3 - 2.0 * x0 + x2) / ((x0 - x1) * (x1 - x2) * (x1 - x3))
-    c0 = 2.0 * (x3 - 2.0 * x0 + x1) / ((x0 - x2) * (x2 - x1) * (x2 - x3))
-    d0 = 2.0 * (x2 - 2.0 * x0 + x1) / ((x0 - x3) * (x3 - x1) * (x3 - x2))
+    a0 = 2.0 * (3.0 * s - x1 - x2 - x3) / ((x0 - x1) * (x0 - x2) * (x0 - x3))
+    b0 = 2.0 * (x0 + x2 + x3 - 3.0 * s) / ((x0 - x1) * (x1 - x2) * (x1 - x3))
+    c0 = 2.0 * (x0 + x1 + x3 - 3.0 * s) / ((x0 - x2) * (x2 - x1) * (x2 - x3))
+    d0 = 2.0 * (x0 + x1 + x2 - 3.0 * s) / ((x0 - x3) * (x3 - x1) * (x3 - x2))
 
-    return np.array([a0, b0, c0, d0])
+    return a0, b0, c0, d0
 
 
 @quadrature_weights.register(L2)
@@ -262,8 +274,8 @@ def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
     b = 1.0 / (dx[1:-1] * dxm)
 
     # get finite difference coefficients for boundary stencils
-    a_l, b_l, c_l, d_l = _caputo_d2_coefficients(p.x)
-    d_r, c_r, b_r, a_r = _caputo_d2_coefficients(p.x[::-1])
+    a_l, b_l, c_l, d_l = _caputo_d2_coefficients(p.x, p.x[0])
+    d_r, c_r, b_r, a_r = _caputo_d2_coefficients(p.x[::-1], p.x[-1])
 
     wi = _caputo_piecewise_constant_integral(p, n, m.alpha)
 
