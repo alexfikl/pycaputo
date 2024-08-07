@@ -14,7 +14,7 @@ from pycaputo.differentiation.base import (
     quadrature_weights,
 )
 from pycaputo.grid import Points
-from pycaputo.utils import Array, ArrayOrScalarFunction, Scalar
+from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
 
 
 def guess_method_for_order(
