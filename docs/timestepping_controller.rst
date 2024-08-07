@@ -87,4 +87,4 @@ API Reference
 
 .. class:: Array
 
-   See :class:`pycaputo.utils.Array`.
+   See :class:`pycaputo.typing.Array`.

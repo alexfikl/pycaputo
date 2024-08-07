@@ -11,13 +11,18 @@ Logging
 
 .. automodule:: pycaputo.logging
 
-Utils
------
+Typing
+------
+
+.. automodule:: pycaputo.typing
 
 .. class:: pycaputo.utils.P
 
     A generic invarint :class:`typing.ParamSpec`.
 
     alias of ParamSpec('P')
+
+Utils
+-----
 
 .. automodule:: pycaputo.utils
