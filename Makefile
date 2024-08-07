@@ -36,7 +36,7 @@ lint: typos reuse ruff doc8 mypy	## Run all linting scripts
 .PHONY: lint
 
 typos:			## Run typos over the source code and documentation
-	@typos
+	typos --sort
 	@echo -e "\e[1;32mtypos clean!\e[0m"
 .PHONY: typos
 
