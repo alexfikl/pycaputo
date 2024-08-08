@@ -19,7 +19,13 @@ from pycaputo.typing import (
     Scalar,
 )
 
-from .base import DerivativeMethod, diff, diffs, quadrature_weights
+from .base import (
+    DerivativeMethod,
+    FunctionCallableError,
+    diff,
+    diffs,
+    quadrature_weights,
+)
 
 logger = get_logger(__name__)
 
@@ -70,18 +76,17 @@ def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Arra
     .. math::
 
         a_{nk} =
-            \frac{1}{\Gamma(1 - \alpha) (x_{k + 1} - x_k)}
+            \frac{1}{\Gamma(1 - \alpha)}
             \int_{x_k}^{x_{k + 1}} \frac{1}{(x_n - s)^\alpha} ds
 
     for :math:`0 \le k \le n - 1`.
     """
 
-    x, dx = p.x[:n], p.dx[: n - 1]
+    x = p.x[:n]
     xn = x[-1]
 
     return np.array(
         ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
-        / dx
         / math.gamma(2 - alpha)
     )
 
@@ -94,9 +99,11 @@ def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
     if n == 0:
         return np.array([])
 
+    a = _caputo_piecewise_constant_integral(p, n, m.alpha) / p.dx[: n - 1]
+
     w = np.empty(n, dtype=p.x.dtype)
     w[n - 1] = 0.0
-    w[: n - 1] = _caputo_piecewise_constant_integral(p, n, m.alpha)
+    w[: n - 1] = a
     w[1:n] = w[: n - 1] - w[1:n]
     w[0] = -w[0]
 
@@ -105,9 +112,6 @@ def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
 
 @diffs.register(L1)
 def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
-    if n < 0:
-        n = p.size + n
-
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
@@ -136,6 +140,83 @@ def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     for n in range(1, df.size):
         w = quadrature_weights(m, p, n + 1)
         df[n] = np.sum(w * fx[: n + 1])
+
+    return df
+
+
+# }}}
+
+
+# {{{ L1D
+
+
+@dataclass(frozen=True)
+class L1D(CaputoMethod):
+    r"""Implements the L1 method for the Caputo fractional derivative
+    of order :math:`\alpha \in (0, 1)`.
+
+    This method is defined in Section 4.1.1 (II) from [Li2020]_ for general
+    non-uniform grids. This method is equivalent to :class:`L1`, but evaluation
+    requires explicit knowledge of the first derivative.
+    """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+            if not 0 < self.alpha < 1:
+                raise ValueError(
+                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                )
+
+
+@quadrature_weights.register(L1D)
+def _quadrature_weights_caputo_l1d(m: L1D, p: Points, n: int) -> Array:
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([])
+
+    return _caputo_piecewise_constant_integral(p, n, m.alpha)
+
+
+@diffs.register(L1D)
+def _diffs_caputo_l1d(m: L1D, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([np.nan])
+
+    if not isinstance(f, DifferentiableScalarFunction):
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not callable: {type(f)}"
+        )
+
+    w = quadrature_weights(m, p, n + 1)
+    dfx = f((p.x[1 : n + 1] + p.x[:n]) / 2, d=1)
+
+    return np.sum(w * dfx)  # type: ignore[no-any-return]
+
+
+@diff.register(L1D)
+def _diff_caputo_l1d(m: L1D, f: ArrayOrScalarFunction, p: Points) -> Array:
+    if not isinstance(f, DifferentiableScalarFunction):
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not callable: {type(f)}"
+        )
+
+    dfx = f((p.x[1:] + p.x[:-1]) / 2, d=1)
+
+    df = np.empty((p.size, *dfx.shape[1:]), dtype=dfx.dtype)
+    df[0] = np.nan
+
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n + 1)
+        df[n] = np.sum(w * dfx[: n + 1])
 
     return df
 
