@@ -56,6 +56,11 @@ class Points:
         """Array of midpoints."""
         return np.array(self.x[1:] + self.x[:-1]) / 2
 
+    @cached_property
+    def dxm(self) -> Array:
+        """Distance between midpoints."""
+        return np.diff(self.xm)
+
     def translate(self, a: float, b: float) -> Points:
         """Linearly translate the set of points to the new interval :math:`[a, b]`."""
         # translate from [a', b'] to [0, 1] to [a, b]

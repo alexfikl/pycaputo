@@ -87,23 +87,19 @@ def differentiation_matrix(m: DerivativeMethod, p: Points) -> Array:
     :returns: a two-dimensional array of shape ``(n, n)``, where *n* is the
         number of points in *p*.
     """
-    i = 1
+    n = p.size
+    W = np.zeros((n, n), dtype=p.dtype)
+    W[0, 0] = np.nan
 
     try:
-        w1 = quadrature_weights(m, p, i + 1)
+        for i in range(1, W.shape[0]):
+            w = quadrature_weights(m, p, i)
+            W[i, : w.size] = w
     except NotImplementedError:
         raise NotImplementedError(
             f"Cannot evaluate differentiation matrix for method '{type(m).__name__}' "
             "('differentiation_matrix' is not implemented)"
         ) from None
-
-    n = p.size
-    W = np.zeros((n, n), dtype=w1.dtype)
-    W[0, :1] = np.nan
-    W[0, :2] = w1
-
-    for i in range(2, W.shape[0]):
-        W[i, : i + 1] = quadrature_weights(m, p, i + 1)
 
     return W
 
