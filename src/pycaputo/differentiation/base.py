@@ -67,6 +67,7 @@ def quadrature_weights(m: DerivativeMethod, p: Points, n: int) -> Array:
 
     :arg p: a grid on which to compute the quadrature weights for the point ``p.x[n]``.
     :arg n: the index of the point within *p*.
+    :returns: an array of quadrature weights of shape ``(n,)``.
     """
 
     raise NotImplementedError(
@@ -127,6 +128,8 @@ def diffs(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points, n: int) -> S
     :arg m: method used to evaluate the derivative.
     :arg f: a simple function for which to evaluate the derivative.
     :arg p: an array of points at which to evaluate the derivative.
+    :returns: a scalar representing the fractional derivative approximation at
+        the *nth* point in *p*.
     """
     raise NotImplementedError(
         "Cannot evaluate pointwise fractional derivative with method "
@@ -140,8 +143,10 @@ def diff(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
 
     By default, this function is implemented in terms of :func:`diffs`.
 
-    :arg f: a simple function for which to evaluate the derivative.
-    :arg p: an array of points at which to evaluate the derivative.
+    :arg f: an array or function for which to evaluate the derivative.
+    :arg p: a set points at which to evaluate the derivative.
+    :returns: an array of shape ``(n,)``, where *n* is the number of points in *p*,
+        that contains the evaluation of the fractional derivative at each point.
     """
     n = 1
 
