@@ -7,9 +7,18 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
 
+import numpy as np
+
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.grid import Points
 from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
+
+
+class FunctionCallableError(TypeError):
+    """An error raised by :func:`diffs` or :func:`diff` when the argument provided
+    for evaluation must be a callable
+    (satisfy :class:`~pycaputo.typing.ScalarFunction`).
+    """
 
 
 @dataclass(frozen=True)
@@ -72,19 +81,30 @@ def differentiation_matrix(m: DerivativeMethod, p: Points) -> Array:
 
     Without additional knowledge, the value of the derivative at *p.a* is not
     known. Therefore, the first row of the matrix should not be used in computation.
-
-    This matrix can also be constructed using :func:`quadrature_weights`, if
-    implemented. For a safe function with this fallback, see
-    :func:`~pycaputo.differentiation.differentiation_matrix_fallback`.
+    By default, this function is implemented in terms of :func:`quadrature_weights`
 
     :returns: a two-dimensional array of shape ``(n, n)``, where *n* is the
         number of points in *p*.
     """
+    i = 1
 
-    raise NotImplementedError(
-        f"Cannot evaluate quadrature weights for method '{type(m).__name__}' "
-        "('differentiation_matrix' is not implemented)"
-    )
+    try:
+        w1 = quadrature_weights(m, p, i + 1)
+    except NotImplementedError:
+        raise NotImplementedError(
+            f"Cannot evaluate differentiation matrix for method '{type(m).__name__}' "
+            "('differentiation_matrix' is not implemented)"
+        ) from None
+
+    n = p.size
+    W = np.zeros((n, n), dtype=w1.dtype)
+    W[0, :1] = np.nan
+    W[0, :2] = w1
+
+    for i in range(2, W.shape[0]):
+        W[i, : i + 1] = quadrature_weights(m, p, i + 1)
+
+    return W
 
 
 @singledispatch
@@ -118,14 +138,26 @@ def diffs(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points, n: int) -> S
 def diff(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
     """Evaluate the fractional derivative of *f* at *p* using method *m*.
 
-    The function values can also be obtained from :func:`diffs` directly, if
-    implemented. For a safe function with this fallback, see
-    :func:`~pycaputo.differentiation.diff_fallback`.
+    By default, this function is implemented in terms of :func:`diffs`.
 
     :arg f: a simple function for which to evaluate the derivative.
     :arg p: an array of points at which to evaluate the derivative.
     """
-    raise NotImplementedError(
-        f"Cannot evaluate fractional derivative with method '{type(m).__name__}' "
-        "('diff' is not implemented)"
-    )
+    n = 1
+
+    try:
+        df1 = np.array(diffs(m, f, p, n + 1))
+    except NotImplementedError:
+        raise NotImplementedError(
+            f"Cannot evaluate fractional derivative with method '{type(m).__name__}' "
+            "('diff' is not implemented)"
+        ) from None
+
+    df = np.empty((p.size, *df1.shape), dtype=df1.dtype)
+    df[0] = np.nan
+    df[1] = df1
+
+    for n in range(2, df.size):
+        df[n] = diffs(m, f, p, n + 1)
+
+    return df
