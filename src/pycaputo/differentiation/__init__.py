@@ -8,6 +8,7 @@ import numpy as np
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.differentiation.base import (
     DerivativeMethod,
+    FunctionCallableError,
     diff,
     differentiation_matrix,
     diffs,
@@ -95,28 +96,6 @@ def quadrature_weights_fallback(m: DerivativeMethod, p: Points, n: int) -> Array
     return W[n, : n + 1]
 
 
-def differentiation_matrix_fallback(m: DerivativeMethod, p: Points) -> Array:
-    """Evaluate the differentiation matrix for the method *m* at points *p*.
-
-    This function attempts to constructs the differentiation matrix using
-    :func:`~pycaputo.differentiation.differentiation_matrix`. If not available,
-    it falls back to :func:`~pycaputo.differentiation.quadrature_weights`.
-    """
-    try:
-        return differentiation_matrix(m, p)
-    except NotImplementedError:
-        pass
-
-    n = p.size
-    W = np.zeros((n, n))
-    W[0, :] = np.nan
-
-    for i in range(2, n):
-        W[i, : i + 1] = quadrature_weights(m, p, i + 1)
-
-    return W
-
-
 def diffs_fallback(
     m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points, n: int
 ) -> Scalar:
@@ -130,9 +109,9 @@ def diffs_fallback(
 
     .. warning::
 
-        Falling back to the ``diff`` function will be significantly slower,
-        since all the points on the grid *p* are evaluated. Use this function
-        with care.
+        Falling back to the :func:`~pycaputo.differentiation.diff`` function
+        will be significantly slower, since all the points on the grid *p* are
+        evaluated. Use this function with care.
     """
     try:
         return diffs(m, f, p, n)
@@ -146,37 +125,11 @@ def diffs_fallback(
     return np.array(result[n])
 
 
-def diff_fallback(m: DerivativeMethod, f: ArrayOrScalarFunction, p: Points) -> Array:
-    """Evaluate the fractional derivative of *f* at *p* using method *m*.
-
-    This function attempts to evaluate the fractional derivative using
-    :func:`~pycaputo.differentiation.diff`. If not available, it falls back
-    to evaluating the derivative point by points using
-    :func:`~pycaputo.differentiation.diffs`.
-    """
-    try:
-        return diff(m, f, p)
-    except NotImplementedError:
-        pass
-
-    n = 1
-    df1 = np.array(diffs(m, f, p, n + 1))
-    df = np.empty((p.size, *df1.shape), dtype=df1.dtype)
-    df[0] = np.nan
-    df[1] = df1
-
-    for n in range(2, df.size):
-        df[n] = diffs(m, f, p, n + 1)
-
-    return df
-
-
 __all__ = (
     "DerivativeMethod",
+    "FunctionCallableError",
     "diff",
-    "diff_fallback",
     "differentiation_matrix",
-    "differentiation_matrix_fallback",
     "diffs",
     "diffs_fallback",
     "guess_method_for_order",
