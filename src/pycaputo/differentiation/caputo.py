@@ -88,11 +88,11 @@ def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Arra
 
 @quadrature_weights.register(L1)
 def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
-    if n < 0:
-        n = p.size + n
-
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([])
 
     w = np.empty(n, dtype=p.x.dtype)
     w[n - 1] = 0.0

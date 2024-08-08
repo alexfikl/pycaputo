@@ -52,19 +52,20 @@ also have
   pleasant way of reusing and analyzing the weights.
 
 * :func:`~pycaputo.differentiation.differentiation_matrix`: a function that
-  gathers all the quadrature weights into a matrix operator.
+  gathers all the quadrature weights into a matrix operator. By default, this
+  function is implemented in terms of ``quadrature_weights``, but can be
+  overwritten by more efficient implementations.
 
-* :func:`~pycaputo.differentiation.diffs`: a method very similar to
-  :func:`~pycaputo.differentiation.diff`, but that only computes the fractional
-  operator at a given point on the grid. Note that not all methods can efficiently
-  evaluate the fractional operator at a single point (e.g. global spectral methods),
-  so they should not implement this functionality.
+* :func:`~pycaputo.differentiation.diffs`: a function that computes the
+  fractional operator at a given point on a grid. Note that not all methods can
+  efficiently evaluate the fractional operator at a single point (e.g. global
+  spectral methods), so they should not implement this functionality.
 
-* :func:`~pycaputo.differentiation.diff`: for many methods, the ``diff`` function
-  can be a simple wrapper around :func:`~pycaputo.differentiation.diffs`, but this
-  doesn't always make sense. For example, if we want to compute the Caputo
-  fractional derivative on a uniform grid, this can be evaluated more efficiently
-  using the FFT.
+* :func:`~pycaputo.differentiation.diff`: a function that computes the fractional
+  operator at a set of points. By default this is implemented in terms of the
+  ``diffs`` function, but this doesn't always make sense. For example, if we want
+  to compute the Caputo fractional derivative on a uniform grid, this can be
+  evaluated more efficiently using the FFT.
 
 In general, we require that the :func:`~pycaputo.differentiation.diff` function be
 implemented for all available methods, while the remaining functions are optional.
