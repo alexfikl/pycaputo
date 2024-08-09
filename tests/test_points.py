@@ -9,8 +9,10 @@ import numpy as np
 import pytest
 
 from pycaputo.logging import get_logger
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_points")
+set_recommended_matplotlib()
 
 
 # {{{ test_points

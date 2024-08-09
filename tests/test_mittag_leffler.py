@@ -12,9 +12,11 @@ import pytest
 
 from pycaputo import mittagleffler as ml
 from pycaputo.logging import get_logger
+from pycaputo.utils import set_recommended_matplotlib
 
 dirname = pathlib.Path(__file__).parent
 logger = get_logger("pycaputo.test_mittag_leffler")
+set_recommended_matplotlib()
 
 
 # {{{ test_mittag_leffler_special

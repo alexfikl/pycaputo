@@ -10,9 +10,11 @@ import pytest
 
 from pycaputo.controller import Controller
 from pycaputo.logging import get_logger
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_misc")
 dirname = pathlib.Path(__file__).parent
+set_recommended_matplotlib()
 
 
 # {{{ test_history_growth

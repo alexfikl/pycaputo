@@ -11,9 +11,11 @@ import pytest
 
 from pycaputo.logging import get_logger, stringify_table
 from pycaputo.typing import Array, ScalarFunction
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_misc")
 dirname = pathlib.Path(__file__).parent
+set_recommended_matplotlib()
 
 
 # {{{ test_lipschitz_uniform_sample

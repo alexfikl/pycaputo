@@ -12,9 +12,11 @@ import pytest
 
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_integrate_fire")
 dirname = pathlib.Path(__file__).parent
+set_recommended_matplotlib()
 
 # {{{ test_ad_ex_parameters
 

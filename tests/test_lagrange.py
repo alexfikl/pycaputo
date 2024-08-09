@@ -8,8 +8,10 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
+from pycaputo.utils import set_recommended_matplotlib
 
 logger = get_logger("pycaputo.test_lagrange")
+set_recommended_matplotlib()
 
 
 # {{{ test_vandermonde_matrix
