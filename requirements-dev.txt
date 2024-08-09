@@ -6,7 +6,7 @@ alabaster==0.7.16
     # via sphinx
 attrs==24.2.0
     # via reuse
-babel==2.15.0
+babel==2.16.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
@@ -132,7 +132,7 @@ reuse==4.0.3
     # via pycaputo (pyproject.toml)
 rich==13.7.1
     # via pycaputo (pyproject.toml)
-ruff==0.5.6
+ruff==0.5.7
     # via pycaputo (pyproject.toml)
 scipy==1.13.1
     # via pycaputo (pyproject.toml)
@@ -183,7 +183,7 @@ typos==1.23.6
     # via pycaputo (pyproject.toml)
 urllib3==2.2.2
     # via requests
-uv==0.2.33
+uv==0.2.34
     # via pycaputo (pyproject.toml)
 zipp==3.19.2 ; python_version < '3.10'
     # via
