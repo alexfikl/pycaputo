@@ -99,11 +99,14 @@ def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
     if n == 0:
         return np.array([], dtype=p.dtype)
 
-    a = _caputo_piecewise_constant_integral(p, n, m.alpha) / p.dx[: n - 1]
+    a = _caputo_piecewise_constant_integral(p, n, m.alpha)
 
+    # NOTE: the first step of the discretization is just
+    #   sum a_{ik} f'_k
+    # and we need to re-arrange the sum with the approximation of the derivative
     w = np.empty(n, dtype=p.dtype)
     w[n - 1] = 0.0
-    w[: n - 1] = a
+    w[: n - 1] = a / p.dx[: n - 1]
     w[1:n] = w[: n - 1] - w[1:n]
     w[0] = -w[0]
 
@@ -156,8 +159,11 @@ class L1D(CaputoMethod):
     of order :math:`\alpha \in (0, 1)`.
 
     This method is defined in Section 4.1.1 (II) from [Li2020]_ for general
-    non-uniform grids. This method is equivalent to :class:`L1`, but evaluation
-    requires explicit knowledge of the first derivative.
+    non-uniform grids.
+
+    This method is equivalent to :class:`L1`, but evaluation requires explicit
+    knowledge of the first derivative, i.e. the *f* function must be a callable
+    satisfying :class:`~pycaputo.tuping.DifferentiableScalarFunction`.
     """
 
     if __debug__:
@@ -189,27 +195,46 @@ def _diffs_caputo_l1d(m: L1D, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
     if n == 0:
         return np.array([np.nan])
 
-    if not isinstance(f, DifferentiableScalarFunction):
+    if not callable(f):
         raise FunctionCallableError(
             f"The '{type(m).__name__}' method requires evaluating the first "
             f"derivative. 'f' is not callable: {type(f)}"
         )
 
-    w = quadrature_weights(m, p, n)
-    dfx = f((p.x[1 : n + 1] + p.x[:n]) / 2, d=1)
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    assert isinstance(f, DifferentiableScalarFunction)
+
+    try:
+        w = quadrature_weights(m, p, n)
+        dfx = f((p.x[1 : n + 1] + p.x[:n]) / 2, d=1)
+    except TypeError as exc:
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
+        ) from exc
 
     return np.sum(w * dfx)  # type: ignore[no-any-return]
 
 
 @diff.register(L1D)
 def _diff_caputo_l1d(m: L1D, f: ArrayOrScalarFunction, p: Points) -> Array:
-    if not isinstance(f, DifferentiableScalarFunction):
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    if not callable(f):
         raise FunctionCallableError(
             f"The '{type(m).__name__}' method requires evaluating the first "
             f"derivative. 'f' is not callable: {type(f)}"
         )
 
-    dfx = f((p.x[1:] + p.x[:-1]) / 2, d=1)
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    assert isinstance(f, DifferentiableScalarFunction)
+
+    try:
+        dfx = f((p.x[1:] + p.x[:-1]) / 2, d=1)
+    except TypeError as exc:
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
+        ) from exc
 
     df = np.empty((p.size, *dfx.shape[1:]), dtype=dfx.dtype)
     df[0] = np.nan

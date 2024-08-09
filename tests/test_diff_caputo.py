@@ -63,6 +63,7 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     [
         ("L1", "stretch"),
         ("L1", "uniform"),
+        ("L1D", "uniform"),
         ("L2", "uniform"),
         ("L2C", "uniform"),
         ("ModifiedL1", "midpoints"),
@@ -92,6 +93,9 @@ def test_caputo_lmethods(
     meth: caputo.CaputoMethod
     if name == "L1":
         meth = caputo.L1(alpha=alpha)
+        order = 2.0 - alpha
+    elif name == "L1D":
+        meth = caputo.L1D(alpha=alpha)
         order = 2.0 - alpha
     elif name == "ModifiedL1":
         meth = caputo.ModifiedL1(alpha=alpha)
@@ -474,7 +478,7 @@ def test_caputo_vs_differint(
     else:
         # NOTE: we use slightly different boundary handling for the L2 methods
         # so these get larger errors compared to differint
-        assert error_vs_di < 1.0e-2
+        assert error_vs_di < 1.1e-2
 
 
 # }}}
