@@ -109,6 +109,7 @@ lint.select = [
 ]
 lint.ignore = [
     "A005",    # shadowing-builtin-module
+    "C409",    # incorrectly-parenthesized-tuple-in-subscript
     "E203",    # whitespace-before-punctuation
     "E402",    # module-import-not-at-top-of-file
     "ISC001",  # single-line-implicit-string-concatenation
