@@ -6,16 +6,20 @@ from __future__ import annotations
 import math
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Iterator
 
 import numpy as np
 
-from pycaputo.derivatives import CaputoDerivative, Side
-from pycaputo.grid import Points, UniformMidpoints, UniformPoints
+from pycaputo.derivatives import CaputoDerivative
+from pycaputo.grid import MidPoints, Points, UniformPoints, make_midpoints_from
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ArrayOrScalarFunction, DifferentiableScalarFunction
+from pycaputo.typing import (
+    Array,
+    ArrayOrScalarFunction,
+    DifferentiableScalarFunction,
+    Scalar,
+)
 
-from .base import DerivativeMethod, diff
+from .base import DerivativeMethod, diff, diffs, quadrature_weights
 
 logger = get_logger(__name__)
 
@@ -35,7 +39,7 @@ class CaputoMethod(DerivativeMethod):
 
     @property
     def d(self) -> CaputoDerivative:
-        return CaputoDerivative(self.alpha, side=Side.Left)
+        return CaputoDerivative(self.alpha)
 
 
 # {{{ L1
@@ -60,37 +64,78 @@ class L1(CaputoMethod):
                 )
 
 
-def _weights_l1(m: L1, p: Points) -> Iterator[Array]:
-    x, dx = p.x, p.dx
-    alpha = m.alpha
-    w0 = 1 / math.gamma(2 - alpha)
+def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Array:
+    r"""Computes the integrals
 
-    # NOTE: weights given in [Li2020] Equation 4.20
-    if isinstance(p, UniformPoints):
-        w0 = w0 / p.dx[0] ** alpha
-        k = np.arange(x.size - 1)
+    .. math::
 
-        for n in range(1, x.size):
-            w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-            yield w0 * w
-    else:
-        for n in range(1, x.size):
-            w = (
-                (x[n] - x[:n]) ** (1 - alpha) - (x[n] - x[1 : n + 1]) ** (1 - alpha)
-            ) / dx[:n]
+        a_{nk} =
+            \frac{1}{\Gamma(1 - \alpha) (x_{k + 1} - x_k)}
+            \int_{x_k}^{x_{k + 1}} \frac{1}{(x_n - s)^\alpha} ds
 
-            yield w0 * w
+    for :math:`0 \le k \le n - 1`.
+    """
+
+    x, dx = p.x[:n], p.dx[: n - 1]
+    xn = x[-1]
+
+    return np.array(
+        ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
+        / dx
+        / math.gamma(2 - alpha)
+    )
+
+
+@quadrature_weights.register(L1)
+def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    w = np.empty(n, dtype=p.x.dtype)
+    w[n - 1] = 0.0
+    w[: n - 1] = _caputo_piecewise_constant_integral(p, n, m.alpha)
+    w[1:n] = w[: n - 1] - w[1:n]
+    w[0] = -w[0]
+
+    return w
+
+
+@diffs.register(L1)
+def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([np.nan])
+
+    w = quadrature_weights(m, p, n + 1)
+    fx = f(p.x[: n + 1]) if callable(f) else f[: n + 1]
+
+    return np.sum(w * fx)  # type: ignore[no-any-return]
 
 
 @diff.register(L1)
-def _diff_l1_method(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
-    dfx = np.diff(f(p.x) if callable(f) else f)
+def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
+    fx = f(p.x) if callable(f) else f
+    if fx.shape[0] != p.size:
+        raise ValueError(
+            f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
+        )
 
-    df = np.empty(p.x.shape, dtype=dfx.dtype)
+    df = np.empty_like(fx)
     df[0] = np.nan
 
-    for n, w in enumerate(_weights_l1(m, p)):
-        df[n + 1] = np.sum(w * dfx[: n + 1])
+    # FIXME: in the uniform case, we can also do an FFT, but we need different
+    # weights for that, so we leave it like this for now
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n + 1)
+        df[n] = np.sum(w * fx[: n + 1])
 
     return df
 
@@ -106,8 +151,14 @@ class ModifiedL1(CaputoMethod):
     r"""Implements the modified L1 method for the Caputo fractional derivative
     of order :math:`\alpha \in (0, 1)`.
 
-    This method is defined in Section 4.1.1 (III) from [Li2020]_ for quasi-uniform
-    grids. These grids can be constructed by :class:`~pycaputo.grid.UniformMidpoints`.
+    This method is defined in Section 4.1.1 (III) from [Li2020]_. Note that this
+    method evaluates the fractional derivative at the midpoints
+    :math:`(x_i + x_{i - 1}) / 2` for any given input grid except
+    :class:`~pycaputo.grids.MidPoints`.
+
+    As noted in [Li2020]_, this method has the same order of convergence as the
+    standard L1 method. However the weights can be used to construct a
+    Crank-Nicolson type method.
     """
 
     if __debug__:
@@ -120,48 +171,48 @@ class ModifiedL1(CaputoMethod):
                 )
 
 
-def _weights_modified_l1(m: ModifiedL1, p: Points) -> Iterator[Array]:
-    if not isinstance(p, UniformMidpoints):
-        raise NotImplementedError(
-            f"'{type(m).__name__}' does not implement 'weights' for"
-            f" '{type(p).__name__}' grids"
-        )
+@quadrature_weights.register(ModifiedL1)
+def _quadrature_weights_caputo_modified_l1(m: ModifiedL1, p: Points, n: int) -> Array:
+    if isinstance(p, MidPoints):
+        return quadrature_weights.dispatch(L1)(m, p, n)
+    else:
+        p = make_midpoints_from(p)
+        w = quadrature_weights.dispatch(L1)(m, p, n)
 
-    # NOTE: weights from [Li2020] Equation 4.51
-    # FIXME: this does not use the formula from the book; any benefit to it?
-    alpha = m.alpha
-    wc = 1 / math.gamma(2 - alpha) / p.dx[-1] ** alpha
-    k = np.arange(p.x.size)
+        # FIXME: not clear if this does anything? Might be the same as just
+        # doing L1 on the original grid..
+        wp = np.empty((n + 1,), dtype=w.dtype)
+        wp[0] = w[0] / 2.0
+        wp[-1] = w[-1] / 2.0
+        wp[1:-1] = (w[1:] + w[:-1]) / 2.0
 
-    # NOTE: first interval has a size of h / 2 and is weighted differently
-    w0 = 2 * ((k[:-1] + 0.5) ** (1 - alpha) - k[:-1] ** (1 - alpha))
+        return wp
 
-    for n in range(1, p.x.size):
-        w = (n - k[:n]) ** (1 - alpha) - (n - k[:n] - 1) ** (1 - alpha)
-        w[0] = w0[n - 1]
 
-        yield wc * w
+@diffs.register(ModifiedL1)
+def _diffs_caputo_modified_l1(
+    m: ModifiedL1, f: ArrayOrScalarFunction, p: Points, n: int
+) -> Scalar:
+    if not isinstance(p, MidPoints):
+        p = make_midpoints_from(p)
+
+        if not callable(f):
+            f[1:] = (f[:-1] + f[1]) / 2.0
+
+    return diffs.dispatch(L1)(m, f, p, n)
 
 
 @diff.register(ModifiedL1)
-def _diff_modified_l1_method(
+def _diff_caputo_modified_l1(
     m: ModifiedL1, f: ArrayOrScalarFunction, p: Points
 ) -> Array:
-    if not isinstance(p, UniformMidpoints):
-        raise NotImplementedError(
-            f"'{type(m).__name__}' does not implement 'diff' for '{type(p).__name__}'"
-            " grids"
-        )
+    if not isinstance(p, MidPoints):
+        p = make_midpoints_from(p)
 
-    dfx = np.diff(f(p.x) if callable(f) else f)
+        if not callable(f):
+            f[1:] = (f[:-1] + f[1]) / 2.0
 
-    df = np.empty(p.x.size)
-    df[0] = np.nan
-
-    for n, w in enumerate(_weights_modified_l1(m, p)):
-        df[n + 1] = np.sum(w * dfx[: n + 1])
-
-    return df
+    return diff.dispatch(L1)(m, f, p)
 
 
 # }}}
@@ -175,7 +226,13 @@ class L2(CaputoMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
-    This method is defined in Section 4.1.2 from [Li2020]_ for uniform grids.
+    This method is defined in Section 4.1.2 from [Li2020]_ for general
+    non-uniform grids.
+
+    .. note::
+
+        Unlike the method from [Li2020_], we do not assume knowledge of points
+        outside of the domain. Instead a biased stencil is used at the boundary.
     """
 
     if __debug__:
@@ -184,8 +241,97 @@ class L2(CaputoMethod):
             super().__post_init__()
             if not 1 < self.alpha < 2:
                 raise ValueError(
-                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
+                    f"'{type(self).__name__}' only supports 1 < alpha < 2: {self.alpha}"
                 )
+
+
+def _caputo_d2_coefficients(x: Array, s: Scalar) -> tuple[Scalar, ...]:
+    """Get coefficients for a fourth-order approximation of the second derivative
+    at the boundary.
+    """
+    x0, x1, x2, x3 = x[:4]
+    a0 = 2.0 * (3.0 * s - x1 - x2 - x3) / ((x0 - x1) * (x0 - x2) * (x0 - x3))
+    b0 = 2.0 * (x0 + x2 + x3 - 3.0 * s) / ((x0 - x1) * (x1 - x2) * (x1 - x3))
+    c0 = 2.0 * (x0 + x1 + x3 - 3.0 * s) / ((x0 - x2) * (x2 - x1) * (x2 - x3))
+    d0 = 2.0 * (x0 + x1 + x2 - 3.0 * s) / ((x0 - x3) * (x3 - x1) * (x3 - x2))
+
+    return a0, b0, c0, d0
+
+
+@quadrature_weights.register(L2)
+def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    dx = p.dx[: n - 1]
+    dxm = (dx[1:] + dx[:-1]) / 2.0
+
+    # get finite difference coefficients for center stencil
+    a = 1.0 / (dx[:-2] * dxm)
+    b = 1.0 / (dx[1:-1] * dxm)
+
+    # get finite difference coefficients for boundary stencils
+    a_l, b_l, c_l, d_l = _caputo_d2_coefficients(p.x, p.x[0])
+    d_r, c_r, b_r, a_r = _caputo_d2_coefficients(p.x[::-1], p.x[-1])
+
+    wi = _caputo_piecewise_constant_integral(p, n, m.alpha)
+
+    w = np.empty_like(p.x[:n])
+    # center stencil
+    w[2 : n - 1] = a * wi[2:] - (a + b) * w[1:-1] + b * w[:-2]
+    # add left boundary stencil
+    w[0] = a_l + a[1] * wi[1]
+    w[1] = b_l + a[2] * wi[2] - (a[1] + b[1]) * wi[1]
+    w[2] += c_l
+    w[3] += d_l
+    # add right-boundary stencil
+    if n == p.size:
+        w[-4] += d_r
+        w[-3] += c_r
+        w[-2] = b_r + a[-2] * wi[-2] - (a[-1] + b[-1]) * wi[-1]
+        w[-1] = a_r + a[-1] * wi[-1]
+
+    return w
+
+
+@diffs.register(L2)
+def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Array:
+    if n < 0:
+        n = p.size + n
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([np.nan])
+
+    w = quadrature_weights(m, p, n + 1)
+    fx = f(p.x[: n + 1]) if callable(f) else f[: n + 1]
+
+    return np.sum(w * fx)  # type: ignore[no-any-return]
+
+
+@diff.register(L2)
+def _diff_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
+    fx = f(p.x) if callable(f) else f
+    if fx.shape[0] != p.size:
+        raise ValueError(
+            f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
+        )
+
+    df = np.empty_like(fx)
+    df[0] = np.nan
+
+    # FIXME: in the uniform case, we can also do an FFT, but we need different
+    # weights for that, so we leave it like this for now
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n + 1)
+        df[n] = np.sum(w * fx[: n + 1])
+
+    return df
 
 
 def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
@@ -340,7 +486,7 @@ def _diff_jacobi(m: SpectralJacobi, f: ArrayOrScalarFunction, p: Points) -> Arra
 # }}}
 
 
-# {{{
+# {{{ DiffusiveCaputoMethod
 
 
 @dataclass(frozen=True)

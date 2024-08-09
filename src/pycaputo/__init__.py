@@ -29,8 +29,7 @@ def diff(
     :arg d: a fractional operator. If this is just a number, the standard
         Caputo derivative will be used.
     """
-    from pycaputo.differentiation import diff as _diff
-    from pycaputo.differentiation import guess_method_for_order
+    import pycaputo.differentiation as fracd
 
     if d is None:
         raise ValueError("'d' is required if 'method is not given")
@@ -38,9 +37,9 @@ def diff(
     if not isinstance(d, FractionalOperator):
         d = CaputoDerivative(d, side=Side.Left)
 
-    m = guess_method_for_order(p, d)
+    m = fracd.guess_method_for_order(p, d)
 
-    return _diff(m, f, p)
+    return fracd.diff(m, f, p)
 
 
 def quad(
@@ -56,8 +55,7 @@ def quad(
     :arg d: a fractional operator. If this is just a number, the standard
         Riemann-Liouville integral will be used.
     """
-    from pycaputo.quadrature import guess_method_for_order
-    from pycaputo.quadrature import quad as _quad
+    import pycaputo.quadrature as fracq
 
     if d is None:
         raise ValueError("'d' is required if 'method' is not given")
@@ -65,9 +63,9 @@ def quad(
     if not isinstance(d, FractionalOperator):
         d = RiemannLiouvilleDerivative(d, side=Side.Left)
 
-    m = guess_method_for_order(p, d)
+    m = fracq.guess_method_for_order(p, d)
 
-    return _quad(m, f, p)
+    return fracq.quad(m, f, p)
 
 
 def grad(
@@ -118,12 +116,12 @@ def grad(
     def make_component_p(i: tuple[int, ...]) -> Points:
         return p.translate(a[i], x[i])
 
-    from pycaputo.differentiation import diff as _diff
+    import pycaputo.differentiation as fracd
 
     result = np.empty_like(x)
     for i in np.ndindex(x.shape):
         # FIXME: this should just compute the gradient at -1
-        result[i] = _diff(m, make_component_f(i), make_component_p(i))[-1]
+        result[i] = fracd.diff(m, make_component_f(i), make_component_p(i))[-1]
 
     return result
 

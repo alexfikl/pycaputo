@@ -39,6 +39,8 @@ def _truncation_error(
 ) -> Array:
     from pycaputo.controller import JannelliIntegralController
 
+    # FIXME: this should not be our job: either let the controller or the method
+    # figure out how to compute the truncation error estimates.
     assert t > tprev
     if isinstance(c, JannelliIntegralController):
         trunc = np.array(

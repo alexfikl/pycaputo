@@ -66,6 +66,7 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
         ("L2", "uniform"),
         ("L2C", "uniform"),
         ("ModifiedL1", "midpoints"),
+        ("ModifiedL1", "stretch"),
     ],
 )
 @pytest.mark.parametrize("alpha", [0.1, 0.25, 0.5, 0.75, 0.9])
@@ -115,6 +116,11 @@ def test_caputo_lmethods(
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
         p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
+        if name == "ModifiedL1" and grid_type != "midpoints":
+            from pycaputo.grid import make_midpoints_from
+
+            p = make_midpoints_from(p)
+
         df_num = diff(meth, f_test, p)
         df_ref = df_test(p.x, alpha=alpha)
 
