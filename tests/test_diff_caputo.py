@@ -29,6 +29,8 @@ def f_test(x: Array, d: int = 0, *, mu: float = 3.5) -> Array:
         return (0.5 - x) ** mu
     elif d == 1:
         return -mu * (0.5 - x) ** (mu - 1)
+    elif d == 2:
+        return mu * (mu - 1) * (0.5 - x) ** (mu - 2)
     else:
         raise NotImplementedError
 
@@ -66,6 +68,8 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
         ("L1D", "uniform"),
         ("L2", "uniform"),
         ("L2C", "uniform"),
+        ("L2D", "uniform"),
+        ("L2F", "uniform"),
         ("ModifiedL1", "midpoints"),
         ("ModifiedL1", "stretch"),
     ],
@@ -85,7 +89,7 @@ def test_caputo_lmethods(
 
     from pycaputo.grid import make_points_from_name
 
-    if name in {"L2", "L2C"}:
+    if name in {"L2", "L2C", "L2D", "L2F"}:
         alpha += 1
 
     from pycaputo.utils import EOCRecorder, savefig, stringify_eoc
@@ -95,7 +99,7 @@ def test_caputo_lmethods(
         meth = caputo.L1(alpha=alpha)
         order = 2.0 - alpha
     elif name == "L1D":
-        meth = caputo.L1D(alpha=alpha)
+        meth = caputo.LXD(alpha=alpha)
         order = 2.0 - alpha
     elif name == "ModifiedL1":
         meth = caputo.ModifiedL1(alpha=alpha)
@@ -106,6 +110,12 @@ def test_caputo_lmethods(
         order = 1.0
     elif name == "L2C":
         meth = caputo.L2C(alpha=alpha)
+        order = 3.0 - alpha
+    elif name == "L2F":
+        meth = caputo.L2F(alpha=alpha)
+        order = 1.0
+    elif name == "L2D":
+        meth = caputo.LXD(alpha=alpha)
         order = 3.0 - alpha
     else:
         raise ValueError(f"Unsupported method: '{name}'")
@@ -127,6 +137,7 @@ def test_caputo_lmethods(
 
         df_num = diff(meth, f_test, p)
         df_ref = df_test(p.x, alpha=alpha)
+        print(df_num[:10] - df_ref[:10])
 
         h = np.max(p.dx)
         e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])

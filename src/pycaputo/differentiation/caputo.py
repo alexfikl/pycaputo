@@ -150,105 +150,6 @@ def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
 # }}}
 
 
-# {{{ L1D
-
-
-@dataclass(frozen=True)
-class L1D(CaputoMethod):
-    r"""Implements the L1 method for the Caputo fractional derivative
-    of order :math:`\alpha \in (0, 1)`.
-
-    This method is defined in Section 4.1.1 (II) from [Li2020]_ for general
-    non-uniform grids.
-
-    This method is equivalent to :class:`L1`, but evaluation requires explicit
-    knowledge of the first derivative, i.e. the *f* function must be a callable
-    satisfying :class:`~pycaputo.tuping.DifferentiableScalarFunction`.
-    """
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            super().__post_init__()
-            if not 0 < self.alpha < 1:
-                raise ValueError(
-                    f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
-                )
-
-
-@quadrature_weights.register(L1D)
-def _quadrature_weights_caputo_l1d(m: L1D, p: Points, n: int) -> Array:
-    if not 0 <= n <= p.size:
-        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
-
-    if n == 0:
-        return np.array([])
-
-    return _caputo_piecewise_constant_integral(p, n + 1, m.alpha)
-
-
-@diffs.register(L1D)
-def _diffs_caputo_l1d(m: L1D, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
-    if not 0 <= n <= p.size:
-        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
-
-    if n == 0:
-        return np.array([np.nan])
-
-    if not callable(f):
-        raise FunctionCallableError(
-            f"The '{type(m).__name__}' method requires evaluating the first "
-            f"derivative. 'f' is not callable: {type(f)}"
-        )
-
-    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
-    assert isinstance(f, DifferentiableScalarFunction)
-
-    try:
-        w = quadrature_weights(m, p, n)
-        dfx = f((p.x[1 : n + 1] + p.x[:n]) / 2, d=1)
-    except TypeError as exc:
-        raise FunctionCallableError(
-            f"The '{type(m).__name__}' method requires evaluating the first "
-            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
-        ) from exc
-
-    return np.sum(w * dfx)  # type: ignore[no-any-return]
-
-
-@diff.register(L1D)
-def _diff_caputo_l1d(m: L1D, f: ArrayOrScalarFunction, p: Points) -> Array:
-    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
-    if not callable(f):
-        raise FunctionCallableError(
-            f"The '{type(m).__name__}' method requires evaluating the first "
-            f"derivative. 'f' is not callable: {type(f)}"
-        )
-
-    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
-    assert isinstance(f, DifferentiableScalarFunction)
-
-    try:
-        dfx = f((p.x[1:] + p.x[:-1]) / 2, d=1)
-    except TypeError as exc:
-        raise FunctionCallableError(
-            f"The '{type(m).__name__}' method requires evaluating the first "
-            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
-        ) from exc
-
-    df = np.empty((p.size, *dfx.shape[1:]), dtype=dfx.dtype)
-    df[0] = np.nan
-
-    for n in range(1, df.size):
-        w = quadrature_weights(m, p, n)
-        df[n] = np.sum(w * dfx[:n])
-
-    return df
-
-
-# }}}
-
-
 # {{{ ModifiedL1
 
 
@@ -332,8 +233,8 @@ class L2(CaputoMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
-    This method is defined in Section 4.1.2 from [Li2020]_ for general
-    non-uniform grids.
+    This method is defined in Section 4.1.2 from [Li2020]_ for uniform grids.
+    The variant implemented here supports arbitrary non-uniform grids.
 
     .. note::
 
@@ -401,16 +302,14 @@ def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
 
     # weights have size at least 4 for the initial biased stencil.
     w = np.zeros(max(4, n + 1), dtype=p.dtype)
-
-    # coefficients
     a = _caputo_piecewise_constant_integral(p, n + 1, m.alpha - 1)
-    c_l = _caputo_d2_boundary_coefficients(p.x, p.x[0])
-    d_l, d_m, d_r = _caputo_d2_interior_coefficients(p, n)
 
     # add boundary stencil
+    c_l = _caputo_d2_boundary_coefficients(p.x, p.x[0])
     w[:4] += a[0] * c_l
 
     # add interior stencils
+    d_l, d_m, d_r = _caputo_d2_interior_coefficients(p, n)
     if n > 1:
         w[0] += a[1] * d_l[0]
         w[1] += a[1] * d_m[0]
@@ -428,9 +327,6 @@ def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
 
 @diffs.register(L2)
 def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Array:
-    if n < 0:
-        n = p.size + n
-
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
@@ -525,6 +421,206 @@ def _diff_l2c_method(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
 
 # }}}
 
+
+# {{{ L2F
+
+
+@dataclass(frozen=True)
+class L2F(CaputoMethod):
+    r"""Implements the L2 method for the Caputo fractional derivative
+    of order :math:`\alpha \in (1, 2)`.
+
+    This is similar to :class:`L2`, but it assumes that the function *f* can
+    be evaluated at :math:`f(x_{-1})` outside of the domain :math:`[a, b]`.
+    For symmetry, we set :math:`x_{-1} = a - \Delta x_0`. This allows using
+    the same centered stencil for all the points in the domain.
+
+    This method mainly exists for comparison with the literature, as [Li2020]_
+    also uses the value outside of the interval.
+    """
+
+
+@quadrature_weights.register(L2F)
+def _quadrature_weights_caputo_l2f(m: L2F, p: Points, n: int) -> Array:
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([], dtype=p.dtype)
+
+    # weights have at least size 3 for the initial stencil
+    w = np.zeros(max(3, n + 2), dtype=p.dtype)
+    a = _caputo_piecewise_constant_integral(p, n + 1, m.alpha - 1)
+
+    # add boundary stencil
+    dx2 = p.dx[0] ** 2
+    c_l, c_m, c_r = 1.0 / dx2, -2.0 / dx2, 1.0 / dx2
+    w[0] = a[0] * c_l
+    w[1] = a[0] * c_m
+    w[2] = a[0] * c_r
+
+    # add interior stencils
+    d_l, d_m, d_r = _caputo_d2_interior_coefficients(p, n)
+    if n > 1:
+        w[1] += a[1] * d_l[0]
+        w[2] += a[1] * d_m[0]
+        w[n + 1] += a[-1] * d_r[-1]
+
+    if n > 2:
+        w[2] += a[2] * d_l[1]
+        w[n] += a[-1] * d_m[-1] + a[-2] * d_r[-2]
+
+    if n > 3:
+        w[3:n] += a[1:-2] * d_r[:-2] + a[2:-1] * d_m[1:-1] + a[3:] * d_l[2:]
+
+    return w
+
+
+@diffs.register(L2F)
+def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Array:
+    if not callable(f):
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the function "
+            f"values. 'f' is not callable: {type(f)}"
+        )
+
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([np.nan])
+
+    w = quadrature_weights(m, p, n)
+    x = np.empty(w.size, dtype=p.dtype)
+    x[0] = p.a - p.dx[0]
+    x[1:] = p.x
+    fx = f(x)
+
+    return np.sum(w * fx)  # type: ignore[no-any-return]
+
+
+@diff.register(L2F)
+def _diff_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points) -> Array:
+    if not callable(f):
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the function "
+            f"values. 'f' is not callable: {type(f)}"
+        )
+
+    x = np.empty(p.size + 1, dtype=p.dtype)
+    x[0] = p.a - p.dx[0]
+    x[1:] = p.x
+    fx = f(x)
+
+    df = np.empty(p.shape, dtype=fx.dtype)
+    df[0] = np.nan
+
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n)
+        df[n] = np.sum(w * fx[: w.size])
+
+    return df
+
+
+# }}}
+
+
+# {{{ LXD
+
+
+@dataclass(frozen=True)
+class LXD(CaputoMethod):
+    r"""Implements the LX method for the Caputo fractional derivative
+    of order :math:`\alpha \in (0, \infty)`.
+
+    This method is equivalent to :class:`L1` (or :class:`L2` method), but
+    evaluation requires explicit knowledge of the required derivative, i.e. the
+    *f* function must be a callable satisfying
+    :class:`~pycaputo.tuping.DifferentiableScalarFunction`. With explicit
+    knowledge of the derivative, we can evaluate any fractional order.
+
+    The derivatives are always evaluated at the midpoint of each interval.
+    """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+
+@quadrature_weights.register(LXD)
+def _quadrature_weights_caputo_lxd(m: LXD, p: Points, n: int) -> Array:
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([])
+
+    d = m.d
+    return _caputo_piecewise_constant_integral(p, n + 1, d.alpha - d.n + 1)
+
+
+@diffs.register(LXD)
+def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
+    if not 0 <= n <= p.size:
+        raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
+
+    if n == 0:
+        return np.array([np.nan])
+
+    if not callable(f):
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not callable: {type(f)}"
+        )
+
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    assert isinstance(f, DifferentiableScalarFunction)
+    d = m.d
+
+    try:
+        w = quadrature_weights(m, p, n)
+        dfx = f((p.x[1 : n + 1] + p.x[:n]) / 2, d=d.n)
+    except TypeError as exc:
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
+        ) from exc
+
+    return np.sum(w * dfx)  # type: ignore[no-any-return]
+
+
+@diff.register(LXD)
+def _diff_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points) -> Array:
+    if not callable(f):
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not callable: {type(f)}"
+        )
+
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    assert isinstance(f, DifferentiableScalarFunction)
+    d = m.d
+
+    try:
+        dfx = f((p.x[1:] + p.x[:-1]) / 2, d=d.n)
+    except TypeError as exc:
+        raise FunctionCallableError(
+            f"The '{type(m).__name__}' method requires evaluating the first "
+            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
+        ) from exc
+
+    df = np.empty((p.size, *dfx.shape[1:]), dtype=dfx.dtype)
+    df[0] = np.nan
+
+    for n in range(1, df.size):
+        w = quadrature_weights(m, p, n)
+        df[n] = np.sum(w * dfx[:n])
+
+    return df
+
+
+# }}}
 
 # {{{ SpectralJacobi
 
