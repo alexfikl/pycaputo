@@ -271,14 +271,20 @@ def _quad_rl_cubic_hermite(
 ) -> Array:
     from pycaputo.grid import UniformPoints
 
-    if not isinstance(f, DifferentiableScalarFunction):
-        raise TypeError(f"Input 'f' needs to be a callable: {type(f).__name__}")
-
     if not isinstance(p, UniformPoints):
         raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
 
-    fx = f(p.x, d=0)
-    fp = f(p.x, d=1)
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    assert isinstance(f, DifferentiableScalarFunction)
+
+    try:
+        fx = f(p.x, d=0)
+        fp = f(p.x, d=1)
+    except TypeError as exc:
+        raise TypeError(
+            f"{type(m).__name__!r} requires a 'DifferentiableScalarFunction': "
+            f"f is a {type(f).__name__!r}"
+        ) from exc
 
     alpha = -m.alpha
     h = p.dx[0]

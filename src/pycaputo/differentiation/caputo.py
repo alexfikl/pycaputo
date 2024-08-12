@@ -581,9 +581,9 @@ def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
         w = quadrature_weights(m, p, n)
         dfx = f((p.x[1 : n + 1] + p.x[:n]) / 2, d=d.n)
     except TypeError as exc:
-        raise FunctionCallableError(
-            f"The '{type(m).__name__}' method requires evaluating the first "
-            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
+        raise TypeError(
+            f"{type(m).__name__!r} requires a 'DifferentiableScalarFunction': "
+            f"f is a {type(f).__name__!r}"
         ) from exc
 
     return np.sum(w * dfx)  # type: ignore[no-any-return]
@@ -604,9 +604,9 @@ def _diff_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points) -> Array:
     try:
         dfx = f((p.x[1:] + p.x[:-1]) / 2, d=d.n)
     except TypeError as exc:
-        raise FunctionCallableError(
-            f"The '{type(m).__name__}' method requires evaluating the first "
-            f"derivative. 'f' is not a 'DifferentiableScalarFunction'."
+        raise TypeError(
+            f"{type(m).__name__!r} requires a 'DifferentiableScalarFunction': "
+            f"f is a {type(f).__name__!r}"
         ) from exc
 
     df = np.empty((p.size, *dfx.shape[1:]), dtype=dfx.dtype)
@@ -622,11 +622,11 @@ def _diff_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points) -> Array:
 # }}}
 
 
-# {{{ SpectralJacobi
+# {{{ Jacobi
 
 
 @dataclass(frozen=True)
-class SpectralJacobi(CaputoMethod):
+class Jacobi(CaputoMethod):
     r"""Caputo derivative approximation using spectral methods based
     on Jacobi polynomials.
 
@@ -650,8 +650,8 @@ class SpectralJacobi(CaputoMethod):
     """
 
 
-@diff.register(SpectralJacobi)
-def _diff_jacobi(m: SpectralJacobi, f: ArrayOrScalarFunction, p: Points) -> Array:
+@diff.register(Jacobi)
+def _diff_jacobi(m: Jacobi, f: ArrayOrScalarFunction, p: Points) -> Array:
     from pycaputo.grid import JacobiGaussLobattoPoints
 
     if not isinstance(p, JacobiGaussLobattoPoints):
@@ -817,14 +817,18 @@ def _diff_caputo_yuan_agrawal(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
-    if not isinstance(f, DifferentiableScalarFunction):
+    # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
+    assert isinstance(f, DifferentiableScalarFunction)
+
+    try:
+        dtype = np.array(f(p.x[0], d=0)).dtype
+    except TypeError:
         raise TypeError(
             f"{type(m).__name__!r} requires a 'DifferentiableScalarFunction': "
             f"f is a {type(f).__name__!r}"
-        )
+        ) from None
 
     x = p.x
-    dtype = np.array(f(p.x[0], d=0)).dtype
 
     # solve ODE at quadrature nodes
     omega, w = m.nodes_and_weights()

@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 
 from pycaputo.differentiation import diff
-from pycaputo.differentiation.caputo import SpectralJacobi
+from pycaputo.differentiation.caputo import Jacobi
 from pycaputo.grid import make_jacobi_gauss_lobatto_points
 from pycaputo.typing import Array
 
@@ -58,7 +58,7 @@ with figure("caputo-derivative-quadratic") as fig:
     p = make_jacobi_gauss_lobatto_points(32, a=0.0, b=2.0)
 
     for alpha in alphas:
-        method = SpectralJacobi(alpha=alpha)
+        method = Jacobi(alpha=alpha)
 
         df_num = diff(method, f, p)
         ax.plot(p.x, df_num, color="k", alpha=0.2)

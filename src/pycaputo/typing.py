@@ -26,16 +26,21 @@ else:
 
 # {{{ TypeVars
 
+# NOTE: sphinx doesn't seem to render this correctly at the moment, so it's
+# written explicitly in `misc_others.rst`
 P = ParamSpec("P")
 
 T = TypeVar("T")
 """A generic invariant :class:`typing.TypeVar`."""
 R = TypeVar("R")
 """A generic invariant :class:`typing.TypeVar`."""
+
 PathLike = Union[pathlib.Path, str]
 """A union of types supported as paths."""
 
+
 # }}}
+
 
 # {{{ numpy
 
@@ -51,6 +56,7 @@ else:
 
 
 # }}}
+
 
 # {{{ dataclass
 
@@ -68,6 +74,7 @@ class DataclassInstance(Protocol):
 # {{{ callable protocols
 
 
+@runtime_checkable
 class ScalarFunction(Protocol):
     """A generic callable that can be evaluated at :math:`x`.
 
@@ -80,6 +87,26 @@ class ScalarFunction(Protocol):
         """
 
 
+@runtime_checkable
+class DifferentiableScalarFunction(Protocol):
+    """A :class:`ScalarFunction` that can also compute its integer order derivatives.
+
+    .. automethod:: __call__
+    """
+
+    def __call__(self, x: Array, /, d: int = 0) -> Array:
+        """Evaluate the function or any of its derivatives.
+
+        :arg x: a scalar or array at which to evaluate the function.
+        :arg d: order of the derivative.
+        """
+
+
+ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
+"""A union of scalar functions."""
+
+
+@runtime_checkable
 class StateFunction(Protocol):
     r"""A generic callable for right-hand side functions
     :math:`\mathbf{f}(t, \mathbf{y})`.
@@ -94,6 +121,7 @@ class StateFunction(Protocol):
         """
 
 
+@runtime_checkable
 class ScalarStateFunction(Protocol):
     """A generic callable similar to :class:`StateFunction` that returns a
     scalar.
@@ -108,27 +136,8 @@ class ScalarStateFunction(Protocol):
         """
 
 
-@runtime_checkable
-class DifferentiableScalarFunction(Protocol):
-    """A :class:`ScalarFunction` that can also compute its integer order derivatives.
-
-    By default no derivatives are implemented, so subclasses can handle any such
-    cases.
-    """
-
-    def __call__(self, x: Array, /, d: int = 0) -> Array:
-        """Evaluate the function or any of its derivatives.
-
-        :arg x: a scalar or array at which to evaluate the function.
-        :arg d: order of the derivative.
-        """
-
-
 StateFunctionT = TypeVar("StateFunctionT", bound=StateFunction)
 """An invariant :class:`~typing.TypeVar` bound to :class:`StateFunction`."""
-
-ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
-"""A union of scalar functions."""
 
 
 # }}}
