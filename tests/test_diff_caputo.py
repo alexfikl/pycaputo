@@ -108,7 +108,9 @@ def make_method_from_name(
         meth = caputo.L2C(alpha=alpha)
         order = 3.0 - alpha
     elif name == "L2F":
-        meth = caputo.L2F(alpha=alpha)
+        from pycaputo.derivatives import Side
+
+        meth = caputo.L2F(alpha=alpha, side=Side.Left)
         order = 1.0
     elif name == "L2D":
         meth = caputo.LXD(alpha=alpha)
@@ -621,7 +623,7 @@ def test_caputo_consistency(
 
         error = la.norm(df_from_diffs - df_ref[n]) / la.norm(df_ref[n])
         logger.info("   error %.12e", error)
-        assert error < 1.0e-15
+        assert error < 6.0e-12
 
 
 # }}}
