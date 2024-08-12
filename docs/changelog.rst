@@ -1,6 +1,29 @@
 Changelog
 =========
 
+pycaputo (TBD)
+--------------
+
+Features
+^^^^^^^^
+
+* Add a :mod:`pycaputo.typing` module containing some helpful typing definitions
+  (mostly previously in :mod:`pycaputo.utils`).
+* Reworked :func:`~functools.singledispatch` functions for
+  :class:`~pycaputo.differentiation.DerivativeMethod`. We now have
+  :func:`~pycaputo.differentiation.quadrature_weights`,
+  :func:`~pycaputo.differentiation.differentiation_matrix`,
+  :func:`~pycaputo.differentiation.diffs`, and
+  :func:`~pycaputo.differentiation.diff`. Not all of these need to be implemented
+  and most methods are not ported yet. Currently only the
+  :class:`~pycaputo.differentiation.caputo.L1` and
+  :class:`~pycaputo.differentiation.caputo.L2` methods implement these new functions.
+* Introduce some more specific methods for the Caputo derivative. The
+  :class:`~pycaputo.differentiation.caputo.L2F` uses the L2 method with function
+  evaluations outside of the interval of definition. The
+  :class:`~pycaputo.differentiation.caputo.LXD` allows evaluating arbitrary
+  Caputo derivatives when the integer derivatives are known.
+
 pycaputo 0.7.0 (July 13, 2024)
 ------------------------------
 
