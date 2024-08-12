@@ -109,7 +109,7 @@ def diffs_fallback(
 
     .. warning::
 
-        Falling back to the :func:`~pycaputo.differentiation.diff`` function
+        Falling back to the :func:`~pycaputo.differentiation.diff` function
         will be significantly slower, since all the points on the grid *p* are
         evaluated. Use this function with care.
     """

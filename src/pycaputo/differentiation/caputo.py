@@ -161,7 +161,7 @@ class ModifiedL1(CaputoMethod):
     This method is defined in Section 4.1.1 (III) from [Li2020]_. Note that this
     method evaluates the fractional derivative at the midpoints
     :math:`(x_i + x_{i - 1}) / 2` for any given input grid except
-    :class:`~pycaputo.grids.MidPoints`.
+    :class:`~pycaputo.grid.MidPoints`.
 
     As noted in [Li2020]_, this method has the same order of convergence as the
     standard L1 method. However the weights can be used to construct a
@@ -186,8 +186,6 @@ def _quadrature_weights_caputo_modified_l1(m: ModifiedL1, p: Points, n: int) -> 
         p = make_midpoints_from(p)
         w = quadrature_weights.dispatch(L1)(m, p, n)
 
-        # FIXME: not clear if this does anything? Might be the same as just
-        # doing L1 on the original grid..
         wp = np.empty((n + 1,), dtype=w.dtype)
         wp[0] = w[0] / 2.0
         wp[-1] = w[-1] / 2.0
@@ -238,7 +236,7 @@ class L2(CaputoMethod):
 
     .. note::
 
-        Unlike the method from [Li2020_], we do not assume knowledge of points
+        Unlike the method from [Li2020]_, we do not assume knowledge of points
         outside of the domain. Instead a biased stencil is used at the boundary.
     """
 
@@ -430,13 +428,14 @@ class L2F(CaputoMethod):
     r"""Implements the L2 method for the Caputo fractional derivative
     of order :math:`\alpha \in (1, 2)`.
 
-    This is similar to :class:`L2`, but it assumes that the function *f* can
-    be evaluated at :math:`f(x_{-1})` outside of the domain :math:`[a, b]`.
+    This is similar to :class:`L2`, but it assumes that *f* is a callable that can
+    be evaluated at :math:`f(x_{-1})`, i.e. outside of the domain :math:`[a, b]`.
     For symmetry, we set :math:`x_{-1} = a - \Delta x_0`. This allows using
     the same centered stencil for all the points in the domain.
 
     This method mainly exists for comparison with the literature, as [Li2020]_
-    also uses the value outside of the interval.
+    also uses the value outside of the interval. Note that this is not always
+    possible, e.g. for :math:`\sqrt{x}` on :math:`[0, 1]`.
     """
 
 
@@ -536,7 +535,7 @@ class LXD(CaputoMethod):
     This method is equivalent to :class:`L1` (or :class:`L2` method), but
     evaluation requires explicit knowledge of the required derivative, i.e. the
     *f* function must be a callable satisfying
-    :class:`~pycaputo.tuping.DifferentiableScalarFunction`. With explicit
+    :class:`~pycaputo.typing.DifferentiableScalarFunction`. With explicit
     knowledge of the derivative, we can evaluate any fractional order.
 
     The derivatives are always evaluated at the midpoint of each interval.
@@ -621,6 +620,7 @@ def _diff_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points) -> Array:
 
 
 # }}}
+
 
 # {{{ SpectralJacobi
 
