@@ -8,6 +8,7 @@ from functools import cached_property
 from math import ceil
 
 import numpy as np
+from scipy.special import gamma
 
 from pycaputo.controller import Controller
 from pycaputo.derivatives import CaputoDerivative, Side
@@ -19,7 +20,6 @@ from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, gamma1p, gamma2m, gamma2p, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
-from pycaputo.utils import gamma
 
 logger = get_logger(__name__)
 

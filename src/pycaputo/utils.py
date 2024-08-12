@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import math
 import os
 import pathlib
 import sys
@@ -589,22 +588,6 @@ class BlockTimer:
     def pretty(self) -> str:
         # NOTE: this matches how MATLAB shows the time from `toc`.
         return f"[{self.name}] Elapsed time is {self.t_wall:.5f} seconds."
-
-
-# }}}
-
-
-# {{{ scipy wrappers
-
-
-def gamma(x: Any) -> Array:
-    """Wrapper around :data:`scipy.special.gamma`."""
-    try:
-        from scipy.special import gamma as _gamma
-
-        return np.array(_gamma(x))
-    except ImportError:
-        return np.array(np.vectorize(math.gamma)(x))
 
 
 # }}}

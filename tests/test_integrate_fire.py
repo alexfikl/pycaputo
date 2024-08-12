@@ -346,7 +346,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
 
     from pycaputo.controller import make_jannelli_controller
     from pycaputo.stepping import evolve
-    from pycaputo.utils import EOCRecorder, gamma, stringify_eoc
+    from pycaputo.utils import EOCRecorder, stringify_eoc
 
     tspikes_ref = model.param.constant_spike_times(tfinal, V0=y0[0])
 
@@ -357,6 +357,8 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
         )
 
     logger.info("Found %d spikes", tspikes_ref.size)
+
+    from scipy.special import gamma
 
     eoct = EOCRecorder(order=1.0, name="tspikes")
     eocy = EOCRecorder(order=2.0 - alpha, name="y")
