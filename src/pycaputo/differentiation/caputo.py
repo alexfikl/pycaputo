@@ -256,7 +256,7 @@ class L2(CaputoMethod):
 
 
 def _caputo_d2_boundary_coefficients(x: Array, s: Scalar) -> Array:
-    r"""Get coefficients for a fourth-order approximation of the second derivative
+    r"""Get coefficients for a second-order approximation of the second derivative
     at the boundary.
 
     .. math::
