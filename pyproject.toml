@@ -46,7 +46,6 @@ dependencies = [
     "typing-extensions; python_version<'3.10'",
 ]
 optional-dependencies.dev = [
-    "differint",
     "differint @ git+https://github.com/alexfikl/differint.git@fix-l2-index#egg=differint",
     "doc8",
     "matplotlib",
@@ -69,6 +68,9 @@ optional-dependencies.vis = [
 ]
 urls.Documentation = "https://pycaputo.readthedocs.io"
 urls.Repository = "https://github.com/alexfikl/pycaputo"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.sdist]
 exclude = [
