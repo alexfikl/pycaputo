@@ -471,11 +471,14 @@ def test_caputo_vs_differint(
     if name in {"L2", "L2C"}:
         alpha += 1
 
+    meth: caputo.CaputoMethod
     if name == "L1":
-        meth: caputo.CaputoMethod = caputo.L1(alpha=alpha)
+        meth = caputo.L1(alpha=alpha)
         differint_meth: caputo.CaputoMethod = DifferIntCaputoL1(alpha=alpha)
     elif name == "L2":
-        meth = caputo.L2(alpha=alpha)
+        from pycaputo.derivatives import Side
+
+        meth = caputo.L2F(alpha=alpha, side=Side.Right)
         differint_meth = DifferIntCaputoL2(alpha=alpha)
     elif name == "L2C":
         meth = caputo.L2C(alpha=alpha)
@@ -485,17 +488,19 @@ def test_caputo_vs_differint(
 
     from pycaputo.grid import make_points_from_name
 
-    p = make_points_from_name("uniform", 512, a=0.0, b=0.5)
+    # NOTE: b must be < 0.5 so that f(p.b + dx) is well defined for the test function
+    p = make_points_from_name("uniform", 512, a=0.0, b=0.25)
 
     df_ref = df_test(p.x, alpha=alpha)
     df_num = diff(meth, f_test, p)
     df_num_di = diff(differint_meth, f_test, p)
 
     error_vs_ref = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
-    error_di_vs_ref = la.norm(df_num_di[1:-1] - df_ref[1:-1]) / la.norm(df_ref[1:-1])
-    error_vs_di = la.norm(df_num[4:-4] - df_num_di[4:-4]) / la.norm(df_num_di[4:-4])
+    error_di_vs_ref = la.norm(df_num_di[1:] - df_ref[1:]) / la.norm(df_ref[1:])
+    error_vs_di = la.norm(df_num[1:] - df_num_di[1:]) / la.norm(df_num_di[1:])
+
     logger.info(
-        "error: vs ref %.12e vs differint %.12e differint vs ref %.12e",
+        "error: vs ref %.12e vs differint %.12e (differint vs ref %.12e)",
         error_vs_ref,
         error_vs_di,
         error_di_vs_ref,
@@ -523,10 +528,11 @@ def test_caputo_vs_differint(
     assert error_vs_ref < 1.0e-2
     if name == "L1":
         assert error_vs_di < 1.0e-12
-    else:
-        # NOTE: we use slightly different boundary handling for the L2 methods
-        # so these get larger errors compared to differint
-        assert error_vs_di < 1.1e-2
+    elif name == "L2":
+        assert error_vs_di < 1.0e-11
+    elif name == "L2C":
+        # FIXME: need to implement a L2CF similar to L2F to better compare
+        assert error_vs_di < 7.0e-2
 
 
 # }}}

@@ -547,23 +547,22 @@ def _diff_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points) -> Array:
     dx = p.dx
     dxm = p.dxm
     alpha = m.alpha
-
     fx = f(p.x)
 
     # estimate second-order derivative
     # NOTE: this is faster than using the quadrature weights
     ddfx = np.empty(p.size - 1, dtype=fx.dtype)
 
-    cm = 1.0 / (dx[:-1] * dxm)
-    cp = 1.0 / (dx[1:] * dxm)
+    cm = 1.0 / dx[:-1]
+    cp = 1.0 / dx[1:]
 
     if m.side == Side.Left:
         fa = f(p.a - dx[0])
-        ddfx[1:] = cm * fx[:-2] - (cm + cp) * fx[1:-1] + cp * fx[2:]
+        ddfx[1:] = (cm * fx[:-2] - (cm + cp) * fx[1:-1] + cp * fx[2:]) / dxm
         ddfx[0] = (fx[1] - 2.0 * fx[0] + fa) / dx[0] ** 2
     else:
         fb = f(p.b + dx[-1])
-        ddfx[:-1] = cm * fx[:-2] - (cm + cp) * fx[1:-1] + cp * fx[2:]
+        ddfx[:-1] = (cm * fx[:-2] - (cm + cp) * fx[1:-1] + cp * fx[2:]) / dxm
         ddfx[-1] = (fx[-2] - 2.0 * fx[-1] + fb) / dx[-1] ** 2
 
     # FIXME: in the uniform case, we can also do an FFT, but we need different
