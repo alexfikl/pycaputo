@@ -21,7 +21,7 @@ logger = get_logger("pycaputo.test_diff_caputo")
 set_recommended_matplotlib()
 
 
-# {{{ test_caputo_lmethods
+# {{{ utils
 
 
 def f_test(x: Array, d: int = 0, *, mu: float = 3.5) -> Array:
@@ -60,6 +60,91 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
     raise ValueError(f"Unsupported order: {alpha}")
 
 
+def make_test_points_from_name(
+    name: str,
+    n: int,
+    *,
+    j_alpha: float = 0.0,
+    j_beta: float = 0.0,
+) -> Points:
+    from pycaputo.grid import make_jacobi_gauss_lobatto_points, make_points_from_name
+
+    p: Points
+    if name == "jacobi":
+        p = make_jacobi_gauss_lobatto_points(
+            n,
+            a=0.0,
+            b=0.5,
+            alpha=j_alpha,
+            beta=j_beta,
+        )
+    else:
+        p = make_points_from_name(name, n, a=0.0, b=0.5)
+
+    return p
+
+
+def make_method_from_name(
+    name: str,
+    alpha: float,
+    *,
+    quad_order: int | None = None,
+) -> tuple[caputo.CaputoMethod, float]:
+    meth: caputo.CaputoMethod
+    if name == "L1":
+        meth = caputo.L1(alpha=alpha)
+        order = 2.0 - alpha
+    elif name == "L1D":
+        meth = caputo.LXD(alpha=alpha)
+        order = 2.0 - alpha
+    elif name == "ModifiedL1":
+        meth = caputo.ModifiedL1(alpha=alpha)
+        order = 2 - alpha
+    elif name == "L2":
+        meth = caputo.L2(alpha=alpha)
+        # FIXME: this is wrong
+        order = 1.0
+    elif name == "L2C":
+        meth = caputo.L2C(alpha=alpha)
+        order = 3.0 - alpha
+    elif name == "L2F":
+        meth = caputo.L2F(alpha=alpha)
+        order = 1.0
+    elif name == "L2D":
+        meth = caputo.LXD(alpha=alpha)
+        order = 3.0 - alpha
+    elif name == "Jacobi":
+        meth = caputo.Jacobi(alpha=alpha)
+        order = 5.0
+    elif name == "YuanAgrawal":
+        assert quad_order is not None
+        meth = caputo.YuanAgrawal(
+            alpha,
+            quad_order=quad_order,
+            method="Radau",
+        )
+        beta = 2.0 * alpha - 1.0
+        order = 1.0 - beta
+    elif name == "Diethelm":
+        assert quad_order is not None
+        meth = caputo.Diethelm(alpha, quad_order=quad_order, method="Radau")
+        order = 0
+    elif name == "BirkSong":
+        assert quad_order is not None
+        meth = caputo.BirkSong(alpha, quad_order=quad_order, method="Radau")
+        order = 0
+    else:
+        raise ValueError(f"Unsupported method: '{name}'")
+
+    return meth, order
+
+
+# }}}
+
+
+# {{{ test_caputo_lmethods
+
+
 @pytest.mark.parametrize(
     ("name", "grid_type"),
     [
@@ -87,39 +172,12 @@ def test_caputo_lmethods(
     The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
     """
 
-    from pycaputo.grid import make_points_from_name
-
     if name in {"L2", "L2C", "L2D", "L2F"}:
         alpha += 1
 
     from pycaputo.utils import EOCRecorder, savefig, stringify_eoc
 
-    meth: caputo.CaputoMethod
-    if name == "L1":
-        meth = caputo.L1(alpha=alpha)
-        order = 2.0 - alpha
-    elif name == "L1D":
-        meth = caputo.LXD(alpha=alpha)
-        order = 2.0 - alpha
-    elif name == "ModifiedL1":
-        meth = caputo.ModifiedL1(alpha=alpha)
-        order = 2 - alpha
-    elif name == "L2":
-        meth = caputo.L2(alpha=alpha)
-        # FIXME: this is wrong
-        order = 1.0
-    elif name == "L2C":
-        meth = caputo.L2C(alpha=alpha)
-        order = 3.0 - alpha
-    elif name == "L2F":
-        meth = caputo.L2F(alpha=alpha)
-        order = 1.0
-    elif name == "L2D":
-        meth = caputo.LXD(alpha=alpha)
-        order = 3.0 - alpha
-    else:
-        raise ValueError(f"Unsupported method: '{name}'")
-
+    meth, order = make_method_from_name(name, alpha)
     eoc = EOCRecorder(order=order)
 
     if visualize:
@@ -129,15 +187,16 @@ def test_caputo_lmethods(
         ax = fig.gca()
 
     for n in [16, 32, 64, 128, 256, 512, 768, 1024]:
-        p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
+        p = make_test_points_from_name(grid_type, n)
         if name == "ModifiedL1" and grid_type != "midpoints":
             from pycaputo.grid import make_midpoints_from
 
-            p = make_midpoints_from(p)
+            p_ref: Points = make_midpoints_from(p)
+        else:
+            p_ref = p
 
         df_num = diff(meth, f_test, p)
-        df_ref = df_test(p.x, alpha=alpha)
-        print(df_num[:10] - df_ref[:10])
+        df_ref = df_test(p_ref.x, alpha=alpha)
 
         h = np.max(p.dx)
         e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
@@ -145,13 +204,13 @@ def test_caputo_lmethods(
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
         if visualize:
-            ax.plot(p.x[1:], df_num[1:])
-            # ax.semilogy(p.x, abs(df_num - df_ref))
+            ax.plot(p_ref.x[1:], df_num[1:])
+            # ax.semilogy(p_ref.x, abs(df_num - df_ref))
 
     logger.info("\n%s", stringify_eoc(eoc))
 
     if visualize:
-        ax.plot(p.x[1:], df_ref[1:], "k--")
+        ax.plot(p_ref.x[1:], df_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
@@ -195,10 +254,9 @@ def test_caputo_spectral(
     it requires a slightly different setup.
     """
 
-    from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = caputo.Jacobi(alpha=alpha)
+    meth, _ = make_method_from_name("Jacobi", alpha)
     eoc = EOCRecorder()
 
     if visualize:
@@ -208,13 +266,7 @@ def test_caputo_spectral(
         ax = fig.gca()
 
     for n in [8, 12, 16, 24, 32]:
-        p = make_jacobi_gauss_lobatto_points(
-            n,
-            a=0.0,
-            b=0.5,
-            alpha=j_alpha,
-            beta=j_beta,
-        )
+        p = make_test_points_from_name("jacobi", n, j_alpha=j_alpha, j_beta=j_beta)
         df_num = diff(meth, f_test, p)
         df_ref = df_test(p.x, alpha=alpha)
 
@@ -274,7 +326,6 @@ def test_caputo_diffusive(
     from pycaputo.grid import make_points_from_name
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth: caputo.DiffusiveCaputoMethod
     resolutions = [8, 16, 24, 32, 48, 64]
 
     n = 128
@@ -289,23 +340,7 @@ def test_caputo_diffusive(
         ax = fig.gca()
 
     for quad_order in resolutions:
-        if name == "YuanAgrawal":
-            meth = caputo.YuanAgrawal(
-                alpha,
-                quad_order=quad_order,
-                method="Radau",
-            )
-            beta = 2.0 * alpha - 1.0
-            order = 1.0 - beta
-        elif name == "Diethelm":
-            meth = caputo.Diethelm(alpha, quad_order=quad_order, method="Radau")
-            order = None
-        elif name == "BirkSong":
-            meth = caputo.BirkSong(alpha, quad_order=quad_order, method="Radau")
-            order = None
-        else:
-            raise ValueError(f"Unsupported method: '{name}'")
-
+        meth, order = make_method_from_name(name, alpha, quad_order=quad_order)
         df_num = diff(meth, f_test, p)
 
         h = 1.0 / quad_order
@@ -329,7 +364,7 @@ def test_caputo_diffusive(
         filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
         savefig(fig, dirname / filename.lower())
 
-    if order is not None:
+    if order > 0:
         assert order - 0.25 < eoc.estimated_order < order + 1.0
     else:
         assert eoc.estimated_order > 1.9
@@ -493,6 +528,104 @@ def test_caputo_vs_differint(
 
 
 # }}}
+
+
+# {{{ test_caputo_consistency
+
+
+@pytest.mark.parametrize(
+    ("name", "grid_type"),
+    [
+        ("L1", "stretch"),
+        ("L2", "stretch"),
+    ],
+)
+@pytest.mark.parametrize("alpha", [0.3, 0.9])
+def test_caputo_consistency(
+    name: str,
+    grid_type: str,
+    alpha: float,
+    *,
+    visualize: bool = False,
+) -> None:
+    """
+    Tests that the `quadrature_weights`, `differentiation_matrix`, `diffs` and
+    `diff` methods actually give the same results.
+    """
+    from pycaputo.differentiation import (
+        differentiation_matrix,
+        diffs,
+        quadrature_weights,
+    )
+
+    if name in {"L2", "L2F", "L2D"}:
+        alpha += 1
+
+    meth, _ = make_method_from_name(name, alpha)
+    p = make_test_points_from_name(grid_type, 256)
+
+    # check quadrature_weights vs differentiation_matrix
+    W_weights = np.zeros((p.size, p.size), dtype=p.dtype)
+    for n in range(1, p.size):
+        w = quadrature_weights(meth, p, n)
+        W_weights[n, : w.size] = w
+
+    W_mat = differentiation_matrix(meth, p)
+
+    error = la.norm(W_weights[1:, :] - W_mat[1:, :])
+    logger.info("quadrature_weights vs differentiation_matrix")
+    logger.info("  error %.12e", error)
+    assert error < 1.0e-15
+
+    # check quadrature_weights vs diffs
+    logger.info("quadrature_weights vs diffs")
+    fx = f_test(p.x)
+    for n in [0, 1, p.size // 2 + 3, p.size - 1]:
+        df_from_diffs = diffs(meth, fx, p, n)
+
+        if n == 0:
+            w = quadrature_weights(meth, p, n)
+            assert w.shape == (0,)
+            assert df_from_diffs.shape == (1,)
+            assert np.isnan(df_from_diffs)
+        else:
+            w = quadrature_weights(meth, p, n)
+            df_from_weights = w @ fx[: w.size]
+            logger.info(
+                "   value %.12e %.12e (ref %.12e) w shape %s",
+                df_from_weights,
+                df_from_diffs,
+                df_test(p.x[n], alpha=alpha),
+                w.shape,
+            )
+
+            error = la.norm(df_from_weights - df_from_diffs)
+            logger.info("   n %d error %.12e", n, error)
+            assert error < 6.0e-14
+
+    # check diff vs differentiation_matrix
+    df = diff(meth, fx, p)
+    df_mat = W_mat @ fx
+
+    error = la.norm(df[1:] - df_mat[1:]) / la.norm(df_mat[1:])
+    logger.info("diff vs differentiation_matrix")
+    logger.info("   error %.12e", error)
+    assert error < 1.0e-12
+
+    # check diff vs diffs
+    logger.info("diff vs diffs")
+    df_ref = df
+    assert isinstance(df_ref, np.ndarray)
+    for n in [1, p.size // 2 - 5, p.size - 1]:
+        df_from_diffs = diffs(meth, fx, p, n)
+
+        error = la.norm(df_from_diffs - df_ref[n]) / la.norm(df_ref[n])
+        logger.info("   error %.12e", error)
+        assert error < 1.0e-15
+
+
+# }}}
+
 
 if __name__ == "__main__":
     import sys

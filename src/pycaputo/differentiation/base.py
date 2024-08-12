@@ -89,7 +89,9 @@ def differentiation_matrix(m: DerivativeMethod, p: Points) -> Array:
     """
     n = p.size
     W = np.zeros((n, n), dtype=p.dtype)
-    W[0, 0] = np.nan
+
+    # NOTE: make it very obvious that the first row is garbage
+    W[0, :] = np.nan
 
     try:
         for i in range(1, W.shape[0]):
