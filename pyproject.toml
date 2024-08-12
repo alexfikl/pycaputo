@@ -47,6 +47,7 @@ dependencies = [
 ]
 optional-dependencies.dev = [
     "differint",
+    "differint @ git+https://github.com/alexfikl/differint.git@fix-l2-index#egg=differint",
     "doc8",
     "matplotlib",
     "mypy",
