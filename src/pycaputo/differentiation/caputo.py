@@ -93,36 +93,35 @@ def _caputo_piecewise_constant_integral(p: Points, n: int, alpha: float) -> Arra
 
 @quadrature_weights.register(L1)
 def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
-    if not 0 <= n <= p.size:
+    if not 0 <= n < p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     if n == 0:
         return np.array([], dtype=p.dtype)
 
-    a = _caputo_piecewise_constant_integral(p, n, m.alpha)
+    a = _caputo_piecewise_constant_integral(p, n + 1, m.alpha) / p.dx[:n]
 
     # NOTE: the first step of the discretization is just
     #   sum a_{ik} f'_k
     # and we need to re-arrange the sum with the approximation of the derivative
-    w = np.empty(n, dtype=p.dtype)
-    w[n - 1] = 0.0
-    w[: n - 1] = a / p.dx[: n - 1]
-    w[1:n] = w[: n - 1] - w[1:n]
-    w[0] = -w[0]
+    w = np.empty(n + 1, dtype=p.dtype)
+    w[1:n] = a[:-1] - a[1:]
+    w[0] = -a[0]
+    w[n] = a[-1]
 
     return w
 
 
 @diffs.register(L1)
 def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
-    if not 0 <= n <= p.size:
+    if not 0 <= n < p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     if n == 0:
         return np.array([np.nan])
 
-    w = quadrature_weights(m, p, n + 1)
-    fx = f(p.x[: n + 1]) if callable(f) else f[: n + 1]
+    w = quadrature_weights(m, p, n)
+    fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
 
     return np.sum(w * fx)  # type: ignore[no-any-return]
 
@@ -141,8 +140,8 @@ def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     # FIXME: in the uniform case, we can also do an FFT, but we need different
     # weights for that, so we leave it like this for now
     for n in range(1, df.size):
-        w = quadrature_weights(m, p, n + 1)
-        df[n] = np.sum(w * fx[: n + 1])
+        w = quadrature_weights(m, p, n)
+        df[n] = np.sum(w * fx[: w.size])
 
     return df
 
