@@ -76,7 +76,8 @@ def lagrange_riemann_liouville_integral(
 
     .. math::
 
-        I^\alpha[\phi_{kj}](x_n) = \frac{1}{\Gamma(\alpha)} \int_{0}^{x_n}
+        I^\alpha[\phi_{kj}](x_n) =
+            \frac{1}{\Gamma(\alpha)} \int_{0}^{x_n}
             (x_n - s)^{\alpha - 1} \phi_{kj}(s) \,\mathrm{d}s.
 
     As the polynomials are zero except in the domain of definition, this simplifies
@@ -133,7 +134,7 @@ def lagrange_caputo_derivative(
 
     .. math::
 
-        D^{q, \alpha}_{nk} \triangleq
+        L^{q, \alpha}_{nk} \triangleq
             \frac{1}{\Gamma(m - \alpha)}
             \int_{x_k}^{x_{k + 1}} (x_n - s)^{m - \alpha - 1}
             \frac{\mathrm{d}^m}{\mathrm{d} s^m}
