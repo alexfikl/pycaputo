@@ -53,7 +53,7 @@ def df(x: Array, alpha: float) -> Array:
 from pycaputo.differentiation import caputo
 
 alpha = 0.9
-method = caputo.SpectralJacobi(alpha=0.9)
+method = caputo.Jacobi(alpha=0.9)
 
 # make a set of points at which to evaluate the gradient
 rng = np.random.default_rng(42)

@@ -198,7 +198,7 @@ def test_caputo_spectral(
     from pycaputo.grid import make_jacobi_gauss_lobatto_points
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth = caputo.SpectralJacobi(alpha=alpha)
+    meth = caputo.Jacobi(alpha=alpha)
     eoc = EOCRecorder()
 
     if visualize:

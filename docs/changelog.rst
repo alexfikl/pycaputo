@@ -24,6 +24,12 @@ Features
   :class:`~pycaputo.differentiation.caputo.LXD` allows evaluating arbitrary
   Caputo derivatives when the integer derivatives are known.
 
+Changes
+^^^^^^^
+
+* Renamed `pycaputo.differentiation.caputo.SpectralJacobi` to
+  :class:`~pycaputo.differentiation.caputo.Jacobi`.
+
 pycaputo 0.7.0 (July 13, 2024)
 ------------------------------
 

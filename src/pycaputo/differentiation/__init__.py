@@ -45,7 +45,7 @@ def guess_method_for_order(
 
     if isinstance(d, CaputoDerivative):
         if isinstance(p, grid.JacobiGaussLobattoPoints):
-            m = caputo.SpectralJacobi(d.alpha)
+            m = caputo.Jacobi(d.alpha)
         elif 0 < d.alpha < 1:
             if isinstance(p, grid.MidPoints):
                 m = caputo.ModifiedL1(d.alpha)
