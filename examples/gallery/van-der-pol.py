@@ -35,18 +35,22 @@ stepper = caputo.PECE(
     corrector_iterations=1,
 )
 
+nsteps = stepper.control.nsteps
+assert nsteps is not None
+
 logger.info("%s", stepper.control)
 
 # evolve system
+from pycaputo.events import StepCompleted
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.stepping import evolve
 
-nsteps = stepper.control.nsteps
 history = ProductIntegrationHistory.empty_like(y0, n=nsteps)
 ys = []
 
 time.tic()
 for event in evolve(stepper, history=history, dtinit=dt):
+    assert isinstance(event, StepCompleted)
     if event.iteration % 50 == 0:
         time.toc()
         logger.info("%s norm %.12e (%s)", event, np.linalg.norm(event.y), time.short())
