@@ -1,6 +1,10 @@
 Literature
 ==========
 
+This is a list of papers and books used to implement the methods from this
+library. Some methods are extended in various ways, but the main ideas are all
+here.
+
 .. [Lubich1986] C. Lubich,
     *Discretized Fractional Calculus*,
     SIAM Journal on Mathematical Analysis, Vol. 17, pp. 704--719, 1986,
@@ -118,3 +122,7 @@ Literature
     *A Class of Second Order Difference Approximations for Solving Space Fractional Diffusion Equations*,
     Mathematics of Computation, Vol. 84, pp. 1703--1727, 2015,
     `DOI <https://doi.org/10.1090/s0025-5718-2015-02917-2>`__.
+
+.. [Petras2011] I. Petras,
+    *Fractional-Order Nonlinear Systems*,
+    Springer, 2011.
