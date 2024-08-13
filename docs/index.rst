@@ -6,6 +6,7 @@ PYCAPUTO: Fractional Calculus Toolkit
     :hidden:
     :caption: Getting started
 
+    installation
     tutorials
     gallery_chaos
     literature
