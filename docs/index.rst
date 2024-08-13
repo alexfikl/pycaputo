@@ -7,8 +7,9 @@ PYCAPUTO: Fractional Calculus Toolkit
     :caption: Getting started
 
     tutorials
-    changelog
+    gallery_chaos
     literature
+    changelog
 
 .. toctree::
     :maxdepth: 1

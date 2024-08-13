@@ -115,6 +115,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "sphinx.ext.mathjax",
+    "sphinx_design",
 ]
 
 # extension for source files
