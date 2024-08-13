@@ -48,6 +48,6 @@ welcome!
 
     +++
 
-    This example uses the Caputo derivative. The complete setup (with parameters)
-    can be found in
+    This example uses the Caputo derivative and reproduces Figure 5.26 from [Petras2011]_.
+    The complete setup (with parameters) can be found in
     :download:`examples/gallery/van-der-pol.py <../examples/gallery/van-der-pol.py>`.
