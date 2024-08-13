@@ -15,3 +15,8 @@ Special Solutions
 -----------------
 
 .. automodule:: pycaputo.fode.special
+
+Special Systems
+---------------
+
+.. automodule:: pycaputo.fode.gallery
