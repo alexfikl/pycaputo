@@ -68,6 +68,45 @@ class Brusselator(Function):
 # }}}
 
 
+# {{{ Duffing
+
+
+@dataclass(frozen=True)
+class Duffing(Function):
+    r"""Implements the right-hand side of the Duffing system.
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            y, \\
+        D^\alpha[y](t) & =
+            x - x^3 - \alpha y + A \cos \omega t.
+        \end{aligned}
+    """
+
+    alpha: float
+    """Parameter in the Duffing system."""
+
+    amplitude: float
+    """Forcing amplitude."""
+    omega: float
+    """Angular velocity of the forcing."""
+
+    def source(self, t: float, y: Array) -> Array:
+        f = self.amplitude * np.cos(self.omega * t)
+        return np.array([
+            y[1],
+            y[0] - y[0] ** 3 - self.alpha * y[1] + f,
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([[0, 1], [1 - 3 * y[0], -self.alpha]])
+
+
+# }}}
+
+
 # {{{ van der Pol
 
 

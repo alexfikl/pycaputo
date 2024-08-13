@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pycaputo.fode.gallery import VanDerPol
+from pycaputo.fode.gallery import Duffing
 from pycaputo.logging import get_logger
 from pycaputo.utils import TicTocTimer
 
@@ -14,22 +14,24 @@ time = TicTocTimer()
 
 # {{{ solve
 
-# setup up system (parameters from Figure 5.26 from [Petras2011])
-alpha = (1.2, 0.8)
-mu = 1.0
-y0 = np.array([0.2, -0.2])
+# setup up system (parameters from Figure 5.29 from [Petras2011])
+alpha = (0.9, 0.999)
+duffing_alpha = 0.15
+delta = 0.3
+omega = 1.0
+y0 = np.array([0.21, 0.13])
 
-func = VanDerPol(mu=mu, amplitude=0.0, omega=0.0)
+func = Duffing(alpha=duffing_alpha, amplitude=delta, omega=omega)
 logger.info("%s", func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller
 from pycaputo.fode import caputo
 
-dt = 1.0e-3
+dt = 5.0e-3
 stepper = caputo.PECE(
     derivative_order=alpha,
-    control=make_fixed_controller(dt, tstart=0.0, tfinal=50.0),
+    control=make_fixed_controller(dt, tstart=0.0, tfinal=200.0),
     source=func.source,
     y0=(y0,),
     corrector_iterations=1,
@@ -71,7 +73,7 @@ from pycaputo.utils import figure, set_recommended_matplotlib
 
 set_recommended_matplotlib()
 
-with figure("gallery-van-der-pol") as fig:
+with figure("gallery-duffing") as fig:
     ax = fig.gca()
 
     ax.plot(y[0], y[1])
