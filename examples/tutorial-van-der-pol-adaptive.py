@@ -143,36 +143,44 @@ except ImportError as exc:
     logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
-from pycaputo.utils import figure, set_recommended_matplotlib
+from pycaputo.utils import figure, get_default_dark, set_recommended_matplotlib
 
-set_recommended_matplotlib()
-t = np.array(ts)
-y = np.array(ys).T
-trunc = np.array(truncs).T
+for dark, suffix in get_default_dark():
+    set_recommended_matplotlib(dark=dark)
 
-with figure("tutorial-van-der-pol-adaptive-solution", nrows=2, figsize=(8, 8)) as fig:
-    ax = fig.axes
+    t = np.array(ts)
+    y = np.array(ys).T
+    trunc = np.array(truncs).T
 
-    ax[0].plot(t, y[0], "o-", ms=3, fillstyle="none", label="$x$")
-    ax[0].plot(t, y[1], "o-", ms=3, fillstyle="none", label="$y$")
-    ax[0].legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
+    with figure(
+        f"tutorial-van-der-pol-adaptive-solution{suffix}", nrows=2, figsize=(8, 8)
+    ) as fig:
+        ax = fig.axes
 
-    ax[1].semilogy(t[:-1], np.diff(t), "o-", fillstyle="none", ms=3)
-    ax[1].set_xlabel("$t$")
-    ax[1].set_ylabel(r"$\Delta t$")
-    ax[1].set_ylim([c.dtmin, dtinit])
+        ax[0].plot(t, y[0], "o-", ms=3, fillstyle="none", label="$x$")
+        ax[0].plot(t, y[1], "o-", ms=3, fillstyle="none", label="$y$")
+        ax[0].legend(
+            loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand"
+        )
 
-with figure("tutorial-van-der-pol-adaptive-eest", nrows=2, figsize=(8, 8)) as fig:
-    ax = fig.axes
+        ax[1].semilogy(t[:-1], np.diff(t), "o-", fillstyle="none", ms=3)
+        ax[1].set_xlabel("$t$")
+        ax[1].set_ylabel(r"$\Delta t$")
+        ax[1].set_ylim([c.dtmin, dtinit])
 
-    ax[0].plot(t, trunc[0], "o-", ms=3, fillstyle="none")
-    ax[0].plot(t, trunc[1], "o-", ms=3, fillstyle="none")
-    ax[0].set_ylabel(r"$\tau$")
+    with figure(
+        f"tutorial-van-der-pol-adaptive-eest{suffix}", nrows=2, figsize=(8, 8)
+    ) as fig:
+        ax = fig.axes
 
-    ax[1].plot(t, eests, "-")
-    ax[1].axhline(1.0, ls="--", color="k")
-    ax[1].axhline(0.0, ls="--", color="k")
-    ax[1].set_xlabel("$t$")
-    ax[1].set_ylabel(r"$E_{\text{est}}$")
+        ax[0].plot(t, trunc[0], "o-", ms=3, fillstyle="none")
+        ax[0].plot(t, trunc[1], "o-", ms=3, fillstyle="none")
+        ax[0].set_ylabel(r"$\tau$")
+
+        ax[1].plot(t, eests, "-")
+        ax[1].axhline(1.0, ls="--", color="k")
+        ax[1].axhline(0.0, ls="--", color="k")
+        ax[1].set_xlabel("$t$")
+        ax[1].set_ylabel(r"$E_{\text{est}}$")
 
 # }}}

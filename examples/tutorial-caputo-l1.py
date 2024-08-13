@@ -70,18 +70,19 @@ except ImportError as exc:
     logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
-from pycaputo.utils import figure, set_recommended_matplotlib
+from pycaputo.utils import figure, get_default_dark, set_recommended_matplotlib
 
-set_recommended_matplotlib()
+for dark, suffix in get_default_dark():
+    set_recommended_matplotlib(dark=dark)
 
-with figure("tutorial-caputo-l1") as fig:
-    ax = fig.gca()
+    with figure(f"tutorial-caputo-l1{suffix}") as fig:
+        ax = fig.gca()
 
-    ax.plot(p.x, df_num, lw=5, label="L1 Method")
-    ax.plot(p.x[1:], df_ref[1:], "k--", label="Exact")
+        ax.plot(p.x, df_num, lw=5, label="L1 Method")
+        ax.plot(p.x[1:], df_ref[1:], "k--", label="Exact")
 
-    ax.set_xlabel("$x$")
-    ax.set_ylabel(r"$D^\alpha_C[f](x)$")
-    ax.legend()
+        ax.set_xlabel("$x$")
+        ax.set_ylabel(r"$D^\alpha_C[f](x)$")
+        ax.legend()
 
 # }}}

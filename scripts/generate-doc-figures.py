@@ -8,6 +8,7 @@ import os
 import pathlib
 import shutil
 import subprocess  # noqa: S404
+import sys
 import tempfile
 
 import rich.logging
@@ -19,6 +20,7 @@ logger.addHandler(rich.logging.RichHandler())
 
 EXAMPLES_DIR = pathlib.Path("examples").resolve()
 ARTIFACTS = {
+    # tutorial examples
     "tutorial-van-der-pol-adaptive.py": {
         "tutorial-van-der-pol-adaptive-eest.svg",
         "tutorial-van-der-pol-adaptive-solution.svg",
@@ -29,6 +31,16 @@ ARTIFACTS = {
     },
     "tutorial-caputo-l1.py": {
         "tutorial-caputo-l1.svg",
+    },
+    # gallery examples
+    "gallery/brusselator.py": {
+        "gallery-brusselator.svg",
+    },
+    "gallery/duffing.py": {
+        "gallery-duffing.svg",
+    },
+    "gallery/van-der-pol.py": {
+        "gallery-van-der-pol.svg",
     },
 }
 
@@ -43,30 +55,31 @@ def main(outdir: pathlib.Path) -> int:
     env.update({
         "PYCAPUTO_LOGGING_LEVEL": "ERROR",
         "PYCAPUTO_SAVEFIG": "SVG",
+        "PYCAPUTO_DARK": "BOTH",
         "PYTHONPATH": str(pathlib.Path.cwd()),
     })
 
-    for dark in (True, False):
-        for name, artifacts in ARTIFACTS.items():
-            script = EXAMPLES_DIR / name
-            env.update({"PYCAPUTO_DARK": str(dark)})
+    for name, artifacts in ARTIFACTS.items():
+        script = EXAMPLES_DIR / name
 
-            with tempfile.TemporaryDirectory() as cwd:
-                try:
-                    subprocess.run(  # noqa: S603
-                        ["python", str(script)],  # noqa: S607
-                        cwd=cwd,
-                        env=env,
-                        check=True,
-                    )
-                except subprocess.CalledProcessError as exc:
-                    logger.error("Failed to run script: '%s'", script, exc_info=exc)
-                    return 1
+        with tempfile.TemporaryDirectory() as cwd:
+            try:
+                subprocess.run(  # noqa: S603
+                    [sys.executable, "-O", str(script)],
+                    cwd=cwd,
+                    env=env,
+                    check=True,
+                )
+            except subprocess.CalledProcessError as exc:
+                logger.error("Failed to run script: '%s'", script, exc_info=exc)
+                return 1
 
-                color = "dark" if dark else "light"
-                for artifact in artifacts:
-                    infile = pathlib.Path(cwd) / artifact
-                    outfile = outdir / f"{infile.stem}-{color}{infile.suffix}"
+            for artifact in artifacts:
+                path = pathlib.Path(cwd) / artifact
+
+                for color in ("light", "dark"):
+                    infile = path.parent / f"{path.stem}-{color}{path.suffix}"
+                    outfile = outdir / infile.name
 
                     shutil.copyfile(infile, outfile)
                     logger.info("Generated '%s' from '%s'.", outfile.name, infile)

@@ -85,26 +85,28 @@ except ImportError as exc:
     logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
-from pycaputo.utils import figure, set_recommended_matplotlib
+from pycaputo.utils import figure, get_default_dark, set_recommended_matplotlib
 
-set_recommended_matplotlib()
-t = np.array(ts)
-y = np.array(ys).T
+for dark, suffix in get_default_dark():
+    set_recommended_matplotlib(dark=dark)
 
-with figure("tutorial-brusselator") as fig:
-    ax = fig.gca()
+    t = np.array(ts)
+    y = np.array(ys).T
 
-    ax.plot(t, y[1], "--", lw=3, label="$y$")
-    ax.plot(t, y[0], lw=3, label="$x$")
+    with figure(f"tutorial-brusselator{suffix}") as fig:
+        ax = fig.gca()
 
-    ax.set_xlabel("$t$")
-    ax.legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
+        ax.plot(t, y[1], "--", lw=3, label="$y$")
+        ax.plot(t, y[0], lw=3, label="$x$")
 
-with figure("tutorial-brusselator-cycle") as fig:
-    ax = fig.gca()
+        ax.set_xlabel("$t$")
+        ax.legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
 
-    ax.plot(y[0], y[1], ls="--")
-    ax.set_xlabel("$x$")
-    ax.set_ylabel("$y$")
+    with figure(f"tutorial-brusselator-cycle{suffix}") as fig:
+        ax = fig.gca()
+
+        ax.plot(y[0], y[1], ls="--")
+        ax.set_xlabel("$x$")
+        ax.set_ylabel("$y$")
 
 # }}}
