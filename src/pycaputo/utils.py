@@ -535,13 +535,47 @@ def timeit(
 
 
 @dataclass
+class TicTocTimer:
+    """A simple timer that tries to copy MATLAB's ``tic`` and ``toc`` functions.
+
+    .. code:: python
+
+        time = TicTocTimer()
+        time.tic()
+
+        # ... do some work ...
+
+        time.toc()
+        print(time)
+    """
+
+    t_wall_start: float = field(init=False)
+    t_wall: float = field(init=False)
+
+    def tic(self) -> None:
+        self.t_wall = 0.0
+        self.t_wall_start = time.perf_counter()
+
+    def toc(self) -> float:
+        self.t_wall = time.perf_counter() - self.t_wall_start
+        return self.t_wall
+
+    def __str__(self) -> str:
+        # NOTE: this matches how MATLAB shows the time from `toc`.
+        return f"Elapsed time is {self.t_wall:.5f} seconds."
+
+    def short(self) -> str:
+        return f"walltime {self.t_wall:.5f} sec"
+
+
+@dataclass
 class BlockTimer:
     """A context manager for timing blocks of code.
 
     .. code:: python
 
         with BlockTimer("my-code-block") as bt:
-            # do some code
+            # ... do some work ...
 
         print(bt)
     """
