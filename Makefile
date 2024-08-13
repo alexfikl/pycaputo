@@ -101,7 +101,7 @@ benchmark:				## Run pytest benchmarks
 .PHONY: benchmark
 
 examples:				## Run examples
-	@for ex in $$(find examples -name "*.py"); do \
+	@for ex in $(wildcard examples/*.py); do \
 		echo -e "\x1b[1;32m===> \x1b[97mRunning $${ex}\x1b[0m"; \
 		$(PYTHON) "$${ex}"; \
 		sleep 1; \
