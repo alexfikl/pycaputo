@@ -72,15 +72,16 @@ except ImportError as exc:
     logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
-from pycaputo.utils import figure, set_recommended_matplotlib
+from pycaputo.utils import figure, get_default_dark, set_recommended_matplotlib
 
-set_recommended_matplotlib()
+for dark, suffix in get_default_dark():
+    set_recommended_matplotlib(dark=dark)
 
-with figure("gallery-brusselator") as fig:
-    ax = fig.gca()
+    with figure(f"gallery-brusselator{suffix}") as fig:
+        ax = fig.gca()
 
-    ax.plot(y[0], y[1])
-    ax.set_xlabel("$x$")
-    ax.set_ylabel("$y$")
+        ax.plot(y[0], y[1])
+        ax.set_xlabel("$x$")
+        ax.set_ylabel("$y$")
 
 # }}}
