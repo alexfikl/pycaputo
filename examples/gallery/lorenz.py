@@ -16,13 +16,10 @@ time = TicTocTimer()
 
 # setup up system (parameters from Figure 5.32 from [Petras2011])
 alpha = (0.995, 0.995, 0.995)
-sigma = 10.0
-rho = 28.0
-beta = 8 / 3
 y0 = np.array([0.1, 0.1, 0.1])
+func = Lorenz(sigma=10.0, rho=28.0, beta=8.0 / 3.0)
 
-func = Lorenz(sigma=sigma, rho=rho, beta=beta)
-logger.info("%s", func)
+logger.info("alpha %s y0 %s parameters %s", alpha, y0, func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller

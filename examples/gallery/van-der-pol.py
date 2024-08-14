@@ -16,11 +16,10 @@ time = TicTocTimer()
 
 # setup up system (parameters from Figure 5.26 from [Petras2011])
 alpha = (1.2, 0.8)
-mu = 1.0
 y0 = np.array([0.2, -0.2])
+func = VanDerPol(mu=1.0, amplitude=0.0, omega=0.0)
 
-func = VanDerPol(mu=mu, amplitude=0.0, omega=0.0)
-logger.info("%s", func)
+logger.info("alpha %s y0 %s parameters %s", alpha, y0, func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller

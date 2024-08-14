@@ -16,12 +16,10 @@ time = TicTocTimer()
 
 # setup up system
 alpha = (0.8, 0.8)
-a = 1.0
-mu = 4.0
 y0 = np.array([0.2, 0.03])
+func = Brusselator(a=1.0, mu=4.0, amplitude=0.0, omega=0.0)
 
-func = Brusselator(a=a, mu=mu, amplitude=0.0, omega=0.0)
-logger.info("%s", func)
+logger.info("alpha %s y0 %s parameters %s", alpha, y0, func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller

@@ -16,13 +16,10 @@ time = TicTocTimer()
 
 # setup up system (parameters from Figure 5.29 from [Petras2011])
 alpha = (0.9, 0.999)
-duffing_alpha = 0.15
-delta = 0.3
-omega = 1.0
 y0 = np.array([0.21, 0.13])
+func = Duffing(alpha=0.15, amplitude=0.3, omega=1.0)
 
-func = Duffing(alpha=duffing_alpha, amplitude=delta, omega=omega)
-logger.info("%s", func)
+logger.info("alpha %s y0 %s parameters %s", alpha, y0, func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller

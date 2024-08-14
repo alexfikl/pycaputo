@@ -16,13 +16,10 @@ time = TicTocTimer()
 
 # setup up system (parameters from Figure 5.35 from [Petras2011])
 alpha = (0.985, 0.99, 0.98)
-a = 36.0
-b = 3.0
-c = 20.0
 y0 = np.array([0.2, 0.5, 0.3])
+func = Lu(a=36.0, b=3.0, c=20.0)
 
-func = Lu(a=a, b=b, c=c)
-logger.info("%s", func)
+logger.info("alpha %s y0 %s parameters %s", alpha, y0, func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller
