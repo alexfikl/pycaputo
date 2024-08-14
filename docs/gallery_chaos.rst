@@ -64,8 +64,8 @@ Two Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.26 from [Petras2011]_.
-    The complete setup (with parameters) can be found in
+    This example uses the Caputo derivative and reproduces Figure 5.26 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/van-der-pol.py <../examples/gallery/van-der-pol.py>`.
 
 .. card:: Fractional-order Duffing System
@@ -85,8 +85,8 @@ Two Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.29 from [Petras2011]_.
-    The complete setup (with parameters) can be found in
+    This example uses the Caputo derivative and reproduces Figure 5.29 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/duffing.py <../examples/gallery/duffing.py>`.
 
 Three Dimensional Systems
@@ -109,7 +109,29 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.32 from [Petras2011]_.
-    The complete setup (with parameters) can be found in
+    This example uses the Caputo derivative and reproduces Figure 5.32 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
+
+
+.. card:: Fractional-order Chen System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-chen-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Chen system phase diagram
+
+    .. image:: _static/gallery-chen-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Chen system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.33 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/chen.py <../examples/gallery/chen.py>`.
 

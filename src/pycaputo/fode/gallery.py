@@ -68,6 +68,51 @@ class Brusselator(Function):
 # }}}
 
 
+# {{{ Chen
+
+
+@dataclass(frozen=True)
+class Chen(Function):
+    r"""Implements the right-hand side of the Chen system (see Equation 5.54
+    from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            a (y - x), \\
+        D^\alpha[y](t) & =
+            (c - a) x - x z + c y, \\
+        D^\alpha[z](t) & =
+            x y -  b z.
+        \end{aligned}
+    """
+
+    a: float
+    """Parameter in the Chen system."""
+    b: float
+    """Parameter in the Chen system."""
+    c: float
+    """Parameter in the Chen system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            self.a * (y[1] - y[0]),
+            (self.c - self.a) * y[0] - y[0] * y[2] + self.c * y[1],
+            y[0] * y[1] - self.b * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.a, self.a, 0.0],
+            [self.c - self.a - y[2], self.c, -y[0]],
+            [y[1], y[0], -self.b],
+        ])
+
+
+# }}}
+
+
 # {{{ Duffing
 
 
@@ -107,7 +152,8 @@ class Duffing(Function):
 
 # }}}
 
-# {{{
+
+# {{{ Lorenz
 
 
 @dataclass(frozen=True)

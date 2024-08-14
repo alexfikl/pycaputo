@@ -479,8 +479,6 @@ def figure(
             assert isinstance(ax, Axes3D)
             ax.set_box_aspect((4, 4, 4), zoom=1.1)
 
-        fig.tight_layout()
-
         if filename is not None:
             savefig(fig, filename, **kwargs)
         else:

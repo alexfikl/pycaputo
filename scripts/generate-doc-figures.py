@@ -36,6 +36,9 @@ ARTIFACTS = {
     "gallery/brusselator.py": {
         "gallery-brusselator.svg",
     },
+    "gallery/chen.py": {
+        "gallery-chen.svg",
+    },
     "gallery/duffing.py": {
         "gallery-duffing.svg",
     },
