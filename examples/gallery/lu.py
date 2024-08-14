@@ -44,14 +44,12 @@ logger.info("%s", stepper.control)
 
 # evolve system
 from pycaputo.events import StepCompleted
-from pycaputo.history import ProductIntegrationHistory
 from pycaputo.stepping import evolve
 
-history = ProductIntegrationHistory.empty_like(y0, n=nsteps)
 ys = []
 
 time.tic()
-for event in evolve(stepper, history=history, dtinit=dt):
+for event in evolve(stepper, dtinit=dt):
     assert isinstance(event, StepCompleted)
     if event.iteration % 50 == 0:
         time.toc()
@@ -60,7 +58,6 @@ for event in evolve(stepper, history=history, dtinit=dt):
 
     ys.append(event.y)
 
-assert history.filled == nsteps + 1
 y = np.array(ys).T
 
 # }}}

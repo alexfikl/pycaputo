@@ -64,7 +64,13 @@ def _evolve_pi(
     )
 
     if history is None:
-        history = ProductIntegrationHistory.empty_like(m.y0[0])
+        nsteps = m.control.nsteps
+        history = ProductIntegrationHistory.empty_like(
+            m.y0[0],
+            # FIXME: 512 is chosen randomly, since this is a growing container,
+            # but maybe we can do better using dtinit and tfinal?
+            n=512 if nsteps is None else nsteps,
+        )
 
     # initialize
     c = m.control
