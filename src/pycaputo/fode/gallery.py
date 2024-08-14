@@ -218,6 +218,53 @@ class Lorenz(Function):
 # }}}
 
 
+# {{{
+
+
+@dataclass(frozen=True)
+class Lu(Function):
+    r"""Implements the right-hand side of the Lü system (see Equation 5.58
+    from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            a (y - x), \\
+        D^\alpha[y](t) & =
+            -x z + c y, \\
+        D^\alpha[z](t) & =
+            x y - b z.
+        \end{aligned}
+
+    This system is very similar to :class:`Chen` and :class:`Lorenz`.
+    """
+
+    a: float
+    """Parameter in the Chen system."""
+    b: float
+    """Parameter in the Chen system."""
+    c: float
+    """Parameter in the Chen system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            self.a * (y[1] - y[0]),
+            -y[0] * y[2] + self.c * y[1],
+            y[0] * y[1] - self.b * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.a, self.a, 0.0],
+            [-y[2], self.c, -y[0]],
+            [y[1], y[0], -self.b],
+        ])
+
+
+# }}}
+
+
 # {{{ van der Pol
 
 

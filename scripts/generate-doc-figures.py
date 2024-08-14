@@ -45,6 +45,9 @@ ARTIFACTS = {
     "gallery/lorenz.py": {
         "gallery-lorenz.svg",
     },
+    "gallery/lu.py": {
+        "gallery-lu.svg",
+    },
     "gallery/van-der-pol.py": {
         "gallery-van-der-pol.svg",
     },

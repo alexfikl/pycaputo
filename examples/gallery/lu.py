@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pycaputo.fode.gallery import Lorenz
+from pycaputo.fode.gallery import Lu
 from pycaputo.logging import get_logger
 from pycaputo.utils import TicTocTimer
 
@@ -14,14 +14,14 @@ time = TicTocTimer()
 
 # {{{ solve
 
-# setup up system (parameters from Figure 5.32 from [Petras2011])
-alpha = (0.995, 0.995, 0.995)
-sigma = 10.0
-rho = 28.0
-beta = 8 / 3
-y0 = np.array([0.1, 0.1, 0.1])
+# setup up system (parameters from Figure 5.35 from [Petras2011])
+alpha = (0.985, 0.99, 0.98)
+a = 36.0
+b = 3.0
+c = 20.0
+y0 = np.array([0.2, 0.5, 0.3])
 
-func = Lorenz(sigma=sigma, rho=rho, beta=beta)
+func = Lu(a=a, b=b, c=c)
 logger.info("%s", func)
 
 # setup up stepper
@@ -31,7 +31,7 @@ from pycaputo.fode import caputo
 dt = 5.0e-3
 stepper = caputo.PECE(
     derivative_order=alpha,
-    control=make_fixed_controller(dt, tstart=0.0, tfinal=100.0),
+    control=make_fixed_controller(dt, tstart=0.0, tfinal=90.0),
     source=func.source,
     y0=(y0,),
     corrector_iterations=1,
@@ -78,7 +78,7 @@ from pycaputo.utils import figure, get_default_dark, set_recommended_matplotlib
 for dark, suffix in get_default_dark():
     set_recommended_matplotlib(dark=dark, overrides={"lines": {"linewidth": 1}})
 
-    with figure(f"gallery-lorenz{suffix}", projection="3d") as fig:
+    with figure(f"gallery-lu{suffix}", projection="3d") as fig:
         ax = fig.gca()
         ax.view_init(elev=15, azim=-55, roll=0)
 

@@ -80,7 +80,7 @@ for dark, suffix in get_default_dark():
 
     with figure(f"gallery-chen{suffix}", projection="3d") as fig:
         ax = fig.gca()
-        ax.view_init(elev=15, azim=115, roll=0)
+        ax.view_init(elev=15, azim=-55, roll=0)
 
         ax.plot(y[0], y[1], y[2])
         ax.set_xlabel("$x$")

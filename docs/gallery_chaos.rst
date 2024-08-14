@@ -135,3 +135,24 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/chen.py <../examples/gallery/chen.py>`.
 
+
+.. card:: Fractional-order Lü System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-lu-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lü system phase diagram
+
+    .. image:: _static/gallery-lu-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lü system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.35 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/lu.py <../examples/gallery/lu.py>`.
