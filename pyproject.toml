@@ -171,6 +171,7 @@ module = [
     "pytest_benchmark.*",
     "scienceplots.*",
     "scipy.*",
+    "mpl_toolkits.mplot3d.*",
 ]
 ignore_missing_imports = true
 

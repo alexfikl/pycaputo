@@ -416,20 +416,10 @@ def set_recommended_matplotlib(
     with suppress(ImportError):
         import scienceplots  # noqa: F401
 
-    with suppress(ImportError):
-        import SciencePlots  # noqa: F401
-
-    if "science" in mp.style.library:
         if dark:
             mp.style.use(["science", "ieee", "dark_background"])
         else:
             mp.style.use(["science", "ieee"])
-    elif "seaborn-v0_8" in mp.style.library:
-        # NOTE: matplotlib v3.6 deprecated all the seaborn styles
-        mp.style.use("seaborn-v0_8-dark" if dark else "seaborn-v0_8-white")
-    elif "seaborn" in mp.style.library:
-        # NOTE: for older versions of matplotlib
-        mp.style.use("seaborn-dark" if dark else "seaborn-white")
 
     for group, params in defaults.items():
         mp.rc(group, **params)
@@ -445,6 +435,7 @@ def figure(
     nrows: int = 1,
     ncols: int = 1,
     *,
+    pane_fill: bool = False,
     projection: str | None = None,
     figsize: tuple[float, float] | None = None,
     **kwargs: Any,
@@ -472,19 +463,40 @@ def figure(
         figsize = (8.0 * ncols, 8.0 * nrows)
     fig.set_size_inches(*figsize)
 
+    if projection == "3d":
+        from mpl_toolkits.mplot3d.axes3d import Axes3D
+
+        for ax in fig.axes:
+            assert isinstance(ax, Axes3D)
+            ax.xaxis.pane.fill = pane_fill
+            ax.yaxis.pane.fill = pane_fill
+            ax.zaxis.pane.fill = pane_fill
+
     try:
         yield fig
     finally:
+        for ax in fig.axes:
+            assert isinstance(ax, Axes3D)
+            ax.set_box_aspect((4, 4, 4), zoom=1.1)
+
+        fig.tight_layout()
+
         if filename is not None:
             savefig(fig, filename, **kwargs)
         else:
-            mp.show()  # type: ignore[no-untyped-call,unused-ignore]
+            mp.show(block=True)  # type: ignore[no-untyped-call,unused-ignore]
 
         mp.close(fig)
 
 
 def savefig(
-    fig: Any, filename: PathLike, *, overwrite: bool = True, **kwargs: Any
+    fig: Any,
+    filename: PathLike,
+    *,
+    overwrite: bool = True,
+    bbox_inches: str = "tight",
+    pad_inches: float = 0,
+    **kwargs: Any,
 ) -> None:
     """A wrapper around :meth:`~matplotlib.figure.Figure.savefig`.
 
@@ -492,6 +504,7 @@ def savefig(
         not have an extension, the default format from ``savefig.format`` is
         used.
     :arg overwrite: if *True*, any existing files are overwritten.
+    :arg kwargs: renaming arguments are passed directly to ``savefig``.
     """
     import matplotlib.pyplot as mp
 

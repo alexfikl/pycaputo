@@ -39,17 +39,26 @@ ARTIFACTS = {
     "gallery/duffing.py": {
         "gallery-duffing.svg",
     },
+    "gallery/lorenz.py": {
+        "gallery-lorenz.svg",
+    },
     "gallery/van-der-pol.py": {
         "gallery-van-der-pol.svg",
     },
 }
 
 
-def main(outdir: pathlib.Path) -> int:
+def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
     outdir = outdir.resolve()
     if not outdir.exists():
         logger.error("Directory does not exist: '%s'", outdir)
         return 1
+
+    unique_scripts = set(scripts) if scripts is not None else set()
+    for script in unique_scripts:
+        if script not in ARTIFACTS:
+            logger.error("Unknown script: '%s'.", script)
+            return 1
 
     env = os.environ.copy()
     env.update({
@@ -60,18 +69,21 @@ def main(outdir: pathlib.Path) -> int:
     })
 
     for name, artifacts in ARTIFACTS.items():
-        script = EXAMPLES_DIR / name
+        if scripts is not None and name not in unique_scripts:
+            continue
+
+        script_path = EXAMPLES_DIR / name
 
         with tempfile.TemporaryDirectory() as cwd:
             try:
                 subprocess.run(  # noqa: S603
-                    [sys.executable, "-O", str(script)],
+                    [sys.executable, "-O", str(script_path)],
                     cwd=cwd,
                     env=env,
                     check=True,
                 )
             except subprocess.CalledProcessError as exc:
-                logger.error("Failed to run script: '%s'", script, exc_info=exc)
+                logger.error("Failed to run script: '%s'", script_path, exc_info=exc)
                 return 1
 
             for artifact in artifacts:
@@ -98,6 +110,13 @@ if __name__ == "__main__":
         help="Root folder for the docs",
     )
     parser.add_argument(
+        "-s",
+        "--script",
+        default=None,
+        action="append",
+        help="A script to run and get figures from (accepts multiple)",
+    )
+    parser.add_argument(
         "-q", "--quiet", action="store_true", help="only show error messages"
     )
     args = parser.parse_args()
@@ -105,4 +124,4 @@ if __name__ == "__main__":
     if not args.quiet:
         logger.setLevel(logging.INFO)
 
-    raise SystemExit(main(args.dir))
+    raise SystemExit(main(args.dir, scripts=args.script))

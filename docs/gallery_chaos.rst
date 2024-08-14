@@ -22,6 +22,10 @@ Chaotic Systems Gallery
    memory. In contrast, we use a the higher-order Predictor-Corrector method
    with full memory, which presumably gives better results.
 
+
+Two Dimensional Systems
+-----------------------
+
 .. card:: Fractional-order Brusselator System
     :class-title: sd-text-center
 
@@ -84,3 +88,28 @@ Chaotic Systems Gallery
     This example uses the Caputo derivative and reproduces Figure 5.29 from [Petras2011]_.
     The complete setup (with parameters) can be found in
     :download:`examples/gallery/duffing.py <../examples/gallery/duffing.py>`.
+
+Three Dimensional Systems
+-------------------------
+
+.. card:: Fractional-order Lorenz System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-lorenz-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lorenz system phase diagram
+
+    .. image:: _static/gallery-lorenz-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lorenz system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.32 from [Petras2011]_.
+    The complete setup (with parameters) can be found in
+    :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
+

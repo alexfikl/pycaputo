@@ -73,7 +73,8 @@ class Brusselator(Function):
 
 @dataclass(frozen=True)
 class Duffing(Function):
-    r"""Implements the right-hand side of the Duffing system.
+    r"""Implements the right-hand side of the Duffing system (see Equation 5.46
+    from [Petras2011]_).
 
     .. math::
 
@@ -106,13 +107,78 @@ class Duffing(Function):
 
 # }}}
 
+# {{{
+
+
+@dataclass(frozen=True)
+class Lorenz(Function):
+    r"""Implements the right-hand side of the Lorenz system (see Equation 5.52
+    from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            \sigma (y - x), \\
+        D^\alpha[y](t) & =
+            x (\rho - z) - y, \\
+        D^\alpha[z](t) & =
+            x y - \beta z.
+        \end{aligned}
+    """
+
+    sigma: float
+    """Parameter in the Lorenz system. This is proportional to the Prandtl number
+    in the fluids derivation of the system.
+    """
+
+    rho: float
+    """Parameter in the Lorenz system. This is proportional to the Rayleigh number
+    in the fluids derivation of the system.
+    """
+
+    beta: float
+    """Parameter in the Lorenz system. This parameter is related to the height
+    of the fluid layer in the fluids derivation of the system.
+    """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.sigma <= 0:
+                raise ValueError(f"Parameter 'sigma' must be positive: {self.sigma}")
+
+            if self.rho <= 0:
+                raise ValueError(f"Parameter 'rho' must be positive: {self.rho}")
+
+            if self.beta <= 0:
+                raise ValueError(f"Parameter 'beta' must be positive: {self.beta}")
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            self.sigma * (y[1] - y[0]),
+            y[0] * (self.rho - y[2]) - y[1],
+            y[0] * y[1] - self.beta * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.sigma, self.sigma, 0],
+            [self.rho - y[2], -1, -y[0]],
+            [y[1], y[0], -self.beta],
+        ])
+
+
+# }}}
+
 
 # {{{ van der Pol
 
 
 @dataclass(frozen=True)
 class VanDerPol(Function):
-    r"""Implements the right-hand side of the van der Pol system.
+    r"""Implements the right-hand side of the van der Pol system (see Equation 5.40
+    from [Petras2011]_).
 
     .. math::
 
@@ -125,9 +191,7 @@ class VanDerPol(Function):
     """
 
     mu: float
-    r"""Parameter indicating the strength of the nonlinearity and damping. Taking
-    :math:`\mu = -1` is common in the literature.
-    """
+    r"""Parameter indicating the strength of the nonlinearity and damping."""
 
     amplitude: float
     """Forcing amplitude."""
