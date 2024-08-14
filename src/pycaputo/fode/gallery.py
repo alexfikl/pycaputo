@@ -218,7 +218,58 @@ class Lorenz(Function):
 # }}}
 
 
-# {{{
+# {{{ Liu
+
+
+@dataclass(frozen=True)
+class Liu(Function):
+    r"""Implements the right-hand side of the Liu system (see Equation 5.61 from
+    [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            -a x - e y^2, \\
+        D^\alpha[y](t) & =
+            b y - k x z, \\
+        D^\alpha[z](t) & =
+            m x y - c z.
+        \end{aligned}
+    """
+
+    a: float
+    """Parameter in the Liu system."""
+    b: float
+    """Parameter in the Liu system."""
+    c: float
+    """Parameter in the Liu system."""
+    e: float
+    """Parameter in the Liu system."""
+    k: float
+    """Parameter in the Liu system."""
+    m: float
+    """Parameter in the Liu system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            -self.a * y[0] - self.e * y[1] ** 2,
+            self.b * y[1] - self.k * y[0] * y[2],
+            self.m * y[0] * y[1] - self.c * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.a, -2.0 * self.e * y[1], 0.0],
+            [-self.k * y[2], self.b, -self.k * y[0]],
+            [self.m * y[1], self.m * y[0], -self.c],
+        ])
+
+
+# }}}
+
+
+# {{{ Lü
 
 
 @dataclass(frozen=True)
@@ -241,11 +292,11 @@ class Lu(Function):
     """
 
     a: float
-    """Parameter in the Chen system."""
+    """Parameter in the Lu system."""
     b: float
-    """Parameter in the Chen system."""
+    """Parameter in the Lu system."""
     c: float
-    """Parameter in the Chen system."""
+    """Parameter in the Lu system."""
 
     def source(self, t: float, y: Array) -> Array:
         return np.array([
