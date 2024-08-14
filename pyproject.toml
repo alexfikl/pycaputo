@@ -46,7 +46,7 @@ dependencies = [
     "typing-extensions; python_version<'3.10'",
 ]
 optional-dependencies.dev = [
-    "differint @ git+https://github.com/alexfikl/differint.git@fix-l2-index#egg=differint",
+    "differint @ git+https://github.com/differint/differint.git#egg=differint",
     "doc8",
     "matplotlib",
     "mypy",

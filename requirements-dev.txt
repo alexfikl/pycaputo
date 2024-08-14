@@ -34,7 +34,7 @@ contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
-differint @ git+https://github.com/alexfikl/differint.git@ab981f6bcd9435a46d85470a1ab01cbcf536837d#egg=differint
+differint @ git+https://github.com/differint/differint.git@0c4b6ebe8c0d97fc3b3b95c65dbb0323e3a23591#egg=differint
     # via pycaputo (pyproject.toml)
 doc8==1.1.1
     # via pycaputo (pyproject.toml)
@@ -173,7 +173,7 @@ tomli==2.0.1 ; python_version < '3.11'
     #   pyproject-fmt
     #   pytest
     #   sphinx
-tomlkit==0.13.0
+tomlkit==0.13.1
     # via reuse
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml)
