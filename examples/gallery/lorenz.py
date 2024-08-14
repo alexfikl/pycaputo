@@ -23,21 +23,20 @@ logger.info("alpha %s y0 %s parameters %s", alpha, y0, func)
 
 # setup up stepper
 from pycaputo.controller import make_fixed_controller
-from pycaputo.fode import caputo
 
 dt = 5.0e-3
+control = make_fixed_controller(dt, tstart=0.0, tfinal=100.0)
+logger.info("%s", control)
+
+from pycaputo.fode import caputo
+
 stepper = caputo.PECE(
     derivative_order=alpha,
-    control=make_fixed_controller(dt, tstart=0.0, tfinal=100.0),
+    control=control,
     source=func.source,
     y0=(y0,),
     corrector_iterations=1,
 )
-
-nsteps = stepper.control.nsteps
-assert nsteps is not None
-
-logger.info("%s", stepper.control)
 
 # evolve system
 from pycaputo.events import StepCompleted
