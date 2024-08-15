@@ -42,6 +42,9 @@ ARTIFACTS = {
     "gallery/duffing.py": {
         "gallery-duffing.svg",
     },
+    "gallery/genesio_tesi.py": {
+        "gallery-genesio-tesi.svg",
+    },
     "gallery/lorenz.py": {
         "gallery-lorenz.svg",
     },

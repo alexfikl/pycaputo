@@ -23,6 +23,8 @@ Features
   evaluations outside of the interval of definition. The
   :class:`~pycaputo.differentiation.caputo.LXD` allows evaluating arbitrary
   Caputo derivatives when the integer derivatives are known.
+* Added a lot of fancy chaotic systems to :mod:`pycaputo.fode.gallery`. These
+  are mostly used to showcase the library.
 
 Changes
 ^^^^^^^

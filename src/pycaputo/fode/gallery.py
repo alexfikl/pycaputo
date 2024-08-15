@@ -153,6 +153,61 @@ class Duffing(Function):
 # }}}
 
 
+# {{{ Genesio-Tesi
+
+
+@dataclass(frozen=True)
+class GenesioTesi(Function):
+    r"""Implements the right-hand side of the Genesio-Tesi system (see Equation
+    5.65 from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            y, \\
+        D^\alpha[y](t) & =
+            z, \\
+        D^\alpha[z](t) & =
+            \beta_4 x^2 - \beta_1 x - \beta_2 y - \beta_3 z.
+        \end{aligned}
+    """
+
+    beta: tuple[float, float, float, float]
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if any(beta < 0 for beta in self.beta):
+                raise ValueError(f"Parameters must be positive: {self.beta}")
+
+            c, b, a, _ = self.beta
+            if a * b > c:
+                raise ValueError(
+                    "Parameters must satisfy beta[1] beta[2] < beta[0]: "
+                    f"'beta = {self.beta}', where 'beta[1] beta[2] = {a * b}'"
+                )
+
+    def source(self, t: float, y: Array) -> Array:
+        beta1, beta2, beta3, beta4 = self.beta
+        return np.array([
+            y[1],
+            y[2],
+            beta4 * y[0] ** 2 - beta1 * y[0] - beta2 * y[1] - beta3 * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        beta1, beta2, beta3, beta4 = self.beta
+        return np.array([
+            [0, 1, 0],
+            [0, 0, 1],
+            [2 * beta4 * y[0] - beta1, -beta2, -beta3],
+        ])
+
+
+# }}}
+
+
 # {{{ Lorenz
 
 

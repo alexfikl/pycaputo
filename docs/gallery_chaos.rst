@@ -47,27 +47,6 @@ Two Dimensional Systems
     can be found in
     :download:`examples/gallery/brusselator.py <../examples/gallery/brusselator.py>`.
 
-.. card:: Fractional-order van der Pol System
-    :class-title: sd-text-center
-
-    .. image:: _static/gallery-van-der-pol-light.svg
-        :class: only-light
-        :width: 65%
-        :align: center
-        :alt: Fractional-order van der Pol system phase diagram
-
-    .. image:: _static/gallery-van-der-pol-dark.svg
-        :class: only-dark
-        :width: 65%
-        :align: center
-        :alt: Fractional-order van der Pol system phase diagram
-
-    +++
-
-    This example uses the Caputo derivative and reproduces Figure 5.26 from
-    [Petras2011]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/van-der-pol.py <../examples/gallery/van-der-pol.py>`.
-
 .. card:: Fractional-order Duffing System
     :class-title: sd-text-center
 
@@ -88,6 +67,27 @@ Two Dimensional Systems
     This example uses the Caputo derivative and reproduces Figure 5.29 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/duffing.py <../examples/gallery/duffing.py>`.
+
+.. card:: Fractional-order van der Pol System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-van-der-pol-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order van der Pol system phase diagram
+
+    .. image:: _static/gallery-van-der-pol-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order van der Pol system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.26 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/van-der-pol.py <../examples/gallery/van-der-pol.py>`.
 
 Three Dimensional Systems
 -------------------------
@@ -135,6 +135,26 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/chen.py <../examples/gallery/chen.py>`.
 
+.. card:: Fractional-order Genesio-Tesi System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-genesio-tesi-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Genesio-Tesi system phase diagram
+
+    .. image:: _static/gallery-genesio-tesi-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Genesio-Tesi system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.40 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/genesio_tesi.py <../examples/gallery/genesio_tesi.py>`.
 
 .. card:: Fractional-order Lü System
     :class-title: sd-text-center
