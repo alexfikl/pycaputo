@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pathlib
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -165,7 +166,7 @@ class Solution:
 
 
 def fracevolve(
-    m: FractionalDifferentialEquationMethod,
+    m: FractionalDifferentialEquationMethod[Any],
     *,
     dtinit: float | None = None,
     quiet: bool = False,
@@ -198,10 +199,10 @@ def fracevolve(
                     np.linalg.norm(event.y),
                     time.short(),
                 )
-            time.tic()
+                time.tic()
 
-        ts.append(event.t)
-        ys.append(event.y)
+            ts.append(event.t)
+            ys.append(event.y)
 
     return Solution(t=np.array(ts), y=np.array(ys).squeeze().T)
 

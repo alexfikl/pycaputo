@@ -45,8 +45,8 @@ def get_logger(
 
     assert isinstance(level, int)
 
-    root, module = module.split(".", maxsplit=1)
-    root = logging.getLogger(root)
+    name, module = module.split(".", maxsplit=1)
+    root = logging.getLogger(name)
 
     if not root.handlers:
         from rich.highlighter import NullHighlighter

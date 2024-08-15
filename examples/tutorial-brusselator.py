@@ -85,9 +85,10 @@ except ImportError as exc:
     logger.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
-from pycaputo.utils import figure, get_default_dark, set_recommended_matplotlib
+from pycaputo import _get_default_dark  # noqa: PLC2701
+from pycaputo.utils import figure, set_recommended_matplotlib
 
-for dark, suffix in get_default_dark():
+for dark, suffix in _get_default_dark():
     set_recommended_matplotlib(dark=dark)
 
     t = np.array(ts)
