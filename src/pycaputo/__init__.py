@@ -268,7 +268,7 @@ def fracplot(
     dim = sol.y.shape[0]
     overrides = {"lines": {"linewidth": 1}} if dim == 3 else {}
 
-    suffixes = _get_default_dark(default=dark)
+    suffixes = _get_default_dark(default=bool(dark)) if dark is None else ((dark, ""),)
     outfile = None
 
     from pycaputo.utils import figure, set_recommended_matplotlib
