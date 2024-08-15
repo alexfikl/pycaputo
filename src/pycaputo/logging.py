@@ -45,23 +45,25 @@ def get_logger(
 
     assert isinstance(level, int)
 
-    logger = logging.getLogger(module)
-    logger.setLevel(level)
+    root, module = module.split(".", maxsplit=1)
+    root = logging.getLogger(root)
 
-    from rich.highlighter import NullHighlighter
-    from rich.logging import RichHandler
+    if not root.handlers:
+        from rich.highlighter import NullHighlighter
+        from rich.logging import RichHandler
 
-    no_color = "NO_COLOR" in os.environ
-    handler = RichHandler(
-        level,
-        show_time=True,
-        omit_repeated_times=False,
-        show_level=True,
-        show_path=True,
-        highlighter=NullHighlighter() if no_color else None,
-        markup=True,
-    )
+        no_color = "NO_COLOR" in os.environ
+        handler = RichHandler(
+            level,
+            show_time=True,
+            omit_repeated_times=False,
+            show_level=True,
+            show_path=True,
+            highlighter=NullHighlighter() if no_color else None,
+            markup=True,
+        )
 
-    logger.addHandler(handler)
+        root.addHandler(handler)
 
-    return logger
+    root.setLevel(level)
+    return root.getChild(module) if module else root
