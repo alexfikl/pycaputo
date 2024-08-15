@@ -33,6 +33,9 @@ ARTIFACTS = {
         "tutorial-caputo-l1.svg",
     },
     # gallery examples
+    "gallery/arneodo.py": {
+        "gallery-arneodo.svg",
+    },
     "gallery/brusselator.py": {
         "gallery-brusselator.svg",
     },

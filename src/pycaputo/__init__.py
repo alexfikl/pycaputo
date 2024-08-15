@@ -213,7 +213,7 @@ def fracevolve(
 # {{{ fracplot
 
 
-def _get_default_dark() -> tuple[tuple[bool, str], ...]:
+def _get_default_dark(*, default: bool = False) -> tuple[tuple[bool, str], ...]:
     """Get combinations of light and dark flags.
 
     This function is meant to be used by the few example scripts used to generate
@@ -237,7 +237,7 @@ def _get_default_dark() -> tuple[tuple[bool, str], ...]:
             result = BOOLEAN_STATES.get(tmp, False)
             return ((result, "-dark" if result else "-light"),)
     else:
-        return ((False, ""),)
+        return ((default, ""),)
 
 
 def fracplot(
@@ -267,13 +267,12 @@ def fracplot(
     dim = sol.y.shape[0]
     overrides = {"lines": {"linewidth": 1}} if dim == 3 else {}
 
-    suffixes = ((False, ""),) if dark is None else _get_default_dark()
+    suffixes = _get_default_dark(default=dark)
     outfile = None
 
     from pycaputo.utils import figure, set_recommended_matplotlib
 
     for dark_i, suffix_i in suffixes:
-        print(dark_i, repr(suffix_i))
         if filename is not None:
             outfile = filename.parent / f"{filename.stem}{suffix_i}{filename.suffix}"
 

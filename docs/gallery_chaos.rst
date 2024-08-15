@@ -92,6 +92,27 @@ Two Dimensional Systems
 Three Dimensional Systems
 -------------------------
 
+.. card:: Fractional-order Arneodo System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-arneodo-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Arneodo system phase diagram
+
+    .. image:: _static/gallery-arneodo-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Arneodo system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.43 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/arneodo.py <../examples/gallery/arneodo.py>`.
+
 .. card:: Fractional-order Lorenz System
     :class-title: sd-text-center
 
