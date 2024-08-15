@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import os
 import pathlib
 import sys
 import time
@@ -311,30 +310,6 @@ def check_usetex(*, s: bool) -> bool:
         return True
 
 
-def get_default_dark() -> tuple[tuple[bool, str], ...]:
-    """Get combinations of light and dark flags.
-
-    This function is meant to be used by the few example scripts used to generate
-    figures for the documentation. They can be configured to generate both light
-    and dark figures.
-
-    :returns: a tuple of ``(flag, suffix)`` for each light / dark combo.
-        This can be controlled by the ``PYCAPUTO_DARK`` environment variable,
-        which can be set to *True*, *False* or ``"both"``. The suffix is just
-        ``"-dark"`` or ``"-light"`` depending on the flag.
-    """
-
-    if "PYCAPUTO_DARK" in os.environ:
-        tmp = os.environ["PYCAPUTO_DARK"].lower().strip()
-        if tmp == "both":
-            return ((True, "-dark"), (False, "-light"))
-        else:
-            result = BOOLEAN_STATES.get(tmp, False)
-            return ((result, "-dark" if result else "-light"),)
-    else:
-        return ((False, ""),)
-
-
 def set_recommended_matplotlib(
     *,
     use_tex: bool | None = None,
@@ -370,6 +345,8 @@ def set_recommended_matplotlib(
     import matplotlib as mpl
 
     mpl.rcParams.update(mpl.rcParamsDefault)
+
+    import os
 
     if use_tex is None:
         use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)

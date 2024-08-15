@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+import pathlib
+from dataclasses import dataclass
+
 import numpy as np
 
 from pycaputo.derivatives import (
@@ -13,7 +16,14 @@ from pycaputo.derivatives import (
 )
 from pycaputo.differentiation import DerivativeMethod
 from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction, ScalarFunction
+from pycaputo.logging import get_logger
+from pycaputo.stepping import FractionalDifferentialEquationMethod
+from pycaputo.typing import Array, ArrayOrScalarFunction, PathLike, ScalarFunction
+
+logger = get_logger("pycaputo")
+
+
+# {{{ diff
 
 
 def diff(
@@ -42,6 +52,12 @@ def diff(
     return fracd.diff(m, f, p)
 
 
+# }}}
+
+
+# {{{ quad
+
+
 def quad(
     f: ArrayOrScalarFunction,
     p: Points,
@@ -66,6 +82,12 @@ def quad(
     m = fracq.guess_method_for_order(p, d)
 
     return fracq.quad(m, f, p)
+
+
+# }}}
+
+
+# {{{ grad
 
 
 def grad(
@@ -126,4 +148,164 @@ def grad(
     return result
 
 
-__all__ = ("diff", "grad", "quad")
+# }}}
+
+
+# {{{ fracevolve
+
+
+@dataclass(frozen=True)
+class Solution:
+    """A solution to a fractional-order differential equation."""
+
+    t: Array
+    """Time steps at which the solution was approximated."""
+    y: Array
+    """Solution values at each time step."""
+
+
+def fracevolve(
+    m: FractionalDifferentialEquationMethod,
+    *,
+    dtinit: float | None = None,
+    quiet: bool = False,
+    log_per_step: int = 50,
+) -> Solution:
+    """Evolve the given method *m* to its final time and capture the solution.
+
+    :arg dtinit: initial guess for the time step (see also
+        :func:`~pycaputo.stepping.evolve`).
+    :arg quiet: if *True*, suppress any output.
+    :arg log_per_step: a number of steps at which to print logging output for the
+        evolution. This can be completely disabled using *quiet*.
+    """
+    from pycaputo.events import StepCompleted
+    from pycaputo.stepping import evolve
+    from pycaputo.utils import TicTocTimer
+
+    ts = []
+    ys = []
+    time = TicTocTimer()
+
+    time.tic()
+    for event in evolve(m, dtinit=dtinit):
+        if isinstance(event, StepCompleted):
+            if not quiet and event.iteration % log_per_step == 0:
+                time.toc()
+                logger.info(
+                    "%s norm %.12e (%s)",
+                    event,
+                    np.linalg.norm(event.y),
+                    time.short(),
+                )
+            time.tic()
+
+        ts.append(event.t)
+        ys.append(event.y)
+
+    return Solution(t=np.array(ts), y=np.array(ys).squeeze().T)
+
+
+# }}}
+
+
+# {{{ fracplot
+
+
+def _get_default_dark() -> tuple[tuple[bool, str], ...]:
+    """Get combinations of light and dark flags.
+
+    This function is meant to be used by the few example scripts used to generate
+    figures for the documentation. They can be configured to generate both light
+    and dark figures.
+
+    :returns: a tuple of ``(flag, suffix)`` for each light / dark combo.
+        This can be controlled by the ``PYCAPUTO_DARK`` environment variable,
+        which can be set to *True*, *False* or ``"both"``. The suffix is just
+        ``"-dark"`` or ``"-light"`` depending on the flag.
+    """
+    import os
+
+    from pycaputo.utils import BOOLEAN_STATES
+
+    if "PYCAPUTO_DARK" in os.environ:
+        tmp = os.environ["PYCAPUTO_DARK"].lower().strip()
+        if tmp == "both":
+            return ((True, "-dark"), (False, "-light"))
+        else:
+            result = BOOLEAN_STATES.get(tmp, False)
+            return ((result, "-dark" if result else "-light"),)
+    else:
+        return ((False, ""),)
+
+
+def fracplot(
+    sol: Solution,
+    filename: PathLike | None = None,
+    *,
+    dark: bool | None = None,
+) -> None:
+    """Plot the solution of a fractional differential equation from :func:`fracevolve`.
+
+    This function is very opinionated at the moment and mainly used for the
+    examples. It can be extended, but the lower level functions, such as
+    :func:`pycaputo.utils.figure` and direct calls to :mod:`matplotlib` should be
+    used instead.
+
+    :arg dark: if *True*, a dark themed plot is created instead.
+    """
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        logger.warning("'matplotlib' is not available.")
+        return
+
+    if filename is not None:
+        filename = pathlib.Path(filename)
+
+    dim = sol.y.shape[0]
+    overrides = {"lines": {"linewidth": 1}} if dim == 3 else {}
+
+    suffixes = ((False, ""),) if dark is None else _get_default_dark()
+    outfile = None
+
+    from pycaputo.utils import figure, set_recommended_matplotlib
+
+    for dark_i, suffix_i in suffixes:
+        print(dark_i, repr(suffix_i))
+        if filename is not None:
+            outfile = filename.parent / f"{filename.stem}{suffix_i}{filename.suffix}"
+
+        set_recommended_matplotlib(dark=dark_i, overrides=overrides)
+        t = sol.t
+        y = sol.y
+
+        if dim == 1:
+            with figure(filename) as fig:
+                ax = fig.gca()
+
+                ax.plot(t, y)
+                ax.set_xlabel("$t$")
+                ax.set_ylabel("$y$")
+        elif dim == 2:
+            with figure(filename) as fig:
+                ax = fig.gca()
+
+                ax.plot(y[0], y[1])
+                ax.set_xlabel("$x$")
+                ax.set_ylabel("$y$")
+        elif dim == 3:
+            with figure(outfile, projection="3d") as fig:
+                ax = fig.gca()
+                ax.view_init(elev=15, azim=-55, roll=0)
+
+                ax.plot(y[0], y[1], y[2])
+                ax.set_xlabel("$x$")
+                ax.set_ylabel("$y$")
+        else:
+            raise ValueError(f"Unsupported system dimension: {dim}")
+
+
+# }}}
+
+__all__ = ("diff", "fracevolve", "grad", "quad")
