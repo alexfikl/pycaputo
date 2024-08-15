@@ -218,3 +218,24 @@ Three Dimensional Systems
     This example uses the Caputo derivative and reproduces Figure 5.37 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/liu.py <../examples/gallery/liu.py>`.
+
+.. card:: Fractional-order Rössler System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-rossler-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Rössler system phase diagram
+
+    .. image:: _static/gallery-rossler-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Rössler system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.44 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/rossler.py <../examples/gallery/rossler.py>`.

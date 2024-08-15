@@ -417,6 +417,51 @@ class Lu(Function):
 # }}}
 
 
+# {{{ Rössler
+
+
+@dataclass(frozen=True)
+class Rossler(Function):
+    r"""Implements the right-hand side of the Rössler system (see Equation 5.75
+    from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            -y - z, \\
+        D^\alpha[y](t) & =
+            x + a y, \\
+        D^\alpha[z](t) & =
+            b + z (x - c).
+        \end{aligned}
+    """
+
+    a: float
+    """Parameter in the Rössler system."""
+    b: float
+    """Parameter in the Rössler system."""
+    c: float
+    """Parameter in the Rössler system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            -y[1] - y[2],
+            y[0] + self.a * y[1],
+            self.b + y[2] * (y[0] - self.c),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [0, -1.0, -1.0],
+            [1.0, self.a, 0.0],
+            [y[2], 0.0, y[0] - self.c],
+        ])
+
+
+# }}}
+
+
 # {{{ van der Pol
 
 
