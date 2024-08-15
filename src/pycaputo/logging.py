@@ -45,7 +45,7 @@ def get_logger(
 
     assert isinstance(level, int)
 
-    name, module = module.split(".", maxsplit=1)
+    name, *rest = module.split(".", maxsplit=1)
     root = logging.getLogger(name)
 
     if not root.handlers:
@@ -66,4 +66,4 @@ def get_logger(
         root.addHandler(handler)
 
     root.setLevel(level)
-    return root.getChild(module) if module else root
+    return root.getChild(rest[0]) if rest else root
