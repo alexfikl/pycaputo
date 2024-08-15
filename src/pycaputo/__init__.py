@@ -245,6 +245,7 @@ def fracplot(
     filename: PathLike | None = None,
     *,
     dark: bool | None = None,
+    azimuth: float = -55.0,
 ) -> None:
     """Plot the solution of a fractional differential equation from :func:`fracevolve`.
 
@@ -297,7 +298,7 @@ def fracplot(
         elif dim == 3:
             with figure(outfile, projection="3d") as fig:
                 ax = fig.gca()
-                ax.view_init(elev=15, azim=-55, roll=0)
+                ax.view_init(elev=15, azim=azimuth, roll=0)
 
                 ax.plot(y[0], y[1], y[2])
                 ax.set_xlabel("$x$")

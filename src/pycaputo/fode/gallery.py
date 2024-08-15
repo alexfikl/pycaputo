@@ -417,6 +417,49 @@ class Lu(Function):
 # }}}
 
 
+# {{{ Newton-Leipnik
+
+
+@dataclass(frozen=True)
+class NewtonLeipnik(Function):
+    r"""Implements the right-hand side of the Newton-Leipnik system (see Equation
+    5.79 from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            -a x + y + 10 y z, \\
+        D^\alpha[y](t) & =
+            -x - \frac{4}{10} y + 5 x z, \\
+        D^\alpha[z](t) & =
+            b z - 5 x y.
+        \end{aligned}
+    """
+
+    a: float
+    """Parameter for the Newton-Leipnik system."""
+    b: float
+    """Parameter for the Newton-Leipnik system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            -self.a * y[0] + y[1] + 10.0 * y[1] * y[2],
+            -y[0] - 0.4 * y[1] + 5.0 * y[0] * y[2],
+            self.b * y[2] - 5.0 * y[0] * y[1],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.a, 1.0 + 10.0 * y[2], 10.0 * y[1]],
+            [-1.0 + 5.0 * y[2], -0.4, 5.0 * y[0]],
+            [-5.0 * y[1], -5.0 * y[0], self.b],
+        ])
+
+
+# }}}
+
+
 # {{{ Rössler
 
 

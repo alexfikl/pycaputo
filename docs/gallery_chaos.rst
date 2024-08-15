@@ -219,6 +219,27 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/liu.py <../examples/gallery/liu.py>`.
 
+.. card:: Fractional-order Newton-Leipnik System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-newton-leipnik-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Newton-Leipnik system phase diagram
+
+    .. image:: _static/gallery-newton-leipnik-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Newton-Leipnik system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.46 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/newton-leipnik.py <../examples/gallery/newton-leipnik.py>`.
+
 .. card:: Fractional-order Rössler System
     :class-title: sd-text-center
 
