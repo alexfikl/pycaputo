@@ -261,6 +261,27 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lotka-volterra3.py <../examples/gallery/lotka-volterra3.py>`.
 
+.. card:: Fractional-order Ma-Chen Financial System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-ma-chen-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Ma-Chen Financial system phase diagram
+
+    .. image:: _static/gallery-ma-chen-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Ma-Chen Financial system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and reproduces Figure 5.55 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/ma-chen.py <../examples/gallery/ma-chen.py>`.
+
 .. card:: Fractional-order Newton-Leipnik System
     :class-title: sd-text-center
 

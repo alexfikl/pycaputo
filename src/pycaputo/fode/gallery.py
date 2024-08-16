@@ -551,6 +551,65 @@ class Lu(Function):
 # }}}
 
 
+# {{{ Ma-Chen
+
+
+@dataclass(frozen=True)
+class MaChen(Function):
+    r"""Implements the right-hand side of the Ma-Chen financial system (see
+    Equation 5.88 from [Petras2011]_).
+
+    .. math::
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            z + (y - a) x, \\
+        D^\alpha[y](t) & =
+            1 - b y - x^2, \\
+        D^\alpha[z](t) & =
+            -x - c z.
+        \end{aligned}
+
+    where :math:`x` represents the interest rate, :math:`y` represents the
+    investment demand, and :math:`z` represents the price index.
+    """
+
+    a: float
+    """Savings amount."""
+    b: float
+    """Cost per inverstment."""
+    c: float
+    """Elasticity of demand of the commercial market."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.a < 0:
+                raise ValueError(f"'a' must be positive: {self.a}")
+
+            if self.b < 0:
+                raise ValueError(f"'b' must be positive: {self.b}")
+
+            if self.c < 0:
+                raise ValueError(f"'c' must be positive: {self.c}")
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            y[2] + (y[1] - self.a) * y[0],
+            1.0 - self.b * y[1] - y[0] ** 2,
+            -y[0] - self.c * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [y[1] - self.a, y[0], 1.0],
+            [2.0 * y[0], -self.b, 0.0],
+            [-1.0, 0.0, -self.c],
+        ])
+
+
+# }}}
+
+
 # {{{ Newton-Leipnik
 
 
