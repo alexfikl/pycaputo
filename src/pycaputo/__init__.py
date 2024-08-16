@@ -282,14 +282,14 @@ def fracplot(
         y = sol.y
 
         if dim == 1:
-            with figure(filename) as fig:
+            with figure(outfile) as fig:
                 ax = fig.gca()
 
                 ax.plot(t, y)
                 ax.set_xlabel("$t$")
                 ax.set_ylabel("$y$")
         elif dim == 2:
-            with figure(filename) as fig:
+            with figure(outfile) as fig:
                 ax = fig.gca()
 
                 ax.plot(y[0], y[1])

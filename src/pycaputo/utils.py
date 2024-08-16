@@ -452,9 +452,10 @@ def figure(
     try:
         yield fig
     finally:
-        for ax in fig.axes:
-            assert isinstance(ax, Axes3D)
-            ax.set_box_aspect((4, 4, 4), zoom=1.1)
+        if projection == "3d":
+            for ax in fig.axes:
+                assert isinstance(ax, Axes3D)
+                ax.set_box_aspect((4, 4, 4), zoom=1.1)
 
         if filename is not None:
             savefig(fig, filename, **kwargs)

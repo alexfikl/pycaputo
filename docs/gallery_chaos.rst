@@ -68,6 +68,27 @@ Two Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/duffing.py <../examples/gallery/duffing.py>`.
 
+.. card:: Fractional-order Lotka-Volterra System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-lotka-volterra2-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Lotka-Volterra system phase diagram
+
+    .. image:: _static/gallery-lotka-volterra2-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Lotka-Volterra system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative. The complete setup (with parameters)
+    can be found in
+    :download:`examples/gallery/lotka-volterra.py <../examples/gallery/lotka-volterra.py>`.
+
 .. card:: Fractional-order van der Pol System
     :class-title: sd-text-center
 

@@ -319,6 +319,140 @@ class Lorenz(Function):
 # }}}
 
 
+# {{{ Lotka-Volterra
+
+
+@dataclass(frozen=True)
+class LotkaVolterra2(Function):
+    r"""Implements the right-hand side of the Lotka-Volterra system (see Equation
+    5.82 from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            x (\alpha - r x - \beta y), \\
+        D^\alpha[y](t) & =
+            -y (\gamma - \delta x).
+        \end{aligned}
+
+    The Lotka-Volterra model is usually referred to as a predator-prey model, where
+    :math:`x` denotes the prey and :math:`y` denotes the predator.
+    """
+
+    alpha: float
+    """Parameter in the Lotka-Volterra system, which represents the prey per
+    capita growth rate.
+    """
+    beta: float
+    """Parameter in the Lotka-Volterra system, which represents the effect of
+    the presence of predators on the prey death rate.
+    """
+    gamma: float
+    """Parameter in the Lotka-Volterray system, which represents the predator
+    per capita death rate.
+    """
+    delta: float
+    """Parameter in the Lotka-Volterray system, which represents the effect of
+    presence of prey on the predator's growth rate.
+    """
+    r: float
+    """Parameter in the Lotka-Volterra system, is taken as :math:`r = 0` in the
+    standard system.
+    """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.alpha < 0.0:
+                raise ValueError(f"'alpha' must be positive: {self.alpha}")
+
+            if self.beta < 0.0:
+                raise ValueError(f"'beta' must be positive: {self.beta}")
+
+            if self.gamma < 0.0:
+                raise ValueError(f"'gamma' must be positive: {self.gamma}")
+
+            if self.delta < 0.0:
+                raise ValueError(f"'delta' must be positive: {self.delta}")
+
+            if self.r < 0.0:
+                raise ValueError(f"'r' must be positive: {self.r}")
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            y[0] * (self.alpha - self.r * y[0] - self.beta * y[1]),
+            -y[1] * (self.gamma - self.delta * y[0]),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [self.alpha - 2 * self.r * y[0] - self.beta * y[1], -self.beta * y[0]],
+            [self.delta * y[1], self.delta * y[0] - self.gamma],
+        ])
+
+
+@dataclass(frozen=True)
+class LotkaVolterra3(Function):
+    r"""Implements the right-hand side of a Lotka-Volterra system with two
+    predators (see Equation 5.83 from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            a x - b x y + e x^2 - s x^2 z, \\
+        D^\alpha[y](t) & =
+            -c y + d x y, \\
+        D^\alpha[z](t) & =
+            -p z + s x^2 z.
+        \end{aligned}
+
+    When taking :math:`p = s = 0` and :math:`e = -r`, we obtain the standard
+    predator-prey model :class:`LotkaVolterra2`.
+    """
+
+    a: float
+    """Parameter in the Lotka-Volterra system."""
+    b: float
+    """Parameter in the Lotka-Volterra system."""
+    c: float
+    """Parameter in the Lotka-Volterra system."""
+    d: float
+    """Parameter in the Lotka-Volterra system."""
+    e: float
+    """Parameter in the Lotka-Volterra system."""
+    p: float
+    """Parameter in the Lotka-Volterra system."""
+    s: float
+    """Parameter in the Lotka-Volterra system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        a, b, c, d, e = self.a, self.b, self.c, self.d, self.e
+        p, s = self.p, self.s
+        return np.array([
+            a * y[0] - b * y[0] * y[1] + e * y[0] ** 2 - s * y[0] ** 2 * y[2],
+            -c * y[1] + d * y[0] * y[1],
+            -p * y[2] + s * y[0] ** 2 * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        a, b, c, d, e = self.a, self.b, self.c, self.d, self.e
+        p, s = self.p, self.s
+        return np.array([
+            [
+                a - b * y[1] + 2 * e * y[0] - 2 * s * y[0] * y[2],
+                -b * y[0],
+                -s * y[0] ** 2,
+            ],
+            [d * y[1], -c + d * y[0], 0],
+            [2 * s * y[0] * y[2], 0, -p + s * y[0] ** 2],
+        ])
+
+
+# }}}
+
+
 # {{{ Liu
 
 
