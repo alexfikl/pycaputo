@@ -357,8 +357,8 @@ class LotkaVolterra2(Function):
     presence of prey on the predator's growth rate.
     """
     r: float
-    """Parameter in the Lotka-Volterra system, is taken as :math:`r = 0` in the
-    standard system.
+    """Parameter in the Lotka-Volterra system, which is taken as :math:`r = 0`
+    in the standard system.
     """
 
     if __debug__:

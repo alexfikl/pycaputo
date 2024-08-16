@@ -43,8 +43,9 @@ Two Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative. The complete setup (with parameters)
-    can be found in
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Brusselator` class. The complete setup
+    (with parameters) can be found in
     :download:`examples/gallery/brusselator.py <../examples/gallery/brusselator.py>`.
 
 .. card:: Fractional-order Duffing System
@@ -64,7 +65,8 @@ Two Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.29 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Duffing` class to reproduce Figure 5.29 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/duffing.py <../examples/gallery/duffing.py>`.
 
@@ -85,8 +87,9 @@ Two Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative. The complete setup (with parameters)
-    can be found in
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.LotkaVolterra2` class. The complete setup
+    (with parameters) can be found in
     :download:`examples/gallery/lotka-volterra.py <../examples/gallery/lotka-volterra.py>`.
 
 .. card:: Fractional-order van der Pol System
@@ -106,7 +109,8 @@ Two Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.26 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.VanDerPol` class to reproduce Figure 5.26 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/van-der-pol.py <../examples/gallery/van-der-pol.py>`.
 
@@ -130,7 +134,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.43 from
+    This example uses the Caputo derivative and
+    :class:`~pycaputo.fode.gallery.Arneodo` class to reproduce Figure 5.43 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/arneodo.py <../examples/gallery/arneodo.py>`.
 
@@ -151,7 +156,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.32 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Lorenz` class to reproduce Figure 5.32 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
 
@@ -173,7 +179,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.33 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Chen` class to reproduce Figure 5.33 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/chen.py <../examples/gallery/chen.py>`.
 
@@ -194,7 +201,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.40 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.GenesioTesi` class to reproduce Figure 5.40 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/genesio_tesi.py <../examples/gallery/genesio_tesi.py>`.
 
@@ -215,7 +223,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.35 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Lu` class to reproduce Figure 5.35 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lu.py <../examples/gallery/lu.py>`.
 
@@ -236,7 +245,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.37 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Liu` class to reproduce Figure 5.37 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/liu.py <../examples/gallery/liu.py>`.
 
@@ -257,8 +267,9 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.53 from
-    [Petras2011]_. The complete setup (with parameters) can be found in
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.LotkaVolterra3` class to reproduce Figure 5.53
+    from [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lotka-volterra3.py <../examples/gallery/lotka-volterra3.py>`.
 
 .. card:: Fractional-order Ma-Chen Financial System
@@ -278,7 +289,8 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.55 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.MaChen` class to reproduce Figure 5.55 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/ma-chen.py <../examples/gallery/ma-chen.py>`.
 
@@ -299,8 +311,9 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.46 from
-    [Petras2011]_. The complete setup (with parameters) can be found in
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.NewtonLeipnik` class to reproduce Figure 5.46
+    from [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/newton-leipnik.py <../examples/gallery/newton-leipnik.py>`.
 
 .. card:: Fractional-order Rössler System
@@ -320,6 +333,7 @@ Three Dimensional Systems
 
     +++
 
-    This example uses the Caputo derivative and reproduces Figure 5.44 from
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Rossler` class to reproduce Figure 5.44 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/rossler.py <../examples/gallery/rossler.py>`.
