@@ -54,6 +54,9 @@ ARTIFACTS = {
     "gallery/lotka-volterra.py": {
         "gallery-lotka-volterra2.svg",
     },
+    "gallery/lotka-volterra3.py": {
+        "gallery-lotka-volterra3.svg",
+    },
     "gallery/liu.py": {
         "gallery-liu.svg",
     },
