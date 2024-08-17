@@ -54,7 +54,7 @@ imagesize==1.4.1
     # via sphinx
 importlib-metadata==8.2.0 ; python_version < '3.10'
     # via sphinx
-importlib-resources==6.4.0 ; python_version < '3.10'
+importlib-resources==6.4.2 ; python_version < '3.10'
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
@@ -132,7 +132,7 @@ reuse==4.0.3
     # via pycaputo (pyproject.toml)
 rich==13.7.1
     # via pycaputo (pyproject.toml)
-ruff==0.5.7
+ruff==0.6.1
     # via pycaputo (pyproject.toml)
 scipy==1.13.1
     # via pycaputo (pyproject.toml)
@@ -173,7 +173,7 @@ tomli==2.0.1 ; python_version < '3.11'
     #   pyproject-fmt
     #   pytest
     #   sphinx
-tomlkit==0.13.1
+tomlkit==0.13.2
     # via reuse
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml)
@@ -186,7 +186,7 @@ typos==1.23.6
     # via pycaputo (pyproject.toml)
 urllib3==2.2.2
     # via requests
-uv==0.2.36
+uv==0.2.37
     # via pycaputo (pyproject.toml)
 zipp==3.20.0 ; python_version < '3.10'
     # via
