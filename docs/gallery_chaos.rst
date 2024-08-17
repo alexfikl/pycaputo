@@ -161,7 +161,6 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
 
-
 .. card:: Fractional-order Chen System
     :class-title: sd-text-center
 
@@ -183,6 +182,28 @@ Three Dimensional Systems
     :class:`~pycaputo.fode.gallery.Chen` class to reproduce Figure 5.33 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/chen.py <../examples/gallery/chen.py>`.
+
+.. card:: Fractional-order Cellular Neural Network (3 cells) System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-cnn-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Cellular Neural Network system phase diagram
+
+    .. image:: _static/gallery-cnn-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Cellular Neural Network system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.CellularNeuralNetwork3` class to reproduce
+    Figure 5.58 from [Petras2011]_. The complete setup (with parameters) can be
+    found in :download:`examples/gallery/cnn.py <../examples/gallery/cnn.py>`.
 
 .. card:: Fractional-order Genesio-Tesi System
     :class-title: sd-text-center

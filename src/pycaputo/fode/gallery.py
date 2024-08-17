@@ -157,6 +157,61 @@ class Chen(Function):
 # }}}
 
 
+# {{{ Cellular Neural Network
+
+
+@dataclass(frozen=True)
+class CellularNeuralNetwork3(Function):
+    r"""Implements the right-hand side of the three-cell system (see Equation
+    5.93 from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            -x + p_1 f(x) - s f(y) - s f(z), \\
+        D^\alpha[y](t) & =
+            -y - s f(x) + p_2 f(y) - r f(z), \\
+        D^\alpha[z](t) & =
+            -z - s f(x) + r f(y) + p_3 f(z).
+        \end{aligned}
+
+    where the activation function :math:`f` is given by
+
+    .. math::
+
+        f(s) = \frac{1}{2} (|s + 1| - |s - 1|).
+    """
+
+    p: tuple[float, float, float]
+    """Parameters for the CNN system diagonal."""
+    r: float
+    """Parameter for the CNN system."""
+    s: float
+    """Parameter for the CNN system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        f = (abs(y + 1) - abs(y - 1)) / 2.0
+        p, r, s = self.p, self.r, self.s
+        return np.array([
+            -y[0] + p[0] * f[0] - s * f[1] - s * f[2],
+            -y[1] - s * f[0] + p[1] * f[1] - r * f[2],
+            -y[2] - s * f[0] + r * f[1] + p[2] * f[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        df = np.where((y >= -1.0) & (y <= 1.0), 1, 0)
+        p, r, s = self.p, self.r, self.s
+        return np.array([
+            [-1.0 + p[0] * df[0], -s * df[1], -s * df[2]],
+            [-s * df[0], -1.0 + p[1] * df[1], -r * df[2]],
+            [-s * df[0], r * df[1], -1.0 + p[2] * df[2]],
+        ])
+
+
+# }}}
+
+
 # {{{ Duffing
 
 
