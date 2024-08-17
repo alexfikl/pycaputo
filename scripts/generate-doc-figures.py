@@ -78,6 +78,9 @@ ARTIFACTS = {
     "gallery/van-der-pol.py": {
         "gallery-van-der-pol.svg",
     },
+    "gallery/volta.py": {
+        "gallery-volta.svg",
+    },
 }
 
 

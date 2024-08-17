@@ -797,3 +797,48 @@ class VanDerPol(Function):
 
 
 # }}}
+
+
+# {{{ Volta
+
+
+@dataclass(frozen=True)
+class Volta(Function):
+    r"""Implements the right-hand side of the Volta system (see Equation 5.98
+    from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            -x - a y - y z, \\
+        D^\alpha[y](t) & =
+            -y - b x - x z, \\
+        D^\alpha[y](t) & =
+            1.0 + c z + x y.
+        \end{aligned}
+    """
+
+    a: float
+    """Parameter in the Volta system."""
+    b: float
+    """Parameter in the Volta system."""
+    c: float
+    """Parameter in the Volta system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            -y[0] - self.a * y[1] - y[1] * y[2],
+            -y[1] - self.b * y[0] - y[0] * y[2],
+            1.0 + self.c * y[2] + y[0] * y[1],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-1.0, -self.a - y[2], -y[1]],
+            [-self.b - y[2], -1.0, -y[0]],
+            [y[1], y[0], self.c],
+        ])
+
+
+# }}}

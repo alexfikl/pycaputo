@@ -358,3 +358,25 @@ Three Dimensional Systems
     :class:`~pycaputo.fode.gallery.Rossler` class to reproduce Figure 5.44 from
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/rossler.py <../examples/gallery/rossler.py>`.
+
+.. card:: Fractional-order Volta System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-volta-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Volta system phase diagram
+
+    .. image:: _static/gallery-volta-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Volta system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Volta` class to reproduce Figure 5.62 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/volta.py <../examples/gallery/volta.py>`.
