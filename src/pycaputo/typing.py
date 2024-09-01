@@ -4,25 +4,18 @@
 from __future__ import annotations
 
 import pathlib
-import sys
 from dataclasses import Field
 from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
+    ParamSpec,
     Protocol,
     TypeVar,
-    Union,
     runtime_checkable,
 )
 
 import numpy as np
-
-if sys.version_info >= (3, 10):
-    from typing import ParamSpec
-else:
-    from typing_extensions import ParamSpec
-
 
 # {{{ TypeVars
 
@@ -35,7 +28,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 """A generic invariant :class:`typing.TypeVar`."""
 
-PathLike = Union[pathlib.Path, str]
+PathLike = pathlib.Path | str
 """A union of types supported as paths."""
 
 
@@ -47,11 +40,11 @@ PathLike = Union[pathlib.Path, str]
 
 if TYPE_CHECKING:
     Array = np.ndarray[Any, Any]
-    Scalar = Union[np.number[Any], Array]
+    Scalar = np.number[Any] | Array
 else:
     Array = np.ndarray
     """Array type alias for :class:`numpy.ndarray`."""
-    Scalar = Union[np.number, Array]
+    Scalar = np.number | Array
     """Scalar type alias (generally a value convertible to a :class:`float`)."""
 
 
@@ -102,7 +95,7 @@ class DifferentiableScalarFunction(Protocol):
         """
 
 
-ArrayOrScalarFunction = Union[Array, ScalarFunction, DifferentiableScalarFunction]
+ArrayOrScalarFunction = Array | ScalarFunction | DifferentiableScalarFunction
 """A union of scalar functions."""
 
 

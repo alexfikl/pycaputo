@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Iterator
+from typing import Any
 
 import numpy as np
 

@@ -443,7 +443,7 @@ class SplineLagrange(RiemannLiouvilleMethod):
         """
         from numpy.polynomial.legendre import leggauss
 
-        xi, _ = leggauss(self.npoints)  # type: ignore[no-untyped-call]
+        xi, _ = leggauss(self.npoints)
         return np.array(xi + 1.0) / 2.0
 
 

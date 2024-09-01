@@ -210,7 +210,9 @@ def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
         ad_ex = AdExModel(param)
 
         y0 = np.array([rng.uniform(param.v_reset, param.v_peak) - 10, rng.uniform()])
-        r = np.array([dt**a / gamma(1 - a) * yi for a, yi in zip(alpha, y0)])
+        r = np.array([
+            dt**a / gamma(1 - a) * yi for a, yi in zip(alpha, y0, strict=True)
+        ])
 
         method = CaputoAdExIntegrateFireL1Model(
             derivative_order=alpha,
@@ -298,7 +300,9 @@ def test_ad_ex_solve() -> None:
             )
 
             h = np.array([gamma(2 - a) * dt**a for a in alpha])
-            r = np.array([dt**a / gamma(1 - a) * yi for a, yi in zip(alpha, y0)])
+            r = np.array([
+                dt**a / gamma(1 - a) * yi for a, yi in zip(alpha, y0, strict=True)
+            ])
 
             y = method.solve(t, y0, h, r)
             error = y - h * ad_ex.source(t, y) - r

@@ -4,8 +4,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field, fields
-from typing import Any, Generic, Iterable, TypeVar
+from typing import Any, Generic, TypeVar
 
 import numpy as np
 

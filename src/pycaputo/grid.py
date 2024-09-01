@@ -3,9 +3,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import cached_property
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 
@@ -44,7 +45,7 @@ class Points:
     @property
     def shape(self) -> tuple[int, ...]:
         """The shape of the points array in the set."""
-        return self.x.shape
+        return self.x.shape  # type: ignore[no-any-return]
 
     @cached_property
     def dx(self) -> Array:

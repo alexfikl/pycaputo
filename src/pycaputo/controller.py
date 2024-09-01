@@ -38,7 +38,7 @@ def _hairer_norm(x: Array, *, p: int | float | str = 2) -> float:
 
     from numbers import Number
 
-    if isinstance(p, (int, float, Number)):
+    if isinstance(p, int | float | Number):
         return float((np.sum(x**p) / x.size) ** (1.0 / p))
 
     raise ValueError(f"Unknown norm order: {p!r}")

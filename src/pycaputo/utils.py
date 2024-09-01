@@ -4,22 +4,17 @@
 from __future__ import annotations
 
 import pathlib
-import sys
 import time
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field, is_dataclass
 from types import TracebackType
-from typing import Any, Callable, Iterable, Iterator, Literal, NamedTuple
+from typing import Any, Concatenate, Literal, NamedTuple
 
 import numpy as np
 
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
-
-if sys.version_info >= (3, 10):
-    from typing import Concatenate
-else:
-    from typing_extensions import Concatenate
 
 logger = get_logger(__name__)
 
@@ -64,7 +59,7 @@ class EOCRecorder:
 
     def add_data_points(self, h: Array, error: Array) -> None:
         """Add multiple data points using :meth:`add_data_point`."""
-        for h_i, e_i in zip(h, error):
+        for h_i, e_i in zip(h, error, strict=True):
             self.add_data_point(h_i, e_i)
 
     def add_data_point(self, h: Any, error: Any) -> None:
@@ -175,7 +170,7 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
                 f"{error[i]:.6e}",
                 "---" if i == 0 else f"{order[i - 1, 1]:.3f}",
             )
-            for (_, error), order in zip(histories, orders)
+            for (_, error), order in zip(histories, orders, strict=True)
         ])
         lines.append((f"{h[i]:.3e}", *values))
 
@@ -196,7 +191,7 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
     formats = ["{:%s}" % w for w in widths]  # noqa: UP031
 
     return "\n".join([
-        " | ".join(fmt.format(value) for fmt, value in zip(formats, line))
+        " | ".join(fmt.format(value) for fmt, value in zip(formats, line, strict=True))
         for line in lines
     ])
 
@@ -230,7 +225,7 @@ def visualize_eoc(
         # {{{ plot eocs
 
         line = None
-        for eoc, marker in zip(eocs, markers):
+        for eoc, marker in zip(eocs, markers, strict=True):
             h, error = np.array(eoc.history).T
             ax.loglog(h, error, marker=marker, label=eoc.name)
 

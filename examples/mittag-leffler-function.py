@@ -56,7 +56,7 @@ set_recommended_matplotlib()
 with figure("mittag-leffler-figure10") as fig:
     ax = fig.gca()
 
-    for alpha, value in zip(E_alpha, E_alpha_value):
+    for alpha, value in zip(E_alpha, E_alpha_value, strict=True):
         ax.plot(x, value, label=rf"$\alpha = {alpha:.2f}$")
 
     ax.set_xlim([0.0, 5.0])
@@ -68,7 +68,7 @@ with figure("mittag-leffler-figure10") as fig:
 with figure("mittag-leffler-figure11") as fig:
     ax = fig.gca()
 
-    for beta, value in zip(E_beta, E_beta_value):
+    for beta, value in zip(E_beta, E_beta_value, strict=True):
         ax.plot(x, value, label=rf"$\beta = {beta:.2f}$")
 
     ax.set_xlim([0.0, 5.0])

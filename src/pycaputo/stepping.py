@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import cached_property, singledispatch
-from typing import TYPE_CHECKING, Any, Generic, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Generic
 
 import numpy as np
 from scipy.special import gamma
