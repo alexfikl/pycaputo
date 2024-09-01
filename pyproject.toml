@@ -44,7 +44,6 @@ dependencies = [
     "scipy>=1.7",
 ]
 optional-dependencies.dev = [
-    "differint @ git+https://github.com/differint/differint.git#egg=differint",
     "doc8",
     "matplotlib",
     "mypy",

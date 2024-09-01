@@ -34,8 +34,6 @@ contourpy==1.3.0
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
-differint @ git+https://github.com/differint/differint.git@0c4b6ebe8c0d97fc3b3b95c65dbb0323e3a23591#egg=differint
-    # via pycaputo (pyproject.toml)
 doc8==1.1.1
     # via pycaputo (pyproject.toml)
 docutils==0.20.1
@@ -78,7 +76,6 @@ numpy==2.1.0
     # via
     #   pycaputo (pyproject.toml)
     #   contourpy
-    #   differint
     #   matplotlib
     #   scipy
 packaging==24.1

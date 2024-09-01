@@ -9,7 +9,7 @@ Dependencies
 
 * Bumped minimum Python version to 3.10. This is a hard requirement, as it
   comes with some changes to the typing syntax and other functions
-  (e.g. we make use of `zip(..., strict=True)`).
+  (e.g. we make use of ``zip(..., strict=True)``).
 
 Features
 ^^^^^^^^

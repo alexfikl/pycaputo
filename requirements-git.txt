@@ -1,0 +1,3 @@
+# NOTE: Put git dependencies here that cannot be in `pyproject.toml` (PyPI does
+# not allow including direct dependencies like this)
+git+https://github.com/differint/differint.git#egg=differint

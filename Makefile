@@ -83,8 +83,10 @@ pin: $(REQUIREMENTS)	## Pin dependencies versions to requirements.txt
 .PHONY: pin
 
 pip-install:			## Install pinned dependencies from requirements.txt
-	$(PYTHON) -m pip install --upgrade pip hatchling wheel
-	$(PYTHON) -m pip install -r requirements-dev.txt -e .
+	$(PYTHON) -m pip install --upgrade editables hatchling pip wheel
+	$(PYTHON) -m pip install -r requirements-git.txt
+	$(PYTHON) -m pip install -r requirements-dev.txt
+	$(PYTHON) -m pip install --verbose --editable .
 .PHONY: pip-install
 
 test:					## Run pytest tests
