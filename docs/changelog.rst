@@ -1,8 +1,15 @@
 Changelog
 =========
 
-pycaputo (TBD)
---------------
+pycaputo 0.8.0 (September 1, 2024)
+----------------------------------
+
+Dependencies
+^^^^^^^^^^^^
+
+* Bumped minimum Python version to 3.10. This is a hard requirement, as it
+  comes with some changes to the typing syntax and other functions
+  (e.g. we make use of `zip(..., strict=True)`).
 
 Features
 ^^^^^^^^
@@ -26,8 +33,8 @@ Features
 * Added a lot of fancy chaotic systems to :mod:`pycaputo.fode.gallery`. These
   are mostly used to showcase the library.
 
-Changes
-^^^^^^^
+Breaking Changes
+^^^^^^^^^^^^^^^^
 
 * Renamed `pycaputo.differentiation.caputo.SpectralJacobi` to
   :class:`~pycaputo.differentiation.caputo.Jacobi`.
@@ -63,8 +70,8 @@ Features
   (:ghpr:`50`): ``exp``, ``sin``, ``cos`` and ``pow``. They're mainly based on
   the Mittag-Leffler function.
 
-Changes
-^^^^^^^
+Breaking Changes
+^^^^^^^^^^^^^^^^
 
 * Renamed ``RiemannLiouvilleFromCaputoDerivativeMethod`` to
   :class:`~pycaputo.differentiation.riemann_liouville.RiemannLiouvilleFromCaputoMethod`.
@@ -95,8 +102,8 @@ Features
   is subject to a lot of change, but in general it is desired to have some
   examples for testing and demonstration.
 
-Changes
-^^^^^^^
+Breaking Changes
+^^^^^^^^^^^^^^^^
 
 * The base :class:`~pycaputo.derivatives.FractionalOperator` no longer defines
   an ``order`` attribute. This does not make sense for more complex operators
