@@ -7,6 +7,10 @@ pycaputo TBD (TDB)
 Features
 ^^^^^^^^
 
+* Add :class:`~pycaputo.fode.caputo.BackwardEuler` as a special case of
+  :class:`~pycaputo.fode.caputo.WeightedEuler` (that should also be slightly
+  faster).
+
 pycaputo 0.8.0 (September 1, 2024)
 ----------------------------------
 

@@ -69,6 +69,59 @@ class CaputoProductIntegrationMethod(ProductIntegrationMethod[StateFunctionT]):
         ])
 
 
+@dataclass(frozen=True)
+class CaputoImplicitProductIntegrationMethod(
+    CaputoProductIntegrationMethod[StateFunctionT]
+):
+    source_jac: StateFunctionT | None
+    r"""Jacobian of
+    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
+    By default, implicit methods use :mod:`scipy` for their root finding,
+    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
+    """
+
+    # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
+    # some specific application (undocumented for now).
+
+    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
+        """
+        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
+            or :func:`scipy.optimize.root`.
+        """
+        if scalar:
+            return {}
+        else:
+            # NOTE: the default hybr does not use derivatives, so use lm instead
+            # FIXME: will need to maybe benchmark these a bit?
+            return {"method": "lm" if self.source_jac else None}
+
+    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
+        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
+        implicit equation.
+
+        This function should be overwritten for specific applications if better
+        solvers are known. For example, many problems can be solved explicitly
+        or approximated to a very good degree to provide a better *y0*.
+        """
+        from pycaputo.implicit import solve
+
+        result = solve(
+            self.source,
+            self.source_jac,
+            t,
+            y0,
+            c,
+            r,
+            **self._get_kwargs(scalar=y0.size == 1),
+        )
+
+        if __debug__:
+            error = la.norm(result - c * self.source(t, result) - r)
+            assert error < 1.0e-8 * la.norm(result)
+
+        return result
+
+
 @make_initial_condition.register(CaputoProductIntegrationMethod)
 def _make_initial_condition_caputo(
     m: CaputoProductIntegrationMethod[StateFunctionT],
@@ -150,60 +203,12 @@ def _advance_caputo_forward_euler(
 
 
 @dataclass(frozen=True)
-class BackwardEuler(CaputoProductIntegrationMethod[StateFunctionT]):
+class BackwardEuler(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
     """The first-order backward Euler discretization of the Caputo derivative."""
-
-    source_jac: StateFunctionT | None
-    r"""Jacobian of
-    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
-    By default, implicit methods use :mod:`scipy` for their root finding,
-    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
-    """
 
     @property
     def order(self) -> float:
         return 1.0
-
-    # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
-    # some specific application (undocumented for now).
-
-    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
-        """
-        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
-            or :func:`scipy.optimize.root`.
-        """
-        if scalar:
-            return {}
-        else:
-            # NOTE: the default hybr does not use derivatives, so use lm instead
-            # FIXME: will need to maybe benchmark these a bit?
-            return {"method": "lm" if self.source_jac else None}
-
-    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
-        implicit equation.
-
-        This function should be overwritten for specific applications if better
-        solvers are known. For example, many problems can be solved explicitly
-        or approximated to a very good degree to provide a better *y0*.
-        """
-        from pycaputo.implicit import solve
-
-        result = solve(
-            self.source,
-            self.source_jac,
-            t,
-            y0,
-            c,
-            r,
-            **self._get_kwargs(scalar=y0.size == 1),
-        )
-
-        if __debug__:
-            error = la.norm(result - c * self.source(t, result) - r)
-            assert error < 1.0e-8 * la.norm(result)
-
-        return result
 
 
 @advance.register(BackwardEuler)
@@ -240,7 +245,7 @@ def _advance_caputo_backward_euler(
 
 
 @dataclass(frozen=True)
-class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
+class WeightedEuler(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
     r"""The weighted Euler discretization of the Caputo derivative.
 
     The weighted Euler method is a convex combination of the forward Euler
@@ -259,13 +264,6 @@ class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
     of :math:`\theta = 1/2` gives the standard Crank-Nicolson method.
     """
 
-    source_jac: StateFunctionT | None
-    r"""Jacobian of
-    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
-    By default, implicit methods use :mod:`scipy` for their root finding,
-    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
-    """
-
     if __debug__:
 
         def __post_init__(self) -> None:
@@ -277,41 +275,6 @@ class WeightedEuler(CaputoProductIntegrationMethod[StateFunctionT]):
     @property
     def order(self) -> float:
         return (1.0 + self.smallest_derivative_order) if self.theta == 0.5 else 1.0
-
-    # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
-    # some specific application (undocumented for now).
-
-    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
-        """
-        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
-            or :func:`scipy.optimize.root`.
-        """
-        if scalar:
-            return {}
-        else:
-            # NOTE: the default hybr does not use derivatives, so use lm instead
-            # FIXME: will need to maybe benchmark these a bit?
-            return {"method": "lm" if self.source_jac else None}
-
-    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
-        implicit equation.
-
-        This function should be overwritten for specific applications if better
-        solvers are known. For example, many problems can be solved explicitly
-        or approximated to a very good degree to provide a better *y0*.
-        """
-        from pycaputo.implicit import solve
-
-        return solve(
-            self.source,
-            self.source_jac,
-            t,
-            y0,
-            c,
-            r,
-            **self._get_kwargs(scalar=y0.size == 1),
-        )
 
 
 def _update_caputo_weighted_euler(
@@ -372,64 +335,16 @@ def _advance_caputo_weighted_euler(
 
 
 @dataclass(frozen=True)
-class Trapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
+class Trapezoidal(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
     """The trapezoidal method for discretizing the Caputo derivative.
 
     This is an implicit method described in [Garrappa2015b]_. It uses a linear
     interpolant on each time step.
     """
 
-    source_jac: StateFunctionT | None
-    r"""Jacobian of
-    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
-    By default, implicit methods use :mod:`scipy` for their root finding,
-    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
-    """
-
     @property
     def order(self) -> float:
         return 2.0
-
-    # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
-    # some specific application (undocumented for now).
-
-    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
-        """
-        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
-            or :func:`scipy.optimize.root`.
-        """
-        if scalar:
-            return {}
-        else:
-            # NOTE: the default hybr does not use derivatives, so use lm instead
-            # FIXME: will need to maybe benchmark these a bit?
-            return {"method": "lm" if self.source_jac else None}
-
-    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
-        implicit equation.
-
-        This function should be overwritten for specific applications if better
-        solvers are known. For example, many problems can be solved explicitly
-        or approximated to a very good degree to provide a better *y0*.
-        """
-        from pycaputo.implicit import solve
-
-        result = solve(
-            self.source,
-            self.source_jac,
-            t,
-            y0,
-            c,
-            r,
-            **self._get_kwargs(scalar=y0.size == 1),
-        )
-
-        if __debug__:
-            error = la.norm(result - c * self.source(t, result) - r)
-            assert error < 1.0e-8 * la.norm(result)
-
-        return result
 
 
 def _weights_quadrature_trapezoidal(
@@ -787,7 +702,7 @@ def _advance_caputo_modified_pece(
 
 
 @dataclass(frozen=True)
-class L1(CaputoProductIntegrationMethod[StateFunctionT]):
+class L1(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
     """The first-order implicit L1 discretization of the Caputo derivative.
 
     Note that, unlike the :class:`ForwardEuler` method, the L1 method discretizes
@@ -795,48 +710,9 @@ class L1(CaputoProductIntegrationMethod[StateFunctionT]):
     the equation.
     """
 
-    source_jac: StateFunctionT | None
-    r"""Jacobian of
-    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
-    By default, implicit methods use :mod:`scipy` for their root finding,
-    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
-    """
-
     @property
     def order(self) -> float:
         return 2.0 - self.largest_derivative_order
-
-    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
-        """
-        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
-            or :func:`scipy.optimize.root`.
-        """
-        if scalar:
-            return {}
-        else:
-            # NOTE: the default hybr does not use derivatives, so use lm instead
-            # FIXME: will need to maybe benchmark these a bit?
-            return {"method": "lm" if self.source_jac else None}
-
-    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
-        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
-        implicit equation.
-
-        This function should be overwritten for specific applications if better
-        solvers are known. For example, many problems can be solved explicitly
-        or approximated to a very good degree to provide a better *y0*.
-        """
-        from pycaputo.implicit import solve
-
-        return solve(
-            self.source,
-            self.source_jac,
-            t,
-            y0,
-            c,
-            r,
-            **self._get_kwargs(scalar=y0.size == 1),
-        )
 
 
 def _update_caputo_l1(
