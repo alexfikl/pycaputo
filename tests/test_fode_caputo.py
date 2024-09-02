@@ -143,6 +143,7 @@ def fode_factory(
     "factory",
     [
         fode_factory(caputo.ForwardEuler),
+        fode_factory(caputo.BackwardEuler),
         fode_factory(caputo.WeightedEuler, theta=0.0),
         fode_factory(caputo.WeightedEuler, theta=0.5),
         fode_factory(caputo.Trapezoidal),

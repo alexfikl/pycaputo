@@ -8,6 +8,7 @@ from functools import cached_property
 from math import ceil
 
 import numpy as np
+import numpy.linalg as la
 from scipy.special import gamma
 
 from pycaputo.controller import Controller
@@ -110,6 +111,8 @@ def _update_caputo_forward_euler(
     m: CaputoProductIntegrationMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     n: int,
+    *,
+    offset: int = 0,
 ) -> Array:
     """Adds the Forward Euler right-hand side to *out*."""
     assert 0 < n <= len(history)
@@ -135,6 +138,96 @@ def _advance_caputo_forward_euler(
     ynext = np.zeros_like(y)
     ynext = _update_caputo_initial_condition(ynext, m.y0, t - tstart)
     ynext = _update_caputo_forward_euler(ynext, m, history, n)
+
+    trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
+    return AdvanceResult(ynext, trunc, m.source(t, ynext))
+
+
+# }}}
+
+
+# {{{ backward Euler
+
+
+@dataclass(frozen=True)
+class BackwardEuler(CaputoProductIntegrationMethod[StateFunctionT]):
+    """The first-order backward Euler discretization of the Caputo derivative."""
+
+    source_jac: StateFunctionT | None
+    r"""Jacobian of
+    :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.source`.
+    By default, implicit methods use :mod:`scipy` for their root finding,
+    which defines the Jacobian as :math:`J_{ij} = \partial f_i / \partial y_j`.
+    """
+
+    @property
+    def order(self) -> float:
+        return 1.0
+
+    # NOTE: `_get_kwargs` is meant to be overwritten for testing purposes or
+    # some specific application (undocumented for now).
+
+    def _get_kwargs(self, *, scalar: bool = True) -> dict[str, object]:
+        """
+        :returns: additional keyword arguments for :func:`scipy.optimize.root_scalar`.
+            or :func:`scipy.optimize.root`.
+        """
+        if scalar:
+            return {}
+        else:
+            # NOTE: the default hybr does not use derivatives, so use lm instead
+            # FIXME: will need to maybe benchmark these a bit?
+            return {"method": "lm" if self.source_jac else None}
+
+    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
+        """Wrapper around :func:`~pycaputo.implicit.solve` to solve the
+        implicit equation.
+
+        This function should be overwritten for specific applications if better
+        solvers are known. For example, many problems can be solved explicitly
+        or approximated to a very good degree to provide a better *y0*.
+        """
+        from pycaputo.implicit import solve
+
+        result = solve(
+            self.source,
+            self.source_jac,
+            t,
+            y0,
+            c,
+            r,
+            **self._get_kwargs(scalar=y0.size == 1),
+        )
+
+        if __debug__:
+            error = la.norm(result - c * self.source(t, result) - r)
+            assert error < 1.0e-8 * la.norm(result)
+
+        return result
+
+
+@advance.register(BackwardEuler)
+def _advance_caputo_backward_euler(
+    m: BackwardEuler[StateFunctionT],
+    history: ProductIntegrationHistory,
+    y: Array,
+    dt: float,
+) -> AdvanceResult:
+    # set next time step
+    n = len(history)
+    tstart = m.control.tstart
+    t = history.ts[n] = history.ts[n - 1] + dt
+
+    # initialize solution
+    fnext = np.zeros_like(y)
+    fnext = _update_caputo_initial_condition(fnext, m.y0, t - tstart)
+
+    # add history
+    omega = _weights_quadrature_rectangular(m, history.ts, n)
+    fnext += np.einsum("ij,ij->j", omega[:-1], history.storage[1:n])
+
+    # solve `ynext = fac * f(t, ynext) + fnext`
+    ynext = m.solve(t, y, omega[-1], fnext)
 
     trunc = _truncation_error(m.control, m.alpha, t, ynext, t - dt, y)
     return AdvanceResult(ynext, trunc, m.source(t, ynext))
@@ -331,7 +424,10 @@ class Trapezoidal(CaputoProductIntegrationMethod[StateFunctionT]):
             r,
             **self._get_kwargs(scalar=y0.size == 1),
         )
-        assert np.linalg.norm(result - c * self.source(t, result) - r) < 1.0e-8
+
+        if __debug__:
+            error = la.norm(result - c * self.source(t, result) - r)
+            assert error < 1.0e-8 * la.norm(result)
 
         return result
 
