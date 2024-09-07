@@ -60,10 +60,10 @@ def _normalize_time_span_triple(
         if tf < tfinal:
             tfinal = tf
         else:
-            nsteps = int((tfinal - tstart) / dt) + 1
+            nsteps = int((tfinal - tstart) / dt)
             dt = (tfinal - tstart) / nsteps
     elif tfinal is not None:
-        nsteps = int((tfinal - tstart) / dt) + 1
+        nsteps = int((tfinal - tstart) / dt)
         dt = (tfinal - tstart) / nsteps
     elif nsteps is not None:
         tfinal = tstart + nsteps * dt

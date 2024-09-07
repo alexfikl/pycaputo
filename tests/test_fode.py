@@ -99,7 +99,12 @@ def test_history_append() -> None:
 # {{{ test_fixed_controller
 
 
-def _check_fixed_controller_evolution(c: Controller, dt: float) -> None:
+def _check_fixed_controller_evolution(
+    c: Controller,
+    dt: float,
+    *,
+    rtol: float = 3.0e-12,
+) -> None:
     from pycaputo.controller import (
         evaluate_error_estimate,
         evaluate_timestep_accept,
@@ -110,10 +115,11 @@ def _check_fixed_controller_evolution(c: Controller, dt: float) -> None:
     assert c.tfinal is not None
     assert c.nsteps is not None
 
+    ncomponents = 7
     rng = np.random.default_rng(seed=42)
-    y = rng.normal(size=7)
-    yprev = rng.normal(size=7)
-    trunc = rng.normal(size=7)
+    y = rng.normal(size=ncomponents)
+    yprev = rng.normal(size=ncomponents)
+    trunc = rng.normal(size=ncomponents)
 
     m = ForwardEuler(
         derivative_order=(0.8,) * y.size,
@@ -142,7 +148,7 @@ def _check_fixed_controller_evolution(c: Controller, dt: float) -> None:
 
     # fmt: off
     assert n == c.nsteps, c.nsteps - n
-    assert abs(t - c.tfinal) < 3.0e-12 * dt, (
+    assert abs(t - c.tfinal) < rtol * dt, (
         f"t = {t:.8e} tfinal {c.tfinal:.8e} error {t - c.tfinal:.8e}"
         )
     # fmt: on
@@ -220,6 +226,39 @@ def test_graded_controller() -> None:
 
 # }}}
 
+
+# {{{ test_fixed_controller_doubling
+
+
+def test_fixed_controller_doubling() -> None:
+    """
+    Test that the :class:`FixedController` doubles times steps consistently.
+    """
+
+    from pycaputo.controller import make_fixed_controller
+
+    dt = 1.0e-2
+    with pytest.raises(ValueError, match="Must provide"):
+        make_fixed_controller(dt)
+
+    c0 = make_fixed_controller(dt, tstart=0.0, tfinal=1.0)
+    assert c0.tfinal is not None
+    assert c0.nsteps is not None
+    assert abs(c0.tfinal - c0.tstart - c0.dt * c0.nsteps) < 1.0e-15
+
+    _check_fixed_controller_evolution(c0, c0.dt, rtol=5.0e-11)
+
+    c1 = make_fixed_controller(dt / 2.0, tstart=0.0, tfinal=1.0)
+    assert c1.tfinal is not None
+    assert c1.nsteps is not None
+    assert abs(c1.tfinal - c1.tstart - c1.dt * c1.nsteps) < 1.0e-15
+
+    _check_fixed_controller_evolution(c1, c1.dt, rtol=5.0e-11)
+
+    assert c1.nsteps == 2 * c0.nsteps
+
+
+# }}}
 
 if __name__ == "__main__":
     import sys

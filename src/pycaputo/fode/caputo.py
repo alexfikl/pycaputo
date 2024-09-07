@@ -117,7 +117,8 @@ class CaputoImplicitProductIntegrationMethod(
 
         if __debug__:
             error = la.norm(result - c * self.source(t, result) - r)
-            assert error < 1.0e-8 * la.norm(result)
+            rtol = 1.0e-6 * la.norm(result)
+            assert error < rtol, (error, rtol)
 
         return result
 

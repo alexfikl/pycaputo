@@ -62,7 +62,7 @@ all points
     :end-before: [tutorial-evaluate-end]
 
 For the chosen number of points, this gives an error of about :math:`10^{-3}`.
-The resulting approximation can be see below
+The resulting approximation can be seen below
 
 .. image:: _static/tutorial-caputo-l1-light.svg
     :class: only-light
