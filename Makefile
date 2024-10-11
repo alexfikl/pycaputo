@@ -29,7 +29,7 @@ isort:								## Run ruff isort fixes over the source code
 
 pyproject:							## Run pyproject-fmt over the configuration
 	$(PYTHON) -m pyproject_fmt \
-		--indent 4 --max-supported-python '3.12' \
+		--indent 4 --max-supported-python '3.13' \
 		pyproject.toml
 	@echo -e "\e[1;32mpyproject clean!\e[0m"
 .PHONY: pyproject
