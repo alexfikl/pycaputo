@@ -38,7 +38,7 @@ jobs:
     -
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
         cache: 'pip'
         cache-dependency-path: 'requirements-dev.txt'
     - name: Main Script
@@ -55,7 +55,7 @@ jobs:
     -
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
         cache: 'pip'
         cache-dependency-path: 'requirements-dev.txt'
     - name: Main Script
@@ -72,7 +72,7 @@ jobs:
     -
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
         cache: 'pip'
         cache-dependency-path: 'requirements-dev.txt'
     - name: Main Script
@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
@@ -110,7 +110,7 @@ jobs:
     -
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
         cache: 'pip'
         cache-dependency-path: 'requirements-dev.txt'
     - name: Main Script
@@ -132,7 +132,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
     - id: dist
       uses: casperdcl/deploy-pypi@v2
       with:
