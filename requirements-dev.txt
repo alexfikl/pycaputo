@@ -24,7 +24,7 @@ chardet==5.2.0
     # via
     #   binaryornot
     #   python-debian
-charset-normalizer==3.3.2
+charset-normalizer==3.4.0
     # via requests
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
@@ -34,9 +34,9 @@ contourpy==1.3.0
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
-doc8==1.1.1
+doc8==1.1.2
     # via pycaputo (pyproject.toml)
-docutils==0.20.1
+docutils==0.21.2
     # via
     #   doc8
     #   pydata-sphinx-theme
@@ -44,9 +44,9 @@ docutils==0.20.1
     #   sphinx
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
     # via pytest
-fonttools==4.53.1
+fonttools==4.54.1
     # via matplotlib
-idna==3.8
+idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
@@ -56,13 +56,13 @@ jinja2==3.1.4
     # via
     #   reuse
     #   sphinx
-kiwisolver==1.4.5
+kiwisolver==1.4.7
     # via matplotlib
 license-expression==30.3.1
     # via reuse
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.5
+markupsafe==3.0.1
     # via jinja2
 matplotlib==3.9.2
     # via pycaputo (pyproject.toml)
@@ -72,7 +72,7 @@ mypy==1.11.2
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-numpy==2.1.0
+numpy==2.1.2
     # via
     #   pycaputo (pyproject.toml)
     #   contourpy
@@ -103,11 +103,11 @@ pygments==2.18.0
     #   sphinx
 pyparsing==3.1.4
     # via matplotlib
-pyproject-fmt==2.2.1
+pyproject-fmt==2.3.0
     # via pycaputo (pyproject.toml)
-pyproject-fmt-rust==1.1.6
+pyproject-fmt-rust==1.2.0
     # via pyproject-fmt
-pytest==8.3.2
+pytest==8.3.3
     # via
     #   pycaputo (pyproject.toml)
     #   pytest-benchmark
@@ -123,9 +123,9 @@ restructuredtext-lint==1.4.0
     # via doc8
 reuse==4.0.3
     # via pycaputo (pyproject.toml)
-rich==13.8.0
+rich==13.9.2
     # via pycaputo (pyproject.toml)
-ruff==0.6.3
+ruff==0.6.9
     # via pycaputo (pyproject.toml)
 scipy==1.14.1
     # via pycaputo (pyproject.toml)
@@ -135,7 +135,7 @@ snowballstemmer==2.2.0
     # via sphinx
 soupsieve==2.6
     # via beautifulsoup4
-sphinx==8.0.2
+sphinx==8.1.0
     # via
     #   pycaputo (pyproject.toml)
     #   pydata-sphinx-theme
@@ -159,7 +159,7 @@ sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 stevedore==5.3.0
     # via doc8
-tomli==2.0.1 ; python_full_version < '3.11'
+tomli==2.0.2 ; python_full_version < '3.11'
     # via
     #   doc8
     #   mypy
@@ -174,9 +174,10 @@ typing-extensions==4.12.2
     # via
     #   mypy
     #   pydata-sphinx-theme
-typos==1.24.3
+    #   rich
+typos==1.26.0
     # via pycaputo (pyproject.toml)
-urllib3==2.2.2
+urllib3==2.2.3
     # via requests
-uv==0.4.1
+uv==0.4.20
     # via pycaputo (pyproject.toml)
