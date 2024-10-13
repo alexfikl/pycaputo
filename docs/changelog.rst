@@ -1,8 +1,13 @@
 Changelog
 =========
 
-pycaputo TBD (TDB)
-------------------
+pycaputo 0.8.1 (October 13, 2024)
+---------------------------------
+
+Dependencies
+^^^^^^^^^^^^
+
+* Add official support for Python 3.13.
 
 Features
 ^^^^^^^^
@@ -10,6 +15,14 @@ Features
 * Add :class:`~pycaputo.fode.caputo.BackwardEuler` as a special case of
   :class:`~pycaputo.fode.caputo.WeightedEuler` (that should also be slightly
   faster).
+
+Fixes
+^^^^^
+
+* Make :class:`~pycaputo.controller.FixedController` work correctly when doubling
+  the time step. Now, when calling :func:`make_fixed_controller` with
+  ``dt1`` and ``dt2 = dt1/2``, you'll get exactly double the time steps and they
+  interlock in such a way that ``t1 == t2[::2]``.
 
 pycaputo 0.8.0 (September 1, 2024)
 ----------------------------------
