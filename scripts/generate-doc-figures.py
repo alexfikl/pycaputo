@@ -51,6 +51,9 @@ ARTIFACTS = {
     "gallery/genesio_tesi.py": {
         "gallery-genesio-tesi.svg",
     },
+    "gallery/labyrinth.py": {
+        "gallery-labyrinth.svg",
+    },
     "gallery/lorenz.py": {
         "gallery-lorenz.svg",
     },

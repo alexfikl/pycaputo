@@ -309,6 +309,49 @@ class GenesioTesi(Function):
 # }}}
 
 
+# {{{ Labyrinth
+
+
+@dataclass(frozen=True)
+class Labyrinth(Function):
+    r"""Implements the right-hand side of the Labyrinth system (see Equation 3
+    from `here <https://doi.org/10.1063/1.1772551>`__).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            \sin y - b x, \\
+        D^\alpha[y](t) & =
+            \sin z - b y, \\
+        D^\alpha[z](t) & =
+            \sin x - b z.
+        \end{aligned}
+    """
+
+    b: float
+    """Parameter in the Labyrinth system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        b = self.b
+        return np.array([
+            np.sin(y[1]) - b * y[0],
+            np.sin(y[2]) - b * y[1],
+            np.sin(y[0]) - b * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        b = self.b
+        return np.array([
+            [-b, np.cos(y[1]), 0],
+            [0, -b, np.cos(y[2])],
+            [np.cos(y[0]), 0, -b],
+        ])
+
+
+# }}}
+
+
 # {{{ Lorenz
 
 

@@ -139,6 +139,27 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/arneodo.py <../examples/gallery/arneodo.py>`.
 
+.. card:: Fractional-order Labyrinth System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-labyrinth-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Labyrinth system phase diagram
+
+    .. image:: _static/gallery-labyrinth-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Labyrinth system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Labyrinth` class. The complete setup
+    (with parameters) can be found in
+    :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
 .. card:: Fractional-order Lorenz System
     :class-title: sd-text-center
 
