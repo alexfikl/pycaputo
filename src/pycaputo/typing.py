@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-import pathlib
+import os
 from dataclasses import Field
 from typing import (
     TYPE_CHECKING,
@@ -28,7 +28,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 """A generic invariant :class:`typing.TypeVar`."""
 
-PathLike = pathlib.Path | str
+PathLike = os.PathLike[str] | str
 """A union of types supported as paths."""
 
 

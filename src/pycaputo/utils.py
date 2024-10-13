@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import pathlib
 import time
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager, suppress
@@ -197,7 +196,7 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
 
 
 def visualize_eoc(
-    filename: pathlib.Path,
+    filename: PathLike,
     *eocs: EOCRecorder,
     order: float | None = None,
     abscissa: str | Literal[False] = "h",
@@ -477,6 +476,8 @@ def savefig(
     :arg overwrite: if *True*, any existing files are overwritten.
     :arg kwargs: renaming arguments are passed directly to ``savefig``.
     """
+    import pathlib
+
     import matplotlib.pyplot as mp
 
     filename = pathlib.Path(filename)
