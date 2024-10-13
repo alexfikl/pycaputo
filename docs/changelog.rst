@@ -20,8 +20,8 @@ Fixes
 ^^^^^
 
 * Make :class:`~pycaputo.controller.FixedController` work correctly when doubling
-  the time step. Now, when calling :func:`make_fixed_controller` with
-  ``dt1`` and ``dt2 = dt1/2``, you'll get exactly double the time steps and they
+  the time step. Now, when calling :func:`~pycaputo.controller.make_fixed_controller`
+  with ``dt1`` and ``dt2 = dt1/2``, you'll get exactly double the time steps and they
   interlock in such a way that ``t1 == t2[::2]``.
 
 pycaputo 0.8.0 (September 1, 2024)
