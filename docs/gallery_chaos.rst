@@ -159,7 +159,8 @@ Three Dimensional Systems
     This example uses the Caputo derivative and the
     :class:`~pycaputo.fode.gallery.Labyrinth` class. The complete setup
     (with parameters) can be found in
-    :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
+    :download:`examples/gallery/labyrinth.py <../examples/gallery/labyrinth.py>`.
+
 .. card:: Fractional-order Lorenz System
     :class-title: sd-text-center
 
