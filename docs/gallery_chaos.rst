@@ -139,49 +139,27 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/arneodo.py <../examples/gallery/arneodo.py>`.
 
-.. card:: Fractional-order Labyrinth System
+.. card:: Fractional-order Cellular Neural Network (3 cells) System
     :class-title: sd-text-center
 
-    .. image:: _static/gallery-labyrinth-light.svg
+    .. image:: _static/gallery-cnn-light.svg
         :class: only-light
         :width: 75%
         :align: center
-        :alt: Fractional-order Labyrinth system phase diagram
+        :alt: Fractional-order Cellular Neural Network system phase diagram
 
-    .. image:: _static/gallery-labyrinth-dark.svg
+    .. image:: _static/gallery-cnn-dark.svg
         :class: only-dark
         :width: 75%
         :align: center
-        :alt: Fractional-order Labyrinth system phase diagram
+        :alt: Fractional-order Cellular Neural Network system phase diagram
 
     +++
 
     This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.Labyrinth` class. The complete setup
-    (with parameters) can be found in
-    :download:`examples/gallery/labyrinth.py <../examples/gallery/labyrinth.py>`.
-
-.. card:: Fractional-order Lorenz System
-    :class-title: sd-text-center
-
-    .. image:: _static/gallery-lorenz-light.svg
-        :class: only-light
-        :width: 75%
-        :align: center
-        :alt: Fractional-order Lorenz system phase diagram
-
-    .. image:: _static/gallery-lorenz-dark.svg
-        :class: only-dark
-        :width: 75%
-        :align: center
-        :alt: Fractional-order Lorenz system phase diagram
-
-    +++
-
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.Lorenz` class to reproduce Figure 5.32 from
-    [Petras2011]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
+    :class:`~pycaputo.fode.gallery.CellularNeuralNetwork3` class to reproduce
+    Figure 5.58 from [Petras2011]_. The complete setup (with parameters) can be
+    found in :download:`examples/gallery/cnn.py <../examples/gallery/cnn.py>`.
 
 .. card:: Fractional-order Chen System
     :class-title: sd-text-center
@@ -227,28 +205,6 @@ Three Dimensional Systems
     Figure 5.6 from [Petras2011]_. The complete setup (with parameters) can be
     found in :download:`examples/gallery/chua.py <../examples/gallery/chua.py>`.
 
-.. card:: Fractional-order Cellular Neural Network (3 cells) System
-    :class-title: sd-text-center
-
-    .. image:: _static/gallery-cnn-light.svg
-        :class: only-light
-        :width: 75%
-        :align: center
-        :alt: Fractional-order Cellular Neural Network system phase diagram
-
-    .. image:: _static/gallery-cnn-dark.svg
-        :class: only-dark
-        :width: 75%
-        :align: center
-        :alt: Fractional-order Cellular Neural Network system phase diagram
-
-    +++
-
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.CellularNeuralNetwork3` class to reproduce
-    Figure 5.58 from [Petras2011]_. The complete setup (with parameters) can be
-    found in :download:`examples/gallery/cnn.py <../examples/gallery/cnn.py>`.
-
 .. card:: Fractional-order Genesio-Tesi System
     :class-title: sd-text-center
 
@@ -271,27 +227,27 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/genesio_tesi.py <../examples/gallery/genesio_tesi.py>`.
 
-.. card:: Fractional-order Lü System
+.. card:: Fractional-order Labyrinth System
     :class-title: sd-text-center
 
-    .. image:: _static/gallery-lu-light.svg
+    .. image:: _static/gallery-labyrinth-light.svg
         :class: only-light
         :width: 75%
         :align: center
-        :alt: Fractional-order Lü system phase diagram
+        :alt: Fractional-order Labyrinth system phase diagram
 
-    .. image:: _static/gallery-lu-dark.svg
+    .. image:: _static/gallery-labyrinth-dark.svg
         :class: only-dark
         :width: 75%
         :align: center
-        :alt: Fractional-order Lü system phase diagram
+        :alt: Fractional-order Labyrinth system phase diagram
 
     +++
 
     This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.Lu` class to reproduce Figure 5.35 from
-    [Petras2011]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/lu.py <../examples/gallery/lu.py>`.
+    :class:`~pycaputo.fode.gallery.Labyrinth` class. The complete setup
+    (with parameters) can be found in
+    :download:`examples/gallery/labyrinth.py <../examples/gallery/labyrinth.py>`.
 
 .. card:: Fractional-order Liu System
     :class-title: sd-text-center
@@ -315,6 +271,28 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/liu.py <../examples/gallery/liu.py>`.
 
+.. card:: Fractional-order Lorenz System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-lorenz-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lorenz system phase diagram
+
+    .. image:: _static/gallery-lorenz-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lorenz system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Lorenz` class to reproduce Figure 5.32 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
+
 .. card:: Fractional-order Lotka-Volterra (3 equation) System
     :class-title: sd-text-center
 
@@ -336,6 +314,28 @@ Three Dimensional Systems
     :class:`~pycaputo.fode.gallery.LotkaVolterra3` class to reproduce Figure 5.53
     from [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lotka-volterra3.py <../examples/gallery/lotka-volterra3.py>`.
+
+.. card:: Fractional-order Lü System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-lu-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lü system phase diagram
+
+    .. image:: _static/gallery-lu-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lü system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Lu` class to reproduce Figure 5.35 from
+    [Petras2011]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/lu.py <../examples/gallery/lu.py>`.
 
 .. card:: Fractional-order Ma-Chen Financial System
     :class-title: sd-text-center
