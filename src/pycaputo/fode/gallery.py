@@ -835,6 +835,57 @@ class NewtonLeipnik(Function):
 # }}}
 
 
+# {{{ Qi
+
+
+@dataclass(frozen=True)
+class Qi(Function):
+    r"""Implements the right-hand side of the Qi system (see Equation 6
+    from [Qi2005]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            a (y - x) + y z, \\
+        D^\alpha[y](t) & =
+            c x - y - x z, \\
+        D^\alpha[z](t) & =
+            x y - b z.
+        \end{aligned}
+
+    .. [Qi2005] G. Qi, G. Chen, S. Du, Z. Chen, Z. Yuan,
+        *Analysis of a New Chaotic System*,
+        Physica A: Statistical Mechanics and Its Applications,
+        Vol. 352, pp. 295--308, 2005,
+        `DOI <https://doi.org/10.1016/j.physa.2004.12.040>`__.
+    """
+
+    a: float
+    """Parameter in the Qi system."""
+    b: float
+    """Parameter in the Qi system."""
+    c: float
+    """Parameter in the Qi system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            self.a * (y[1] - y[0]) + y[1] * y[2],
+            self.c * y[0] - y[1] - y[0] * y[2],
+            y[0] * y[1] - self.b * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.a, self.a + y[2], y[1]],
+            [self.c - y[2], -1.0, -y[0]],
+            [y[1], y[0], -self.b],
+        ])
+
+
+# }}}
+
+
 # {{{ Rössler
 
 

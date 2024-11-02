@@ -403,6 +403,27 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/rossler.py <../examples/gallery/rossler.py>`.
 
+.. card:: Fractional-order Qi System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-qi-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Qi system phase diagram
+
+    .. image:: _static/gallery-qi-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Qi system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Qi` class. The complete setup (with parameters)
+    can be found in :download:`examples/gallery/qi.py <../examples/gallery/qi.py>`.
+
 .. card:: Fractional-order Volta System
     :class-title: sd-text-center
 
