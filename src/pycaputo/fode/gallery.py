@@ -157,6 +157,90 @@ class Chen(Function):
 # }}}
 
 
+# {{{ Chua
+
+
+@dataclass(frozen=True)
+class Chua(Function):
+    r"""Implements the right-hand side of the Chua system (see Equation 5.13
+    from [Petras2011]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            \alpha (y - x + f(x)), \\
+        D^\alpha[y](t) & =
+            x - y + z, \\
+        D^\alpha[z](t) & =
+            -\beta y - \gamma z
+        \end{aligned}
+    """
+
+    alpha: float
+    """Non-dimensional parameter in the Chua system."""
+    beta: float
+    """Non-dimensional parameter in the Chua system."""
+    gamma: float
+    """Non-dimensional parameter in the Chua system."""
+    m: tuple[float, float]
+    """Parameters used to define describing the diode (Equation 5.5)."""
+
+    def source(self, t: float, y: Array) -> Array:
+        m0, m1 = self.m
+        fx = m1 * y[0] + 0.5 * (m0 - m1) * (abs(y[0] + 1) - abs(y[0] - 1))
+
+        return np.array([
+            self.alpha * (y[1] - y[0] - fx),
+            y[0] - y[1] + y[2],
+            -self.beta * y[1] - self.gamma * y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        m0, m1 = self.m
+        df = m0 if abs(y[0]) < 1.0 else m1
+
+        return np.array([
+            [-self.alpha * (df + 1.0), self.alpha, 0.0],
+            [1.0, -1.0, 1.0],
+            [0.0, -self.beta, -self.gamma],
+        ])
+
+    @classmethod
+    def from_dim(
+        cls,
+        C1: float,
+        C2: float,
+        R2: float,
+        RL: float,
+        L1: float,
+        Ga: float,
+        Gb: float,
+    ) -> Chua:
+        """Construct the non-dimensional system from the standard dimensional
+        parameters of the Chua system.
+
+        :arg C1: capacitance (in nano Farad) of first capacitor.
+        :arg C2: capacitance (in nano Farad) of second capacitor.
+        :arg R2: resistance (in Ohm).
+        :arg RL: resistance (in Ohm).
+        :arg L1: inductance (in mili Henry).
+        :arg Ga: slope of nonlinear function (in mili Ampere per Volt).
+        :arg Gb: slope of nonlinear function (in mili Ampere per Volt).
+        """
+        G = 1.0 / R2
+        alpha = C2 / C1
+        beta = C2 / (L1 * G**2)
+        gamma = C2 * R2 / (L1 * G)
+        m0 = Ga / G
+        m1 = Gb / G
+
+        return Chua(alpha=alpha, beta=beta, gamma=gamma, m=(m0, m1))
+
+
+# }}}
+
+
 # {{{ Cellular Neural Network
 
 

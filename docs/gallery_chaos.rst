@@ -205,6 +205,28 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/chen.py <../examples/gallery/chen.py>`.
 
+.. card:: Fractional-order Chua System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-chua-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Chua system phase diagram
+
+    .. image:: _static/gallery-chua-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Chua system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Chua` class to reproduce
+    Figure 5.6 from [Petras2011]_. The complete setup (with parameters) can be
+    found in :download:`examples/gallery/chua.py <../examples/gallery/chua.py>`.
+
 .. card:: Fractional-order Cellular Neural Network (3 cells) System
     :class-title: sd-text-center
 

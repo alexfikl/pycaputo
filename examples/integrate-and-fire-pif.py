@@ -38,8 +38,7 @@ tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
 logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
 if tspikes.size < 2:
     raise ValueError(
-        "This example expects at least two spikes. "
-        "Try increasing 'alpha' or 'tfinal'."
+        "This example expects at least two spikes. Try increasing 'alpha' or 'tfinal'."
     )
 
 dtinit = 1.0e-1

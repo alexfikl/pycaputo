@@ -747,7 +747,7 @@ def _quad_rl_yuan_agrawal(
 ) -> Array:
     if not callable(f):
         raise TypeError(
-            f"{type(m).__name__!r} requires a callable: " f"f is a {type(f).__name__!r}"
+            f"{type(m).__name__!r} requires a callable: f is a {type(f).__name__!r}"
         )
 
     x = p.x
