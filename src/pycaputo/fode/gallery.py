@@ -501,6 +501,58 @@ class Lorenz(Function):
 # }}}
 
 
+# {{{ Lorenz84
+
+
+@dataclass(frozen=True)
+class Lorenz84(Function):
+    r"""Implements the right-hand side of the Lorenz-84 system (see Equations 1-3
+    from [Lorenz1984]_). This is also known as the Hadley system.
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            -y^2 - z^2 - a x + a F, \\
+        D^\alpha[y](t) & =
+            x y - b x z - y + G, \\
+        D^\alpha[z](t) & =
+            b x y + x z - z.
+        \end{aligned}
+
+    .. [Lorenz1984] E. N. Lorenz,
+        *Irregularity: A Fundamental Property of the Atmosphere*,
+        Tellus A, Vol. 36A, pp. 98--110, 1984,
+        `DOI <https://doi.org/10.1111/j.1600-0870.1984.tb00230.x>`__.
+    """
+
+    a: float
+    """Parameter in the Lorenz-84 system."""
+    b: float
+    """Parameter in the Lorenz-84 system."""
+    F: float
+    """Parameter in the Lorenz-84 system."""
+    G: float
+    """Parameter in the Lorenz-84 system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            -(y[1] ** 2) - y[2] ** 2 - self.a * y[0] + self.a * self.F,
+            y[0] * y[1] - self.b * y[0] * y[2] - y[1] + self.G,
+            self.b * y[0] * y[1] + y[0] * y[2] - y[2],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-self.a, -2.0 * y[1], -2.0 * y[2]],
+            [y[1] - self.b * y[2], y[0] - 1.0, -self.b * y[0]],
+            [self.b * y[1] + y[2], self.b * y[0], y[0] - 1.0],
+        ])
+
+
+# }}}
+
+
 # {{{ Lotka-Volterra
 
 

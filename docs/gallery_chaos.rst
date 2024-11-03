@@ -293,6 +293,28 @@ Three Dimensional Systems
     [Petras2011]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/lorenz.py <../examples/gallery/lorenz.py>`.
 
+.. card:: Fractional-order Lorenz-84 System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-lorenz84-light.svg
+        :class: only-light
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lorenz-84 system phase diagram
+
+    .. image:: _static/gallery-lorenz84-dark.svg
+        :class: only-dark
+        :width: 75%
+        :align: center
+        :alt: Fractional-order Lorenz-84 system phase diagram
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.Lorenz84`. The complete setup (with parameters)
+    can be found in
+    :download:`examples/gallery/lorenz84.py <../examples/gallery/lorenz84.py>`.
+
 .. card:: Fractional-order Lotka-Volterra (3 equation) System
     :class-title: sd-text-center
 
