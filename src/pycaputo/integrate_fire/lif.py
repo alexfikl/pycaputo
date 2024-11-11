@@ -104,6 +104,7 @@ class LIFDim(NamedTuple):
     """Added current :math:`I` (in picoamperes *pA*)."""
     C: float
     """Total capacitance :math:`C` (in picofarad per ms *pF / ms^(alpha - 1)*)."""
+
     gl: float
     """Total leak conductance :math:`g_L` (in nanosiemens *nS*)."""
     e_leak: float

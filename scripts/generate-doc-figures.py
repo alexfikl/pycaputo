@@ -32,7 +32,7 @@ ARTIFACTS = {
     "tutorial-caputo-l1.py": {
         "tutorial-caputo-l1.svg",
     },
-    # gallery examples
+    # chaos gallery examples
     "gallery/arneodo.py": {
         "gallery-arneodo.svg",
     },
@@ -92,6 +92,10 @@ ARTIFACTS = {
     },
     "gallery/volta.py": {
         "gallery-volta.svg",
+    },
+    # neural gallery examples
+    "gallery/pif.py": {
+        "gallery-pif.svg",
     },
 }
 
