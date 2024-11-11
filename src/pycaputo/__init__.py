@@ -246,6 +246,7 @@ def fracplot(
     *,
     dark: bool | None = None,
     azimuth: float = -55.0,
+    ylim: tuple[float, float] | None = None,
 ) -> None:
     """Plot the solution of a fractional differential equation from :func:`fracevolve`.
 
@@ -281,13 +282,15 @@ def fracplot(
         t = sol.t
         y = sol.y
 
-        if dim == 1:
-            with figure(outfile) as fig:
+        if dim == 1 or y.ndim == 1:
+            with figure(outfile, figsize=(8, 3)) as fig:
                 ax = fig.gca()
 
                 ax.plot(t, y)
                 ax.set_xlabel("$t$")
                 ax.set_ylabel("$y$")
+                if ylim is not None:
+                    ax.set_ylim(ylim)
         elif dim == 2:
             with figure(outfile) as fig:
                 ax = fig.gca()
@@ -295,6 +298,9 @@ def fracplot(
                 ax.plot(y[0], y[1])
                 ax.set_xlabel("$x$")
                 ax.set_ylabel("$y$")
+
+                if ylim is not None:
+                    ax.set_ylim(ylim)
         elif dim == 3:
             with figure(outfile, projection="3d") as fig:
                 ax = fig.gca()
@@ -303,6 +309,9 @@ def fracplot(
                 ax.plot(y[0], y[1], y[2])
                 ax.set_xlabel("$x$")
                 ax.set_ylabel("$y$")
+
+                if ylim is not None:
+                    ax.set_ylim(ylim)
         else:
             raise ValueError(f"Unsupported system dimension: {dim}")
 

@@ -9,6 +9,7 @@ PYCAPUTO: Fractional Calculus Toolkit
     installation
     tutorials
     gallery_chaos
+    gallery_neural
     literature
     changelog
 
