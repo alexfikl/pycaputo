@@ -431,7 +431,8 @@ def figure(
 
     # FIXME: get size of one figure
     if figsize is None:
-        figsize = (8.0 * ncols, 8.0 * nrows)
+        width, height = mp.rcParams["figure.figsize"]
+        figsize = (width * ncols, height * nrows)
     fig.set_size_inches(*figsize)
 
     if projection == "3d":
