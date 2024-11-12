@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import numpy as np
 
 from pycaputo import fracevolve, fracplot
@@ -53,4 +55,7 @@ stepper = lif.CaputoLeakyIntegrateFireL1Method(
 )
 
 solution = fracevolve(stepper, dtinit=dt)
+
+ref = model.param.ref
+solution = replace(solution, t=ref.time(solution.t), y=ref.var(solution.y))
 fracplot(solution, "gallery-lif")

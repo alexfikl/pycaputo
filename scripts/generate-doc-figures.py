@@ -100,6 +100,9 @@ ARTIFACTS = {
     "gallery/lif.py": {
         "gallery-lif.svg",
     },
+    "gallery/ad_ex.py": {
+        "gallery-ad-ex.svg",
+    },
 }
 
 
