@@ -180,7 +180,7 @@ def fracevolve(
     :arg log_per_step: a number of steps at which to print logging output for the
         evolution. This can be completely disabled using *quiet*.
     """
-    from pycaputo.events import StepCompleted
+    from pycaputo.events import StepAccepted
     from pycaputo.stepping import evolve
     from pycaputo.utils import TicTocTimer
 
@@ -190,7 +190,7 @@ def fracevolve(
 
     time.tic()
     for event in evolve(m, dtinit=dtinit):
-        if isinstance(event, StepCompleted):
+        if isinstance(event, StepAccepted):
             if not quiet and event.iteration % log_per_step == 0:
                 time.toc()
                 logger.info(
@@ -283,7 +283,7 @@ def fracplot(
         y = sol.y
 
         if dim == 1 or y.ndim == 1:
-            with figure(outfile, figsize=(8, 3)) as fig:
+            with figure(outfile) as fig:
                 ax = fig.gca()
 
                 ax.plot(t, y)

@@ -7,12 +7,24 @@ import numpy as np
 
 from pycaputo import fracevolve, fracplot
 from pycaputo.integrate_fire import pif
+from pycaputo.typing import Array
+
+
+class PIFModel(pif.PIFModel):
+    def source(self, t: float, y: Array) -> Array:
+        if t < 2.5 or t > 7.5:
+            return np.zeros_like(y)
+        else:
+            return np.array([
+                self.param.current * (1.0 - np.cos(2.0 * np.pi * (t - 2.5)))
+            ])
+
 
 # setup system
 alpha = 0.85
-param = pif.PIFDim(current=160, C=100, v_reset=-48, v_peak=0.0)
-model = pif.PIFModel(param.nondim(alpha, V_ref=1.0, I_ref=20.0))
-y0 = np.array([(model.param.v_reset + model.param.v_peak) / 2.0])
+param = pif.PIFDim(current=24, C=100, v_reset=-65, v_peak=-50.0)
+model = PIFModel(param.nondim(alpha, V_ref=1.0, I_ref=1.0))
+y0 = np.array([model.param.v_reset - 5.0])
 
 print(f"alpha {alpha} y0 {y0}")
 print(model.param)
@@ -20,13 +32,13 @@ print(model.param)
 # setup controller
 from pycaputo.controller import make_jannelli_controller
 
-dt = 5.0e-3
+dt = 5.0e-4
 control = make_jannelli_controller(
     tstart=0.0,
-    tfinal=32.0,
+    tfinal=10.0,
     dtmin=dt,
-    chimin=0.01,
-    chimax=0.1,
+    chimin=0.001,
+    chimax=0.01,
 )
 print(control)
 
