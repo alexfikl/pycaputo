@@ -97,6 +97,9 @@ ARTIFACTS = {
     "gallery/pif.py": {
         "gallery-pif.svg",
     },
+    "gallery/lif.py": {
+        "gallery-lif.svg",
+    },
 }
 
 

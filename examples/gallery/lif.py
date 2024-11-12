@@ -7,14 +7,26 @@ import numpy as np
 
 from pycaputo import fracevolve, fracplot
 from pycaputo.integrate_fire import lif
+from pycaputo.typing import Array
 
-# setup system (parameters from Table 1 in [Teka2017])
-alpha = 0.2
+
+class LIFModel(lif.LIFModel):
+    def source(self, t: float, y: Array) -> Array:
+        if t < 2.5 or t > 7.5:
+            current = np.zeros_like(y)
+        else:
+            current = self.param.current * (1.0 - np.cos(2.0 * np.pi * (t - 2.5)))
+
+        return np.array(current - (y - self.param.e_leak))
+
+
+# setup system
+alpha = 0.85
 param = lif.LIFDim(
-    current=2000.0, C=500.0, gl=25.0, e_leak=-70.0, v_reset=-70.0, v_peak=-50.0
+    current=600.0, C=100.0, gl=25.0, e_leak=-70.0, v_reset=-65.0, v_peak=-50.0
 )
-model = lif.LIFModel(param.nondim(alpha, V_ref=1.0))
-y0 = np.array([model.param.v_reset])
+model = LIFModel(param.nondim(alpha, V_ref=1.0))
+y0 = np.array([model.param.e_leak])
 
 print(f"alpha {alpha} y0 {y0}")
 print(model.param)
@@ -22,13 +34,13 @@ print(model.param)
 # setup controller
 from pycaputo.controller import make_jannelli_controller
 
-dt = 5.0e-3
+dt = 5.0e-4
 control = make_jannelli_controller(
     tstart=0.0,
-    tfinal=100.0,
+    tfinal=10.0,
     dtmin=dt,
-    chimin=0.05,
-    chimax=0.1,
+    chimin=0.001,
+    chimax=0.01,
 )
 print(control)
 
