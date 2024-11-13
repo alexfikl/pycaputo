@@ -104,4 +104,4 @@ Integrate-and-Fire Models
     This example uses the Caputo derivative and the
     :class:`~pycaputo.integrate_fire.ad_ex.AdExModel` class to reproduce Figure4d
     from [Naud2008]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/lif.py <../examples/gallery/lif.py>`.
+    :download:`examples/gallery/adex.py <../examples/gallery/adex.py>`.

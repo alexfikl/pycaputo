@@ -225,7 +225,7 @@ Three Dimensional Systems
     This example uses the Caputo derivative and the
     :class:`~pycaputo.fode.gallery.GenesioTesi` class to reproduce Figure 5.40 from
     [Petras2011]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/genesio_tesi.py <../examples/gallery/genesio_tesi.py>`.
+    :download:`examples/gallery/genesio-tesi.py <../examples/gallery/genesio-tesi.py>`.
 
 .. card:: Fractional-order Labyrinth System
     :class-title: sd-text-center
