@@ -51,7 +51,7 @@ ARTIFACTS = {
     "gallery/duffing.py": {
         "gallery-duffing.svg",
     },
-    "gallery/genesio_tesi.py": {
+    "gallery/genesio-tesi.py": {
         "gallery-genesio-tesi.svg",
     },
     "gallery/labyrinth.py": {
@@ -100,7 +100,7 @@ ARTIFACTS = {
     "gallery/lif.py": {
         "gallery-lif.svg",
     },
-    "gallery/ad_ex.py": {
+    "gallery/adex.py": {
         "gallery-ad-ex.svg",
     },
     "gallery/fitzhugh-rinzel.py": {
