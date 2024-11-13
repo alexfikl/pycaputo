@@ -103,6 +103,9 @@ ARTIFACTS = {
     "gallery/ad_ex.py": {
         "gallery-ad-ex.svg",
     },
+    "gallery/fitzhugh-rinzel.py": {
+        "gallery-fitzhugh-rinzel.svg",
+    },
 }
 
 

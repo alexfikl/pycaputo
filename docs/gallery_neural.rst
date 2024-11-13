@@ -11,6 +11,32 @@ Neural Model Gallery
    book by Gerstner, Kistler, Naud, and Paninski. The fractional ones will behave
    slightly differently, but should be comparable.
 
+FitzHugh-Nagumo Models
+----------------------
+
+.. card:: Fractional-order FitzHugh-Rinzel System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-fitzhugh-rinzel-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Rinzel system
+
+    .. image:: _static/gallery-fitzhugh-rinzel-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Rinzel system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 3g
+    from [Mondal2019]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/pif.py <../examples/gallery/pif.py>`.
+
+
 Integrate-and-Fire Models
 -------------------------
 

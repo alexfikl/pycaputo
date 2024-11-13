@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import NamedTuple
 
 import numpy as np
 
@@ -331,6 +332,136 @@ class Duffing(Function):
 
     def source_jac(self, t: float, y: Array) -> Array:
         return np.array([[0, 1], [1 - 3 * y[0], -self.alpha]])
+
+
+# }}}
+
+
+# {{{ FitzHugh-Rinzel
+
+
+class FitzHughRinzelParameter(NamedTuple):
+    """Parameters for the :class:`FitzHughRinzel` system."""
+
+    current: float
+    """External current applied to the system."""
+    a: float
+    """Parameters in the FitzHugh-Rinzel system."""
+    b: float
+    """Parameters in the FitzHugh-Rinzel system."""
+    c: float
+    """Parameters in the FitzHugh-Rinzel system."""
+    d: float
+    """Parameters in the FitzHugh-Rinzel system."""
+    delta: float
+    """Parameters in the FitzHugh-Rinzel system."""
+    mu: float
+    """Parameters in the FitzHugh-Rinzel system."""
+
+    @classmethod
+    def from_name(cls, name: str) -> FitzHughRinzelParameter:
+        """Parameters from [Mondal2019]_ are available and are named like
+        ``MondalSetXX``.
+        """
+
+        return FITZHUGH_RINZEL_PARAMETERS[name]
+
+
+FITZHUGH_RINZEL_PARAMETERS: dict[str, FitzHughRinzelParameter] = {
+    "MondalSetI": FitzHughRinzelParameter(
+        current=0.3125,
+        a=0.7,
+        b=0.8,
+        c=-0.775,
+        d=1.0,
+        delta=0.08,
+        mu=0.0001,
+    ),
+    "MondalSetII": FitzHughRinzelParameter(
+        current=0.4,
+        a=0.7,
+        b=0.8,
+        c=-0.775,
+        d=1.0,
+        delta=0.08,
+        mu=0.0001,
+    ),
+    "MondalSetIII": FitzHughRinzelParameter(
+        current=3.0,
+        a=0.7,
+        b=0.8,
+        c=-0.775,
+        d=1.0,
+        delta=0.08,
+        mu=0.18,
+    ),
+    "MondalSetIV": FitzHughRinzelParameter(
+        current=0.3125,
+        a=0.7,
+        b=0.8,
+        c=1.3,
+        d=1.0,
+        delta=0.08,
+        mu=0.0001,
+    ),
+    "MondalSetV": FitzHughRinzelParameter(
+        current=0.3125,
+        a=0.7,
+        b=0.8,
+        c=-0.908,
+        d=1.0,
+        delta=0.08,
+        mu=0.002,
+    ),
+}
+
+
+@dataclass(frozen=True)
+class FitzHughRinzel(Function):
+    r"""Implements the right-hand side of the FitzHugh-Rinzel system (see
+    Equation 1 from [Mondal2019]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[v](t) & =
+            v - \frac{v^3}{3} - w + y + I, \\
+        D^\alpha[w](t) & =
+            \delta (a + v - b w), \\
+        D^\alpha[y](t) & =
+            \mu (c - v - d y)
+        \end{aligned}
+
+    where :math:`v` represents the membrane voltage, :math:`w` represents the
+    recovery variable and :math:`y` represents the slow modulation of the
+    current.
+
+    .. [Mondal2019] A. Mondal, S. K. Sharma, R. K. Upadhyay, A. Mondal,
+        *Firing Activities of a Fractional-Order FitzHugh-Rinzel Bursting
+        Neuron Model and Its Coupled Dynamics*,
+        Scientific Reports, Vol. 9, 2019,
+        `DOI <https://doi.org/10.1038/s41598-019-52061-4>`__.
+    """
+
+    p: FitzHughRinzelParameter
+    """Parameters in the FitzHugh-Rinzel system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        I, a, b, c, d, delta, mu = self.p  # noqa: E741
+
+        return np.array([
+            y[0] - y[0] ** 3 / 3 - y[1] + y[2] + I,
+            delta * (a + y[0] - b * y[1]),
+            mu * (c - y[0] - d * y[2]),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        _, _, b, _, d, delta, mu = self.p
+        return np.array([
+            [1.0 - y[0] ** 2, -1.0, 1.0],
+            [delta, -b * delta, 0.0],
+            [-mu, 0.0, -d * mu],
+        ])
 
 
 # }}}
