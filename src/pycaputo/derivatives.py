@@ -186,3 +186,57 @@ class CaputoHadamardDerivative(FractionalOperator):
         :math:`n - 1 < \alpha \le n`.
         """
         return math.ceil(self.alpha)
+
+
+@dataclass(frozen=True)
+class VariableExponentialCaputoDerivative(FractionalOperator):
+    r"""Variable-order exponential Caputo fractional-order derivative.
+
+    The variable-order exponential Caputo derivative is described in [Garrappa2023]_.
+    It considers a fractional order :math:`\alpha(t)` and its Laplace transform
+    :math:`A(s)` as
+
+    .. math::
+
+        \alpha(t) = \alpha_1 + (\alpha_0 - \alpha_1) e^{-c t}
+        \implies A(s) = \frac{\alpha_0 s + \alpha_1 c}{s (s + c)},
+
+    where :math:`0 < \alpha_0, \alpha_1 < 1` and :math:`c > 0`. Using the Laplace
+    transform :math:`A(s)`, we define the variable-order kernel :math:`\phi_\alpha`
+    as the Laplace transform of
+
+    .. math::
+
+        \Phi_\alpha(s) = s^{s A(s) - 1}.
+
+    Unfortunately, there is no analytic expression for :math:`\phi_\alpha` even
+    for this simple case. Finally, the derivative is given by
+
+    .. math::
+
+        D_{VC}^{\alpha(x)}[f](x) =
+            \int_0^x \phi_\alpha(x - s) f'(s) \,\mathrm{d}s.
+
+    The corresponding integral is also given in [Garrappa2023]_.
+    """
+
+    alpha: tuple[float, float]
+    """Asymptotic orders of the variable Caputo derivative."""
+    c: float
+    r"""Transition rate from :math:`\alpha_0` to :math:`\alpha_1`."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if not 0 < self.alpha[0] < 1:
+                raise ValueError(f"'alpha_0' is not in (0, 1): {self.alpha}")
+
+            if not 0 < self.alpha[1] < 1:
+                raise ValueError(f"'alpha_1' is not in (0, 1): {self.alpha}")
+
+            if self.c <= 0:
+                raise ValueError(f"'c' cannot be negative: {self.c}")
+
+    @property
+    def side(self) -> Side:
+        return Side.Left
