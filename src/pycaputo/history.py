@@ -34,6 +34,20 @@ class State:
             yield getattr(self, f.name)
 
 
+@dataclass(frozen=True)
+class StateInfo:
+    shape: tuple[int, ...]
+    """The shape of the data stored in the history."""
+    dtype: np.dtype[Any]
+    """The :class:`~numpy.dtype` of the data stored in the history."""
+
+    def empty(self) -> Array:
+        return np.empty(self.shape, dtype=self.dtype)
+
+    def zeros(self) -> Array:
+        return np.zeros(self.shape, dtype=self.dtype)
+
+
 T = TypeVar("T", bound=State)
 """Invariant type variable bound to :class:`State`."""
 
@@ -51,6 +65,11 @@ class History(ABC, Generic[T]):
     .. automethod:: __len__
     .. automethod:: __getitem__
     """
+
+    @property
+    @abstractmethod
+    def stateinfo(self) -> StateInfo:
+        """The size of the value stored in the history."""
 
     @abstractmethod
     def __bool__(self) -> bool:
@@ -109,6 +128,10 @@ class InMemoryHistory(History[T]):
     def capacity(self) -> int:
         """The maximum size currently available for storage."""
         return self.ts.size
+
+    @property
+    def stateinfo(self) -> StateInfo:
+        return StateInfo(self.storage.shape[1:], self.storage.dtype)
 
     @property
     def current_time(self) -> float:

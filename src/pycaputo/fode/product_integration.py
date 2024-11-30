@@ -80,7 +80,12 @@ def _evolve_pi(
 
     # determine the initial condition
     yprev = make_initial_condition(m)
-    history.append(t, m.source(t, yprev))
+
+    # store the initial right-hand side
+    fprev = m.source(t, yprev)
+    storage = history.stateinfo.zeros()
+    storage[tuple(slice(n) for n in fprev.shape)] = fprev
+    history.append(t, storage)
 
     # determine initial time step
     if dtinit is None:
