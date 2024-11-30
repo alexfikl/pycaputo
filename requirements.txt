@@ -14,5 +14,7 @@ rich==13.9.4
     # via pycaputo (pyproject.toml)
 scipy==1.14.1
     # via pycaputo (pyproject.toml)
-typing-extensions==4.12.2 ; python_full_version < '3.11'
-    # via rich
+typing-extensions==4.12.2
+    # via
+    #   pycaputo (pyproject.toml)
+    #   rich

@@ -44,7 +44,7 @@ dependencies = [
     "rich>=13",
     "scipy>=1.7",
     # NOTE: for `Self` (used in `history.py`)
-    "tying-extensions>=4",
+    "typing-extensions>=4",
 ]
 optional-dependencies.dev = [
     "doc8",
