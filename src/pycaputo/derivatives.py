@@ -228,10 +228,10 @@ class VariableExponentialCaputoDerivative(FractionalOperator):
     if __debug__:
 
         def __post_init__(self) -> None:
-            if not 0 < self.alpha[0] < 1:
+            if not -1 < self.alpha[0] < 1:
                 raise ValueError(f"'alpha_0' is not in (0, 1): {self.alpha}")
 
-            if not 0 < self.alpha[1] < 1:
+            if not -1 < self.alpha[1] < 1:
                 raise ValueError(f"'alpha_1' is not in (0, 1): {self.alpha}")
 
             if self.c <= 0:
