@@ -9,6 +9,7 @@ from dataclasses import dataclass, field, fields
 from typing import Any, Generic, TypeVar
 
 import numpy as np
+from typing_extensions import Self
 
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
@@ -151,7 +152,7 @@ class InMemoryHistory(History[T]):
         n: int = 512,
         shape: tuple[int, ...] = (1,),
         dtype: Any = None,
-    ) -> InMemoryHistory[T]:
+    ) -> Self:
         """Construct a :class:`InMemoryHistory` for given sizes.
 
         :arg n: number of time steps that will be stored.
@@ -164,7 +165,7 @@ class InMemoryHistory(History[T]):
         )
 
     @classmethod
-    def empty_like(cls, y: Array, n: int = 512) -> InMemoryHistory[T]:
+    def empty_like(cls, y: Array, n: int = 512) -> Self:
         """Construct a :class:`InMemoryHistory` for *y*."""
         return cls.empty(n=n, shape=y.shape, dtype=y.dtype)
 

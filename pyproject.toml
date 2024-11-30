@@ -43,6 +43,8 @@ dependencies = [
     "numpy>=1.17",
     "rich>=13",
     "scipy>=1.7",
+    # NOTE: for `Self` (used in `history.py`)
+    "tying-extensions>=4",
 ]
 optional-dependencies.dev = [
     "doc8",
