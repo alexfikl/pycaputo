@@ -42,6 +42,15 @@ class ProductIntegrationMethod(FractionalDifferentialEquationMethod[StateFunctio
     In general, these methods support a variable time step.
     """
 
+    def make_default_history(self) -> ProductIntegrationHistory:
+        nsteps = self.control.nsteps
+        return ProductIntegrationHistory.empty_like(
+            # NOTE: All product integration rules just store the right-hand side
+            # `f`, which are the same size and dtype as `y0`
+            self.y0[0],
+            n=512 if nsteps is None else nsteps,
+        )
+
 
 @evolve.register(ProductIntegrationMethod)
 def _evolve_pi(
@@ -65,13 +74,7 @@ def _evolve_pi(
     )
 
     if history is None:
-        nsteps = m.control.nsteps
-        history = ProductIntegrationHistory.empty_like(
-            m.y0[0],
-            # FIXME: 512 is chosen randomly, since this is a growing container,
-            # but maybe we can do better using dtinit and tfinal?
-            n=512 if nsteps is None else nsteps,
-        )
+        history = m.make_default_history()
 
     # initialize
     c = m.control

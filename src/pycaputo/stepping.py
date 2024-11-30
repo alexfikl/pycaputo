@@ -122,6 +122,10 @@ class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
     def d(self) -> tuple[FractionalOperator, ...]:
         """The fractional operators used by this method."""
 
+    @abstractmethod
+    def make_default_history(self) -> History[Any]:
+        """Construct a default history for the method."""
+
 
 @singledispatch
 def evolve(

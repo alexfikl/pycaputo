@@ -182,6 +182,13 @@ class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireMode
         """
         raise NotImplementedError(type(self).__name__)
 
+    def make_default_history(self) -> ProductIntegrationHistory:
+        # NOTE: all IntegrateFireMethod classes store a `(yn^-, yn^+)` for the
+        # values to the left and right of a discontinuity (i.e. spike).
+        shape = (2 * self.y0[0].size,)
+        dtype = self.y0[0].dtype
+        return ProductIntegrationHistory.empty(shape=shape, dtype=dtype)
+
 
 @make_initial_condition.register(IntegrateFireMethod)
 def _make_initial_condition_caputo(
@@ -207,7 +214,7 @@ def _evolve_caputo_integrate_fire_l1(
     )
 
     if history is None:
-        history = ProductIntegrationHistory.empty_like(np.hstack([m.y0[0], m.y0[0]]))
+        history = m.make_default_history()
 
     # initialize
     c = m.control
