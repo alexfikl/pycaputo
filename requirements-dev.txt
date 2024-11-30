@@ -26,11 +26,14 @@ chardet==5.2.0
     #   python-debian
 charset-normalizer==3.4.0
     # via requests
-colorama==0.4.6 ; sys_platform == 'win32'
+click==8.1.7
+    # via reuse
+colorama==0.4.6 ; sys_platform == 'win32' or platform_system == 'Windows'
     # via
+    #   click
     #   pytest
     #   sphinx
-contourpy==1.3.0
+contourpy==1.3.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
@@ -44,7 +47,7 @@ docutils==0.21.2
     #   sphinx
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
     # via pytest
-fonttools==4.54.1
+fonttools==4.55.0
     # via matplotlib
 idna==3.10
     # via requests
@@ -64,7 +67,7 @@ markdown-it-py==3.0.0
     # via rich
 markupsafe==3.0.2
     # via jinja2
-matplotlib==3.9.2
+matplotlib==3.9.3
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
@@ -118,11 +121,11 @@ requests==2.32.3
     # via sphinx
 restructuredtext-lint==1.4.0
     # via doc8
-reuse==4.0.3
+reuse==5.0.2
     # via pycaputo (pyproject.toml)
 rich==13.9.4
     # via pycaputo (pyproject.toml)
-ruff==0.7.3
+ruff==0.8.1
     # via pycaputo (pyproject.toml)
 scipy==1.14.1
     # via pycaputo (pyproject.toml)
@@ -154,11 +157,11 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-stevedore==5.3.0
+stevedore==5.4.0
     # via doc8
 toml-fmt-common==1.0.1
     # via pyproject-fmt
-tomli==2.0.2 ; python_full_version < '3.11'
+tomli==2.2.1 ; python_full_version < '3.11'
     # via
     #   doc8
     #   mypy
@@ -174,9 +177,9 @@ typing-extensions==4.12.2
     #   mypy
     #   pydata-sphinx-theme
     #   rich
-typos==1.27.3
+typos==1.28.1
     # via pycaputo (pyproject.toml)
 urllib3==2.2.3
     # via requests
-uv==0.5.1
+uv==0.5.5
     # via pycaputo (pyproject.toml)
