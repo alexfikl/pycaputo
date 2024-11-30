@@ -10,7 +10,7 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
-from pycaputo.quadrature import quad, riemann_liouville
+from pycaputo.quadrature import quad, riemann_liouville, variable_riemann_liouville
 from pycaputo.typing import Array
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
@@ -368,6 +368,94 @@ def test_riemann_liouville_diffusive(
         assert order - 0.25 < eoc.estimated_order < order + 1.0
     else:
         assert eoc.estimated_order > 2.0
+
+
+# }}}
+
+
+# {{{ test_variable_riemann_liouville
+
+
+def f_linear(x: Array) -> Array:
+    A = np.array([[-0.83, 1.0], [-2.0, 1.2048]])
+    b = np.array([1.0, 2.0])
+
+    return np.array(A @ x + b)
+
+
+def qf_linear(x: Array, alpha: float) -> Array:
+    return x
+
+
+@pytest.mark.parametrize(
+    ("name", "grid_type"),
+    [
+        ("ExponentialRectangular", "uniform"),
+    ],
+)
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
+def test_variable_riemann_liouville(
+    name: str,
+    grid_type: str,
+    alpha: float,
+    *,
+    visualize: bool = True,
+) -> None:
+    r"""
+    Check the convergence of approximations for the Riemann--Liouville integral.
+    The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
+    """
+
+    from pycaputo.derivatives import VariableExponentialCaputoDerivative
+    from pycaputo.grid import make_points_from_name
+    from pycaputo.utils import EOCRecorder, savefig
+
+    meth: variable_riemann_liouville.VariableOrderMethod
+    if name == "ExponentialRectangular":
+        d = VariableExponentialCaputoDerivative(alpha=(-alpha, -(1 + alpha) / 2), c=2.0)
+        meth = variable_riemann_liouville.ExponentialRectangular(
+            d, tau=1.0e-12, r=0.99, safety_factor=0.01
+        )
+        order = 1
+    else:
+        raise ValueError(f"Unsupported method: '{name}'")
+
+    print(meth)
+    eoc = EOCRecorder(order=order)
+
+    if visualize:
+        import matplotlib.pyplot as mp
+
+        fig = mp.figure()
+        ax = fig.gca()
+
+    resolutions = [16, 32, 64, 128, 256]
+    resolutions = [64]
+
+    for n in resolutions:
+        p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
+        qf_num = quad(meth, f_test, p)
+        qf_ref = qf_test(p.x, alpha=alpha)
+
+        h = np.max(p.dx)
+        e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
+        eoc.add_data_point(h, e)
+        logger.info("n %4d h %.5e e %.12e", n, h, e)
+
+        if visualize:
+            ax.plot(p.x[1:], qf_num[1:])
+
+    logger.info("\n%s", eoc)
+
+    if visualize:
+        ax.plot(p.x[1:], qf_ref[1:], "k--")
+        ax.set_xlabel("$x$")
+        ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
+
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
+        savefig(fig, dirname / filename.lower())
+
+    assert order - 0.25 < eoc.estimated_order < order + 1.0
 
 
 # }}}
