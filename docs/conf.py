@@ -56,38 +56,40 @@ def add_dataclass_annotation(app, name, obj, options, bases):
 
 
 def linkcode_resolve(domain, info):
-    url = None
     if domain != "py" or not info["module"]:
-        return url
+        return None
 
     modname = info["module"]
     objname = info["fullname"]
 
     mod = sys.modules.get(modname)
     if not mod:
-        return url
+        return None
 
     obj = mod
     for part in objname.split("."):
         try:
             obj = getattr(obj, part)
         except Exception:
-            return url
+            return None
 
     import inspect
 
     try:
-        filepath = "{}.py".format(os.path.join(*obj.__module__.split(".")))
+        moduleparts = obj.__module__.split(".")
+        filepath = f"{os.path.join(*moduleparts)}.py"
     except Exception:
-        return url
+        return None
 
-    if filepath is None:
-        return url
+    # FIXME: this checks if the module is actually the `__init__.py`. Is there
+    # any easier way to figure that out?
+    if mod.__name__ == obj.__module__ and mod.__spec__.submodule_search_locations:
+        filepath = os.path.join(*moduleparts, "__init__.py")
 
     try:
         source, lineno = inspect.getsourcelines(obj)
     except Exception:
-        return url
+        return None
     else:
         linestart, linestop = lineno, lineno + len(source) - 1
 
