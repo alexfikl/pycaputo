@@ -38,6 +38,9 @@ def _update_caputo_initial_condition(
 def _truncation_error(
     c: Controller, alpha: Array, t: float, y: Array, tprev: float, yprev: Array
 ) -> Array:
+    if not c.is_adaptive:
+        return np.zeros_like(y)
+
     from pycaputo.controller import JannelliIntegralController
 
     # FIXME: this should not be our job: either let the controller or the method
@@ -51,7 +54,7 @@ def _truncation_error(
             * np.abs(y - yprev)
         )
     else:
-        trunc = np.zeros_like(y)
+        raise TypeError(f"Unsupported controller type: {type(c)}")
 
     return trunc
 
@@ -348,24 +351,33 @@ class Trapezoidal(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
         return 2.0
 
 
-def _weights_quadrature_trapezoidal(
+def _weights_quadrature_trapezoidal_single(
     m: CaputoProductIntegrationMethod[StateFunctionT],
     t: Array,
     n: int,
     p: int,
-) -> tuple[Array, Array]:
+) -> Array:
     # get time history
     ts = (t[n] - t[: p + 1]).reshape(-1, 1)
     dt = np.diff(t[: p + 1]).reshape(-1, 1)
 
+    # compute integrals
     alpha = m.alpha
-    r0 = ts**alpha / gamma1p(m)
-    r1 = ts ** (1.0 + alpha) / gamma2p(m)
+    I00 = ts[0] ** alpha / gamma1p(m)
+    I1 = ts ** (1.0 + alpha) / gamma2p(m)
 
-    omegal = r1[1:] / dt + r0[:-1] - r1[:-1] / dt
-    omegar = r1[:-1] / dt - r0[1:] - r1[1:] / dt
+    # compute weights
+    omega = np.empty((p + 1, alpha.size), dtype=I1.dtype)
+    omega[0] = I1[1] / dt[0] + I00 - I1[0] / dt[0]
+    omega[1:p] = (I1[2:] - I1[1:-1]) / dt[1:] + (I1[:-2] - I1[1:-1]) / dt[:-1]
 
-    return omegal, omegar
+    if p < n:
+        I01 = ts[-1] ** alpha / gamma1p(m)
+        omega[p] = I1[-2] / dt[-1] - I01 - I1[-1] / dt[-1]
+    else:
+        omega[p] = I1[-2] / dt[-1]
+
+    return omega
 
 
 def _update_caputo_trapezoidal(
@@ -377,36 +389,15 @@ def _update_caputo_trapezoidal(
 ) -> tuple[Array, Array]:
     assert 0 < n <= len(history)
     assert 0 < p <= n
-    omegal, omegar = _weights_quadrature_trapezoidal(m, history.ts, n, p)
-    fs = history.storage[:p]
+    omega = _weights_quadrature_trapezoidal_single(m, history.ts, n, p)
 
-    # add forward terms
-    out += np.einsum("ij,ij->j", omegal, fs)
-    # add backward terms
-    out += np.einsum("ij,ij->j", omegar[:-1], fs[1:])
+    fs = history.storage[:p]
+    out += np.einsum("ij,ij->j", omega[:-1], fs)
 
     if p < n:
-        out += omegar[-1] * history.storage[p]
+        out += omega[-1] * history.storage[p]
 
-    return out, omegar[-1].squeeze()
-
-
-def _error_explicit_step(
-    m: ProductIntegrationMethod[StateFunctionT],
-    t: Array,
-    f: Array,
-) -> Array:
-    assert t.shape[0] == f.shape[0] == 3
-    alpha = m.alpha
-    dt = np.diff(t)
-
-    # numbering {f[0] = f_{n - 2}, f[1] = f_{n - 1}, f[2] = f_n}
-    c2 = dt[1] ** alpha / gamma2p(m)
-    c1 = -c2 * (dt[1] / dt[0] + alpha + 1)
-    c0 = c2 * dt[1] / dt[0]
-    result = c0 * f[0] + c1 * f[1] + c2 * f[2]
-
-    return np.array(result)
+    return out, omega[-1].squeeze()
 
 
 @advance.register(Trapezoidal)
@@ -648,6 +639,26 @@ class ModifiedPECE(CaputoPredictorCorrectorMethod[StateFunctionT]):
     second-order with a single corrector iteration for all :math:`\alpha`, but
     a smaller stability region.
     """
+
+
+def _weights_quadrature_trapezoidal(
+    m: CaputoProductIntegrationMethod[StateFunctionT],
+    t: Array,
+    n: int,
+    p: int,
+) -> tuple[Array, Array]:
+    # get time history
+    ts = (t[n] - t[: p + 1]).reshape(-1, 1)
+    dt = np.diff(t[: p + 1]).reshape(-1, 1)
+
+    alpha = m.alpha
+    I0 = ts**alpha / gamma1p(m)
+    I1 = ts ** (1.0 + alpha) / gamma2p(m)
+
+    omegal = I1[1:] / dt + I0[:-1] - I1[:-1] / dt
+    omegar = I1[:-1] / dt - I0[1:] - I1[1:] / dt
+
+    return omegal, omegar
 
 
 @advance.register(ModifiedPECE)
