@@ -1,6 +1,23 @@
 Changelog
 =========
 
+pycaputo X.Y.Z (TDB)
+--------------------
+
+Features
+^^^^^^^^
+
+* Add some more chaotic systems examples: Labyrinth, Chua, Qi, Lorenz-84. They're
+  all listed in :mod:`pycaputo.fode.gallery`.
+* Add some neuron models: FitzHugh-Rinzel. This is on top of the existing
+  Integrate-and-Fire models from :mod:`pycaputo.integrate_fire`.
+
+Breaking Changes
+^^^^^^^^^^^^^^^^
+
+* All :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod` need to
+  also define :meth:`~pycaputo.stepping.FractionalDifferentialEquationMethod.make_default_history`.
+
 pycaputo 0.8.1 (October 13, 2024)
 ---------------------------------
 
