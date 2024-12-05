@@ -350,7 +350,7 @@ def jacobi_caputo_derivative(
     import math
     from dataclasses import replace
 
-    m = int(math.ceil(alpha))
+    m = math.ceil(alpha)
     pm = replace(p, alpha=p.alpha + m, beta=p.beta + m)
     # FIXME: the weight is h^-alpha in [Li2020], but that seems incorrect?
     w = ((p.b - p.a) / 2) ** (-alpha - 1) if weighted else 1
