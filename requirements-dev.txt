@@ -47,7 +47,7 @@ docutils==0.21.2
     #   sphinx
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
     # via pytest
-fonttools==4.55.0
+fonttools==4.55.2
     # via matplotlib
 idna==3.10
     # via requests
@@ -107,7 +107,7 @@ pyparsing==3.2.0
     # via matplotlib
 pyproject-fmt==2.5.0
     # via pycaputo (pyproject.toml)
-pytest==8.3.3
+pytest==8.3.4
     # via
     #   pycaputo (pyproject.toml)
     #   pytest-benchmark
@@ -125,11 +125,11 @@ reuse==5.0.2
     # via pycaputo (pyproject.toml)
 rich==13.9.4
     # via pycaputo (pyproject.toml)
-ruff==0.8.1
+ruff==0.8.2
     # via pycaputo (pyproject.toml)
 scipy==1.14.1
     # via pycaputo (pyproject.toml)
-six==1.16.0
+six==1.17.0
     # via python-dateutil
 snowballstemmer==2.2.0
     # via sphinx
@@ -178,9 +178,9 @@ typing-extensions==4.12.2
     #   mypy
     #   pydata-sphinx-theme
     #   rich
-typos==1.28.1
+typos==1.28.2
     # via pycaputo (pyproject.toml)
 urllib3==2.2.3
     # via requests
-uv==0.5.5
+uv==0.5.6
     # via pycaputo (pyproject.toml)
