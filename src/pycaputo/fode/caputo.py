@@ -749,7 +749,7 @@ def _update_caputo_l1(
     assert h.shape == (n, d)
 
     if diff:
-        r = history.storage[1 : n + 1] - history.storage[:n]
+        r: Array = history.storage[1 : n + 1] - history.storage[:n]
     else:
         # NOTE: can be used to handle discontinuous data stored as
         # [y^-_n, y^+_n] on the two sides of t_n

@@ -297,10 +297,10 @@ def _quad_rl_cubic_hermite(
 
     # NOTE: [Li2020] Equation 3.29 and 3.30
     n = indices[1:]
-    w = n**alpha * (
+    w: Array = n**alpha * (
         12 * n**3 - 6 * (3 + alpha) * n**2 + (1 + alpha) * (2 + alpha) * (3 + alpha)
     ) - 6 * (n - 1) ** (2 + alpha) * (1 + 2 * n + alpha)
-    what = n ** (1 + alpha) * (
+    what: Array = n ** (1 + alpha) * (
         6 * n**2 - 4 * (3 + alpha) * n + (2 + alpha) * (3 + alpha)
     ) - 2 * (n - 1) ** (2 + alpha) * (3 * n + alpha)
     qf[1:] = (

@@ -177,12 +177,12 @@ def _diffs_rl_from_caputo(
     n: int,
 ) -> Scalar:
     x = p.x
-    fx = f(x[: n + 1]) if callable(f) else f[: n + 1]
+    fx: Array = f(x[: n + 1]) if callable(f) else f[: n + 1]
 
     df = diffs(m.base, fx, p, n)
 
     wc = _rl_correction_weights(m, p.x, n)
-    return df + wc @ fx[: wc.size]  # type: ignore[no-any-return]
+    return df + wc @ fx[: wc.size]  # type: ignore[arg-type, operator]
 
 
 @diff.register(L1)

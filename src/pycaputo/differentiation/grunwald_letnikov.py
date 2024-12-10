@@ -140,7 +140,7 @@ def _diff_shifted_grunwald_letnikov_method(
     h = p.dx[0]
     if callable(f):
         fa = f(p.x[0])
-        fx = f(p.x + m.shift * h) - fa
+        fx: Array = f(p.x + m.shift * h) - fa
     else:
         raise NotImplementedError
 
@@ -229,8 +229,8 @@ def _diff_tian_zhou_deng_2(
 
     if callable(f):
         fa = f(p.x[0])
-        fx_p = f(p.x + s_p * h) - fa
-        fx_q = f(p.x + s_q * h) - fa
+        fx_p: Array = f(p.x + s_p * h) - fa
+        fx_q: Array = f(p.x + s_q * h) - fa
     else:
         raise NotImplementedError
 
@@ -327,9 +327,9 @@ def _diff_tian_zhou_deng_3(
 
     if callable(f):
         fa = f(p.x[0])
-        fx_p = f(p.x + s_p * h) - fa
-        fx_q = f(p.x + s_q * h) - fa
-        fx_r = f(p.x + s_r * h) - fa
+        fx_p: Array = f(p.x + s_p * h) - fa
+        fx_q: Array = f(p.x + s_q * h) - fa
+        fx_r: Array = f(p.x + s_r * h) - fa
     else:
         raise NotImplementedError
 

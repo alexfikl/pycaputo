@@ -305,7 +305,7 @@ def test_ad_ex_solve() -> None:
             ])
 
             y = method.solve(t, y0, h, r)
-            error = y - h * ad_ex.source(t, y) - r
+            error: Array = y - h * ad_ex.source(t, y) - r
             e_imag = np.linalg.norm(error.imag)
             e_real = np.linalg.norm(error.real)
 
@@ -445,8 +445,8 @@ def test_spike_time_estimate_linear() -> None:
 
     rng = np.random.default_rng(seed=42)
     for _ in range(16):
-        tp, t = sorted(rng.uniform(0.0, 0.1, size=2))
-        Vp, Vpeak, V = sorted(-np.sqrt(rng.uniform(1.0, 20, size=3)))
+        tp, t = np.sort(rng.uniform(0.0, 0.1, size=2))
+        Vp, Vpeak, V = np.sort(-np.sqrt(rng.uniform(1.0, 20, size=3)))
 
         ts = estimate_spike_time_linear(t, V, tp, Vp, Vpeak)
         assert tp <= ts <= t
@@ -467,8 +467,8 @@ def test_spike_time_estimate_quadratic() -> None:
 
     rng = np.random.default_rng(seed=42)
     for _ in range(16):
-        tpp, tp, t = sorted(rng.uniform(0.0, 0.1, size=3))
-        Vpp, Vp, Vpeak, V = sorted(-np.sqrt(rng.uniform(1.0, 20, size=4)))
+        tpp, tp, t = np.sort(rng.uniform(0.0, 0.1, size=3))
+        Vpp, Vp, Vpeak, V = np.sort(-np.sqrt(rng.uniform(1.0, 20, size=4)))
 
         ts = estimate_spike_time_quadratic(t, V, tp, Vp, tpp, Vpp, Vpeak)
         assert tpp <= tp <= ts <= t
@@ -493,8 +493,8 @@ def test_spike_time_estimate_exponential() -> None:
 
     rng = np.random.default_rng(seed=42)
     for _ in range(16):
-        tp, t = sorted(rng.uniform(0.0, 0.1, size=2))
-        Vp, Vpeak, V = sorted(-np.sqrt(rng.uniform(1.0, 20, size=3)))
+        tp, t = np.sort(rng.uniform(0.0, 0.1, size=2))
+        Vp, Vpeak, V = np.sort(-np.sqrt(rng.uniform(1.0, 20, size=3)))
 
         ts = estimate_spike_time_exp(t, V, tp, Vp, Vpeak)
         assert tp <= ts <= t

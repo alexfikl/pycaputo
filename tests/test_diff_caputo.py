@@ -607,7 +607,7 @@ def test_caputo_consistency(
                 w.shape,
             )
 
-            error = la.norm(df_from_weights - df_from_diffs)
+            error = la.norm(df_from_weights - df_from_diffs)  # type: ignore[operator]
             logger.info("   n %d error %.12e", n, error)
             assert error < 6.0e-14
 

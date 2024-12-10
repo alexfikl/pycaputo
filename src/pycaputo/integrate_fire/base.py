@@ -353,8 +353,8 @@ def advance_caputo_integrate_fire_l1(
 
     # NOTE: we store (t_k, [y^-_k, y^+_k]) at every time step and want to compute
     #   h_{n + 1, k} (y^-_{k + 1} - y^+_k)
-    dy = history.storage[1 : n + 1, :d] - history.storage[:n, d:]
-    r = np.einsum("ij,ij->j", h[:-1], dy[:-1])
+    dy: Array = history.storage[1 : n + 1, :d] - history.storage[:n, d:]
+    r: Array = np.einsum("ij,ij->j", h[:-1], dy[:-1])
 
     from pycaputo.fode.caputo import _truncation_error
 
