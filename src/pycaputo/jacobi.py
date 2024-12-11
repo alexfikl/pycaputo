@@ -3,12 +3,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.grid import JacobiGaussLobattoPoints, Points
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.grid import JacobiGaussLobattoPoints, Points
+    from pycaputo.typing import Array
+
 
 # {{{ Jacobi polynomial related coefficients
 

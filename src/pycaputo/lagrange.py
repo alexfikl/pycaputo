@@ -3,14 +3,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ScalarFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.grid import Points
+    from pycaputo.typing import Array, ScalarFunction
 
 logger = get_logger(__name__)
 

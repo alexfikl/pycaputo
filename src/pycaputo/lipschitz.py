@@ -3,11 +3,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import scipy.stats
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ScalarFunction
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array, ScalarFunction
 
 logger = get_logger(__name__)
 

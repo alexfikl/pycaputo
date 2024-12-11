@@ -4,10 +4,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar
 
 import numpy as np
 
@@ -22,7 +21,11 @@ from pycaputo.stepping import (
     gamma2m,
     make_initial_condition,
 )
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

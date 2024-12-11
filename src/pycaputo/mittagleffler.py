@@ -6,12 +6,14 @@ from __future__ import annotations
 import enum
 import math
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

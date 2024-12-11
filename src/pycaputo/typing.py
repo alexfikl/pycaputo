@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import Field
+from dataclasses import Field  # noqa: TC003
 from typing import (
     TYPE_CHECKING,
     Any,

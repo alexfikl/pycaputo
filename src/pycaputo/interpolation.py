@@ -4,14 +4,16 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.typing import Array
 
 
 @dataclass(frozen=True)

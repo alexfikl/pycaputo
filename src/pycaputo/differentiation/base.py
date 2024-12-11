@@ -6,12 +6,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.derivatives import FractionalOperator
-from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
+if TYPE_CHECKING:
+    from pycaputo.derivatives import FractionalOperator
+    from pycaputo.grid import Points
+    from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
 
 
 class FunctionCallableError(TypeError):

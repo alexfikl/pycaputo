@@ -3,9 +3,13 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pycaputo.derivatives import FractionalOperator, Side
-from pycaputo.grid import Points
 from pycaputo.quadrature.base import QuadratureMethod, quad
+
+if TYPE_CHECKING:
+    from pycaputo.grid import Points
 
 
 def guess_method_for_order(
