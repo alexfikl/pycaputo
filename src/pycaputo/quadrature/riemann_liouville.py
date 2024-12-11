@@ -7,19 +7,21 @@ import math
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.grid import Points
-from pycaputo.typing import (
-    Array,
-    ArrayOrScalarFunction,
-    DifferentiableScalarFunction,
-    ScalarFunction,
-)
 
 from .base import QuadratureMethod, quad
+
+if TYPE_CHECKING:
+    from pycaputo.grid import Points
+    from pycaputo.typing import (
+        Array,
+        ArrayOrScalarFunction,
+        ScalarFunction,
+    )
 
 
 @dataclass(frozen=True)
@@ -274,6 +276,8 @@ def _quad_rl_cubic_hermite(
     if not isinstance(p, UniformPoints):
         raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
 
+    from pycaputo.typing import DifferentiableScalarFunction
+
     # FIXME: isinstance(f, DifferentiableScalarFunction) does not work?
     assert isinstance(f, DifferentiableScalarFunction)
 
@@ -297,12 +301,17 @@ def _quad_rl_cubic_hermite(
 
     # NOTE: [Li2020] Equation 3.29 and 3.30
     n = indices[1:]
-    w: Array = n**alpha * (
-        12 * n**3 - 6 * (3 + alpha) * n**2 + (1 + alpha) * (2 + alpha) * (3 + alpha)
-    ) - 6 * (n - 1) ** (2 + alpha) * (1 + 2 * n + alpha)
-    what: Array = n ** (1 + alpha) * (
-        6 * n**2 - 4 * (3 + alpha) * n + (2 + alpha) * (3 + alpha)
-    ) - 2 * (n - 1) ** (2 + alpha) * (3 * n + alpha)
+    w = cast(
+        "Array",
+        n**alpha
+        * (12 * n**3 - 6 * (3 + alpha) * n**2 + (1 + alpha) * (2 + alpha) * (3 + alpha))
+        - 6 * (n - 1) ** (2 + alpha) * (1 + 2 * n + alpha),
+    )
+    what = cast(
+        "Array",
+        n ** (1 + alpha) * (6 * n**2 - 4 * (3 + alpha) * n + (2 + alpha) * (3 + alpha))
+        - 2 * (n - 1) ** (2 + alpha) * (3 * n + alpha),
+    )
     qf[1:] = (
         w * fx[0]
         + what * h * fp[0]

@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 from .special import Function
 

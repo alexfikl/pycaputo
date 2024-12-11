@@ -3,13 +3,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
-from typing import NamedTuple, overload
+from typing import TYPE_CHECKING, NamedTuple, overload
 
 import numpy as np
 
-from pycaputo.history import ProductIntegrationHistory
 from pycaputo.integrate_fire.base import (
     AdvanceResult,
     IntegrateFireMethod,
@@ -17,7 +15,12 @@ from pycaputo.integrate_fire.base import (
 )
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pycaputo.history import ProductIntegrationHistory
+    from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

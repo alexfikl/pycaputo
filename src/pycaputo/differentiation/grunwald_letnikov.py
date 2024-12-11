@@ -5,13 +5,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import gamma
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.derivatives import GrunwaldLetnikovDerivative, Side
 from pycaputo.grid import Points, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ArrayOrScalarFunction
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array, ArrayOrScalarFunction
 
 from .base import DerivativeMethod, diff
 

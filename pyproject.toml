@@ -108,6 +108,7 @@ lint.select = [
     "RUF", # ruff
     "S",   # flake8-bandit
     "SIM", # flake8-simplify
+    "TC",  # flake8-type-checking
     "UP",  # pyupgrade
     "W",   # flake8
 ]
@@ -135,6 +136,8 @@ lint.ignore = [
     "UP037",   # quoted-annotation
 ]
 
+lint.per-file-ignores."examples/**.py" = [ "TC001" ]
+lint.per-file-ignores."tests/**.py" = [ "TC001", "TC002", "TC003" ]
 lint.flake8-quotes.docstring-quotes = "double"
 lint.flake8-quotes.inline-quotes = "double"
 lint.flake8-quotes.multiline-quotes = "double"

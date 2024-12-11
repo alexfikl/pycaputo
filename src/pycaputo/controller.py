@@ -9,11 +9,9 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from pycaputo.typing import Array, StateFunction, StateFunctionT
-
 if TYPE_CHECKING:
-    # NOTE: avoid cyclic import
     from pycaputo.stepping import FractionalDifferentialEquationMethod
+    from pycaputo.typing import Array, StateFunction, StateFunctionT
 
 # {{{ utils
 

@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 logger = get_logger(__name__)
 

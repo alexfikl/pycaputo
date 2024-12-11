@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
-import rich
+if TYPE_CHECKING:
+    import rich
 
 
 def stringify_table(table: rich.table.Table) -> str:

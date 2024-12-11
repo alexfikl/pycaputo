@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from pycaputo.derivatives import FractionalOperator
@@ -14,8 +16,10 @@ from pycaputo.differentiation.base import (
     diffs,
     quadrature_weights,
 )
-from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
+
+if TYPE_CHECKING:
+    from pycaputo.grid import Points
+    from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
 
 
 def guess_method_for_order(
