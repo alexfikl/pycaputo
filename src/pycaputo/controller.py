@@ -966,6 +966,10 @@ class RandomController(Controller):
     rng: np.random.Generator
     """A random number generator for the time steps."""
 
+    @property
+    def is_adaptive(self) -> bool:
+        return False
+
     @cached_property
     def times(self) -> Array:
         assert self.tfinal is not None
