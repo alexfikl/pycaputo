@@ -43,4 +43,4 @@ stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
 ref = model.param.ref
 solution = fracevolve(stepper, dtinit=dt)
 solution = replace(solution, t=ref.time(solution.t), y=ref.var(solution.y)[0])
-fracplot(solution, "gallery-ad-ex")
+fracplot(solution, "gallery-ad-ex", ylabel="V")

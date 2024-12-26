@@ -38,4 +38,4 @@ stepper = caputo.L1(
 
 solution = fracevolve(stepper, dtinit=dt)
 solution = replace(solution, y=solution.y[0])
-fracplot(solution, "gallery-fitzhugh-rinzel")
+fracplot(solution, "gallery-fitzhugh-rinzel", ylabel="V")

@@ -213,6 +213,10 @@ def fracevolve(
 # {{{ fracplot
 
 
+_DEFAULT_XLABEL = ["t", "t", "x", "x"]
+_DEFAULT_YLABEL = ["y", "y", "y", "y"]
+
+
 def _get_default_dark(*, default: bool = False) -> tuple[tuple[bool, str], ...]:
     """Get combinations of light and dark flags.
 
@@ -246,6 +250,8 @@ def fracplot(
     *,
     dark: bool | None = None,
     azimuth: float = -55.0,
+    xlabel: str | None = None,
+    ylabel: str | None = None,
     ylim: tuple[float, float] | None = None,
 ) -> None:
     """Plot the solution of a fractional differential equation from :func:`fracevolve`.
@@ -266,9 +272,22 @@ def fracplot(
     if filename is not None:
         filename = pathlib.Path(filename)
 
-    dim = sol.y.shape[0]
-    overrides = {"lines": {"linewidth": 1}} if dim == 3 else {}
+    t = sol.t
+    y = sol.y
+    dim = y.shape[0]
+    if dim == 1 or y.ndim == 1:
+        dim = 1
 
+    if dim not in {1, 2, 3}:
+        raise ValueError(f"Unsupported system dimension: {dim}")
+
+    if xlabel is None:
+        xlabel = _DEFAULT_XLABEL[dim]
+
+    if ylabel is None:
+        ylabel = _DEFAULT_YLABEL[dim]
+
+    overrides = {"lines": {"linewidth": 1}} if dim == 3 else {}
     suffixes = _get_default_dark(default=bool(dark)) if dark is None else ((dark, ""),)
     outfile = None
 
@@ -279,16 +298,14 @@ def fracplot(
             outfile = filename.parent / f"{filename.stem}{suffix_i}{filename.suffix}"
 
         set_recommended_matplotlib(dark=dark_i, overrides=overrides)
-        t = sol.t
-        y = sol.y
 
-        if dim == 1 or y.ndim == 1:
+        if dim == 1:
             with figure(outfile) as fig:
                 ax = fig.gca()
 
                 ax.plot(t, y)
-                ax.set_xlabel("$t$")
-                ax.set_ylabel("$y$")
+                ax.set_xlabel(f"${xlabel}$")
+                ax.set_ylabel(f"${ylabel}$")
                 if ylim is not None:
                     ax.set_ylim(ylim)
         elif dim == 2:
@@ -296,8 +313,8 @@ def fracplot(
                 ax = fig.gca()
 
                 ax.plot(y[0], y[1])
-                ax.set_xlabel("$x$")
-                ax.set_ylabel("$y$")
+                ax.set_xlabel(f"${xlabel}$")
+                ax.set_ylabel(f"${ylabel}$")
 
                 if ylim is not None:
                     ax.set_ylim(ylim)
@@ -307,13 +324,13 @@ def fracplot(
                 ax.view_init(elev=15, azim=azimuth, roll=0)
 
                 ax.plot(y[0], y[1], y[2])
-                ax.set_xlabel("$x$")
-                ax.set_ylabel("$y$")
+                ax.set_xlabel(f"${xlabel}$")
+                ax.set_ylabel(f"${ylabel}$")
 
                 if ylim is not None:
                     ax.set_ylim(ylim)
         else:
-            raise ValueError(f"Unsupported system dimension: {dim}")
+            raise AssertionError
 
 
 # }}}

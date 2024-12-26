@@ -58,4 +58,4 @@ solution = fracevolve(stepper, dtinit=dt)
 
 ref = model.param.ref
 solution = replace(solution, t=ref.time(solution.t), y=ref.var(solution.y))
-fracplot(solution, "gallery-lif")
+fracplot(solution, "gallery-lif", ylabel="V")
