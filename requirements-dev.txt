@@ -4,7 +4,7 @@ accessible-pygments==0.0.5
     # via pydata-sphinx-theme
 alabaster==1.0.0
     # via sphinx
-attrs==24.2.0
+attrs==24.3.0
     # via reuse
 babel==2.16.0
     # via
@@ -18,17 +18,17 @@ boolean-py==4.0
     # via
     #   license-expression
     #   reuse
-certifi==2024.8.30
+certifi==2024.12.14
     # via requests
 chardet==5.2.0
     # via
     #   binaryornot
     #   python-debian
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
-click==8.1.7
+click==8.1.8
     # via reuse
-colorama==0.4.6 ; sys_platform == 'win32' or platform_system == 'Windows'
+colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   click
     #   pytest
@@ -47,7 +47,7 @@ docutils==0.21.2
     #   sphinx
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
     # via pytest
-fonttools==4.55.2
+fonttools==4.55.3
     # via matplotlib
 idna==3.10
     # via requests
@@ -55,11 +55,11 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.0.0
     # via pytest
-jinja2==3.1.4
+jinja2==3.1.5
     # via
     #   reuse
     #   sphinx
-kiwisolver==1.4.7
+kiwisolver==1.4.8
     # via matplotlib
 license-expression==30.4.0
     # via reuse
@@ -67,15 +67,15 @@ markdown-it-py==3.0.0
     # via rich
 markupsafe==3.0.2
     # via jinja2
-matplotlib==3.9.3
+matplotlib==3.10.0
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.13.0
+mypy==1.14.0
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-numpy==2.2.0
+numpy==2.2.1
     # via
     #   pycaputo (pyproject.toml)
     #   contourpy
@@ -94,7 +94,7 @@ pluggy==1.5.0
     # via pytest
 py-cpuinfo==9.0.0
     # via pytest-benchmark
-pydata-sphinx-theme==0.16.0
+pydata-sphinx-theme==0.16.1
     # via sphinx-book-theme
 pygments==2.18.0
     # via
@@ -125,7 +125,7 @@ reuse==5.0.2
     # via pycaputo (pyproject.toml)
 rich==13.9.4
     # via pycaputo (pyproject.toml)
-ruff==0.8.2
+ruff==0.8.4
     # via pycaputo (pyproject.toml)
 scipy==1.14.1
     # via pycaputo (pyproject.toml)
@@ -178,9 +178,9 @@ typing-extensions==4.12.2
     #   mypy
     #   pydata-sphinx-theme
     #   rich
-typos==1.28.2
+typos==1.28.4
     # via pycaputo (pyproject.toml)
-urllib3==2.2.3
+urllib3==2.3.0
     # via requests
-uv==0.5.7
+uv==0.5.11
     # via pycaputo (pyproject.toml)
