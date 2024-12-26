@@ -392,6 +392,12 @@ def set_recommended_matplotlib(
         else:
             mp.style.use(["science", "ieee"])
 
+    # NOTE: the 'petroff10' style is available for version >= 3.10.0 and changes
+    # the 'prop_cycle' to the 10 colors that are more accessible
+    if "petroff10" in mp.style.available:
+        mp.style.use("petroff10")
+        defaults["axes"]["prop_cycle"] = mp.rcParams["axes.prop_cycle"]
+
     for group, params in defaults.items():
         mp.rc(group, **params)
 
