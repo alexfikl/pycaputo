@@ -327,6 +327,11 @@ def fracplot(
                 ax.set_xlabel(f"${xlabel}$")
                 ax.set_ylabel(f"${ylabel}$")
 
+                if dark_i:
+                    # NOTE: force black facecolor in 3D to match the background
+                    # of sphinx-book better in its dark mode
+                    ax.set_facecolor("#111111")
+
                 if ylim is not None:
                     ax.set_ylim(ylim)
         else:
