@@ -158,11 +158,9 @@ for dark, suffix in _get_default_dark():
     ) as fig:
         ax = fig.axes
 
-        ax[0].plot(t, y[0], "o-", ms=3, fillstyle="none", label="$x$")
         ax[0].plot(t, y[1], "o-", ms=3, fillstyle="none", label="$y$")
-        ax[0].legend(
-            loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand"
-        )
+        ax[0].plot(t, y[0], "o-", ms=3, fillstyle="none", label="$x$")
+        ax[0].legend(loc="lower left", bbox_to_anchor=(0.5, 1.0), ncol=2, mode="expand")
 
         ax[1].semilogy(t[:-1], np.diff(t), "o-", fillstyle="none", ms=3)
         ax[1].set_xlabel("$t$")
@@ -174,9 +172,9 @@ for dark, suffix in _get_default_dark():
     ) as fig:
         ax = fig.axes
 
-        ax[0].plot(t, trunc[0], "o-", ms=3, fillstyle="none")
-        ax[0].plot(t, trunc[1], "o-", ms=3, fillstyle="none")
-        ax[0].set_ylabel(r"$\tau$")
+        ax[0].plot(t, trunc[1], "o-", ms=3, fillstyle="none", label=r"$\tau_y$")
+        ax[0].plot(t, trunc[0], "o-", ms=3, fillstyle="none", label=r"$\tau_x$")
+        ax[0].legend(loc="lower left", bbox_to_anchor=(0.5, 1.0), ncol=2, mode="expand")
 
         ax[1].plot(t, eests, "-")
         ax[1].axhline(1.0, ls="--", color="k")
