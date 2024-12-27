@@ -495,8 +495,19 @@ def savefig(
     if not overwrite and filename.exists():
         raise FileExistsError(f"Output file '{filename}' already exists")
 
+    bbox_extra_artists = []
+    for ax in fig.axes:
+        legend = ax.get_legend()
+        if legend is not None:
+            bbox_extra_artists.append(legend)
+
     logger.info("Saving '%s'", filename)
-    fig.savefig(filename, **kwargs)
+    fig.savefig(
+        filename,
+        bbox_extra_artists=tuple(bbox_extra_artists),
+        bbox_inches="tight",
+        **kwargs,
+    )
 
 
 # }}}

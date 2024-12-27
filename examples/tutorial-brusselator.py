@@ -101,7 +101,7 @@ for dark, suffix in _get_default_dark():
         ax.plot(t, y[0], lw=3, label="$x$")
 
         ax.set_xlabel("$t$")
-        ax.legend(loc="lower left", bbox_to_anchor=(0.5, 0.97), ncol=2, mode="expand")
+        ax.legend(loc="lower left", bbox_to_anchor=(0.5, 1.0), ncol=2, mode="expand")
 
     with figure(f"tutorial-brusselator-cycle{suffix}") as fig:
         ax = fig.gca()
