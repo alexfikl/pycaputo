@@ -357,6 +357,19 @@ def set_recommended_matplotlib(
             "PYCAPUTO_SAVEFIG", mp.rcParams["savefig.format"]
         ).lower()
 
+    # NOTE: preserve existing colors (the ones in "science" are ugly)
+    prop_cycle = mp.rcParams["axes.prop_cycle"]
+    with suppress(ImportError):
+        import scienceplots  # noqa: F401
+
+        mp.style.use(["science", "ieee"])
+
+    # NOTE: the 'petroff10' style is available for version >= 3.10.0 and changes
+    # the 'prop_cycle' to the 10 colors that are more accessible
+    if "petroff10" in mp.style.available:
+        mp.style.use("petroff10")
+        prop_cycle = mp.rcParams["axes.prop_cycle"]
+
     defaults: dict[str, dict[str, Any]] = {
         "figure": {
             "figsize": (8, 8),
@@ -373,30 +386,30 @@ def set_recommended_matplotlib(
             "grid": True,
             "grid.axis": "both",
             "grid.which": "both",
-            # NOTE: preserve existing colors (the ones in "science" are ugly)
-            "prop_cycle": mp.rcParams["axes.prop_cycle"],
+            "prop_cycle": prop_cycle,
         },
-        "xtick": {"labelsize": 20, "direction": "inout"},
-        "ytick": {"labelsize": 20, "direction": "inout"},
+        "xtick": {"labelsize": 20, "direction": "out"},
+        "ytick": {"labelsize": 20, "direction": "out"},
         "xtick.major": {"size": 6.5, "width": 1.5},
         "ytick.major": {"size": 6.5, "width": 1.5},
         "xtick.minor": {"size": 4.0},
         "ytick.minor": {"size": 4.0},
     }
 
-    with suppress(ImportError):
-        import scienceplots  # noqa: F401
-
-        if dark:
-            mp.style.use(["science", "ieee", "dark_background"])
-        else:
-            mp.style.use(["science", "ieee"])
-
-    # NOTE: the 'petroff10' style is available for version >= 3.10.0 and changes
-    # the 'prop_cycle' to the 10 colors that are more accessible
-    if "petroff10" in mp.style.available:
-        mp.style.use("petroff10")
-        defaults["axes"]["prop_cycle"] = mp.rcParams["axes.prop_cycle"]
+    if dark:
+        # NOTE: this is the black color used by the sphinx-book theme
+        black = "111111"
+        gray = "28313D"
+        defaults["text"].update({"color": "white"})
+        defaults["axes"].update({
+            "labelcolor": "white",
+            "facecolor": gray,
+            "edgecolor": "white",
+        })
+        defaults["xtick"].update({"color": "white"})
+        defaults["ytick"].update({"color": "white"})
+        defaults["figure"].update({"facecolor": black, "edgecolor": black})
+        defaults["savefig"].update({"facecolor": black, "edgecolor": black})
 
     for group, params in defaults.items():
         mp.rc(group, **params)

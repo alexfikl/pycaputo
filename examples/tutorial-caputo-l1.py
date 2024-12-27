@@ -80,7 +80,7 @@ for dark, suffix in _get_default_dark():
         ax = fig.gca()
 
         ax.plot(p.x, df_num, lw=5, label="L1 Method")
-        ax.plot(p.x[1:], df_ref[1:], "k--", label="Exact")
+        ax.plot(p.x[1:], df_ref[1:], "--", color="w" if dark else "k", label="Exact")
 
         ax.set_xlabel("$x$")
         ax.set_ylabel(r"$D^\alpha_C[f](x)$")
