@@ -6,3 +6,7 @@ dl .py.attribute, .py.property, .std.option {
     font-size: 2.5rem !important;
     font-weight: bold !important;
 }
+
+html[data-theme="dark"] {
+    --pst-color-on-background: #111111 !important;
+}
