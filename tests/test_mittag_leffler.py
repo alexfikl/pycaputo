@@ -8,104 +8,15 @@ from collections.abc import Callable
 from functools import partial
 
 import numpy as np
+import numpy.linalg as la
 import pytest
 
-from pycaputo import mittagleffler as ml
 from pycaputo.logging import get_logger
 from pycaputo.utils import set_recommended_matplotlib
 
 dirname = pathlib.Path(__file__).parent
 logger = get_logger("pycaputo.test_mittag_leffler")
 set_recommended_matplotlib()
-
-
-# {{{ test_mittag_leffler_special
-
-
-@pytest.mark.parametrize(
-    ("alpha", "beta"),
-    [
-        (0, 1),
-        (0, 3),
-        (1, 1),
-        # FIXME: typo?
-        # (2, 1),
-        (3, 1),
-        (4, 1),
-        (0.5, 1),
-        (1, 2),
-        (2, 2),
-    ],
-)
-@pytest.mark.parametrize(
-    "alg",
-    [
-        ml.Algorithm.Series,
-        ml.Algorithm.Diethelm,
-        ml.Algorithm.Garrappa,
-    ],
-)
-def test_mittag_leffler_special(alpha: float, beta: float, alg: ml.Algorithm) -> None:
-    """
-    Check the ML evaluation for known special cases.
-    """
-
-    rng = np.random.default_rng(seed=42)
-
-    z = rng.uniform(-4.0, 5.0, 128) + 1j * rng.uniform(-5.0, 4.0, 128)
-    if alpha == 0 or alg == ml.Algorithm.Series:
-        z = z / (np.max(np.abs(z)) + 0.5)
-
-    if alpha == 0 and alg == ml.Algorithm.Garrappa:
-        pytest.skip("Garrappa algorithm does not handle alpha == 0")
-
-    result_ref = ml.mittag_leffler_special(z, alpha=alpha, beta=beta)
-    assert result_ref is not None
-
-    result = ml.mittag_leffler(z, alpha=alpha, beta=beta, alg=alg, use_explicit=False)
-    error = np.linalg.norm(result - result_ref) / (1 + np.linalg.norm(result_ref))
-    logger.info("Error E[%g, %g]: %.12e", alpha, beta, error)
-
-    # NOTE: due to the numerical quadrature, this can fail sometimes
-    rtol = 7.0e-11 if alg == ml.Algorithm.Diethelm else 1.0e-14
-    assert error < rtol
-
-
-# }}}
-
-
-# {{{ test_mittag_leffler_mathematica
-
-
-@pytest.mark.parametrize("iref", [0, 1, 2, 3, 4])
-@pytest.mark.parametrize(
-    "alg",
-    [
-        ml.Algorithm.Series,
-        ml.Algorithm.Diethelm,
-        ml.Algorithm.Garrappa,
-    ],
-)
-def test_mittag_leffler_mathematica(iref: int, alg: ml.Algorithm) -> None:
-    """
-    Check the results of our ML evaluations against Mathematica.
-    """
-    from mittag_leffler_ref import MATHEMATICA_RESULTS
-
-    ref = MATHEMATICA_RESULTS[iref]
-    is_on_unit_disk = np.all(np.abs(ref.z) <= 1.0)
-
-    if alg == ml.Algorithm.Series and not is_on_unit_disk:
-        pytest.skip("Series representation is not valid for z >= 1")
-
-    result = ml.mittag_leffler(ref.z, alpha=ref.alpha, beta=ref.beta, alg=alg)
-    error = np.linalg.norm(result - ref.result) / np.linalg.norm(ref.result)
-    logger.info("Error E[%g, %g]: %.12e", ref.alpha, ref.beta, error)
-    # logger.info("Expected %s Result %s", ref.result, result)
-    assert error < 1.0e-5
-
-
-# }}}
 
 
 # {{{ test_mittag_leffler_opt
@@ -134,13 +45,10 @@ def opt_func(t: float, a: float, b: float, *, alpha: float) -> float:
 
         f(t) = a - b * E_\alpha(-t^\alpha)
     """
+    from pymittagleffler import mittag_leffler
+
     # result = a - b * mittleff(alpha, 1.0, -(t**alpha))
-    result = a - b * ml.mittag_leffler(
-        -(t**alpha),
-        alpha=alpha,
-        beta=1.0,
-        alg=ml.Algorithm.Diethelm,
-    )
+    result = a - b * mittag_leffler(-(t**alpha), alpha=alpha, beta=1.0)
     return float(np.real_if_close(result))
 
 
@@ -202,12 +110,7 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
 
 
 @pytest.mark.parametrize("iref", [0, 1])
-@pytest.mark.parametrize(
-    "alg", [ml.Algorithm.Series, ml.Algorithm.Diethelm, ml.Algorithm.Garrappa]
-)
-def test_mittag_leffler_sine_mathematica(
-    iref: int, alg: ml.Algorithm, *, visualize: bool = False
-) -> None:
+def test_mittag_leffler_sine_mathematica(iref: int, *, visualize: bool = False) -> None:
     """
     Check the evaluation of the Caputo derivative of the Sine function against
     known results from Mathematica.
@@ -220,9 +123,9 @@ def test_mittag_leffler_sine_mathematica(
     ref = MATHEMATICA_SINE_RESULTS[iref]
 
     d = CaputoDerivative(ref.alpha, side=Side.Left)
-    result = _sin_derivative_caputo(d, ref.z, omega=1.0, alg=alg)
+    result = _sin_derivative_caputo(d, ref.z, omega=1.0)
 
-    error = np.linalg.norm(result - ref.result) / np.linalg.norm(ref.result)
+    error = la.norm(result - ref.result) / la.norm(ref.result)
     logger.info("Error D^%g[sin]: %.12e", ref.alpha, error)
 
     if visualize:

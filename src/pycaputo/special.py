@@ -91,13 +91,12 @@ def pow_derivative(
 def _exp_derivative_caputo(
     d: ds.CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
-    from pycaputo.mittagleffler import Algorithm, mittag_leffler
+    from pymittagleffler import mittag_leffler
 
     alpha = d.alpha
     n = d.n
-    alg = Algorithm.Garrappa
 
-    Eab = mittag_leffler(omega * t, 1, 1 + n - alpha, alg=alg)
+    Eab = mittag_leffler(omega * t, 1, 1 + n - alpha)
     result = omega**n * t ** (n - alpha) * Eab
 
     return np.array(result.real)
@@ -106,12 +105,11 @@ def _exp_derivative_caputo(
 def _exp_derivative_riemann_liouville(
     d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
-    from pycaputo.mittagleffler import Algorithm, mittag_leffler
+    from pymittagleffler import mittag_leffler
 
     alpha = d.alpha
-    alg = Algorithm.Garrappa
 
-    Eab = mittag_leffler(omega * t, 1, 1 - alpha, alg=alg)
+    Eab = mittag_leffler(omega * t, 1, 1 - alpha)
     result = Eab / t**alpha
 
     return np.array(result.real)
@@ -159,14 +157,9 @@ def exp_derivative(
 
 
 def _sin_derivative_caputo(
-    d: ds.CaputoDerivative, t: float | Array, omega: float, *, alg: object = None
+    d: ds.CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
-    from pycaputo.mittagleffler import Algorithm, mittag_leffler
-
-    if alg is None:
-        alg = Algorithm.Garrappa
-
-    assert isinstance(alg, Algorithm)
+    from pymittagleffler import mittag_leffler
 
     alpha = d.alpha
     n = d.n
@@ -174,10 +167,10 @@ def _sin_derivative_caputo(
     tomega = omega * t
 
     if n % 2 == 0:
-        Eab = mittag_leffler(-(tomega**2), 2, 2 + n - alpha, alg=alg)
+        Eab = mittag_leffler(-(tomega**2), 2, 2 + n - alpha)
         result = (-1) ** (n // 2) * tomega ** (n + 1) / t**alpha * Eab
     else:
-        Eab = mittag_leffler(-(tomega**2), 2, 1 + n - alpha, alg=alg)
+        Eab = mittag_leffler(-(tomega**2), 2, 1 + n - alpha)
         result = (-1) ** ((n - 1) // 2) * tomega**n / t**alpha * Eab
 
     return np.array(result.real)
@@ -186,13 +179,12 @@ def _sin_derivative_caputo(
 def _sin_derivative_riemann_liouville(
     d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
-    from pycaputo.mittagleffler import Algorithm, mittag_leffler
+    from pymittagleffler import mittag_leffler
 
     alpha = d.alpha
-    alg = Algorithm.Garrappa
 
     tomega = omega * t
-    Eab = mittag_leffler(-(tomega**2), 2, 2 - alpha, alg=alg)
+    Eab = mittag_leffler(-(tomega**2), 2, 2 - alpha)
     result = tomega / t**alpha * Eab
 
     return np.array(result.real)
@@ -241,19 +233,18 @@ def sin_derivative(
 def _cos_derivative_caputo(
     d: ds.CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
-    from pycaputo.mittagleffler import Algorithm, mittag_leffler
+    from pymittagleffler import mittag_leffler
 
     alpha = d.alpha
     n = d.n
-    alg = Algorithm.Garrappa
 
     tomega = omega * t
 
     if n % 2 == 0:
-        Eab = mittag_leffler(-(tomega**2), 2, 1 + n - alpha, alg=alg)
+        Eab = mittag_leffler(-(tomega**2), 2, 1 + n - alpha)
         result = (-1) ** (n // 2) * tomega**n / t**alpha * Eab
     else:
-        Eab = mittag_leffler(-(tomega**2), 2, 2 + n - alpha, alg=alg)
+        Eab = mittag_leffler(-(tomega**2), 2, 2 + n - alpha)
         result = (-1) ** ((n + 1) // 2) * tomega ** (n + 1) / t**alpha * Eab
 
     return np.array(result.real)
@@ -262,12 +253,11 @@ def _cos_derivative_caputo(
 def _cos_derivative_riemann_liouville(
     d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
-    from pycaputo.mittagleffler import Algorithm, mittag_leffler
+    from pymittagleffler import mittag_leffler
 
     alpha = d.alpha
-    alg = Algorithm.Garrappa
 
-    Eab = mittag_leffler(-((omega * t) ** 2), 2, 1 - alpha, alg=alg)
+    Eab = mittag_leffler(-((omega * t) ** 2), 2, 1 - alpha)
     result = Eab / t**alpha
 
     return np.array(result.real)
