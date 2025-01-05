@@ -71,7 +71,7 @@ matplotlib==3.10.0
     # via pycaputo (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.14.0
+mypy==1.14.1
     # via pycaputo (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
@@ -80,6 +80,7 @@ numpy==2.2.1
     #   pycaputo (pyproject.toml)
     #   contourpy
     #   matplotlib
+    #   pymittagleffler
     #   scipy
 packaging==24.2
     # via
@@ -88,7 +89,7 @@ packaging==24.2
     #   sphinx
 pbr==6.1.0
     # via stevedore
-pillow==11.0.0
+pillow==11.1.0
     # via matplotlib
 pluggy==1.5.0
     # via pytest
@@ -103,7 +104,9 @@ pygments==2.18.0
     #   pydata-sphinx-theme
     #   rich
     #   sphinx
-pyparsing==3.2.0
+pymittagleffler==0.1.2
+    # via pycaputo (pyproject.toml)
+pyparsing==3.2.1
     # via matplotlib
 pyproject-fmt==2.5.0
     # via pycaputo (pyproject.toml)
@@ -125,9 +128,9 @@ reuse==5.0.2
     # via pycaputo (pyproject.toml)
 rich==13.9.4
     # via pycaputo (pyproject.toml)
-ruff==0.8.4
+ruff==0.8.6
     # via pycaputo (pyproject.toml)
-scipy==1.14.1
+scipy==1.15.0
     # via pycaputo (pyproject.toml)
 six==1.17.0
     # via python-dateutil
@@ -178,9 +181,9 @@ typing-extensions==4.12.2
     #   mypy
     #   pydata-sphinx-theme
     #   rich
-typos==1.28.4
+typos==1.29.4
     # via pycaputo (pyproject.toml)
 urllib3==2.3.0
     # via requests
-uv==0.5.11
+uv==0.5.14
     # via pycaputo (pyproject.toml)
