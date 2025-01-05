@@ -562,7 +562,7 @@ def _laplace_transform_inversion(
     return complex(result)
 
 
-def _mittag_leffler_garrapa(
+def _mittag_leffler_garrappa(
     z: complex, *, alpha: float, beta: float, eps: float | None = None
 ) -> complex:
     if eps is None:
@@ -640,8 +640,8 @@ def mittag_leffler_special(
                 np.exp(z3) + 2 * np.exp(-z3 / 2) * np.cos(np.sqrt(3) * z3 / 2)
             ) / 3
         if alpha == 4:
-            z = z ** (1 / 4)
-            return (np.cos(z) + np.cosh(z)) / 2  # type: ignore[no-any-return]
+            z4 = z ** (1 / 4)
+            return (np.cos(z4) + np.cosh(z4)) / 2  # type: ignore[no-any-return]
         if alpha == 0.5:
             from scipy.special import erfc
 
@@ -651,8 +651,8 @@ def mittag_leffler_special(
         if alpha == 1:
             return (np.exp(z) - 1) / z  # type: ignore[no-any-return]
         if alpha == 2:
-            z = z ** (1 / 2)
-            return np.sinh(z) / z  # type: ignore[no-any-return]
+            z2 = z ** (1 / 2)
+            return np.sinh(z2) / z2  # type: ignore[no-any-return]
 
     return None
 
@@ -698,7 +698,7 @@ def mittag_leffler(
     elif alg == Algorithm.Diethelm:
         func = _mittag_leffler_diethelm
     elif alg == Algorithm.Garrappa:
-        func = _mittag_leffler_garrapa
+        func = _mittag_leffler_garrappa
     elif alg == Algorithm.Ortigueira:
         func = _mittag_leffler_ortigueira
     else:
