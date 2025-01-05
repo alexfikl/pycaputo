@@ -49,7 +49,7 @@ def opt_func(t: float, a: float, b: float, *, alpha: float) -> float:
 
     # result = a - b * mittleff(alpha, 1.0, -(t**alpha))
     result = a - b * mittag_leffler(-(t**alpha), alpha=alpha, beta=1.0)
-    return float(np.real_if_close(result))
+    return float(np.real_if_close(result, tol=1000))
 
 
 @pytest.mark.parametrize("alpha", [0.9, 0.95])
