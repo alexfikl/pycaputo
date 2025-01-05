@@ -4,7 +4,7 @@ Special Functions
 Mittag-Leffler
 --------------
 
-.. automodule:: pycaputo.mittagleffler
+See the :mod:`pymittagleffler` library instead.
 
 Elementary Functions
 --------------------

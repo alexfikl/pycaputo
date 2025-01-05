@@ -4,6 +4,14 @@ Changelog
 pycaputo X.Y.Z (TDB)
 --------------------
 
+Dependencies
+^^^^^^^^^^^^
+
+* Switch to the `pymittagleffler <https://github.com/alexfikl/mittagleffler>`__
+  library to evaluate the Mittag-Leffler function. This should be a lot faster
+  and generally cleaner. The code in ``pycaputo.mittagleffler`` has been completely
+  removed.
+
 Features
 ^^^^^^^^
 
@@ -139,7 +147,7 @@ Features
   :class:`~pycaputo.fode.caputo.ExplicitTrapezoidal` methods. These methods are
   closely related to the standard :class:`~pycaputo.fode.caputo.PECE` method.
   The implicit method has better stability.
-* Implement the Mittag-Leffler algorithm from [Garrappa2015]_.
+* Implement the Mittag-Leffler algorithm from `Garrappa2015 <https://doi.org/10.1137/140971191>`__.
 * Added the :mod:`pycaputo.fode.special` module with some exact solutions. This
   is subject to a lot of change, but in general it is desired to have some
   examples for testing and demonstration.
