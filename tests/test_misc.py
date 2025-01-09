@@ -142,10 +142,10 @@ def test_estimate_lischitz_constant(
 # }}}
 
 
-# {{{
+# {{{ test_cached_on_first_arg
 
 
-class MyClass:
+class MyClass:  # noqa: B903
     def __init__(self, value: float) -> None:
         self.value = value
 
