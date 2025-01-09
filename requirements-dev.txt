@@ -97,7 +97,7 @@ py-cpuinfo==9.0.0
     # via pytest-benchmark
 pydata-sphinx-theme==0.16.1
     # via sphinx-book-theme
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   accessible-pygments
     #   doc8
@@ -128,7 +128,7 @@ reuse==5.0.2
     # via pycaputo (pyproject.toml)
 rich==13.9.4
     # via pycaputo (pyproject.toml)
-ruff==0.8.6
+ruff==0.9.0
     # via pycaputo (pyproject.toml)
 scipy==1.15.0
     # via pycaputo (pyproject.toml)
@@ -185,5 +185,5 @@ typos==1.29.4
     # via pycaputo (pyproject.toml)
 urllib3==2.3.0
     # via requests
-uv==0.5.14
+uv==0.5.16
     # via pycaputo (pyproject.toml)
