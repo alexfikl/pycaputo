@@ -7,10 +7,13 @@ import json
 import logging
 import pathlib
 
-from pycaputo.logging import get_logger
+import rich.logging
 
-script = pathlib.Path(__file__)
-log = get_logger(script.stem)
+SCRIPT_FILENAME = pathlib.Path(__file__)
+
+log = logging.getLogger(SCRIPT_FILENAME.stem)
+log.setLevel(logging.ERROR)
+log.addHandler(rich.logging.RichHandler())
 
 
 def main(infile: pathlib.Path, *, outfile: pathlib.Path | None = None) -> int:

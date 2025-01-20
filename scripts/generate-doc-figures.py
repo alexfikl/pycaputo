@@ -13,7 +13,9 @@ import tempfile
 
 import rich.logging
 
-log = logging.getLogger(pathlib.Path(__file__).stem)
+SCRIPT_FILENAME = pathlib.Path(__file__)
+
+log = logging.getLogger(SCRIPT_FILENAME.stem)
 log.setLevel(logging.ERROR)
 log.addHandler(rich.logging.RichHandler())
 
