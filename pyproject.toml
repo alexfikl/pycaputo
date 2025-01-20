@@ -50,13 +50,8 @@ dependencies = [
 optional-dependencies.dev = [
     "doc8",
     "matplotlib",
-    "mypy",
     "pyproject-fmt",
-    "pytest",
-    "pytest-benchmark",
     "reuse",
-    "ruff",
-    "types-dataclasses",
     "typos",
     "uv",
 ]
@@ -65,8 +60,15 @@ optional-dependencies.docs = [
     "sphinx-book-theme",
     "sphinx-design>=0.4",
 ]
+optional-dependencies.test = [
+    "mypy",
+    "pytest",
+    "pytest-benchmark",
+    "ruff",
+    "types-dataclasses",
+]
 optional-dependencies.vis = [
-    "scienceplots",
+    "scienceplots>=2.1",
 ]
 urls.Documentation = "https://pycaputo.readthedocs.io"
 urls.Repository = "https://github.com/alexfikl/pycaputo"
@@ -166,12 +168,12 @@ plugins = "numpy.typing.mypy_plugin"
 
 [[tool.mypy.overrides]]
 module = [
-    "SciencePlots.*",
     "differint.*",
     "mittleff.*",
     "pytest_benchmark.*",
     "scienceplots.*",
     "scipy.*",
+    "matplotlib.*",
     "mpl_toolkits.mplot3d.*",
 ]
 ignore_missing_imports = true

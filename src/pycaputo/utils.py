@@ -19,7 +19,7 @@ from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
 log = get_logger(__name__)
 
 
-# {{{ typing
+# {{{ environment
 
 
 # fmt: off
@@ -32,7 +32,7 @@ BOOLEAN_STATES = {
 
 def get_environ_bool(name: str) -> bool:
     value = os.environ.get(name)
-    return BOOLEAN_STATES.get(name.lower(), False) if value else False
+    return BOOLEAN_STATES.get(value.lower(), False) if value else False
 
 
 # }}}
@@ -356,8 +356,7 @@ def set_recommended_matplotlib(
         log.warning("'use_tex' is disabled on this system.")
 
     if dark is None:
-        tmp = os.environ.get("PYCAPUTO_DARK", "off").lower()
-        dark = BOOLEAN_STATES.get(tmp, False)
+        dark = get_environ_bool("PYCAPUTO_DARK")
 
     if savefig_format is None:
         savefig_format = os.environ.get(

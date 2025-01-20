@@ -67,14 +67,14 @@ mypy:			## Run mypy checks over the source code
 # {{{ testing
 
 REQUIREMENTS=\
-	requirements-dev.txt \
+	requirements-test.txt \
 	requirements.txt
 
-requirements-dev.txt: pyproject.toml
+requirements-test.txt: pyproject.toml
 	uv pip compile --upgrade --universal --python-version '3.10' \
-		--extra dev --extra docs \
+		--extra test \
 		-o $@ $<
-.PHONY: requirements-dev.txt
+.PHONY: requirements-test.txt
 
 requirements.txt: pyproject.toml
 	uv pip compile --upgrade --universal --python-version '3.10' \
@@ -87,7 +87,7 @@ pin: $(REQUIREMENTS)	## Pin dependencies versions to requirements.txt
 pip-install:			## Install pinned dependencies from requirements.txt
 	$(PYTHON) -m pip install --upgrade editables hatchling pip wheel
 	$(PYTHON) -m pip install -r requirements-git.txt
-	$(PYTHON) -m pip install -r requirements-dev.txt
+	$(PYTHON) -m pip install -r requirements-test.txt
 	$(PYTHON) -m pip install --verbose --editable .
 .PHONY: pip-install
 
