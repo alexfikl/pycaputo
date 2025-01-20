@@ -292,7 +292,7 @@ def check_usetex(*, s: bool) -> bool:
         return False
 
     try:
-        return bool(matplotlib.checkdep_usetex(s))  # type: ignore[attr-defined]
+        return bool(matplotlib.checkdep_usetex(s))  # type: ignore[attr-defined,unused-ignore]
     except AttributeError:
         # NOTE: simplified version from matplotlib
         # https://github.com/matplotlib/matplotlib/blob/ec85e725b4b117d2729c9c4f720f31cf8739211f/lib/matplotlib/__init__.py#L439=L456
