@@ -15,7 +15,7 @@ from pycaputo.typing import Array, ArrayOrScalarFunction
 
 from .base import DerivativeMethod, diff
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 @dataclass(frozen=True)

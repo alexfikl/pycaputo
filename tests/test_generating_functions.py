@@ -16,7 +16,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -58,11 +58,11 @@ def test_lubich_bdf_weights(order: int, alpha: float) -> None:
             int_bdf[k] = h**alpha * (np.sum(w[: k + 1]) + np.sum(omega[k - s]))
 
         error = la.norm(int_ref - int_bdf) / la.norm(int_ref)
-        logger.info("ref %.12e bdf %.12e error %.12e", int_ref[-1], int_bdf[-1], error)
+        log.info("ref %.12e bdf %.12e error %.12e", int_ref[-1], int_bdf[-1], error)
 
         eoc.add_data_point(h, error)
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if not ENABLE_VISUAL:
         return

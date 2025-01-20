@@ -18,7 +18,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ test_ad_ex_parameters
@@ -62,7 +62,7 @@ def test_ad_ex_parameters() -> None:
         assert str(param)
         assert str(ad_ex)
 
-        logger.info("[%s] Parameters:\n%s\n%s", name, param, ad_ex)
+        log.info("[%s] Parameters:\n%s\n%s", name, param, ad_ex)
 
         assert ad_ex.ref.T_ref > 0
         assert ad_ex.tau_w > 0
@@ -142,12 +142,12 @@ def test_ad_ex_lambert_arg() -> None:
 
     for name, param in AD_EX_PARAMS.items():
         ad_ex = param.nondim(alpha)
-        logger.info("[%s] Parameters: a %.12e tau_w %.12e", name, ad_ex.a, ad_ex.tau_w)
+        log.info("[%s] Parameters: a %.12e tau_w %.12e", name, ad_ex.a, ad_ex.tau_w)
 
         hm, hp = ad_ex_lambert_zero_roots(ad_ex.a, ad_ex.tau_w, alpha)
         hmin = (hp + hm) / 2.0
-        logger.info("[%s] hp %.12e hm %.12e hmin %.12e", name, hp, hm, hmin)
-        logger.info("[%s] Works? %s", name, a < hm < b or a < hp < b)
+        log.info("[%s] hp %.12e hm %.12e hmin %.12e", name, hp, hm, hmin)
+        log.info("[%s] Works? %s", name, a < hm < b or a < hp < b)
 
         func = partial(ad_ex_zero, ad_ex.a, ad_ex.tau_w)
         assert np.isnan(hm) or abs(func(hm)) <= 5.0e-14, func(hm)
@@ -233,18 +233,18 @@ def test_ad_ex_lambert_limits() -> None:
         # check that the solution is actually complex
         h = ad_ex_coeff(tn + dt, tn)
         ynext = method.solve(tn + dt, y0, h, y0 - h * r)
-        logger.info("%s: %s", name, np.iscomplex(ynext))
+        log.info("%s: %s", name, np.iscomplex(ynext))
         assert np.any(np.iscomplex(ynext))
 
         imax = np.argmax(f > 1.0) - 1
-        logger.info("max tspike: t %.12e f %.12e", tspike[imax - 1], f[imax - 1])
+        log.info("max tspike: t %.12e f %.12e", tspike[imax - 1], f[imax - 1])
 
         # find the maximum time step
         dt_opt = 0.9 * find_maximum_time_step_lambert(ad_ex, tn + dt, tn, y0, r)
 
         # check that it's larger than the function root estimate
         tspike_opt = tn + dt_opt
-        logger.info("opt tspike: %.12e", tspike_opt)
+        log.info("opt tspike: %.12e", tspike_opt)
         assert tspike[imax - 1] <= tspike_opt, tspike_opt
 
         # check that the solution at the new time step is not complex anymore
@@ -317,7 +317,7 @@ def test_ad_ex_solve() -> None:
             assert e_imag < 5.0e-15, (name, n)
             assert e_real < 5.0e-15, (name, n)
 
-        logger.info("[%s] real %.12e imag %.12e", name, e_real, e_imag)
+        log.info("[%s] real %.12e imag %.12e", name, e_real, e_imag)
 
 
 # }}}
@@ -365,7 +365,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
             "Try increasing 'alpha' or 'tfinal'."
         )
 
-    logger.info("Found %d spikes", tspikes_ref.size)
+    log.info("Found %d spikes", tspikes_ref.size)
 
     from scipy.special import gamma
 
@@ -403,7 +403,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
         dtmax = np.max(np.diff(ts))
         err = la.norm(tspikes - tspikes_ref) / la.norm(tspikes_ref)
 
-        logger.info("dt %.12e error %.12e", dtmax, err)
+        log.info("dt %.12e error %.12e", dtmax, err)
         eoct.add_data_point(dtmax, err)
 
         ts = []
@@ -423,10 +423,10 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
 
         dtmax = np.max(np.diff(t))
         err = la.norm(y - y_ref) / la.norm(y_ref)
-        logger.info("dt %.12e error %.12e", dtmax, err)
+        log.info("dt %.12e error %.12e", dtmax, err)
         eocy.add_data_point(dtmax, err)
 
-    logger.info("\n%s", stringify_eoc(eoct, eocy))
+    log.info("\n%s", stringify_eoc(eoct, eocy))
 
     assert eoct.order is not None
     assert eoct.order - 0.25 < eoct.estimated_order < eoct.order + 0.25
@@ -459,7 +459,7 @@ def test_spike_time_estimate_linear() -> None:
         Vpeak_est = (ts - tp) / (t - tp) * V + (t - ts) / (t - tp) * Vp
         error = abs(Vpeak - Vpeak_est)
 
-        logger.info("Error: %.8e", error)
+        log.info("Error: %.8e", error)
         assert error < 1.0e-14
 
 
@@ -485,7 +485,7 @@ def test_spike_time_estimate_quadratic() -> None:
         )
         error = abs(Vpeak - Vpeak_est)
 
-        logger.info("Error: %.8e", error)
+        log.info("Error: %.8e", error)
         assert error < 1.0e-13
 
 
@@ -508,7 +508,7 @@ def test_spike_time_estimate_exponential() -> None:
         Vpeak_est = a * np.exp(ts) + (Vp - a * np.exp(tp))
         error = abs(Vpeak - Vpeak_est)
 
-        logger.info("Error: %.8e", error)
+        log.info("Error: %.8e", error)
         assert error < 1.0e-12
 
 

@@ -8,7 +8,7 @@ from typing import Any
 
 from pycaputo.logging import get_logger
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 # {{{ get_basic_machine_info

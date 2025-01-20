@@ -20,7 +20,7 @@ from pycaputo.stepping import (
 )
 from pycaputo.typing import Array, StateFunctionT
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 class AdvanceResult(NamedTuple):
@@ -129,7 +129,7 @@ def _evolve_pi(
                 dtnext = evaluate_timestep_reject(c, m, q, dt, tmp_state)
         except StepEstimateError as exc:
             accepted = False
-            logger.error("Failed to estimate timestep.", exc_info=exc)
+            log.error("Failed to estimate timestep.", exc_info=exc)
             yield StepFailed(t=t, iteration=n, reason="Failed to estimate timestep")
             continue
 

@@ -10,7 +10,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger("lorenz")
+log = get_logger("lorenz")
 
 # {{{ Lorenz
 
@@ -66,7 +66,7 @@ for event in evolve(stepper):
     ts.append(event.t)
     ys.append(event.y)
 
-    logger.info(
+    log.info(
         "[%06d] t = %.5e dt = %.5e energy %.5e",
         event.iteration,
         event.t,

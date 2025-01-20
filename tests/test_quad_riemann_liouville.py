@@ -18,7 +18,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -114,12 +114,12 @@ def test_riemann_liouville_quad(
         h = np.max(p.dx)
         e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
         if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
@@ -189,12 +189,12 @@ def test_riemann_liouville_quad_spectral(
         h = np.max(p.dx)
         e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
         if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
@@ -253,12 +253,12 @@ def test_riemann_liouville_spline(
         h = np.max(p.dx)
         e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
         if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
@@ -346,7 +346,7 @@ def test_riemann_liouville_diffusive(
         h = 1.0 / quad_order
         e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
         if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
@@ -354,7 +354,7 @@ def test_riemann_liouville_diffusive(
     from dataclasses import replace
 
     eoc = replace(eoc, order=order)
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")

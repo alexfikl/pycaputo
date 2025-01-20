@@ -8,7 +8,7 @@ import numpy as np
 from pycaputo.integrate_fire import lif
 from pycaputo.logging import get_logger
 
-logger = get_logger("integrate-and-fire")
+log = get_logger("integrate-and-fire")
 
 # {{{ model
 
@@ -20,7 +20,7 @@ alpha = 0.83
 param = lif.LIFDim(current=160, C=100, gl=3.0, e_leak=-50.0, v_reset=-48, v_peak=0.0)
 model = lif.LIFModel(param.nondim(alpha, V_ref=1.0))
 
-logger.info("Parameters:\n%s", model.param)
+log.info("Parameters:\n%s", model.param)
 
 # }}}
 
@@ -34,10 +34,10 @@ y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
 tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
 if tspikes:
-    logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
+    log.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
 else:
-    logger.info("tstart %.8e, tfinal %.8e", tstart, tfinal)
-    logger.warning("No spikes should occur for this configuration.")
+    log.info("tstart %.8e, tfinal %.8e", tstart, tfinal)
+    log.warning("No spikes should occur for this configuration.")
 
 dtinit = 1.0e-1
 c = make_jannelli_controller(
@@ -81,7 +81,7 @@ for event in evolve(stepper, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
-    logger.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
+    log.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
 
 # }}}
 

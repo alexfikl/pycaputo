@@ -31,7 +31,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger("trapezoidal")
+log = get_logger("trapezoidal")
 
 
 # {{{ function
@@ -70,7 +70,7 @@ df_num = quad(m, f_ref, p)
 df_num[0] = df_ref[0]
 
 error = np.linalg.norm(df_ref - df_num)
-logger.info("Error: %.12e", error)
+log.info("Error: %.12e", error)
 
 # }}}
 
@@ -92,7 +92,7 @@ for n in [32, 64, 128, 256, 384, 512]:
     error = np.linalg.norm(df_ref - df_num) / np.linalg.norm(df_ref)
     eoc.add_data_point(h_max, error)
 
-logger.info("Error:\n%s", eoc)
+log.info("Error:\n%s", eoc)
 
 # }}}
 

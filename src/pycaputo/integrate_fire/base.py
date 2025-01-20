@@ -24,7 +24,7 @@ from pycaputo.stepping import (
 )
 from pycaputo.typing import Array
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 # {{{ model interface
 
@@ -275,7 +275,7 @@ def _evolve_caputo_integrate_fire_l1(
             except StepEstimateError as exc:
                 accepted = False
                 dtnext = 1.0e-6
-                logger.error("Failed to estimate timestep.", exc_info=exc)
+                log.error("Failed to estimate timestep.", exc_info=exc)
                 yield StepFailed(t=t, iteration=n, reason="Failed to estimate timestep")
 
         assert dtnext >= 0.0

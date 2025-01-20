@@ -22,7 +22,7 @@ from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, gamma1p, gamma2m, gamma2p, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 def _update_caputo_initial_condition(

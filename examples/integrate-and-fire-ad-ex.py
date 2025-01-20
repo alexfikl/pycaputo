@@ -15,7 +15,7 @@ import numpy as np
 from pycaputo.integrate_fire import ad_ex
 from pycaputo.logging import get_logger
 
-logger = get_logger("integrate-and-fire")
+log = get_logger("integrate-and-fire")
 
 # {{{ model
 
@@ -28,7 +28,7 @@ name = "Naud4h"
 param = ad_ex.get_ad_ex_parameters(name)
 model = ad_ex.AdExModel(param.nondim(alpha))
 
-logger.info("Parameters:\n%s", model.param)
+log.info("Parameters:\n%s", model.param)
 
 # }}}
 
@@ -85,7 +85,7 @@ for event in evolve(stepper, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
-    logger.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
+    log.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
 
 # }}}
 

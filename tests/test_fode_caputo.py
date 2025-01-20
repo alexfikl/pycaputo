@@ -23,7 +23,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ solution: Section 3.3.1, Example 2 [Li2015]
@@ -199,12 +199,12 @@ def test_fode_caputo(
 
         y_ref = garrappa2009_solution(ts[-1])
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
-        logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
+        log.info("dt %.5f error %.12e (%s)", dt, error, bt)
 
         eoc.add_data_point(dt, error)
 
     eoc = replace(eoc, order=m.order)
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         t = np.array(ts)
@@ -285,12 +285,12 @@ def test_fode_caputo_system(
 
         y_ref = garrappa2009_solution(ts[-1])
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
-        logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
+        log.info("dt %.5f error %.12e (%s)", dt, error, bt)
 
         eoc.add_data_point(dt, error)
 
     eoc = replace(eoc, order=m.order)
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     assert eoc.estimated_order > m.order - 0.25
 
@@ -353,11 +353,11 @@ def test_singular_caputo_l1(mesh_type: str, alpha: float) -> None:
 
         y_ref = singular_solution(ts[-1], alpha=alpha)
         error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
-        logger.info("dt %.5f error %.12e (%s)", dt, error, bt)
+        log.info("dt %.5f error %.12e (%s)", dt, error, bt)
 
         eoc.add_data_point(dt, error)
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         t = np.array(ts)

@@ -17,7 +17,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -123,7 +123,7 @@ def test_estimate_lischitz_constant(
             )
 
             error = abs(L - lipschitz_approx[i]) / abs(L)
-            logger.info(
+            log.info(
                 "n %3d m %3d L %.5e Lapprox %.5e error %.5e",
                 n,
                 m,
@@ -135,7 +135,7 @@ def test_estimate_lischitz_constant(
 
         table.add_row(f"n = {n}", *[f"{Lapprox:.5e}" for Lapprox in lipschitz_approx])
 
-    logger.info("Results:\n%s", stringify_table(table))
+    log.info("Results:\n%s", stringify_table(table))
 
 
 # }}}

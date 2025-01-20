@@ -9,7 +9,7 @@ import scipy.stats
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ScalarFunction
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 # {{{ estimate_lipschitz_constant

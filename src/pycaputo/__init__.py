@@ -21,7 +21,7 @@ from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod
 from pycaputo.typing import Array, ArrayOrScalarFunction, PathLike, ScalarFunction
 
-logger = get_logger("pycaputo")
+log = get_logger("pycaputo")
 
 
 # {{{ diff
@@ -193,7 +193,7 @@ def fracevolve(
         if isinstance(event, StepAccepted):
             if not quiet and event.iteration % log_per_step == 0:
                 time.toc()
-                logger.info(
+                log.info(
                     "%s norm %.12e (%s)",
                     event,
                     np.linalg.norm(event.y),
@@ -266,7 +266,7 @@ def fracplot(
     try:
         import matplotlib  # noqa: F401
     except ImportError:
-        logger.warning("'matplotlib' is not available.")
+        log.warning("'matplotlib' is not available.")
         return
 
     if filename is not None:

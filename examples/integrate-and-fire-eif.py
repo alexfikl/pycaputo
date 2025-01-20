@@ -8,7 +8,7 @@ import numpy as np
 from pycaputo.integrate_fire import eif
 from pycaputo.logging import get_logger
 
-logger = get_logger("integrate-and-fire")
+log = get_logger("integrate-and-fire")
 
 # {{{ model
 
@@ -29,8 +29,8 @@ param = eif.EIFDim(
 )
 model = eif.EIFModel(param.nondim(alpha))
 
-logger.info("Parameters:\n%s", param)
-logger.info("Parameters:\n%s", model.param)
+log.info("Parameters:\n%s", param)
+log.info("Parameters:\n%s", model.param)
 
 # }}}
 
@@ -84,7 +84,7 @@ for event in evolve(stepper, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
-    logger.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
+    log.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
 
 # }}}
 

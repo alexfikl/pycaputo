@@ -22,7 +22,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ test_finite_difference_taylor
@@ -47,7 +47,7 @@ def finite_difference_convergence(d: DiffStencil) -> float:
         error = np.linalg.norm(df_dx[s] - num_df_dx[s]) / np.linalg.norm(df_dx[s])
         eoc.add_data_point(h, error)
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
     return eoc.estimated_order
 
 
@@ -110,7 +110,7 @@ def test_finite_difference_taylor_stencil() -> None:
         fig = mp.figure()
 
     for s, a, order, coefficient in stencils:
-        logger.info("stencil:\n%r", s)
+        log.info("stencil:\n%r", s)
 
         assert np.allclose(np.sum(s.coeffs), 0.0)
         assert np.allclose(s.coeffs, np.array(a, dtype=s.coeffs.dtype))

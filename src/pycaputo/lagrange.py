@@ -12,7 +12,7 @@ from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ScalarFunction
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 # {{{ Vandermonde matrix

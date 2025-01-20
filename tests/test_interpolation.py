@@ -20,7 +20,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -45,7 +45,7 @@ def interpolation_convergence(s: InterpStencil) -> float:
         error = np.linalg.norm(fhat[k] - f_ref[k]) / np.linalg.norm(f_ref[k])
         eoc.add_data_point(h, error)
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
     return eoc.estimated_order
 
 
@@ -73,7 +73,7 @@ def test_interpolation_lagrange() -> None:
     ]
 
     for s, a, order in stencils:
-        logger.info("stencil:\n%r", s)
+        log.info("stencil:\n%r", s)
 
         assert np.allclose(np.sum(s.coeffs), 1.0)
         assert np.allclose(s.coeffs, np.array(a, dtype=s.coeffs.dtype))

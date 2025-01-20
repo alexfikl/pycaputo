@@ -16,7 +16,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger("tutorial")
+log = get_logger("tutorial")
 
 # {{{ evaluate
 
@@ -54,7 +54,7 @@ df_num = diff(method, f, p)
 # [tutorial-evaluate-end]
 
 df_ref = df(p.x, alpha)
-logger.info(
+log.info(
     "Relative error: %.12e",
     np.linalg.norm(df_num[1:] - df_ref[1:]) / np.linalg.norm(df_ref[1:]),
 )
@@ -67,7 +67,7 @@ logger.info(
 try:
     import matplotlib  # noqa: F401
 except ImportError as exc:
-    logger.warning("'matplotlib' is not available.")
+    log.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
 from pycaputo import _get_default_dark  # noqa: PLC2701

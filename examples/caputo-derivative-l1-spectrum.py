@@ -26,7 +26,7 @@ from pycaputo.grid import make_uniform_points
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger("caputo_derivative_l1_spectrum")
+log = get_logger("caputo_derivative_l1_spectrum")
 
 
 # {{{ matrix
@@ -56,7 +56,7 @@ alphas = [0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
 for alpha in alphas:
     W = get_l1_matrix(alpha, n=n, a=0.0, b=1.0)
     kappa = np.linalg.cond(W)
-    logger.info("alpha = %.2f kappa = %.8e", alpha, kappa)
+    log.info("alpha = %.2f kappa = %.8e", alpha, kappa)
 
 # }}}
 

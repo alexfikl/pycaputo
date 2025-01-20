@@ -27,7 +27,7 @@ from .base import (
     quadrature_weights,
 )
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 @dataclass(frozen=True)

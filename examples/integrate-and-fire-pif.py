@@ -10,7 +10,7 @@ import numpy as np
 from pycaputo.integrate_fire import pif
 from pycaputo.logging import get_logger
 
-logger = get_logger("integrate-and-fire")
+log = get_logger("integrate-and-fire")
 
 # {{{ model
 
@@ -22,7 +22,7 @@ alpha = 0.8
 param = pif.PIFDim(current=160, C=100, v_reset=-48, v_peak=0.0)
 model = pif.PIFModel(param.nondim(alpha, V_ref=1.0, I_ref=20.0))
 
-logger.info("Parameters:\n%s", model.param)
+log.info("Parameters:\n%s", model.param)
 
 # }}}
 
@@ -35,7 +35,7 @@ rng = np.random.default_rng()
 y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
 tspikes = model.param.constant_spike_times(tfinal, V0=y0[0])
-logger.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
+log.info("tspike %.8e tstart %.8e, tfinal %.8e", tspikes[0], tstart, tfinal)
 if tspikes.size < 2:
     raise ValueError(
         "This example expects at least two spikes. Try increasing 'alpha' or 'tfinal'."
@@ -83,7 +83,7 @@ for event in evolve(stepper, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
-    logger.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
+    log.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
 
 # }}}
 

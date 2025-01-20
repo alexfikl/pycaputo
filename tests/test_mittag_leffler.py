@@ -18,7 +18,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -85,7 +85,7 @@ def test_mittag_leffler_opt(alpha: float) -> None:
         result = so.root_scalar(f, x0=(bracket[0] + bracket[1]) / 2, bracket=bracket)
 
         fstar = f(result.root)
-        logger.info(
+        log.info(
             "f(t) = %+.12e t = %.12e bracket [%.8e, %.8e]",
             fstar,
             result.root,
@@ -129,7 +129,7 @@ def test_mittag_leffler_sine_mathematica(iref: int) -> None:
     result = _sin_derivative_caputo(d, ref.z, omega=1.0)
 
     error = la.norm(result - ref.result) / la.norm(ref.result)
-    logger.info("Error D^%g[sin]: %.12e", ref.alpha, error)
+    log.info("Error D^%g[sin]: %.12e", ref.alpha, error)
 
     if ENABLE_VISUAL:
         from pycaputo.utils import figure

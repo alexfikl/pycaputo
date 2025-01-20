@@ -16,7 +16,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -46,7 +46,7 @@ def test_jacobi_weights() -> None:
             q = np.sum(p.x**k * p.w)
 
             error = abs(q - q_ref) / abs(q_ref)
-            logger.error(
+            log.error(
                 "order %3d monomial %3d %+.12e ref %+.12e error %.12e",
                 n,
                 k,
@@ -97,7 +97,7 @@ def test_jacobi_polynomials(alpha: float, beta: float) -> None:
 
         pn_int = np.sum(Pn * p.w) / jacobi_gamma(0, alpha, beta)
         error = la.norm(Pn - Pn_ref) / la.norm(Pn_ref)
-        logger.info("order %3d error %.12e integral %.12e", n, error, pn_int)
+        log.info("order %3d error %.12e integral %.12e", n, error, pn_int)
         assert error < rtol
         assert pn_int < rtol or abs(pn_int - 1.0) < rtol
 
@@ -108,7 +108,7 @@ def test_jacobi_polynomials(alpha: float, beta: float) -> None:
         Pn_ref = jacobi(n, alpha, beta)(q.x)
 
         error = la.norm(Pn - Pn_ref) / la.norm(Pn_ref)
-        logger.info("order %3d error %.12e", n, error)
+        log.info("order %3d error %.12e", n, error)
         assert error < rtol
 
 
@@ -147,7 +147,7 @@ def test_jacobi_project(alpha: float, beta: float) -> None:
         Phat_ref[n] = 1.0
 
         error = la.norm(Phat - Phat_ref)
-        logger.info("order %3d error %.12e", n, error)
+        log.info("order %3d error %.12e", n, error)
         assert error < rtol
 
 
@@ -265,7 +265,7 @@ def test_jacobi_riemann_liouville_integral() -> None:
 
     for n, Phat in enumerate(jacobi_riemann_liouville_integral(p, alpha=alpha)):
         error = la.norm(Phat - Phat_ref[n]) / la.norm(Phat_ref[n])
-        logger.info("order %3d error %.12e", n, error)
+        log.info("order %3d error %.12e", n, error)
 
         if ENABLE_VISUAL:
             import matplotlib.pyplot as mp
@@ -340,7 +340,7 @@ def test_jacobi_caputo_derivative() -> None:
         assert n >= m
 
         error = la.norm(Dhat - Dhat_ref[n]) / la.norm(Dhat_ref[n])
-        logger.info("order %3d error %.12e", n, error)
+        log.info("order %3d error %.12e", n, error)
 
         if ENABLE_VISUAL:
             import matplotlib.pyplot as mp

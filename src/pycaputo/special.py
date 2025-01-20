@@ -9,7 +9,7 @@ from pycaputo import derivatives as ds
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 # {{{ power

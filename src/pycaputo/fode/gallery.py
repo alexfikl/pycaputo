@@ -13,7 +13,7 @@ from pycaputo.typing import Array
 
 from .special import Function
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 # {{{ Arneodo

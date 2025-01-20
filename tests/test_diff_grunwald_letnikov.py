@@ -19,7 +19,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ test_grunwald_letnikov
@@ -106,13 +106,13 @@ def test_grunwald_letnikov(
         h = np.max(p.dx)
         e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
         if ENABLE_VISUAL:
             ax.plot(p.x[1:], df_num[1:])
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
     if ENABLE_VISUAL:
         ax.plot(p.x[1:], df_ref[1:], "k--")

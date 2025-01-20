@@ -22,7 +22,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger("tutorial")
+log = get_logger("tutorial")
 
 # {{{ van der Pol oscillator
 
@@ -88,7 +88,7 @@ dtest = estimate_initial_time_step(
     trunc=m.order,
 )
 # [tutorial-estimate-end]
-logger.info("Initial time step %.8e estimate %.8e", dtinit, dtest)
+log.info("Initial time step %.8e estimate %.8e", dtinit, dtest)
 
 # }}}
 
@@ -120,7 +120,7 @@ for event in evolve(m, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
-    logger.info(
+    log.info(
         "%s[%06d] t = %.5e dt = %.5e (eest %+.5e q %.5e) energy %.5e",
         "[green][A][/]" if isinstance(event, StepAccepted) else "[red][R][/]",
         event.iteration,
@@ -140,7 +140,7 @@ for event in evolve(m, dtinit=dtinit):
 try:
     import matplotlib  # noqa: F401
 except ImportError as exc:
-    logger.warning("'matplotlib' is not available.")
+    log.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
 from pycaputo import _get_default_dark  # noqa: PLC2701

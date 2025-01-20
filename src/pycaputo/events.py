@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 @dataclass(frozen=True)

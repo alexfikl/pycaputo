@@ -10,19 +10,19 @@ import pathlib
 from pycaputo.logging import get_logger
 
 script = pathlib.Path(__file__)
-logger = get_logger(script.stem)
+log = get_logger(script.stem)
 
 
 def main(infile: pathlib.Path, *, outfile: pathlib.Path | None = None) -> int:
     if not infile.exists():
-        logger.error("File does not exist: '%s'.", infile)
+        log.error("File does not exist: '%s'.", infile)
         return 1
 
     try:
         with open(infile, encoding="utf-8") as f:
             stats = json.load(f)
     except json.JSONDecodeError:
-        logger.error("Failed to read JSON file: '%s'.", infile)
+        log.error("Failed to read JSON file: '%s'.", infile)
         return 1
 
     from pycaputo.benchmark import get_basic_machine_info, get_benchmark_results
@@ -87,6 +87,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.quiet:
-        logger.setLevel(logging.INFO)
+        log.setLevel(logging.INFO)
 
     raise SystemExit(main(args.infile, outfile=args.outfile))

@@ -16,7 +16,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
 
-logger = get_logger(__name__)
+log = get_logger(__name__)
 
 
 # {{{ typing
@@ -353,7 +353,7 @@ def set_recommended_matplotlib(
         use_tex = "GITHUB_REPOSITORY" not in os.environ and check_usetex(s=True)
 
     if not use_tex:
-        logger.warning("'use_tex' is disabled on this system.")
+        log.warning("'use_tex' is disabled on this system.")
 
     if dark is None:
         tmp = os.environ.get("PYCAPUTO_DARK", "off").lower()
@@ -525,7 +525,7 @@ def savefig(
         if legend is not None:
             bbox_extra_artists.append(legend)
 
-    logger.info("Saving '%s'", filename)
+    log.info("Saving '%s'", filename)
     fig.savefig(
         filename,
         bbox_extra_artists=tuple(bbox_extra_artists),

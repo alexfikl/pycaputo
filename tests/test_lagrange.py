@@ -16,7 +16,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -39,7 +39,7 @@ def test_vandermonde_matrix() -> None:
     rng = np.random.default_rng(seed=42)
     A = vandermonde_inverse(p)
     kappa = la.cond(A)
-    logger.info("kappa: %.12e", kappa)
+    log.info("kappa: %.12e", kappa)
 
     for i, poly in enumerate(lagrange_polynomials(p)):
         x = rng.uniform(a, b, size=32)
@@ -49,7 +49,7 @@ def test_vandermonde_matrix() -> None:
         f_vdm = A[:, i] @ (x**mu)
 
         error = la.norm(f_vdm - f_lagrange) / la.norm(f_lagrange)
-        logger.info("Error: L_%d %.12e", i, error)
+        log.info("Error: L_%d %.12e", i, error)
         assert error < 5.0e-16 * kappa
 
 

@@ -13,9 +13,9 @@ import tempfile
 
 import rich.logging
 
-logger = logging.getLogger(pathlib.Path(__file__).stem)
-logger.setLevel(logging.ERROR)
-logger.addHandler(rich.logging.RichHandler())
+log = logging.getLogger(pathlib.Path(__file__).stem)
+log.setLevel(logging.ERROR)
+log.addHandler(rich.logging.RichHandler())
 
 
 EXAMPLES_DIR = pathlib.Path("examples").resolve()
@@ -112,13 +112,13 @@ ARTIFACTS = {
 def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
     outdir = outdir.resolve()
     if not outdir.exists():
-        logger.error("Directory does not exist: '%s'", outdir)
+        log.error("Directory does not exist: '%s'", outdir)
         return 1
 
     unique_scripts = set(scripts) if scripts is not None else set()
     for script in unique_scripts:
         if script not in ARTIFACTS:
-            logger.error("Unknown script: '%s'.", script)
+            log.error("Unknown script: '%s'.", script)
             return 1
 
     env = os.environ.copy()
@@ -144,7 +144,7 @@ def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
                     check=True,
                 )
             except subprocess.CalledProcessError as exc:
-                logger.error("Failed to run script: '%s'", script_path, exc_info=exc)
+                log.error("Failed to run script: '%s'", script_path, exc_info=exc)
                 return 1
 
             for artifact in artifacts:
@@ -155,7 +155,7 @@ def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
                     outfile = outdir / infile.name
 
                     shutil.copyfile(infile, outfile)
-                    logger.info("Generated '%s' from '%s'.", outfile.name, infile)
+                    log.info("Generated '%s' from '%s'.", outfile.name, infile)
 
     return 0
 
@@ -183,6 +183,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.quiet:
-        logger.setLevel(logging.INFO)
+        log.setLevel(logging.INFO)
 
     raise SystemExit(main(args.dir, scripts=args.script))
