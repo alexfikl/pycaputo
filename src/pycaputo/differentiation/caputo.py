@@ -127,7 +127,7 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
     w = _caputo_l1_weights(p, n, m.alpha)
     fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
 
-    return np.sum(w * fx)  # type: ignore[return-value]
+    return np.sum(w * fx)  # type: ignore[no-any-return]
 
 
 @diff.register(L1)
@@ -329,7 +329,7 @@ def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Arra
     w = quadrature_weights(m, p, n)
     fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
 
-    return np.sum(w * fx)  # type: ignore[return-value]
+    return np.sum(w * fx)  # type: ignore[no-any-return]
 
 
 @diff.register(L2)
@@ -417,7 +417,7 @@ def _diff_l2c_method(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
         k = np.arange(fx.size)
 
         ddf = np.zeros(fx.size - 1, dtype=fx.dtype)
-        ddf[1:-1] = (fx[3:] - fx[2:-1]) - (fx[1:-2] - fx[:-3])  # type: ignore[operator]
+        ddf[1:-1] = (fx[3:] - fx[2:-1]) - (fx[1:-2] - fx[:-3])
         ddf[0] = 3 * fx[0] - 7 * fx[1] + 5 * fx[2] - fx[3]
         ddf[-1] = 3 * fx[-1] - 7 * fx[-2] + 5 * fx[-3] - fx[-4]
 
@@ -531,7 +531,7 @@ def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Ar
     x[1:] = p.x
     fx = f(x)
 
-    return np.sum(w * fx)  # type: ignore[return-value]
+    return np.sum(w * fx)  # type: ignore[no-any-return]
 
 
 @diff.register(L2F)
@@ -643,7 +643,7 @@ def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
             f"f is a {type(f).__name__!r}"
         ) from exc
 
-    return np.sum(w * dfx)  # type: ignore[return-value]
+    return np.sum(w * dfx)  # type: ignore[no-any-return]
 
 
 @diff.register(LXD)
@@ -780,7 +780,7 @@ def _diffusive_gamma_solve_ivp(
     omega_jac = np.diag(omega_b)
 
     def fun(t: Array, phi: Array) -> Array:
-        return omega_a * f(t, d=n) + omega_b * phi
+        return omega_a * f(t, d=n) + omega_b * phi  # type: ignore[no-any-return]
 
     def fun_jac(t: float, phi: Array) -> Array:
         return omega_jac

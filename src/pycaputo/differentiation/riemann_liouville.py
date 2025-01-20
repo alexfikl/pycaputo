@@ -182,7 +182,7 @@ def _diffs_rl_from_caputo(
     df = diffs(m.base, fx, p, n)
 
     wc = _rl_correction_weights(m, p.x, n)
-    return df + wc @ fx[: wc.size]  # type: ignore[arg-type, operator]
+    return df + wc @ fx[: wc.size]
 
 
 @diff.register(L1)

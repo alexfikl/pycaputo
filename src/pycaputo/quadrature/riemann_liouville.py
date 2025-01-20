@@ -644,7 +644,7 @@ def _diffusive_gamma_solve_ivp(
     omega_jac = np.diag(omega_b)
 
     def fun(t: Array, phi: Array) -> Array:
-        return omega_a * f(t) + omega_b * phi
+        return np.array(omega_a * f(t) + omega_b * phi)
 
     def fun_jac(t: float, phi: Array) -> Array:
         return omega_jac
