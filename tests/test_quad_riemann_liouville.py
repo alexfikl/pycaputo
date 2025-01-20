@@ -12,10 +12,13 @@ import pytest
 from pycaputo.logging import get_logger
 from pycaputo.quadrature import quad, riemann_liouville
 from pycaputo.typing import Array
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_quad_riemann_liouville")
-dirname = pathlib.Path(__file__).parent
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -61,8 +64,6 @@ def test_riemann_liouville_quad(
     name: str,
     grid_type: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Check the convergence of approximations for the Riemann--Liouville integral.
@@ -93,7 +94,7 @@ def test_riemann_liouville_quad(
 
     eoc = EOCRecorder(order=order)
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -115,18 +116,18 @@ def test_riemann_liouville_quad(
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert order - 0.25 < eoc.estimated_order < order + 1.0
 
@@ -153,8 +154,6 @@ def test_riemann_liouville_quad_spectral(
     j_alpha: float,
     j_beta: float,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Test convergence of the spectral methods for the RL integral.
@@ -170,7 +169,7 @@ def test_riemann_liouville_quad_spectral(
     meth = riemann_liouville.SpectralJacobi(-alpha)
     eoc = EOCRecorder()
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -192,18 +191,18 @@ def test_riemann_liouville_quad_spectral(
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     # FIXME: what's the expected behavior here? This just checks that the code
     # doesn't start doing something else all of a sudden..
@@ -221,8 +220,6 @@ def test_riemann_liouville_quad_spectral(
 def test_riemann_liouville_spline(
     npoints: int,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Test convergence of the Lagrange spline methods for the RL integral.
@@ -242,7 +239,7 @@ def test_riemann_liouville_spline(
 
     eoc = EOCRecorder(order=order)
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -258,18 +255,18 @@ def test_riemann_liouville_spline(
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     from pycaputo.lagrange import vandermonde
 
@@ -299,8 +296,6 @@ def test_riemann_liouville_diffusive(
     name: str,
     grid_type: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Check the convergence of diffusive approximations.
@@ -318,7 +313,7 @@ def test_riemann_liouville_diffusive(
     qf_ref = qf_test(p.x, alpha=alpha)
 
     eoc = EOCRecorder()
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -353,7 +348,7 @@ def test_riemann_liouville_diffusive(
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
     from dataclasses import replace
@@ -361,13 +356,13 @@ def test_riemann_liouville_diffusive(
     eoc = replace(eoc, order=order)
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     if order is not None:
         assert order - 0.25 < eoc.estimated_order < order + 1.0

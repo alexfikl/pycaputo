@@ -17,9 +17,13 @@ from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod, evolve
 from pycaputo.typing import Array, StateFunction
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_fode_caputo")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ solution: Section 3.3.1, Example 2 [Li2015]
@@ -161,8 +165,6 @@ def test_fode_caputo(
         [float, int], FractionalDifferentialEquationMethod[StateFunction]
     ],
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Test convergence of the methods for single-order Caputo FODEs.
@@ -204,16 +206,15 @@ def test_fode_caputo(
     eoc = replace(eoc, order=m.order)
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         t = np.array(ts)
         y = np.array(ys).squeeze()
         y_ref = np.array([garrappa2009_solution(ti) for ti in t]).squeeze()
 
         from pycaputo.utils import figure
 
-        dirname = pathlib.Path(__file__).parent
-        filename = f"test_fode_caputo_{m.name}_{alpha}".replace(".", "_").lower()
-        with figure(dirname / filename) as fig:
+        filename = f"test_fode_caputo_{m.name}_{alpha}"
+        with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
             ax = fig.gca()
 
             ax.plot(t, y, label=f"{m.name}")
@@ -250,8 +251,6 @@ def test_fode_caputo_system(
     factory: Callable[
         [tuple[float, ...], int], FractionalDifferentialEquationMethod[StateFunction]
     ],
-    *,
-    visualize: bool = False,
 ) -> None:
     """
     Test convergence of the methods for single-order Caputo systems FODEs.
@@ -314,9 +313,7 @@ def singular_source(t: float, y: Array, *, alpha: float) -> Array:
 
 @pytest.mark.parametrize("mesh_type", ["uniform", "graded"])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
-def test_singular_caputo_l1(
-    mesh_type: str, alpha: float, *, visualize: bool = False
-) -> None:
+def test_singular_caputo_l1(mesh_type: str, alpha: float) -> None:
     """
     Test convergence of the L1 method when the solution is singular.
 
@@ -362,16 +359,15 @@ def test_singular_caputo_l1(
 
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         t = np.array(ts)
         y = np.array(ys).squeeze()
         y_ref = np.array([singular_solution(ti, alpha=alpha) for ti in t]).squeeze()
 
         from pycaputo.utils import figure
 
-        dirname = pathlib.Path(__file__).parent
-        filename = f"test_fode_caputo_{m.name}_{alpha}_sing".replace(".", "_").lower()
-        with figure(dirname / filename) as fig:
+        filename = f"test_fode_caputo_{m.name}_{alpha}_sing"
+        with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
             ax = fig.gca()
 
             ax.plot(t, y, label=f"{m.name}")

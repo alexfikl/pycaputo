@@ -13,11 +13,14 @@ from pycaputo.differentiation import diff
 from pycaputo.differentiation import grunwald_letnikov as gl
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_diff_grunwald_letnikov")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
-
 
 # {{{ test_grunwald_letnikov
 
@@ -47,8 +50,6 @@ def df_test(x: Array, *, alpha: float, mu: float = 3.5) -> Array:
 def test_grunwald_letnikov(
     name: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Test convergence of the LXXX methods for the Riemann-Liouville derivative.
@@ -91,7 +92,7 @@ def test_grunwald_letnikov(
 
     eoc = EOCRecorder(order=order)
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -107,21 +108,20 @@ def test_grunwald_letnikov(
         eoc.add_data_point(h, e)
         logger.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], df_num[1:])
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
     logger.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], df_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
-        dirname = pathlib.Path(__file__).parent
-        filename = f"test_rl_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_rl_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert order - 0.5 < eoc.estimated_order < order + 0.5
 

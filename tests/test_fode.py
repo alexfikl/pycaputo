@@ -10,17 +10,20 @@ import pytest
 
 from pycaputo.controller import Controller
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_misc")
-dirname = pathlib.Path(__file__).parent
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
 # {{{ test_history_growth
 
 
-def test_history_growth(*, visualize: bool = False) -> None:
+def test_history_growth() -> None:
     """
     Test that :class:`ProductIntegrationHistory` can grow its storage accordingly.
     """
@@ -40,12 +43,12 @@ def test_history_growth(*, visualize: bool = False) -> None:
         sizes[i + 1] = history.capacity
         assert history.capacity > i
 
-    if not visualize:
+    if not ENABLE_VISUAL:
         return
 
     from pycaputo.utils import figure
 
-    with figure(dirname / "test_history_growth") as fig:
+    with figure(TEST_DIRECTORY / "test_history_growth", normalize=True) as fig:
         ax = fig.gca()
 
         ax.plot(sizes[2:] / sizes[1:-1], "o-")

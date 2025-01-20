@@ -16,9 +16,13 @@ from pycaputo.finite_difference import (
     modified_wavenumber,
 )
 from pycaputo.logging import get_logger
-from pycaputo.utils import savefig, set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, savefig, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_finite_difference")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ test_finite_difference_taylor
@@ -47,7 +51,7 @@ def finite_difference_convergence(d: DiffStencil) -> float:
     return eoc.estimated_order
 
 
-def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
+def test_finite_difference_taylor_stencil() -> None:
     r"""
     Test accuracy and consistency of constructed finite difference stencils.
 
@@ -100,7 +104,7 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
         ),
     ]
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -116,7 +120,7 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
         estimated_order = finite_difference_convergence(s)
         assert estimated_order >= order - 0.25
 
-        if visualize:
+        if ENABLE_VISUAL:
             part = np.real if s.derivative % 2 == 0 else np.imag
 
             k = np.linspace(0.0, np.pi, 128)
@@ -132,11 +136,10 @@ def test_finite_difference_taylor_stencil(*, visualize: bool = False) -> None:
             ax.set_xlim(0.0, float(np.pi))
             ax.set_ylim(0.0, float(sign * np.pi**s.derivative))
 
-            dirname = pathlib.Path(__file__).parent
             filename = f"test_diff_fd_{s.derivative}_{s.trunc.order}"
-            savefig(fig, dirname / filename)
+            savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
-    if visualize:
+    if ENABLE_VISUAL:
         mp.close(fig)
 
     a = np.array([

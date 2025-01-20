@@ -14,12 +14,14 @@ from pycaputo.differentiation import caputo, diff
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ScalarFunction
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-dirname = pathlib.Path(__file__).parent
-logger = get_logger("pycaputo.test_diff_caputo")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
-
 
 # {{{ utils
 
@@ -166,8 +168,6 @@ def test_caputo_lmethods(
     name: str,
     grid_type: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Test convergence of the LXXX methods for the Caputo derivative.
@@ -182,7 +182,7 @@ def test_caputo_lmethods(
     meth, order = make_method_from_name(name, alpha)
     eoc = EOCRecorder(order=order)
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -203,22 +203,22 @@ def test_caputo_lmethods(
         h = np.max(p.dx)
         e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p_ref.x[1:], df_num[1:])
             # ax.semilogy(p_ref.x, abs(df_num - df_ref))
 
-    logger.info("\n%s", stringify_eoc(eoc))
+    log.info("\n%s", stringify_eoc(eoc))
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p_ref.x[1:], df_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
-        filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_caputo_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert order - 0.25 < eoc.estimated_order < order + 0.25
 
@@ -245,8 +245,6 @@ def test_caputo_spectral(
     j_alpha: float,
     j_beta: float,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Test convergence of the spectral methods for the Caputo derivative.
@@ -261,7 +259,7 @@ def test_caputo_spectral(
     meth, _ = make_method_from_name("Jacobi", alpha)
     eoc = EOCRecorder()
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -275,22 +273,22 @@ def test_caputo_spectral(
         h = np.max(p.dx)
         e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], df_num[1:])
             # ax.semilogy(p.x, abs(df_num - df_ref))
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], df_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$D^{{{alpha}}}_C f$")
         # ax.set_ylim([1.0e-16, 1])
 
         filename = f"test_caputo_{meth.name}_{j_alpha}_{j_beta}_{alpha}"
-        savefig(fig, dirname / filename.replace(".", "_").replace("-", "m").lower())
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert eoc.estimated_order > 5.0
 
@@ -317,8 +315,6 @@ def test_caputo_diffusive(
     name: str,
     grid_type: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     r"""
     Check the convergence of diffusive approximations.
@@ -335,7 +331,7 @@ def test_caputo_diffusive(
     df_ref = df_test(p.x, alpha=alpha)
 
     eoc = EOCRecorder()
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -348,23 +344,23 @@ def test_caputo_diffusive(
         h = 1.0 / quad_order
         e = la.norm(df_num[1:] - df_ref[1:]) / la.norm(df_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], df_num[1:])
 
     from dataclasses import replace
 
     eoc = replace(eoc, order=order)
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], df_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$D^{{{alpha}}}_{{C}} f$")
 
-        filename = f"test_caputo_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_caputo_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     if order > 0:
         assert order - 0.25 < eoc.estimated_order < order + 1.0
@@ -455,8 +451,6 @@ def _diff_differint_l2c(m: DifferIntCaputoL2C, f: ScalarFunction, p: Points) -> 
 def test_caputo_vs_differint(
     name: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     """
     Compare the Caputo derivative approximations with the :mod:`differint` library.
@@ -499,14 +493,14 @@ def test_caputo_vs_differint(
     error_di_vs_ref = la.norm(df_num_di[1:] - df_ref[1:]) / la.norm(df_ref[1:])
     error_vs_di = la.norm(df_num[1:] - df_num_di[1:]) / la.norm(df_num_di[1:])
 
-    logger.info(
+    log.info(
         "error: vs ref %.12e vs differint %.12e (differint vs ref %.12e)",
         error_vs_ref,
         error_vs_di,
         error_di_vs_ref,
     )
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -522,8 +516,8 @@ def test_caputo_vs_differint(
 
         from pycaputo.utils import savefig
 
-        filename = f"test_caputo_differint_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_caputo_differint_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert error_vs_ref < 1.0e-2
     if name == "L1":
@@ -553,8 +547,6 @@ def test_caputo_consistency(
     name: str,
     grid_type: str,
     alpha: float,
-    *,
-    visualize: bool = False,
 ) -> None:
     """
     Tests that the `quadrature_weights`, `differentiation_matrix`, `diffs` and
@@ -581,12 +573,12 @@ def test_caputo_consistency(
     W_mat = differentiation_matrix(meth, p)
 
     error = la.norm(W_weights[1:, :] - W_mat[1:, :])
-    logger.info("quadrature_weights vs differentiation_matrix")
-    logger.info("  error %.12e", error)
+    log.info("quadrature_weights vs differentiation_matrix")
+    log.info("  error %.12e", error)
     assert error < 1.0e-15
 
     # check quadrature_weights vs diffs
-    logger.info("quadrature_weights vs diffs")
+    log.info("quadrature_weights vs diffs")
     fx = f_test(p.x)
     for n in [0, 1, p.size // 2 + 3, p.size - 1]:
         df_from_diffs = diffs(meth, fx, p, n)
@@ -599,7 +591,7 @@ def test_caputo_consistency(
         else:
             w = quadrature_weights(meth, p, n)
             df_from_weights = w @ fx[: w.size]
-            logger.info(
+            log.info(
                 "   value %.12e %.12e (ref %.12e) w shape %s",
                 df_from_weights,
                 df_from_diffs,
@@ -608,7 +600,7 @@ def test_caputo_consistency(
             )
 
             error = la.norm(df_from_weights - df_from_diffs)  # type: ignore[operator]
-            logger.info("   n %d error %.12e", n, error)
+            log.info("   n %d error %.12e", n, error)
             assert error < 6.0e-14
 
     # check diff vs differentiation_matrix
@@ -616,19 +608,19 @@ def test_caputo_consistency(
     df_mat = W_mat @ fx
 
     error = la.norm(df[1:] - df_mat[1:]) / la.norm(df_mat[1:])
-    logger.info("diff vs differentiation_matrix")
-    logger.info("   error %.12e", error)
+    log.info("diff vs differentiation_matrix")
+    log.info("   error %.12e", error)
     assert error < 1.0e-12
 
     # check diff vs diffs
-    logger.info("diff vs diffs")
+    log.info("diff vs diffs")
     df_ref = df
     assert isinstance(df_ref, np.ndarray)
     for n in [1, p.size // 2 - 5, p.size - 1]:
         df_from_diffs = diffs(meth, fx, p, n)
 
         error = la.norm(df_from_diffs - df_ref[n]) / la.norm(df_ref[n])
-        logger.info("   error %.12e", error)
+        log.info("   error %.12e", error)
         assert error < 6.0e-12
 
 

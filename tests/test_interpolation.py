@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import pathlib
+
 import numpy as np
 import pytest
 
@@ -12,9 +14,13 @@ from pycaputo.interpolation import (
     make_lagrange_approximation,
 )
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_interpolation")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -43,7 +49,7 @@ def interpolation_convergence(s: InterpStencil) -> float:
     return eoc.estimated_order
 
 
-def test_interpolation_lagrange(*, visualize: bool = False) -> None:
+def test_interpolation_lagrange() -> None:
     """
     Check that the uniform Lagrange interpolation converges as expected.
     """

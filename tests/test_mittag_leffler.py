@@ -12,10 +12,13 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-dirname = pathlib.Path(__file__).parent
-logger = get_logger("pycaputo.test_mittag_leffler")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -53,7 +56,7 @@ def opt_func(t: float, a: float, b: float, *, alpha: float) -> float:
 
 
 @pytest.mark.parametrize("alpha", [0.9, 0.95])
-def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
+def test_mittag_leffler_opt(alpha: float) -> None:
     """
     Test an optimization problem with the Mittag-Leffler function.
 
@@ -90,14 +93,14 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
         )
         assert abs(fstar) < 1.0e-10
 
-    if visualize:
+    if ENABLE_VISUAL:
         from pycaputo.utils import figure
 
         t = np.linspace(bracket[0], bracket[1], 256)
         f = np.vectorize(opt_func)(t, a, b, alpha=alpha)
 
-        suffix = str(alpha).replace(".", "_")
-        with figure(dirname / f"test_mittag_leffler_opt_{suffix}") as fig:
+        filename = f"test_mittag_leffler_opt_{alpha}"
+        with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
             ax = fig.gca()
             ax.plot(t, f)
             ax.plot(result.root, fstar, "ro", ms=10)
@@ -110,7 +113,7 @@ def test_mittag_leffler_opt(alpha: float, *, visualize: bool = False) -> None:
 
 
 @pytest.mark.parametrize("iref", [0, 1])
-def test_mittag_leffler_sine_mathematica(iref: int, *, visualize: bool = False) -> None:
+def test_mittag_leffler_sine_mathematica(iref: int) -> None:
     """
     Check the evaluation of the Caputo derivative of the Sine function against
     known results from Mathematica.
@@ -128,14 +131,14 @@ def test_mittag_leffler_sine_mathematica(iref: int, *, visualize: bool = False) 
     error = la.norm(result - ref.result) / la.norm(ref.result)
     logger.info("Error D^%g[sin]: %.12e", ref.alpha, error)
 
-    if visualize:
+    if ENABLE_VISUAL:
         from pycaputo.utils import figure
 
-        i = np.argsort(ref.z)
-
-        suffix = str(ref.alpha).replace(".", "_")
-        with figure(dirname / f"test_mittag_leffler_sine_{suffix}") as fig:
+        filename = f"test_mittag_leffler_sine_{ref.alpha}"
+        with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
             ax = fig.gca()
+
+            i = np.argsort(ref.z)
             ax.semilogy(ref.z[i], np.abs(result[i] - ref.result[i]))
 
             ax.set_xlabel("$t$")

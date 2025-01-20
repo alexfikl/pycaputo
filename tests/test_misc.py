@@ -11,17 +11,20 @@ import pytest
 
 from pycaputo.logging import get_logger, stringify_table
 from pycaputo.typing import Array, ScalarFunction
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_misc")
-dirname = pathlib.Path(__file__).parent
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
 # {{{ test_lipschitz_uniform_sample
 
 
-def test_lipschitz_uniform_sample(*, visualize: bool = False) -> None:
+def test_lipschitz_uniform_sample() -> None:
     """
     Check uniform sampling on the :math:`[a, b] \times [a, b]` diagonal.
     """
@@ -39,14 +42,15 @@ def test_lipschitz_uniform_sample(*, visualize: bool = False) -> None:
     assert np.all(np.logical_and(a <= x, x <= b))
     assert np.all(np.logical_and(a <= y, y <= b))
 
-    if not visualize:
+    if not ENABLE_VISUAL:
         return
 
     from matplotlib.patches import Rectangle
 
     from pycaputo.utils import figure
 
-    with figure(dirname / "test_lipschitz_uniform_sample") as fig:
+    filename = "test_lipschitz_uniform_sample"
+    with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
         ax = fig.gca()
 
         mask = np.abs(x - y) <= delta
@@ -88,12 +92,7 @@ def f_wood_3(x: Array) -> Array:
     ],
 )
 def test_estimate_lischitz_constant(
-    f: ScalarFunction,
-    L: float,
-    a: float,
-    b: float,
-    *,
-    visualize: bool = False,
+    f: ScalarFunction, L: float, a: float, b: float
 ) -> None:
     """
     Check that the Lipschitz constant is correctly estimated for known functions.

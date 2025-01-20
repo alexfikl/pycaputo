@@ -10,9 +10,13 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_jacobi")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -72,7 +76,7 @@ def test_jacobi_weights() -> None:
         (2.0, 0.5),
     ],
 )
-def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) -> None:
+def test_jacobi_polynomials(alpha: float, beta: float) -> None:
     """
     Check that the Jacobi polynomials are evaluated correctly.
     """
@@ -83,6 +87,7 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
     from pycaputo.jacobi import jacobi_gamma, jacobi_polynomial
 
     N = 31
+    rtol = 1.0e-13
 
     # check vs scipy at Jacobi-Gauss-Lobatto points
     p = make_jacobi_gauss_lobatto_points(N, a=-1, b=1, alpha=alpha, beta=beta)
@@ -122,7 +127,7 @@ def test_jacobi_polynomials(alpha: float, beta: float, rtol: float = 1.0e-13) ->
         (2.0, 0.5),
     ],
 )
-def test_jacobi_project(alpha: float, beta: float, rtol: float = 5.0e-13) -> None:
+def test_jacobi_project(alpha: float, beta: float) -> None:
     """
     Check that we can project a function to the Jacobi basis.
     """
@@ -131,6 +136,7 @@ def test_jacobi_project(alpha: float, beta: float, rtol: float = 5.0e-13) -> Non
     from pycaputo.jacobi import jacobi_polynomial, jacobi_project
 
     N = 32
+    rtol = 5.0e-13
 
     # check vs scipy at Jacobi-Gauss-Lobatto points
     p = make_jacobi_gauss_lobatto_points(N, a=-1, b=1, alpha=alpha, beta=beta)
@@ -151,7 +157,7 @@ def test_jacobi_project(alpha: float, beta: float, rtol: float = 5.0e-13) -> Non
 # {{{ test_jacobi_riemann_liouville_integral
 
 
-def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
+def test_jacobi_riemann_liouville_integral() -> None:
     """
     Check that we correctly compute the Riemann-Liouville integral of the
     Jacobi polynomial.
@@ -261,7 +267,7 @@ def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
         error = la.norm(Phat - Phat_ref[n]) / la.norm(Phat_ref[n])
         logger.info("order %3d error %.12e", n, error)
 
-        if visualize:
+        if ENABLE_VISUAL:
             import matplotlib.pyplot as mp
 
             fig = mp.figure()
@@ -274,9 +280,8 @@ def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
 
             from pycaputo.utils import savefig
 
-            dirname = pathlib.Path(__file__).parent
             filename = f"test_jacobi_riemann_liouville_integral_{n}"
-            savefig(fig, dirname / filename)
+            savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
 
 # }}}
@@ -285,7 +290,7 @@ def test_jacobi_riemann_liouville_integral(*, visualize: bool = False) -> None:
 # {{{ test_jacobi_caputo_derivative
 
 
-def test_jacobi_caputo_derivative(*, visualize: bool = False) -> None:
+def test_jacobi_caputo_derivative() -> None:
     """
     Check that we correctly compute the Caputo derivative of the Jacobi polynomial.
     """
@@ -337,7 +342,7 @@ def test_jacobi_caputo_derivative(*, visualize: bool = False) -> None:
         error = la.norm(Dhat - Dhat_ref[n]) / la.norm(Dhat_ref[n])
         logger.info("order %3d error %.12e", n, error)
 
-        if visualize:
+        if ENABLE_VISUAL:
             import matplotlib.pyplot as mp
 
             fig = mp.figure()
@@ -350,9 +355,8 @@ def test_jacobi_caputo_derivative(*, visualize: bool = False) -> None:
 
             from pycaputo.utils import savefig
 
-            dirname = pathlib.Path(__file__).parent
             filename = f"test_jacobi_caputo_derivative_{n}"
-            savefig(fig, dirname / filename)
+            savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
 
 # }}}

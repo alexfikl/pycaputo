@@ -10,9 +10,13 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.logging import get_logger
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_generating_functions")
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 
@@ -21,9 +25,7 @@ set_recommended_matplotlib()
 
 @pytest.mark.parametrize("order", [1, 2, 3, 4, 5, 6])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.25, 2.5, 5.27])
-def test_lubich_bdf_weights(
-    order: int, alpha: float, *, visualize: bool = False
-) -> None:
+def test_lubich_bdf_weights(order: int, alpha: float) -> None:
     """
     Check that the Lubich weights can integrate a smooth function.
     """
@@ -62,7 +64,7 @@ def test_lubich_bdf_weights(
 
     logger.info("\n%s", eoc)
 
-    if not visualize:
+    if not ENABLE_VISUAL:
         return
 
     import matplotlib.pyplot as mp
@@ -76,9 +78,8 @@ def test_lubich_bdf_weights(
     ax.set_xlabel("$t$")
     ax.set_ylabel(f"$I^{{{alpha}}}_{{RL}}[1]$")
 
-    dirname = pathlib.Path(__file__).parent
-    filename = f"test_generator_lubich_bdf_{order}_{alpha}".replace(".", "_")
-    savefig(fig, dirname / filename)
+    filename = f"test_generator_lubich_bdf_{order}_{alpha}"
+    savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
 
 # }}}

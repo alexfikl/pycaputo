@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager, suppress
@@ -27,6 +28,12 @@ BOOLEAN_STATES = {
     0: False, "0": False, "no": False, "false": False, "off": False, "n": False,
 }
 # fmt: on
+
+
+def get_environ_bool(name: str) -> bool:
+    value = os.environ.get(name)
+    return BOOLEAN_STATES.get(name.lower(), False) if value else False
+
 
 # }}}
 
@@ -483,9 +490,10 @@ def savefig(
     fig: Any,
     filename: PathLike,
     *,
-    overwrite: bool = True,
     bbox_inches: str = "tight",
     pad_inches: float = 0,
+    normalize: bool = False,
+    overwrite: bool = True,
     **kwargs: Any,
 ) -> None:
     """A wrapper around :meth:`~matplotlib.figure.Figure.savefig`.
@@ -501,6 +509,9 @@ def savefig(
     import matplotlib.pyplot as mp
 
     filename = pathlib.Path(filename)
+    if normalize:
+        filename = filename.with_stem(slugify(filename.stem))
+
     if not filename.suffix:
         ext = mp.rcParams["savefig.format"]
         filename = filename.with_suffix(f".{ext}").resolve()
@@ -521,6 +532,22 @@ def savefig(
         bbox_inches="tight",
         **kwargs,
     )
+
+
+def slugify(stem: str, separator: str = "_") -> str:
+    """
+    :returns: an ASCII slug representing *stem*, with all the unicode cleaned up
+        and all non-standard separators replaced.
+    """
+    import re
+    import unicodedata
+
+    stem = unicodedata.normalize("NFKD", stem)
+    stem = stem.encode("ascii", "ignore").decode().lower()
+    stem = re.sub(r"[^a-z0-9]+", separator, stem)
+    stem = re.sub(rf"[{separator}]+", separator, stem.strip(separator))
+
+    return stem
 
 
 # }}}

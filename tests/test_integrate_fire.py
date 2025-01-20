@@ -12,10 +12,13 @@ import pytest
 
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
-from pycaputo.utils import set_recommended_matplotlib
+from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
-logger = get_logger("pycaputo.test_integrate_fire")
-dirname = pathlib.Path(__file__).parent
+TEST_FILENAME = pathlib.Path(__file__)
+TEST_DIRECTORY = TEST_FILENAME.parent
+ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
+
+logger = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
 set_recommended_matplotlib()
 
 # {{{ test_ad_ex_parameters
@@ -122,7 +125,7 @@ def ad_ex_zero(a: float, tau_w: float, h: float) -> float:
     return (1 + (1 + a * h / (h + tau_w)) * h) / h
 
 
-def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
+def test_ad_ex_lambert_arg() -> None:
     """
     Check that the zeros of the Lambert functions are found.
 
@@ -150,16 +153,17 @@ def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
         assert np.isnan(hm) or abs(func(hm)) <= 5.0e-14, func(hm)
         assert np.isnan(hp) or abs(func(hp)) <= 5.0e-14, func(hp)
 
-        if visualize:
+        if ENABLE_VISUAL:
             from pycaputo.utils import figure
 
             if np.isnan(hm):
                 hm = hp = hmin = 1.0
 
-            h = np.linspace(min(hm, 0), max(hp, 1), 256)
-            with figure(dirname / f"test_ad_ex_lambert_arg_{name}") as fig:
+            filename = f"test_ad_ex_lambert_arg_{name}"
+            with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
                 ax = fig.gca()
 
+                h = np.linspace(min(hm, 0), max(hp, 1), 256)
                 ax.plot(h, np.vectorize(func)(h))
                 ax.plot([hm, hmin, hp], [func(hm), func(hmin), func(hp)], "ro")
 
@@ -170,7 +174,7 @@ def test_ad_ex_lambert_arg(*, visualize: bool = False) -> None:
 # {{{ test_ad_ex_lambert_limits
 
 
-def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
+def test_ad_ex_lambert_limits() -> None:
     """
     Check that the max time step can be found from the Lambert function and it
     is between the expected limits.
@@ -248,10 +252,11 @@ def test_ad_ex_lambert_limits(*, visualize: bool = False) -> None:
         ynext = method.solve(tspike_opt, y0, h, y0 - h * r)
         assert not np.any(np.iscomplex(ynext)), ynext
 
-        if visualize:
+        if ENABLE_VISUAL:
             from pycaputo.utils import figure
 
-            with figure(dirname / f"test_ad_ex_lambert_limits_{name}") as fig:
+            filename = f"test_ad_ex_lambert_limits_{name}"
+            with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
                 ax = fig.gca()
 
                 ax.plot(tspike, f)
