@@ -146,7 +146,7 @@ benchmark:
 
 [doc("Run examples with default options")]
 examples:
-    for ex in `find examples -name "*.py"`; do \
+    @for ex in `find examples -name "*.py"`; do \
         echo "::group::Running ${ex}"; \
         {{ PYTHON }} "${ex}"; \
         echo "::endgroup::"; \
