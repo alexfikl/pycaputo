@@ -1,7 +1,10 @@
 cache:
-  paths:
-  - vendor/apt
-  - vendor/python
+  - key:
+      files:
+        - requirements-test.txt
+    paths:
+      - vendor/apt
+      - vendor/python
 
 before_script:
   - echo $CI_PROJECT_DIR
