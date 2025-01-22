@@ -92,7 +92,6 @@ develop:
     {{ PYTHON }} -m pip install \
         --verbose \
         --no-build-isolation \
-        --config-settings setup-args='-Duse-blas=true' \
         --editable .
 
 [doc("Editable install using pinned dependencies from requirements-test.txt")]
@@ -102,7 +101,6 @@ pip-install:
         --verbose \
         --requirement requirements-test.txt \
         --no-build-isolation \
-        --config-settings setup-args='-Duse-blas=false' \
         --editable .
 
 [doc("Remove various build artifacts")]

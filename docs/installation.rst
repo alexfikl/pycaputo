@@ -44,3 +44,32 @@ sorts of other things useful when working on the library. This is all very
 standard and explained in the `official Python packaging guides
 <https://packaging.python.org/en/latest/>`__, which you should consult if any of
 these terms are confusing.
+
+justfile
+--------
+
+This project uses the `just <https://just.systems/man/en/>`__ command runner to
+group a few smaller commands that are useful for development. You can see what
+they are by running
+
+.. code:: sh
+
+    just --list
+
+Using the command runner, you can install the project in *editable mode* (as above)
+by running
+
+.. code:: sh
+
+    just develop
+
+When developping, it is recommended to run the general formatting and linting
+tools that are used by the project. This can be easily done using
+
+.. code:: sh
+
+   just format
+   just lint
+
+The ``justfile`` also defines all the commands that are run on the CI, so you can
+run them locally to make sure everything works as expected.
