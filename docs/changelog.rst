@@ -28,6 +28,13 @@ Breaking Changes
 * All :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod` need to
   also define :meth:`~pycaputo.stepping.FractionalDifferentialEquationMethod.make_default_history`.
 
+Maintenance
+^^^^^^^^^^^
+
+* Switched to `just <https://just.systems/man/en/>`__ for running all the simple
+  development and CI commands. ``just`` is less available than ``make``, but it
+  is much nicer and self-documenting.
+
 pycaputo 0.8.1 (October 13, 2024)
 ---------------------------------
 

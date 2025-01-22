@@ -63,7 +63,7 @@ by running
 
     just develop
 
-When developping, it is recommended to run the general formatting and linting
+When developing, it is recommended to run the general formatting and linting
 tools that are used by the project. This can be easily done using
 
 .. code:: sh
