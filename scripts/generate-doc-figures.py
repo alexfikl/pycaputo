@@ -187,4 +187,8 @@ if __name__ == "__main__":
     if not args.quiet:
         log.setLevel(logging.INFO)
 
-    raise SystemExit(main(args.dir, scripts=args.script))
+    scripts = args.script
+    if len(scripts) == 1 and scripts[0] == "all":
+        scripts = list(ARTIFACTS)
+
+    raise SystemExit(main(args.dir, scripts=scripts))

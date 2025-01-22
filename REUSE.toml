@@ -9,7 +9,7 @@ SPDX-PackageDownloadLocation = "https://github.com/alexfikl/pycaputo"
 [[annotations]]
 path = [
     "docs/*.rst",
-    "docs/Makefile",
+    "docs/justfile",
     "docs/_static/*.svg",
     "docs/_static/css/custom.css",
     "docs/benchmarks/**.json",
@@ -21,7 +21,7 @@ SPDX-License-Identifier = "CC0-1.0"
 [[annotations]]
 path = [
     ".readthedocs.yml",
-    "Makefile",
+    "justfile",
     "README.rst",
     "pyproject.toml",
     "requirements*.txt",

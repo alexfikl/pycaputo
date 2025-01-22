@@ -1,0 +1,27 @@
+SPHINXOPTS := '-W --keep-going -n'
+SPHINXBUILD := 'python `which sphinx-build`'
+SOURCEDIR := '.'
+BUILDDIR := 'build.sphinx'
+
+_default:
+    @just --list
+
+[doc('Show all available Sphinx targets')]
+targets:
+    @{{ SPHINXBUILD }} -M help "{{ SOURCEDIR }}" "{{ BUILDDIR }}"
+
+[doc('Build the Sphinx documentation (clear BUILDDIR)')]
+build target='html':
+    @rm -rf {{ BUILDDIR }}
+    @{{ SPHINXBUILD }} -M {{ target }} "{{ SOURCEDIR }}" "{{ BUILDDIR }}" {{ SPHINXOPTS }}
+    @echo 'Built documentation in {{ BUILDDIR }}/{{ target }}'
+
+[doc('Rebuild the Sphinx documentation (reuse BUILDDIR)')]
+rebuild target='html':
+    @{{ SPHINXBUILD }} -M {{ target }} "{{ SOURCEDIR }}" "{{ BUILDDIR }}" {{ SPHINXOPTS }}
+    @echo 'Built documentation in {{ BUILDDIR }}/{{ target }}'
+
+[doc("Open HTML documentation")]
+view:
+    @echo "Opened in browser '${BROWSER}'"
+    @${BROWSER} {{ BUILDDIR }}/html/index.html
