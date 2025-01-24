@@ -397,8 +397,6 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
                 ys.append(event.y)
                 if event.spiked:
                     tspikes.append(event.t)
-            else:
-                pass
 
         dtmax = np.max(np.diff(ts))
         err = la.norm(tspikes - tspikes_ref) / la.norm(tspikes_ref)
@@ -414,8 +412,6 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
                 ys.append(event.y)
                 if event.spiked:
                     break
-            else:
-                pass
 
         t = np.array(ts[:-2])
         y = np.array(ys).squeeze()[:-2]

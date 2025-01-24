@@ -664,8 +664,6 @@ def _advance_caputo_ad_ex_l1(  # type: ignore[misc]
             spiked=np.array(1),
             dts=np.array(ts - tprev),
         )
-    else:
-        pass
 
     return result
 
