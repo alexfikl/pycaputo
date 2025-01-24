@@ -72,7 +72,7 @@ mypy:
 requirements_test_txt:
     uv pip compile --upgrade --universal --python-version '3.10' \
         --extra test \
-        -o requirements-test.txt pyproject.toml
+        -o requirements-test.txt pyproject.toml requirements-git.txt
 
 [private]
 requirements_txt:

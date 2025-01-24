@@ -40,7 +40,7 @@ pytest-benchmark==5.1.0
     # via pycaputo (pyproject.toml)
 rich==13.9.4
     # via pycaputo (pyproject.toml)
-ruff==0.9.2
+ruff==0.9.3
     # via pycaputo (pyproject.toml)
 scipy==1.15.1
     # via pycaputo (pyproject.toml)
