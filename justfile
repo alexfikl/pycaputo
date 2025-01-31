@@ -148,6 +148,7 @@ benchmark:
 examples:
     @for ex in `ls examples/*.py`; do \
         echo "::group::Running ${ex}"; \
+        {{ PYTHON }} ${ex}; \
         echo "::endgroup::"; \
     done
 
