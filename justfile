@@ -1,4 +1,4 @@
-PYTHON := 'python -X dev'
+PYTHON := "python -X dev"
 
 _default:
     @just --list
@@ -7,28 +7,28 @@ _default:
 
 alias fmt: format
 
-[doc('Reformat all source code')]
+[doc("Reformat all source code")]
 format: isort black pyproject justfmt
 
-[doc('Run ruff isort fixes over the source code')]
+[doc("Run ruff isort fixes over the source code")]
 isort:
     ruff check --fix --select=I src tests examples docs scripts
     ruff check --fix --select=RUF022 src
     @echo -e "\e[1;32mruff isort clean!\e[0m"
 
-[doc('Run ruff format over the source code')]
+[doc("Run ruff format over the source code")]
 black:
     ruff format src tests examples docs scripts
     @echo -e "\e[1;32mruff format clean!\e[0m"
 
-[doc('Run pyproject-fmt over the configuration')]
+[doc("Run pyproject-fmt over the configuration")]
 pyproject:
     {{ PYTHON }} -m pyproject_fmt \
-        --indent 4 --max-supported-python '3.13' \
+        --indent 4 --max-supported-python "3.13" \
         pyproject.toml
     @echo -e "\e[1;32mpyproject clean!\e[0m"
 
-[doc('Run just --fmt over the justfile')]
+[doc("Run just --fmt over the justfiles")]
 justfmt:
     just --unstable --fmt
     just -f docs/justfile --unstable --fmt
@@ -37,30 +37,30 @@ justfmt:
 # }}}
 # {{{ linting
 
-[doc('Run all linting checks over the source code')]
+[doc("Run all linting checks over the source code")]
 lint: typos reuse ruff doc8 mypy
 
-[doc('Run typos over the source code and documentation')]
+[doc("Run typos over the source code and documentation")]
 typos:
     typos --sort
     @echo -e "\e[1;32mtypos clean!\e[0m"
 
-[doc('Check REUSE license compliance')]
+[doc("Check REUSE license compliance")]
 reuse:
     {{ PYTHON }} -m reuse lint
     @echo -e "\e[1;32mREUSE compliant!\e[0m"
 
-[doc('Run ruff checks over the source code')]
+[doc("Run ruff checks over the source code")]
 ruff:
     ruff check src tests examples docs scripts
     @echo -e "\e[1;32mruff clean!\e[0m"
 
-[doc('Run doc8 checks over the documentation')]
+[doc("Run doc8 checks over the documentation")]
 doc8:
     {{ PYTHON }} -m doc8 src docs
     @echo -e "\e[1;32mdoc8 clean!\e[0m"
 
-[doc('Run mypy checks over the source code')]
+[doc("Run mypy checks over the source code")]
 mypy:
     {{ PYTHON }} -m mypy src tests examples scripts
     @echo -e "\e[1;32mmypy clean!\e[0m"
@@ -70,22 +70,22 @@ mypy:
 
 [private]
 requirements_test_txt:
-    uv pip compile --upgrade --universal --python-version '3.10' \
+    uv pip compile --upgrade --universal --python-version "3.10" \
         --extra test \
         -o requirements-test.txt pyproject.toml requirements-git.txt
 
 [private]
 requirements_txt:
-    uv pip compile --upgrade --universal --python-version '3.10' \
+    uv pip compile --upgrade --universal --python-version "3.10" \
         -o requirements.txt pyproject.toml
 
-[doc('Pin dependency versions to requirements.txt')]
+[doc("Pin dependency versions to requirements.txt")]
 pin: requirements_txt requirements_test_txt
 
 # }}}
 # {{{ develop
 
-[doc('Install project in editable mode')]
+[doc("Install project in editable mode")]
 develop:
     @rm -rf build
     @rm -rf dist
@@ -137,7 +137,7 @@ test *PYTEST_ADDOPTS:
 
 [doc("Run pytest benchmarks")]
 benchmark:
-    {{ PYTHON }} -m pytest -m 'benchmark' \
+    {{ PYTHON }} -m pytest -m "benchmark" \
         --benchmark-autosave \
         --benchmark-storage=docs/benchmarks \
         --benchmark-name=short \
