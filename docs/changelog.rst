@@ -17,8 +17,8 @@ Features
 
 * Add some more chaotic systems examples: Labyrinth, Chua, Qi, Lorenz-84. They're
   all listed in :mod:`pycaputo.fode.gallery`.
-* Add some neuron models: FitzHugh-Rinzel. This is on top of the existing
-  Integrate-and-Fire models from :mod:`pycaputo.integrate_fire`.
+* Add some neuron models: FtizHugh-Nagumo, FitzHugh-Rinzel. This is on top of
+  the existing Integrate-and-Fire models from :mod:`pycaputo.integrate_fire`.
 * Made :class:`~pycaputo.fode.caputo.Trapezoidal` a bit faster by avoiding
   multiple ``einsum``.
 
