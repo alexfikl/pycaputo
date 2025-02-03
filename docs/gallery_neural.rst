@@ -14,6 +14,28 @@ Neural Model Gallery
 FitzHugh-Nagumo Models
 ----------------------
 
+.. card:: Fractional-order FitzHugh-Nagumo System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-fitzhugh-nagumo-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Nagumo system
+
+    .. image:: _static/gallery-fitzhugh-nagumo-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Nagumo system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 4d
+    from [Brandibur2018]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
+
 .. card:: Fractional-order FitzHugh-Rinzel System
     :class-title: sd-text-center
 
@@ -34,7 +56,7 @@ FitzHugh-Nagumo Models
     This example uses the Caputo derivative and the
     :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 3g
     from [Mondal2019]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/pif.py <../examples/gallery/pif.py>`.
+    :download:`examples/gallery/fitzhugh-rinzel.py <../examples/gallery/fitzhugh-rinzel.py>`.
 
 
 Integrate-and-Fire Models

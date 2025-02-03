@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import pathlib
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -338,6 +339,74 @@ def fracplot(
             raise AssertionError
 
 
+def fracplots(
+    sol: Solution,
+    filename: PathLike | None = None,
+    *,
+    dark: bool | None = None,
+    xlabel: str | None = None,
+    legend: str | Sequence[str] | None = None,
+    ylim: tuple[float, float] | None = None,
+) -> None:
+    """Plot the solution of a fractional differential equation from :func:`fracevolve`.
+
+    Unlike :func:`fracplot`, this function plots all the components of the *sol*
+    in a single plot vs time.
+
+    :arg dark: if *True*, a dark themed plot is created instead.
+    """
+    if filename is not None:
+        filename = pathlib.Path(filename)
+
+    t = sol.t
+    y = sol.y
+    if y.ndim == 1:
+        y = y.reshape(1, -1)
+    dim = y.shape[0]
+
+    if xlabel is None:
+        xlabel = _DEFAULT_XLABEL[0]
+
+    if legend is None:
+        legend = [f"${_DEFAULT_YLABEL[0]}_{i}$" for i in range(dim)]
+
+    if isinstance(legend, str):
+        legend = [legend] * dim
+
+    if len(legend) != dim:
+        raise ValueError(
+            "Legends do not match solution size: "
+            f"got {len(legend)} legend labels for a {dim}d system"
+        )
+
+    suffixes = _get_default_dark(default=bool(dark)) if dark is None else ((dark, ""),)
+    outfile = None
+
+    from pycaputo.utils import figure, set_recommended_matplotlib
+
+    for dark_i, suffix_i in suffixes:
+        if filename is not None:
+            outfile = filename.parent / f"{filename.stem}{suffix_i}{filename.suffix}"
+
+        set_recommended_matplotlib(dark=dark_i)
+
+        with figure(outfile) as fig:
+            ax = fig.gca()
+
+            for i in range(dim):
+                ax.plot(t, y[i], label=legend[i])
+
+            ax.set_xlabel(f"${xlabel}$")
+            if ylim is not None:
+                ax.set_ylim(ylim)
+            ax.legend(
+                loc="lower left",
+                bbox_to_anchor=(0.5, 1.0),
+                ncol=dim,
+                mode="expand",
+            )
+
+
 # }}}
 
-__all__ = ("diff", "fracevolve", "grad", "quad")
+__all__ = ("diff", "fracevolve", "fracplot", "fracplots", "grad", "quad")

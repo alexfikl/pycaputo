@@ -337,6 +337,66 @@ class Duffing(Function):
 # }}}
 
 
+# {{{ FitzHugh-Nagumo
+
+
+@dataclass(frozen=True)
+class FitzHughNagumo(Function):
+    r"""Implements the right-hand side of the FitzHugh-Nagumo system (see
+    Equation 8 in [Brandibur2018]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[v](t) & =
+            v - \frac{v^3}{3} - w + I, \\
+        D^\alpha[w](t) & =
+            r (v + c - d w),
+        \end{aligned}
+
+    where :math:`v` represents the membrane potential and :math:`w` represents
+    the recovery variable.
+
+    .. [Brandibur2018] O. Brandibur, E. Kaslik,
+        *Stability of Two-component Incommensurate Fractional-order Systems
+        and Applications to the Investigation of a FitzHugh-Nagumo Neuronal Model*,
+        Mathematical Methods in the Applied Sciences, Vol. 41, pp. 7182--7194, 2018,
+        `DOI <https://doi.org/10.1002/mma.4768>`__.
+    """
+
+    current: float
+    """External excitation current :math:`I`."""
+    r: float
+    """The time scale parameter in the model. This usually sets the time-scale
+    separation between :math:`v` (fast) and :math:`w` (slow).
+    """
+    c: float
+    """An offset parameter in the model. Theoretically, this sets the position
+    of the :math:`w`-nullcline relative to the :math:`v`-nullcline.
+    """
+    d: float
+    """A scaling parameter for :math:`w`. Functionally, this influences the
+    damping of the excitation.
+    """
+
+    def source(self, t: float, y: Array) -> Array:
+        r, c, d = self.r, self.c, self.d
+        return np.array([
+            y[0] - y[0] ** 3 / 3 - y[1] + self.current,
+            r * (y[0] + c - d * y[1]),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        r, _, d = self.r, self.c, self.d
+        return np.array([
+            [1.0 - y[0] ** 2, -1.0],
+            [r, -r * d],
+        ])
+
+
+# }}}
+
+
 # {{{ FitzHugh-Rinzel
 
 
