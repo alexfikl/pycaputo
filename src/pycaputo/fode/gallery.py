@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import NamedTuple
 
@@ -1029,6 +1030,192 @@ class MaChen(Function):
             [y[1] - self.a, y[0], 1.0],
             [2.0 * y[0], -self.b, 0.0],
             [-1.0, 0.0, -self.c],
+        ])
+
+
+# }}}
+
+
+# {{{ Morris-Lecar
+
+
+@dataclass(frozen=True)
+class MorrisLecarParameter(ABC):
+    r"""Parameters for the Morris-Lecar system, as defined in [Shi2014]_.
+
+    This class should be subclassed to implement the modulation functions
+    :meth:`w_inf`, :meth:`m_inf` and :meth:`tau_w` as well as their
+    first-order derivatives. The derivatives are used for computing the Jacobian
+    in implicit methods.
+    """
+
+    C: float
+    """Membrane capacitance."""
+    g_Ca: float  # noqa: N815
+    r"""Maximum conductance of the :math:`\mathrm{Ca}^{2+}` ionic current."""
+    g_K: float  # noqa: N815
+    r"""Maximum conductance of the :math:`\mathrm{K}^{+}` ionic current."""
+    g_L: float  # noqa: N815
+    r"""Maximum conductance of the leak current."""
+    v_Ca: float  # noqa: N815
+    r"""Equilibrium potential for the :math:`\mathrm{Ca}^{2+}` ion channel."""
+    v_K: float  # noqa: N815
+    r"""Equilibrium potential for the :math:`\mathrm{K}^{+}` ion channel."""
+    v_L: float  # noqa: N815
+    r"""Equilibrium potential for the leak current."""
+
+    epsilon: float
+    """A small parameter that controls the time scale between spiking and modulation."""
+    v_0: float
+    """An initial current applied at the starting time."""
+
+    @abstractmethod
+    def m_inf(self, V: float) -> float:
+        r"""Modulation of the :math:`g_{\mathrm{Ca}}` conductance."""
+
+    def m_inf_derivative(self, V: float) -> float:
+        r"""Derivative of :math:`m_\infty`."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def w_inf(self, V: float) -> float:
+        r"""Modulation of the :math:`g_{\mathrm{K}}` conductance."""
+
+    def w_inf_derivative(self, V: float) -> float:
+        r"""Derivative of :math:`w_\infty`."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def tau_w(self, V: float) -> float:
+        r"""Modulation of the time scale of the activation variable :math:`w`."""
+
+    def tau_w_derivative(self, V: float) -> float:
+        r"""Derivative of :math:`\tau_w`."""
+        raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class StandardMorrisLecarParameter(MorrisLecarParameter):
+    r"""Implements the standard Morris-Lecar modulation functions.
+
+    .. math::
+
+        \begin{aligned}
+        m_\infty(V) & =
+            \frac{1}{2} \left(1 + \tanh\left(\frac{V - V_1}{V_2}\right)\right), \\
+        w_\infty(V) & =
+            \frac{1}{2} \left(1 + \tanh\left(\frac{V - V_3}{V_4}\right)\right), \\
+        \tau_w(V) & =
+            \left(\phi \cosh\left(\frac{V - V_3}{2 V_4}\right)\right)^{-1}.
+        \end{aligned}
+    """
+
+    phi: float
+    r"""Reference frequency. Taken to be :math:`\phi = 1/3` in [Shi2014]_."""
+    vinf: tuple[float, float, float, float]
+    """A tuple of 4 parameters used to define the modulation functions."""
+
+    def m_inf(self, V: float) -> float:
+        V = (V - self.vinf[0]) / self.vinf[1]
+        return (1.0 + np.tanh(V)) / 2.0  # type: ignore[no-any-return]
+
+    def m_inf_derivative(self, V: float) -> float:
+        V = (V - self.vinf[0]) / self.vinf[1]
+        return 1.0 / np.cosh(V) ** 2 / (2.0 * self.vinf[1])  # type: ignore[no-any-return]
+
+    def w_inf(self, V: float) -> float:
+        V = (V - self.vinf[2]) / self.vinf[3]
+        return (1.0 + np.tanh(V)) / 2.0  # type: ignore[no-any-return]
+
+    def w_inf_derivative(self, V: float) -> float:
+        V = (V - self.vinf[2]) / self.vinf[3]
+        return 1.0 / np.cosh(V) ** 2 / (2.0 * self.vinf[3])  # type: ignore[no-any-return]
+
+    def tau_w(self, V: float) -> float:
+        V = (V - self.vinf[2]) / self.vinf[3]
+        return 1.0 / (self.phi * np.cosh(V / 2.0))  # type: ignore[no-any-return]
+
+    def tau_w_derivative(self, V: float) -> float:
+        V = (V - self.vinf[2]) / self.vinf[3]
+        return (  # type: ignore[no-any-return]
+            -2.0 / (self.phi * self.vinf[3]) * np.sinh(V / 2.0) ** 3 / np.sinh(V) ** 2
+        )
+
+
+@dataclass(frozen=True)
+class MorrisLecar(Function):
+    r"""Implements the right-hand side of the Morris-Lecar system (see Equation 8
+    in [Shi2014]_).
+
+    .. math::
+
+        \begin{aligned}
+        C D^\alpha[V](t) & =
+            g_{\mathrm{Ca}} m_\infty(V) (V_{\mathrm{Ca}} - V)
+            + g_{\mathrm{K}} w (V_{\mathrm{K}} - V)
+            + g_{\mathrm{L}} (V_{\mathrm{L}} - V) + I, \\
+        D^\alpha[w](t) & =
+            \frac{w_\infty(V) - w}{\tau_w(V)}, \\
+        D^\alpha[I](t) & =
+            - \epsilon (V_0 + V),
+        \end{aligned}
+
+    where :math:`V` is membrane potential, :math:`w` is the activation variable
+    for :math:`\mathrm{K}+`, and :math:`I` is the current. The additional
+    parameters and functions can be customized using the :class:`MorrisLecarParameter`
+    class.
+
+    Note that this is not the standard Morris-Lecar model, as it has an extra
+    third equation proposed by Izhikevich. The original form can be retrieved by
+    setting :math:`\epsilon = 0` in the above equation.
+
+    .. [Shi2014] M. Shi, Z. Wang,
+        *Abundant Bursting Patterns of a Fractional-Order Morris-Lecar Neuron Model*,
+        Communications in Nonlinear Science and Numerical Simulation, Vol. 19, pp.
+        1956--1969, 2014,
+        `DOI <https://doi.org/10.1016/j.cnsns.2013.10.032>`__.
+    """
+
+    p: MorrisLecarParameter
+    """Parameters for the Morris-Lecar system."""
+
+    def source(self, t: float, y: Array) -> Array:
+        p = self.p
+        g_Ca = p.g_Ca / p.C
+        g_K = p.g_K / p.C
+        g_L = p.g_L / p.C
+
+        m_inf = p.m_inf(y[0])
+        w_inf = p.w_inf(y[0])
+        tau_w = p.tau_w(y[0])
+
+        return np.array([
+            g_Ca * m_inf * (p.v_Ca - y[0])
+            + g_K * y[1] * (p.v_K - y[0])
+            + g_L * (p.v_L - y[0])
+            + y[2] / p.C,
+            (w_inf - y[1]) / tau_w,
+            -p.epsilon * (p.v_0 + y[0]),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        p = self.p
+        g_Ca = p.g_Ca / p.C
+        g_K = p.g_K / p.C
+        g_L = p.g_L / p.C
+
+        m_inf, d_m_inf = p.m_inf(y[0]), p.m_inf_derivative(y[0])
+        w_inf, d_w_inf = p.w_inf(y[0]), p.w_inf_derivative(y[0])
+        tau_w, d_tau_w = p.tau_w(y[0]), p.tau_w_derivative(y[0])
+
+        return np.array([
+            [
+                g_Ca * d_m_inf * (p.v_Ca - y[0]) - g_Ca * m_inf - g_K * y[1] - g_L,
+                p.g_K * (p.v_K - y[0]) / p.C,
+                1.0 / p.C,
+            ],
+            [d_w_inf / tau_w - (w_inf - y[1]) / tau_w**2 * d_tau_w, -1.0 / tau_w, 0.0],
+            [-p.epsilon, 0.0, 0.0],
         ])
 
 
