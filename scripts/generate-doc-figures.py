@@ -111,6 +111,9 @@ ARTIFACTS = {
     "gallery/fitzhugh-rinzel.py": {
         "gallery-fitzhugh-rinzel.svg",
     },
+    "gallery/morris-lecar.py": {
+        "gallery-morris-lecar.svg",
+    },
 }
 
 

@@ -11,57 +11,6 @@ Neural Model Gallery
    book by Gerstner, Kistler, Naud, and Paninski. The fractional ones will behave
    slightly differently, but should be comparable.
 
-FitzHugh-Nagumo Models
-----------------------
-
-.. card:: Fractional-order FitzHugh-Nagumo System
-    :class-title: sd-text-center
-
-    .. image:: _static/gallery-fitzhugh-nagumo-light.svg
-        :class: only-light
-        :width: 65%
-        :align: center
-        :alt: Fractional-order FitzHugh-Nagumo system
-
-    .. image:: _static/gallery-fitzhugh-nagumo-dark.svg
-        :class: only-dark
-        :width: 65%
-        :align: center
-        :alt: Fractional-order FitzHugh-Nagumo system
-
-    +++
-
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 4d
-    from [Brandibur2018]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
-
-.. card:: Fractional-order FitzHugh-Rinzel System
-    :class-title: sd-text-center
-
-    .. image:: _static/gallery-fitzhugh-rinzel-light.svg
-        :class: only-light
-        :width: 65%
-        :align: center
-        :alt: Fractional-order FitzHugh-Rinzel system
-
-    .. image:: _static/gallery-fitzhugh-rinzel-dark.svg
-        :class: only-dark
-        :width: 65%
-        :align: center
-        :alt: Fractional-order FitzHugh-Rinzel system
-
-    +++
-
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 3g
-    from [Mondal2019]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/fitzhugh-rinzel.py <../examples/gallery/fitzhugh-rinzel.py>`.
-
-
-Integrate-and-Fire Models
--------------------------
-
 .. card:: Fractional-order Perfect Integrate-and-Fire (PIF) System
     :class-title: sd-text-center
 
@@ -127,3 +76,69 @@ Integrate-and-Fire Models
     :class:`~pycaputo.integrate_fire.ad_ex.AdExModel` class to reproduce Figure4d
     from [Naud2008]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/adex.py <../examples/gallery/adex.py>`.
+
+.. card:: Fractional-order FitzHugh-Nagumo System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-fitzhugh-nagumo-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Nagumo system
+
+    .. image:: _static/gallery-fitzhugh-nagumo-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Nagumo system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 4d
+    from [Brandibur2018]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
+
+.. card:: Fractional-order FitzHugh-Rinzel System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-fitzhugh-rinzel-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Rinzel system
+
+    .. image:: _static/gallery-fitzhugh-rinzel-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order FitzHugh-Rinzel system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 3g
+    from [Mondal2019]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/fitzhugh-rinzel.py <../examples/gallery/fitzhugh-rinzel.py>`.
+
+.. card:: Fractional-order Morris-Lecar System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-morris-lecar-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Morris-Lecar system
+
+    .. image:: _static/gallery-morris-lecar-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Morris-Lecar system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.MorrisLecar` class to reproduce Figure 11
+    from [Shi2014]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/morris-lecar.py <../examples/gallery/morris-lecar.py>`.
