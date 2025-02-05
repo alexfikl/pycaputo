@@ -142,3 +142,25 @@ Neural Model Gallery
     :class:`~pycaputo.fode.gallery.MorrisLecar` class to reproduce Figure 11
     from [Shi2014]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/morris-lecar.py <../examples/gallery/morris-lecar.py>`.
+
+.. card:: Fractional-order two-dimensional Hindmarsh-Rose System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-hindmarsh-rose2-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order two-dimensional Hindmarsh-Rose system
+
+    .. image:: _static/gallery-hindmarsh-rose2-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order two-dimensional Hindmarsh-Rose system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.HindmarshRose2` class to reproduce Figure 3b
+    from [Kaslik2017]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/hindmarsh-rose2.py <../examples/gallery/hindmarsh-rose2.py>`.

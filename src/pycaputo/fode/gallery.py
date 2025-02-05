@@ -585,6 +585,125 @@ class GenesioTesi(Function):
 # }}}
 
 
+# {{{ Hindmarsh-Rose
+
+
+@dataclass(frozen=True)
+class HindmarshRose2(Function):
+    r"""Implements the right-hand side of the two-dimensional Hindmarsh-Rose
+    system (see Equation 3.1 from [Kaslik2017]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            y - a x^3 + b x^2 + I, \\
+        D^\alpha[y](t) & =
+            c - d x^2 - y,
+        \end{aligned}
+
+    .. [Kaslik2017] E. Kaslik,
+        *Analysis of Two- And Three-Dimensional Fractional-Order Hindmarsh-Rose
+        Type Neuronal Models*,
+        Fractional Calculus and Applied Analysis, Vol. 20, pp. 623--645, 2017,
+        `DOI <https://doi.org/10.1515/fca-2017-0033>`__.
+    """
+
+    current: float
+    """External forcing current."""
+    a: float
+    """Parameter in the Hindmarsh-Rose model."""
+    b: float
+    """Parameter in the Hindmarsh-Rose model."""
+    c: float
+    """Parameter in the Hindmarsh-Rose model."""
+    d: float
+    """Parameter in the Hindmarsh-Rose model."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.a <= 0:
+                raise ValueError(f"Parameter 'a' must be positive: {self.a}")
+
+            if self.b <= 0:
+                raise ValueError(f"Parameter 'b' must be positive: {self.b}")
+
+            if self.c <= 0:
+                raise ValueError(f"Parameter 'c' must be positive: {self.c}")
+
+            if self.d <= 0:
+                raise ValueError(f"Parameter 'd' must be positive: {self.d}")
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            y[1] - self.a * y[0] ** 3 + self.b * y[0] ** 2 + self.current,
+            self.c - self.d * y[0] ** 2 - y[1],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-3.0 * self.a * y[0] ** 2 + 2.0 * self.b * y[0], 1.0],
+            [-2.0 * self.d * y[0], -1.0],
+        ])
+
+
+@dataclass(frozen=True)
+class HindmarshRose3(HindmarshRose2):
+    r"""Implements the right-hand side of the three-dimensional Hindmarsh-Rose
+    system (see Equation 4.1 from [Kaslik2017]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            y - a x^3 + b x^2 - z + I, \\
+        D^\alpha[y](t) & =
+            c - d x^2 - y, \\
+        D^\alpha[z](t) & =
+            \epsilon (s(x - x_0) - z),
+        \end{aligned}
+
+    where the third equation adds a slow adaptation current that acts as a
+    bursting variable.
+    """
+
+    epsilon: float
+    """Parameter in the Hindmarsh-Rose system."""
+    s: float
+    """Parameter in the Hindmarsh-Rose system."""
+    x0: float
+    """Parameter in the Hindmarsh-Rose system. """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if not 0.0 < self.epsilon < 1:
+                raise ValueError(f"Parameter 'epsilon' not in (0, 1): {self.epsilon}")
+
+            if self.s <= 0:
+                raise ValueError(f"Parameter 's' must be positive: {self.s}")
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            y[1] - self.a * y[0] ** 3 + self.b * y[0] ** 2 - y[2] + self.current,
+            self.c - self.d * y[0] ** 2 - y[1],
+            self.epsilon * (self.s * (y[0] - self.x0) - y[2]),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-3.0 * self.a * y[0] ** 2 + 2.0 * self.b * y[0], 1.0, -1.0],
+            [-2.0 * self.d * y[0], -1.0, 0.0],
+            [self.epsilon * self.s, 0.0, -self.epsilon],
+        ])
+
+
+# }}}
+
+
 # {{{ Labyrinth
 
 
@@ -1069,6 +1188,21 @@ class MorrisLecarParameter(ABC):
     v_0: float
     """An initial current applied at the starting time."""
 
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.C <= 0.0:
+                raise ValueError(f"Capacitance 'C' most be positive: {self.C}")
+
+            if self.g_Ca <= 0.0:
+                raise ValueError(f"Conductance 'g_Ca' most be positive: {self.g_Ca}")
+
+            if self.g_K <= 0.0:
+                raise ValueError(f"Conductance 'g_K' most be positive: {self.g_K}")
+
+            if self.g_L <= 0.0:
+                raise ValueError(f"Conductance 'g_L' most be positive: {self.g_L}")
+
     @abstractmethod
     def m_inf(self, V: float) -> float:
         r"""Modulation of the :math:`g_{\mathrm{Ca}}` conductance."""
@@ -1114,6 +1248,14 @@ class StandardMorrisLecarParameter(MorrisLecarParameter):
     r"""Reference frequency. Taken to be :math:`\phi = 1/3` in [Shi2014]_."""
     vinf: tuple[float, float, float, float]
     """A tuple of 4 parameters used to define the modulation functions."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            if self.phi <= 0 or self.phi > 1.0:
+                raise ValueError(f"Frequency 'phi' must be in [0, 1]: {self.phi}")
 
     def m_inf(self, V: float) -> float:
         V = (V - self.vinf[0]) / self.vinf[1]

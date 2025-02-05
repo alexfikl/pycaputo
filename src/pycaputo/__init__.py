@@ -347,6 +347,7 @@ def fracplots(
     xlabel: str | None = None,
     legend: str | Sequence[str] | None = None,
     ylim: tuple[float, float] | None = None,
+    hlines: tuple[np.floating, ...] | None = None,
 ) -> None:
     """Plot the solution of a fractional differential equation from :func:`fracevolve`.
 
@@ -395,6 +396,10 @@ def fracplots(
 
             for i in range(dim):
                 ax.plot(t, y[i], label=legend[i])
+
+            if hlines is not None:
+                for yh in hlines:
+                    ax.axhline(yh, color="k", linestyle="--")
 
             ax.set_xlabel(f"${xlabel}$")
             if ylim is not None:

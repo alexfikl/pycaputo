@@ -114,6 +114,9 @@ ARTIFACTS = {
     "gallery/morris-lecar.py": {
         "gallery-morris-lecar.svg",
     },
+    "gallery/hindmarsh-rose2.py": {
+        "gallery-hindmarsh-rose2.svg",
+    },
 }
 
 
