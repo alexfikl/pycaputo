@@ -394,8 +394,12 @@ def fracplots(
         with figure(outfile) as fig:
             ax = fig.gca()
 
-            for i in range(dim):
-                ax.plot(t, y[i], label=legend[i])
+            if dim == 1:
+                ax.plot(t, y[0])
+                ax.set_ylabel(legend[0])
+            else:
+                for i in range(dim):
+                    ax.plot(t, y[i], label=legend[i])
 
             if hlines is not None:
                 for yh in hlines:
@@ -404,12 +408,14 @@ def fracplots(
             ax.set_xlabel(f"${xlabel}$")
             if ylim is not None:
                 ax.set_ylim(ylim)
-            ax.legend(
-                loc="lower left",
-                bbox_to_anchor=(0.5, 1.0),
-                ncol=dim,
-                mode="expand",
-            )
+
+            if dim > 1:
+                ax.legend(
+                    loc="lower left",
+                    bbox_to_anchor=(0.5, 1.0),
+                    ncol=dim,
+                    mode="expand",
+                )
 
 
 # }}}

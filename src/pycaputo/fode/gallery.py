@@ -661,7 +661,7 @@ class HindmarshRose3(HindmarshRose2):
         D^\alpha[y](t) & =
             c - d x^2 - y, \\
         D^\alpha[z](t) & =
-            \epsilon (s(x - x_0) - z),
+            \epsilon (s (x - x_0) - z),
         \end{aligned}
 
     where the third equation adds a slow adaptation current that acts as a

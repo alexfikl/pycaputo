@@ -164,3 +164,25 @@ Neural Model Gallery
     :class:`~pycaputo.fode.gallery.HindmarshRose2` class to reproduce Figure 3b
     from [Kaslik2017]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/hindmarsh-rose2.py <../examples/gallery/hindmarsh-rose2.py>`.
+
+.. card:: Fractional-order three-dimensional Hindmarsh-Rose System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-hindmarsh-rose3-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order three-dimensional Hindmarsh-Rose system
+
+    .. image:: _static/gallery-hindmarsh-rose3-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order three-dimensional Hindmarsh-Rose system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.HindmarshRose3` class to reproduce Figure 5a
+    from [Kaslik2017]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/hindmarsh-rose3.py <../examples/gallery/hindmarsh-rose3.py>`.

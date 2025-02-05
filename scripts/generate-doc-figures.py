@@ -117,6 +117,9 @@ ARTIFACTS = {
     "gallery/hindmarsh-rose2.py": {
         "gallery-hindmarsh-rose2.svg",
     },
+    "gallery/hindmarsh-rose3.py": {
+        "gallery-hindmarsh-rose3.svg",
+    },
 }
 
 

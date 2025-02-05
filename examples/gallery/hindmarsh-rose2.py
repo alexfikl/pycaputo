@@ -25,23 +25,13 @@ print(control)
 # setup stepper
 from pycaputo.fode import caputo
 
-stepper = caputo.L1(
+stepper = caputo.PECE(
     derivative_order=alpha,
     control=control,
     source=func.source,
-    source_jac=func.source_jac,
     y0=(y0,),
+    corrector_iterations=1,
 )
-
-# compute E3 equilibrium point from [Kaslik2017]
-r = (func.current + func.c) / func.a
-p = (func.b - func.d) / func.a
-
-h = np.polynomial.Polynomial([-r, 0.0, -p, 1.0], symbol="x")
-x = h.roots()
-x3 = x[np.isreal(x)].real.item()
-y3 = func.c - func.d * x3**2
-assert x3 > max(0.0, 2.0 / 3.0 * p)
 
 solution = fracevolve(stepper, dtinit=dt)
 fracplots(solution, "gallery-hindmarsh-rose2", legend=["$x$", "$y$"])
