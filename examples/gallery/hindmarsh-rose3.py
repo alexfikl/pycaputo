@@ -19,18 +19,8 @@ c = 1.0
 d = 5.0
 s = 4.0
 
-# determine value of x0 in the model
-# [Kaslik2017] uses "the first coordinate of the leftmost equibrium point of HR2
-# at a resting state (I = 0)."
-r0 = c / a
-p = (b - d) / a
-
-h = np.polynomial.Polynomial([-r0, 0.0, -p, 1.0], symbol="x")
-x = h.roots()
-x0 = np.min(x[np.isreal(x)].real)
-assert x0 < min(0.0, 2.0 / 3.0 * p)
-
 # set up system
+x0 = HindmarshRose3.get_resting_potential(a, b, c, d)
 y0 = np.array([x0, c - d * x0**2, 0.0])
 func = HindmarshRose3(current=current, a=a, b=b, c=c, d=d, epsilon=0.005, s=s, x0=x0)
 print(f"alpha {alpha} y0 {y0} parameters {func}")

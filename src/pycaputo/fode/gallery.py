@@ -635,6 +635,18 @@ class HindmarshRose2(Function):
             if self.d <= 0:
                 raise ValueError(f"Parameter 'd' must be positive: {self.d}")
 
+    @classmethod
+    def get_resting_potential(cls, a: float, b: float, c: float, d: float) -> float:
+        r0 = c / a
+        p = (b - d) / a
+
+        h = np.polynomial.Polynomial([-r0, 0.0, -p, 1.0], symbol="x")
+        x = h.roots()
+        x0 = np.min(x[np.isreal(x)].real)
+        assert x0 < min(0.0, 2.0 / 3.0 * p)
+
+        return float(x0)
+
     def source(self, t: float, y: Array) -> Array:
         return np.array([
             y[1] - self.a * y[0] ** 3 + self.b * y[0] ** 2 + self.current,
@@ -698,6 +710,88 @@ class HindmarshRose3(HindmarshRose2):
             [-3.0 * self.a * y[0] ** 2 + 2.0 * self.b * y[0], 1.0, -1.0],
             [-2.0 * self.d * y[0], -1.0, 0.0],
             [self.epsilon * self.s, 0.0, -self.epsilon],
+        ])
+
+
+@dataclass(frozen=True)
+class HindmarshRose4(HindmarshRose3):
+    r"""Implements the right-hand side of the extended four-dimensional
+    Hindmarsh-Rose system (see Equation 2.11 from [Giresse2019]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[x](t) & =
+            y - a x^3 + b x^2 - z + I, \\
+        D^\alpha[y](t) & =
+            c - d x^2 - y - e w, \\
+        D^\alpha[z](t) & =
+            \epsilon (s (x - x_0) - z), \\
+        D^\alpha[w](t) & =
+            h (f(y + g) - p w),
+        \end{aligned}
+
+    where the fourth equation adds another slow variable. This variable is meant
+    to model the slow intracellular exchange of Calcium ions between the cytoplasm
+    and its store.
+
+    .. [Giresse2019] T. A. Giresse, K. T. Crepin, T. Martin,
+        *Generalized Synchronization of the Extended Hindmarsh-Rose Neuronal
+        Model With Fractional Order Derivative*,
+        Chaos, Solitons &Amp; Fractals, Vol. 118, pp. 311--319, 2019,
+        `DOI <https://doi.org/10.1016/j.chaos.2018.11.028>`__.
+    """
+
+    e: float
+    """Parameter in the Hindmarsh-Rose system."""
+    f: float
+    """Parameter in the Hindmarsh-Rose system."""
+    g: float
+    """Parameter in the Hindmarsh-Rose system. """
+    h: float
+    """Parameter in the Hindmarsh-Rose system."""
+    p: float
+    """Parameter in the Hindmarsh-Rose system. """
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            # TODO: verify if these assumptions are necessary? It's unclear from
+            # the papers what these variables represent and what ranges are allowed
+            if self.e <= 0:
+                raise ValueError(f"Parameter 'e' should be positive: {self.e}")
+
+            if self.f <= 0:
+                raise ValueError(f"Parameter 'f' should be positive: {self.f}")
+
+            if self.g <= 0:
+                raise ValueError(f"Parameter 'g' should be positive: {self.g}")
+
+            if self.h > self.epsilon or self.h < 0:
+                raise ValueError(
+                    "Parameter 'h' should be smaller than 'epsilon': "
+                    f"h = {self.h} and epsilon = {self.epsilon}"
+                )
+
+            if self.p <= 0:
+                raise ValueError(f"Parameter 'p' should be positive: {self.p}")
+
+    def source(self, t: float, y: Array) -> Array:
+        return np.array([
+            y[1] - self.a * y[0] ** 3 + self.b * y[0] ** 2 - y[2] + self.current,
+            self.c - self.d * y[0] ** 2 - y[1] - self.e * y[3],
+            self.epsilon * (self.s * (y[0] - self.x0) - y[2]),
+            self.h * (self.f * (y[1] - self.g) - self.p * y[3]),
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        return np.array([
+            [-3.0 * self.a * y[0] ** 2 + 2.0 * self.b * y[0], 1.0, -1.0, 0.0],
+            [-2.0 * self.d * y[0], -1.0, 0.0, -self.e],
+            [self.epsilon * self.s, 0.0, -self.epsilon, 0.0],
+            [0.0, self.h * self.f, 0.0, -self.h * self.p],
         ])
 
 

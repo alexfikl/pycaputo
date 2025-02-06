@@ -411,10 +411,10 @@ def fracplots(
 
             if dim > 1:
                 ax.legend(
-                    loc="lower left",
-                    bbox_to_anchor=(0.5, 1.0),
+                    loc="upper center",
+                    bbox_to_anchor=(0.5, 1.13),
                     ncol=dim,
-                    mode="expand",
+                    # mode="expand",
                 )
 
 
