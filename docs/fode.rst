@@ -16,7 +16,7 @@ Special Solutions
 
 .. automodule:: pycaputo.fode.special
 
-Special Systems
----------------
+Popular Systems Gallery
+-----------------------
 
 .. automodule:: pycaputo.fode.gallery

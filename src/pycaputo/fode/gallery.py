@@ -33,13 +33,14 @@ class Arneodo(Function):
         D^\alpha[y](t) & =
             z, \\
         D^\alpha[z](t) & =
-            \beta_4 x^3 - \beta_1 x - \beta_2 y - \beta_3 z
+            \beta_4 x^3 - \beta_1 x - \beta_2 y - \beta_3 z.
         \end{aligned}
 
     This system is similar to :class:`GenesioTesi`, but has a cubic nonlinearity.
     """
 
     beta: tuple[float, float, float, float]
+    """Parameters for the Arneodo system."""
 
     def source(self, t: float, y: Array) -> Array:
         beta1, beta2, beta3, beta4 = self.beta
@@ -175,8 +176,14 @@ class Chua(Function):
         D^\alpha[y](t) & =
             x - y + z, \\
         D^\alpha[z](t) & =
-            -\beta y - \gamma z
+            -\beta y - \gamma z.
         \end{aligned}
+
+    The :math:`f` function is given by Equation 5.5 in [Petras2011]_ as
+
+    .. math::
+
+        f(x) = m_1 x + \frac{1}{2} (m_0 - m_1) (|x + 1| - |x - 1|).
     """
 
     alpha: float
@@ -186,7 +193,7 @@ class Chua(Function):
     gamma: float
     """Non-dimensional parameter in the Chua system."""
     m: tuple[float, float]
-    """Parameters used to define describing the diode (Equation 5.5)."""
+    """Parameters used to define describing the function :math:`f`."""
 
     def source(self, t: float, y: Array) -> Array:
         m0, m1 = self.m
@@ -220,7 +227,10 @@ class Chua(Function):
         Gb: float,
     ) -> Chua:
         """Construct the non-dimensional system from the standard dimensional
-        parameters of the Chua system.
+        parameters of the Chua system given by Equation 5.12 from [Petras2011]_.
+
+        The non-dimensionalization uses the change of variables given in
+        Equation 5.3 from [Petras2011]_ with the units mentioned below.
 
         :arg C1: capacitance (in nano Farad) of first capacitor.
         :arg C2: capacitance (in nano Farad) of second capacitor.
@@ -551,6 +561,7 @@ class GenesioTesi(Function):
     """
 
     beta: tuple[float, float, float, float]
+    """Parameters for the Genesio-Tesi system."""
 
     if __debug__:
 
@@ -599,7 +610,7 @@ class HindmarshRose2(Function):
         D^\alpha[x](t) & =
             y - a x^3 + b x^2 + I, \\
         D^\alpha[y](t) & =
-            c - d x^2 - y,
+            c - d x^2 - y.
         \end{aligned}
 
     .. [Kaslik2017] E. Kaslik,
@@ -1205,7 +1216,7 @@ class MaChen(Function):
         D^\alpha[y](t) & =
             1 - b y - x^2, \\
         D^\alpha[z](t) & =
-            -x - c z.
+            -x - c z,
         \end{aligned}
 
     where :math:`x` represents the interest rate, :math:`y` represents the
@@ -1397,7 +1408,7 @@ class MorrisLecar(Function):
         \end{aligned}
 
     where :math:`V` is membrane potential, :math:`w` is the activation variable
-    for :math:`\mathrm{K}+`, and :math:`I` is the current. The additional
+    for :math:`\mathrm{K}^+`, and :math:`I` is the current. The additional
     parameters and functions can be customized using the :class:`MorrisLecarParameter`
     class.
 
