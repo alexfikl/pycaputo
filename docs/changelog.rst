@@ -15,11 +15,11 @@ Dependencies
 Features
 ^^^^^^^^
 
-* Add some more chaotic systems examples: Labyrinth, Chua, Qi, Lorenz-84. They're
-  all listed in :mod:`pycaputo.fode.gallery`.
+* Add some more chaotic systems examples: Labyrinth, Chua, Qi, Lorenz-84. They
+  are all listed in :mod:`pycaputo.fode.gallery`.
 * Add some neuron models: FtizHugh-Nagumo, FitzHugh-Rinzel, Morris-Lecar,
   Hindmarsh-Rose. This is on top of the existing Integrate-and-Fire models
-  from :mod:`pycaputo.integrate_fire`.
+  from :mod:`pycaputo.integrate_fire`. They can be found in :mod:`pycaputo.fode.gallery`.
 * Made :class:`~pycaputo.fode.caputo.Trapezoidal` a bit faster by avoiding
   multiple ``einsum``.
 
