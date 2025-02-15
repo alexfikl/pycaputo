@@ -45,6 +45,10 @@ standard and explained in the `official Python packaging guides
 <https://packaging.python.org/en/latest/>`__, which you should consult if any of
 these terms are confusing.
 
+When running on the CI, the dependencies are pinned to specific versions to avoid
+unexpected failures due to new releases. The pinned versions can be found in
+``.github/requirements-text.txt``.
+
 justfile
 --------
 
