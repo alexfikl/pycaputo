@@ -11,6 +11,9 @@ Neural Models Gallery
    book by Gerstner, Kistler, Naud, and Paninski. The fractional ones will behave
    slightly differently, but should be comparable.
 
+Integrate-and-Fire Models
+-------------------------
+
 .. card:: Fractional-order Perfect Integrate-and-Fire (PIF) System
     :class-title: sd-text-center
 
@@ -77,6 +80,9 @@ Neural Models Gallery
     from [Naud2008]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/adex.py <../examples/gallery/adex.py>`.
 
+FitzHugh-Nagumo Models
+----------------------
+
 .. card:: Fractional-order FitzHugh-Nagumo System
     :class-title: sd-text-center
 
@@ -98,6 +104,9 @@ Neural Models Gallery
     :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 4d
     from [Brandibur2018]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
+
+FitzHugh-Rinzel Models
+----------------------
 
 .. card:: Fractional-order FitzHugh-Rinzel System
     :class-title: sd-text-center
@@ -121,6 +130,9 @@ Neural Models Gallery
     from [Mondal2019]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/fitzhugh-rinzel.py <../examples/gallery/fitzhugh-rinzel.py>`.
 
+Morris-Lecar Models
+-------------------
+
 .. card:: Fractional-order Morris-Lecar System
     :class-title: sd-text-center
 
@@ -142,6 +154,9 @@ Neural Models Gallery
     :class:`~pycaputo.fode.gallery.MorrisLecar` class to reproduce Figure 11
     from [Shi2014]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/morris-lecar.py <../examples/gallery/morris-lecar.py>`.
+
+Hindmarsh-Rose Models
+---------------------
 
 .. card:: Fractional-order two-dimensional Hindmarsh-Rose System
     :class-title: sd-text-center
@@ -208,6 +223,9 @@ Neural Models Gallery
     :class:`~pycaputo.fode.gallery.HindmarshRose4` class to reproduce Figure 1
     from [Giresse2019]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/hindmarsh-rose4.py <../examples/gallery/hindmarsh-rose4.py>`.
+
+Hodgkin-Huxley Models
+---------------------
 
 .. card:: Fractional-order Hodgkin-Huxley System
     :class-title: sd-text-center
