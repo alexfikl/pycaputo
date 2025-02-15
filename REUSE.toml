@@ -24,7 +24,7 @@ path = [
     "justfile",
     "README.rst",
     "pyproject.toml",
-    "requirements*.txt",
+    "requirements.txt",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2022 Alexandru Fikl <alexfikl@gmail.com>"
