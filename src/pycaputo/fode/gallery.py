@@ -1012,6 +1012,22 @@ class StandardHodgkinHuxleyParameter(HodgkinHuxleyParameter):
 
 
 HODGKIN_HUXLEY_PARAMETERS: dict[str, HodgkinHuxleyParameter] = {
+    "HodgkinHuxley": StandardHodgkinHuxleyParameter(
+        current=0.0,
+        C=1.0,
+        g_Na=120.0,
+        g_K=36.0,
+        g_L=0.3,
+        V_Na=120.0,
+        V_K=-12.0,
+        V_L=10.6,
+        a=(-0.01, -0.1, 0.07),
+        Ap=(-10.0, -25.0, 0.0),
+        Ai=(-10.0, -10.0, -20.0),
+        b=(0.125, 4.0, 1.0),
+        Bp=(0.0, 0.0, -30.0),
+        Bi=(-80.0, -18.0, -10.0),
+    ),
     "NagyFigure4": StandardHodgkinHuxleyParameter(
         current=0.0,
         C=1.0,
@@ -1026,22 +1042,6 @@ HODGKIN_HUXLEY_PARAMETERS: dict[str, HodgkinHuxleyParameter] = {
         Ai=(10.0, 10.0, 20.0),
         b=(0.125, 4.0, 1.0),
         Bp=(0.0, 0.0, 30.0),
-        Bi=(80.0, 18.0, 10.0),
-    ),
-    "SheriefFigure1": StandardHodgkinHuxleyParameter(
-        current=40.0,
-        C=1.0,
-        g_Na=120.0,
-        g_K=36.0,
-        g_L=0.3,
-        V_Na=50.0,
-        V_K=-77.0,
-        V_L=50.0,
-        a=(0.01, 0.1, 0.07),
-        Ap=(55.0, 40.0, 40.0),
-        Ai=(10.0, 10.0, 10.0),
-        b=(0.125, 4.0, 1.0),
-        Bp=(0.0, 65.0, 35.0),
         Bi=(80.0, 18.0, 10.0),
     ),
 }
