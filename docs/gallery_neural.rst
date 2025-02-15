@@ -1,5 +1,5 @@
-Neural Model Gallery
-====================
+Neural Models Gallery
+=====================
 
 .. note::
 
@@ -208,3 +208,25 @@ Neural Model Gallery
     :class:`~pycaputo.fode.gallery.HindmarshRose4` class to reproduce Figure 1
     from [Giresse2019]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/hindmarsh-rose4.py <../examples/gallery/hindmarsh-rose4.py>`.
+
+.. card:: Fractional-order Hodgkin-Huxley System
+    :class-title: sd-text-center
+
+    .. image:: _static/gallery-hodgkin-huxley-light.svg
+        :class: only-light
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Hodgkin-Huxley system
+
+    .. image:: _static/gallery-hodgkin-huxley-dark.svg
+        :class: only-dark
+        :width: 65%
+        :align: center
+        :alt: Fractional-order Hodgkin-Huxley system
+
+    +++
+
+    This example uses the Caputo derivative and the
+    :class:`~pycaputo.fode.gallery.HodgkinHuxley` class to reproduce Figure 4
+    from [Nagy2014]_. The complete setup (with parameters) can be found in
+    :download:`examples/gallery/hodgkin-huxley.py <../examples/gallery/hodgkin-huxley.py>`.
