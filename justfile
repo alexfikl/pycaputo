@@ -71,13 +71,13 @@ mypy:
 [private]
 requirements_build_txt:
     uv pip compile --upgrade --universal --python-version "3.10" \
-        -o requirements-build.txt requirements-build.in
+        -o .github/requirements-build.txt .github/requirements-build.in
 
 [private]
 requirements_test_txt:
     uv pip compile --upgrade --universal --python-version "3.10" \
         --extra test \
-        -o requirements-test.txt pyproject.toml requirements-git.txt
+        -o .github/requirements-test.txt pyproject.toml .github/requirements-git.txt
 
 [private]
 requirements_txt:
@@ -101,10 +101,10 @@ develop:
 
 [doc("Editable install using pinned dependencies from requirements-test.txt")]
 pip-install:
-    {{ PYTHON }} -m pip install --verbose --requirement requirements-build.txt
+    {{ PYTHON }} -m pip install --verbose --requirement .github/requirements-build.txt
     {{ PYTHON }} -m pip install \
         --verbose \
-        --requirement requirements-test.txt \
+        --requirement .github/requirements-test.txt \
         --no-build-isolation \
         --editable .
 
