@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import Any, NamedTuple, overload
 
 import numpy as np
 
@@ -803,6 +803,324 @@ class HindmarshRose4(HindmarshRose3):
             [-2.0 * self.d * y[0], -1.0, 0.0, -self.e],
             [self.epsilon * self.s, 0.0, -self.epsilon, 0.0],
             [0.0, self.h * self.f, 0.0, -self.h * self.p],
+        ])
+
+
+# }}}
+
+
+# {{{ Hodgkin-Huxley
+
+
+@dataclass(frozen=True)
+class HodgkinHuxleyParameter(ABC):
+    r"""Parameters for the Hodgkin-Huxley system defined in [Nagy2014]_.
+
+    This class should be subclassed to implement the rate functions
+    :math:`(\alpha_i(V), \beta_i(V))` for the model as well as their first-order
+    derivatives. The derivatives are used when computing the Jacobian in
+    implicit methods.
+    """
+
+    current: float
+    """External current input."""
+    C: float
+    """Membrane capacitance."""
+
+    g_Na: float  # noqa: N815
+    r"""Maximum conductance (mS/cm^2) of the :math:`\mathrm{Na}^+` ionic current."""
+    g_K: float  # noqa: N815
+    r"""Maximum conductance (mS/cm^2) of the :math:`\mathrm{K}^+` ionic current."""
+    g_L: float  # noqa: N815
+    """Maximum conductance (mS/cm^2) of the leak current."""
+
+    V_Na: float
+    r"""Equilibrium potential (mV) for the :math:`\mathrm{Na}^{+}` ion channel."""
+    V_K: float
+    r"""Equilibrium potential (mV) for the :math:`\mathrm{K}^{+}` ion channel."""
+    V_L: float
+    """Equilibrium potential (mV) for the leak current."""
+
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            if self.C <= 0.0:
+                raise ValueError(f"Capacitance 'C' most be positive: {self.C}")
+
+            if self.g_Na <= 0.0:
+                raise ValueError(f"Conductance 'g_Na' most be positive: {self.g_Na}")
+
+            if self.g_K <= 0.0:
+                raise ValueError(f"Conductance 'g_K' most be positive: {self.g_K}")
+
+            if self.g_L <= 0.0:
+                raise ValueError(f"Conductance 'g_L' most be positive: {self.g_L}")
+
+    def get_steady_state(self, V0: float) -> tuple[float, float, float]:
+        r"""For each variable, the steady state is achieved with
+
+        .. math::
+
+            p(V) = \frac{\alpha_p(V)}{\alpha_p(V) + \beta_p(V)}
+
+        where :math:`p = n, m, h`.
+        """
+        alpha_n, alpha_m, alpha_h = self.alpha(V0)
+        beta_n, beta_m, beta_h = self.beta(V0)
+        return (
+            alpha_n / (alpha_n + beta_n),
+            alpha_m / (alpha_m + beta_m),
+            alpha_h / (alpha_h + beta_h),
+        )
+
+    @overload
+    def alpha(self, V: float) -> tuple[float, float, float]:
+        pass
+
+    @overload
+    def alpha(self, V: Array) -> tuple[Array, Array, Array]:
+        pass
+
+    @abstractmethod
+    def alpha(self, V: Any) -> tuple[Any, Any, Any]:
+        r"""Rate function for all variables."""
+
+    @overload
+    def beta(self, V: float) -> tuple[float, float, float]:
+        pass
+
+    @overload
+    def beta(self, V: Array) -> tuple[Array, Array, Array]:
+        pass
+
+    @abstractmethod
+    def beta(self, V: Any) -> tuple[Any, Any, Any]:
+        r"""Rate function for all variables."""
+
+    @abstractmethod
+    def alpha_derivative(self, V: float) -> tuple[float, float, float]:
+        r"""Derivative of the rate function for all variables."""
+
+    @abstractmethod
+    def beta_derivative(self, V: float) -> tuple[float, float, float]:
+        r"""Derivative of the rate function for all variables."""
+
+    @classmethod
+    def from_name(cls, name: str) -> HodgkinHuxleyParameter:
+        """Get a parameter set from a given paper.
+
+        * Sets named ``NagySetXX`` from [Nagy2014]_. Currently only a single set
+          of parameters is available.
+        """
+
+        if name in HODGKIN_HUXLEY_PARAMETERS:
+            return HODGKIN_HUXLEY_PARAMETERS[name]
+
+        return HodgkinHuxleyParameter.from_name(name)
+
+
+@dataclass(frozen=True)
+class StandardHodgkinHuxleyParameter(HodgkinHuxleyParameter):
+    r"""Implements the standard Hodgkin-Huxley rate functions from [Nagy2014]_.
+
+    .. math::
+
+        \begin{aligned}
+        \alpha_n(V) & =
+            a_n (A_n - V) \left[\exp\left(\frac{A_n - V}{A_0}\right) - 1\right]^{-1}, \\
+        \alpha_m(V) & =
+            a_m (A_m - V) \left[\exp\left(\frac{A_m - V}{A_1}\right) - 1\right]^{-1}, \\
+        \alpha_h(V) & =
+            a_h \exp\left(\frac{A_h - V}{A_2}\right), \\
+        \beta_n(V) & =
+            b_n \exp\left(\frac{B_n - V}{B_0}\right), \\
+        \beta_m(V) & =
+            b_m \exp\left(\frac{B_m - V}{B_1}\right), \\
+        \beta_h(V) & =
+            b_h \left[\exp\left(\frac{B_h - V}{B_2}\right) + 1\right].
+        \end{aligned}
+    """
+
+    a: tuple[float, float, float]
+    """Amplitudes of the rate functions."""
+    Ap: tuple[float, float, float]
+    r"""Offsets of the potential in the :math:`\alpha` rate functions."""
+    Ai: tuple[float, float, float]
+    r"""Scaling of the potential in the :math:`\alpha` rate functions."""
+    b: tuple[float, float, float]
+    """Amplitudes of the rate functions."""
+    Bp: tuple[float, float, float]
+    r"""Offsets of the potential in the :math:`\beta` rate functions."""
+    Bi: tuple[float, float, float]
+    r"""Scaling of the potential in the :math:`\beta` rate functions."""
+
+    def alpha(self, V: Any) -> tuple[Any, Any, Any]:
+        an, am, ah = self.a
+        An, Am, Ah = self.Ap
+        Sn, Sm, Sh = self.Ai
+
+        En = np.exp((An - V) / Sn)
+        Em = np.exp((Am - V) / Sm)
+        Eh = np.exp((Ah - V) / Sh)
+
+        return (
+            an * (An - V) / (En - 1),
+            am * (Am - V) / (Em - 1),
+            ah * Eh,
+        )
+
+    def alpha_derivative(self, V: float) -> tuple[float, float, float]:
+        an, am, ah = self.a
+        An, Am, Ah = self.Ap
+        Sn, Sm, Sh = self.Ai
+
+        En = np.exp((An - V) / Sn)
+        Em = np.exp((Am - V) / Sm)
+        Eh = np.exp((Ah - V) / Sh)
+
+        return (
+            -an / (En - 1) + an * (An - V) * En / Sn / (En - 1) ** 2,
+            -am / (Em - 1) + am * (Am - V) * Em / Sm / (Em - 1) ** 2,
+            -ah * Eh / Sh,
+        )
+
+    def beta(self, V: Any) -> tuple[Any, Any, Any]:
+        bn, bm, bh = self.b
+        Bn, Bm, Bh = self.Bp
+        Sn, Sm, Sh = self.Bi
+
+        return (
+            bn * np.exp((Bn - V) / Sn),
+            bm * np.exp((Bm - V) / Sm),
+            bh / (np.exp((Bh - V) / Sh) + 1),
+        )
+
+    def beta_derivative(self, V: float) -> tuple[float, float, float]:
+        bn, bm, bh = self.b
+        Bn, Bm, Bh = self.Bp
+        Sn, Sm, Sh = self.Bi
+
+        En = np.exp((Bn - V) / Sn)
+        Em = np.exp((Bm - V) / Sm)
+        Eh = np.exp((Bh - V) / Sh)
+
+        return (
+            -bn * En / Sn,
+            -bm * Em / Sm,
+            bh * Eh / Sh / (Eh + 1) ** 2,
+        )
+
+
+HODGKIN_HUXLEY_PARAMETERS: dict[str, HodgkinHuxleyParameter] = {
+    "NagyFigure4": StandardHodgkinHuxleyParameter(
+        current=0.0,
+        C=1.0,
+        g_Na=120.0,
+        g_K=36.0,
+        g_L=0.3,
+        V_Na=120.0,
+        V_K=-12.0,
+        V_L=10.6,
+        a=(0.01, 0.1, 0.07),
+        Ap=(10.0, 25.0, 0.0),
+        Ai=(10.0, 10.0, 20.0),
+        b=(0.125, 4.0, 1.0),
+        Bp=(0.0, 0.0, 30.0),
+        Bi=(80.0, 18.0, 10.0),
+    ),
+    "SheriefFigure1": StandardHodgkinHuxleyParameter(
+        current=40.0,
+        C=1.0,
+        g_Na=120.0,
+        g_K=36.0,
+        g_L=0.3,
+        V_Na=50.0,
+        V_K=-77.0,
+        V_L=50.0,
+        a=(0.01, 0.1, 0.07),
+        Ap=(55.0, 40.0, 40.0),
+        Ai=(10.0, 10.0, 10.0),
+        b=(0.125, 4.0, 1.0),
+        Bp=(0.0, 65.0, 35.0),
+        Bi=(80.0, 18.0, 10.0),
+    ),
+}
+
+
+@dataclass(frozen=True)
+class HodgkinHuxley(Function):
+    r"""Implements the right-hand side of the Hodgkin-Huxley system (see
+    Equation 13 and Equation 15 in [Nagy2014]_).
+
+    .. math::
+
+        \begin{aligned}
+        D^\alpha[V](t) & =
+            I
+            - g_{\mathrm{Na}} m^3 h (V - V_{\mathrm{Na}})
+            - g_{\mathrm{K}} n^4 (V - V_{\mathrm{K}})
+            - g_{\mathrm{L}} (V - V_{\mathrm{L}}), \\
+        D^\alpha[n](t) & =
+            \alpha_n(V) (1 - n) - \beta_n(V) n, \\
+        D^\alpha[m](t) & =
+            \alpha_m(V) (1 - m) - \beta_m(V) m, \\
+        D^\alpha[h](t) & =
+            \alpha_h(V) (1 - h) - \beta_h(V) h, \\
+        \end{aligned}
+
+    where the rate functions :math:`(\alpha_i, \beta_i)` are given by the
+    specific implementation of :class:`HodgkinHuxleyParameter`.
+
+    .. [Nagy2014] A. M. Nagy, N. H. Sweilam,
+        *An Efficient Method for Solving Fractional Hodgkin-Huxley Model*,
+        Physics Letters A, Vol. 378, pp. 1980--1984, 2014,
+        `DOI <https://doi.org/10.1016/j.physleta.2014.06.012>`__.
+    """
+
+    p: HodgkinHuxleyParameter
+    """Parameters for the Hodgkin-Huxley model."""
+
+    def source(self, t: float, y: Array) -> Array:
+        g_Na, g_K, g_L = self.p.g_Na, self.p.g_K, self.p.g_L
+        V_Na, V_K, V_L = self.p.V_Na, self.p.V_K, self.p.V_L
+        Iext, C = self.p.current, self.p.C
+
+        alpha_n, alpha_m, alpha_h = self.p.alpha(y[0])
+        beta_n, beta_m, beta_h = self.p.beta(y[0])
+
+        return np.array([
+            (
+                Iext
+                - g_Na * y[2] ** 3 * y[3] * (y[0] - V_Na)
+                - g_K * y[1] ** 4 * (y[0] - V_K)
+                - g_L * (y[0] - V_L)
+            )
+            / C,
+            alpha_n * (1 - y[1]) - beta_n * y[1],
+            alpha_m * (1 - y[2]) - beta_m * y[2],
+            alpha_h * (1 - y[3]) - beta_h * y[3],
+        ])
+
+    def source_jac(self, t: float, y: Array) -> Array:
+        g_Na, g_K, g_L = self.p.g_Na, self.p.g_K, self.p.g_L
+        V_Na, V_K = self.p.V_Na, self.p.V_K
+        C = self.p.C
+
+        alpha_n, alpha_m, alpha_h = self.p.alpha(y[0])
+        d_alpha_n, d_alpha_m, d_alpha_h = self.p.alpha_derivative(y[0])
+        beta_n, beta_m, beta_h = self.p.beta(y[0])
+        d_beta_n, d_beta_m, d_beta_h = self.p.beta_derivative(y[0])
+
+        return np.array([
+            [
+                -(g_Na * y[2] ** 3 * y[3] + g_K * y[1] ** 4 + g_L) / C,
+                -4.0 * g_K * y[1] ** 3 * (y[0] - V_K) / C,
+                -3.0 * g_Na * y[2] ** 2 * y[3] * (y[0] - V_Na) / C,
+                -g_Na * y[2] ** 3 * (y[0] - V_Na) / C,
+            ],
+            [d_alpha_n * (1 - y[1]) - d_beta_n * y[1], -alpha_n - beta_n, 0, 0],
+            [d_alpha_m * (1 - y[2]) - d_beta_m * y[2], 0, -alpha_m - beta_m, 0],
+            [d_alpha_h * (1 - y[3]) - d_beta_h * y[3], 0, 0, -alpha_h - beta_h],
         ])
 
 
