@@ -398,8 +398,6 @@ def test_variable_riemann_liouville(
     name: str,
     grid_type: str,
     alpha: float,
-    *,
-    visualize: bool = True,
 ) -> None:
     r"""
     Check the convergence of approximations for the Riemann--Liouville integral.
@@ -423,7 +421,7 @@ def test_variable_riemann_liouville(
     print(meth)
     eoc = EOCRecorder(order=order)
 
-    if visualize:
+    if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
 
         fig = mp.figure()
@@ -440,20 +438,20 @@ def test_variable_riemann_liouville(
         h = np.max(p.dx)
         e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
         eoc.add_data_point(h, e)
-        logger.info("n %4d h %.5e e %.12e", n, h, e)
+        log.info("n %4d h %.5e e %.12e", n, h, e)
 
-        if visualize:
+        if ENABLE_VISUAL:
             ax.plot(p.x[1:], qf_num[1:])
 
-    logger.info("\n%s", eoc)
+    log.info("\n%s", eoc)
 
-    if visualize:
+    if ENABLE_VISUAL:
         ax.plot(p.x[1:], qf_ref[1:], "k--")
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        filename = f"test_rl_quadrature_{meth.name}_{alpha}".replace(".", "_")
-        savefig(fig, dirname / filename.lower())
+        filename = f"test_rl_quadrature_{meth.name}_{alpha}"
+        savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert order - 0.25 < eoc.estimated_order < order + 1.0
 
