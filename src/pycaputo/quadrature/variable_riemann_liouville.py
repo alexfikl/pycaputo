@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, overload
 
 import numpy as np
 
@@ -95,19 +96,24 @@ def gl_scarpi_exp_weights(
         # The MATLAB code uses r = 0.99 fixed for every time step, which would fail
         # for h >= 0.1. That's a pretty large time step, so probably not worth it
         r = 1.0 - 1.1 * h
+    assert r is not None
 
     # if h > 1 - r:
     #     raise ValueError(
-    #         f"Invalid radius give (must be h < 1 - r): r = {r} and h = {h}"
+    #         f"Invalid radius given (must be h < 1 - r): r = {r} and h = {h}"
     #     )
 
-    def Psi(z: Array | float) -> Array:  # noqa: N802
-        return np.array(
-            np.exp(
-                -(alpha1 * c * h + alpha0 - alpha0 * z)
-                / (c * h + 1 - z)
-                * (np.log(1 - z) - logh)
-            )
+    @overload
+    def Psi(z: float) -> float: ...
+
+    @overload
+    def Psi(z: Array) -> Array: ...
+
+    def Psi(z: Any) -> Any:  # noqa: N802
+        return np.exp(
+            -(alpha1 * c * h + alpha0 - alpha0 * z)
+            / (c * h + 1 - z)
+            * (np.log(1 - z) - logh)
         )
 
     # estimate rho on the basis of the round-off error
