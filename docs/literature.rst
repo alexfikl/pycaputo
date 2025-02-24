@@ -111,3 +111,7 @@ here.
     *Fractional-Order Nonlinear Systems*,
     Springer, 2011.
 
+.. [Garrappa2023] R. Garrappa, A. Giusti,
+    *A Computational Approach to Exponential-Type Variable-Order Fractional Differential Equations*,
+    Journal of Scientific Computing, Vol. 96, 2023,
+    `DOI <https://doi.org/10.1007/s10915-023-02283-6>`__.
