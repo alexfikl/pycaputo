@@ -261,7 +261,7 @@ def _caputo_d2_boundary_coefficients(x: Array, s: Scalar) -> Array:
 
     .. math::
 
-        \frac{\partial f}{\partial x}(s) =
+        \frac{\partial^2 f}{\partial x^2}(s) =
             c_0 f(x_0) + c_1 f(x_1) + c_2 f(x_2) + c_3 f(x_3)
 
     """
