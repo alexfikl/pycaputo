@@ -10,35 +10,15 @@ from functools import cached_property, singledispatch
 from typing import TYPE_CHECKING, Any, Generic
 
 import numpy as np
-from scipy.special import gamma
 
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.events import Event
 from pycaputo.history import History
 from pycaputo.typing import Array, StateFunctionT
-from pycaputo.utils import cached_on_first_arg
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import
     from pycaputo.controller import Controller
-
-
-@cached_on_first_arg
-def gamma1p(m: FractionalDifferentialEquationMethod[StateFunctionT]) -> Array:
-    r"""A cached vectorized value of :math:`\Gamma(1 + \alpha_i)`."""
-    return gamma(1 + m.alpha)  # type: ignore[no-any-return]
-
-
-@cached_on_first_arg
-def gamma2p(m: FractionalDifferentialEquationMethod[StateFunctionT]) -> Array:
-    r"""A cached vectorized value of :math:`\Gamma(2 + \alpha_i)`."""
-    return gamma(2 + m.alpha)  # type: ignore[no-any-return]
-
-
-@cached_on_first_arg
-def gamma2m(m: FractionalDifferentialEquationMethod[StateFunctionT]) -> Array:
-    r"""A cached vectorized value of :math:`\Gamma(2 - \alpha_i)`."""
-    return gamma(2 - m.alpha)  # type: ignore[no-any-return]
 
 
 @dataclass(frozen=True)

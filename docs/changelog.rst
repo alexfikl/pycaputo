@@ -27,6 +27,9 @@ Features
 Breaking Changes
 ^^^^^^^^^^^^^^^^
 
+* Remove the ``gamma1p``, ``gamma2p``, ``gamma2m`` functions from
+  :mod:`pycaputo.stepping`. Maybe the Caputo classes will cache them in the
+  future.
 * All :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod` need to
   also define :meth:`~pycaputo.stepping.FractionalDifferentialEquationMethod.make_default_history`.
 
