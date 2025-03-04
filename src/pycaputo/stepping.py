@@ -9,9 +9,7 @@ from dataclasses import dataclass
 from functools import cached_property, singledispatch
 from typing import TYPE_CHECKING, Any, Generic
 
-import numpy as np
-
-from pycaputo.derivatives import FractionalOperator
+from pycaputo.derivatives import FractionalOperatorT
 from pycaputo.events import Event
 from pycaputo.history import History
 from pycaputo.typing import Array, StateFunctionT
@@ -22,7 +20,10 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
+class FractionalDifferentialEquationMethod(
+    ABC,
+    Generic[FractionalOperatorT, StateFunctionT],
+):
     r"""A generic method used to solve fractional ordinary differential
     equations (FODE).
 
@@ -41,8 +42,8 @@ class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
     will required additional initial data.
     """
 
-    derivative_order: tuple[float, ...]
-    """The fractional derivative order used for the derivative."""
+    ds: tuple[FractionalOperatorT, ...]
+    """The fractional operators used for each equation."""
     control: Controller
     """An instance describing the discrete time being simulated."""
 
@@ -54,22 +55,30 @@ class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
     if __debug__:
 
         def __post_init__(self) -> None:
+            if not self.ds:
+                raise ValueError("No fractional operators given")
+
             if not self.y0:
                 raise ValueError("No initial conditions given")
 
             shape = self.y0[0]
             if not all(y0.shape == shape for y0 in self.y0[1:]):
-                raise ValueError("Initial conditions have different shapes")
-
-            if self.y0[0].size != len(self.derivative_order):
-                raise ValueError("Derivative orders must match state size")
-            from math import ceil
-
-            m = ceil(self.largest_derivative_order)
-            if m != len(self.y0):
                 raise ValueError(
-                    "Incorrect number of initial conditions: "
-                    f"got {len(self.y0)}, but expected {m} arrays"
+                    "Initial conditions have different shapes: "
+                    f"{[y0.shape for y0 in self.y0]}"
+                )
+
+            if self.y0[0].size != len(self.ds):
+                raise ValueError(
+                    f"Fractional operator must match state size: got {len(self.ds)} "
+                    f"operators for initial conditions of size {self.y0[0].size}"
+                )
+
+            y = self.source(0.0, self.y0[0])
+            if y.shape != self.y0[0].shape:
+                raise ValueError(
+                    "Array returned by 'source' does not match y0: "
+                    f"got shape {y.shape} for y0 of shape {shape}"
                 )
 
     @property
@@ -77,30 +86,34 @@ class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
         """An identifier for the method."""
         return type(self).__name__.replace("Method", "")
 
-    @cached_property
-    def largest_derivative_order(self) -> float:
-        """Largest order in :attr:`derivative_order`."""
-        return max(self.derivative_order)
+    @property
+    @abstractmethod
+    def derivative_order(self) -> tuple[float, ...]:
+        """A number that represents the *fractional* order of the operators in
+        :attr:`d`. For example, in the case of the Caputo derivative, this is
+        just the order :math:`\alpha`.
+        """
 
     @cached_property
     def smallest_derivative_order(self) -> float:
-        """Smallest order in :attr:`derivative_order`."""
+        """Smallest value of the :attr:`derivative_order`."""
         return min(self.derivative_order)
 
     @cached_property
-    def alpha(self) -> Array:
-        """A cached vectorized form of :attr:`derivative_order`."""
-        return np.array(self.derivative_order)
+    def largest_derivative_order(self) -> float:
+        """Largest value of the :attr:`derivative_order`."""
+        return max(self.derivative_order)
 
     @property
     @abstractmethod
     def order(self) -> float:
-        """Expected order of convergence of the method."""
+        """Expected order of convergence of the method.
 
-    @property
-    @abstractmethod
-    def d(self) -> tuple[FractionalOperator, ...]:
-        """The fractional operators used by this method."""
+        In general, the order of convergence will depend on the parameters of
+        the fractional operator (e.g. the order :math:`\alpha` of the Caputo
+        derivative), but also on the smoothness of the solutions and the temporal
+        mesh that is used. The meaning of the order is therefore not clear.
+        """
 
     @abstractmethod
     def make_default_history(self) -> History[Any]:
@@ -109,7 +122,7 @@ class FractionalDifferentialEquationMethod(ABC, Generic[StateFunctionT]):
 
 @singledispatch
 def evolve(
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     *,
     history: History[Any] | None = None,
     dtinit: float | None = None,
@@ -132,7 +145,7 @@ def evolve(
 
 @singledispatch
 def advance(
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     history: History[Any],
     y: Array,
     dt: float,
@@ -155,7 +168,7 @@ def advance(
 
 @singledispatch
 def make_initial_condition(
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
 ) -> Array:
     """Construct an initial condition for the method *m*."""
     raise NotImplementedError(type(m).__name__)

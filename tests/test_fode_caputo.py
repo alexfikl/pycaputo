@@ -13,6 +13,7 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
+from pycaputo.derivatives import FractionalOperatorT
 from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod, evolve
@@ -77,7 +78,9 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 
 
 def fode_factory(
-    cls: type[FractionalDifferentialEquationMethod[StateFunction]],
+    cls: type[
+        FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunction]
+    ],
     *,
     wrap: bool = True,
     graded: bool = False,
@@ -105,7 +108,7 @@ def fode_factory(
 
     def wrapper(
         alpha: float | tuple[float, ...], n: int
-    ) -> FractionalDifferentialEquationMethod[StateFunction]:
+    ) -> FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunction]:
         if not isinstance(alpha, tuple):
             alpha = (alpha,)
 
@@ -162,7 +165,8 @@ def fode_factory(
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
 def test_fode_caputo(
     factory: Callable[
-        [float, int], FractionalDifferentialEquationMethod[StateFunction]
+        [float, int],
+        FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunction],
     ],
     alpha: float,
 ) -> None:
@@ -249,7 +253,8 @@ def test_fode_caputo(
 )
 def test_fode_caputo_system(
     factory: Callable[
-        [tuple[float, ...], int], FractionalDifferentialEquationMethod[StateFunction]
+        [tuple[float, ...], int],
+        FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunction],
     ],
 ) -> None:
     """

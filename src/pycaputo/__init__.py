@@ -6,7 +6,7 @@ from __future__ import annotations
 import pathlib
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -21,6 +21,10 @@ from pycaputo.grid import Points
 from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod
 from pycaputo.typing import Array, ArrayOrScalarFunction, PathLike, ScalarFunction
+
+if TYPE_CHECKING:
+    from pycaputo.derivatives import FractionalOperatorT
+    from pycaputo.typing import StateFunctionT
 
 log = get_logger("pycaputo")
 
@@ -167,7 +171,7 @@ class Solution:
 
 
 def fracevolve(
-    m: FractionalDifferentialEquationMethod[Any],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     *,
     dtinit: float | None = None,
     quiet: bool = False,

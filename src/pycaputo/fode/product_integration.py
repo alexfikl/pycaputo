@@ -9,6 +9,7 @@ from typing import Any, NamedTuple
 
 import numpy as np
 
+from pycaputo.derivatives import FractionalOperatorT
 from pycaputo.events import Event
 from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
@@ -36,7 +37,9 @@ class AdvanceResult(NamedTuple):
 
 
 @dataclass(frozen=True)
-class ProductIntegrationMethod(FractionalDifferentialEquationMethod[StateFunctionT]):
+class ProductIntegrationMethod(
+    FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT]
+):
     """A generic class of methods based on Product Integration.
 
     In general, these methods support a variable time step.
@@ -54,7 +57,7 @@ class ProductIntegrationMethod(FractionalDifferentialEquationMethod[StateFunctio
 
 @evolve.register(ProductIntegrationMethod)
 def _evolve_pi(
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     *,
     history: History[Any] | None = None,
     dtinit: float | None = None,
