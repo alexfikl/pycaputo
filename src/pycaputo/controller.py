@@ -13,6 +13,7 @@ from pycaputo.typing import Array, StateFunction, StateFunctionT
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import
+    from pycaputo.derivatives import FractionalOperatorT
     from pycaputo.stepping import FractionalDifferentialEquationMethod
 
 # {{{ utils
@@ -187,7 +188,7 @@ class Controller:
 @singledispatch
 def evaluate_error_estimate(
     c: Controller,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     trunc: Array,
     y: Array,
     yprev: Array,
@@ -213,7 +214,9 @@ def evaluate_error_estimate(
 
 @singledispatch
 def evaluate_timestep_factor(
-    c: Controller, m: FractionalDifferentialEquationMethod[StateFunctionT], eest: float
+    c: Controller,
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
+    eest: float,
 ) -> float:
     """Compute a factor for the step size control.
 
@@ -226,7 +229,7 @@ def evaluate_timestep_factor(
 @singledispatch
 def evaluate_timestep_accept(
     c: Controller,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -251,7 +254,7 @@ def evaluate_timestep_accept(
 @singledispatch
 def evaluate_timestep_reject(
     c: Controller,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -325,7 +328,7 @@ class FixedController(Controller):
 @evaluate_error_estimate.register(FixedController)
 def _evaluate_error_estimate_fixed(
     c: FixedController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     trunc: Array,
     y: Array,
     yprev: Array,
@@ -336,7 +339,7 @@ def _evaluate_error_estimate_fixed(
 @evaluate_timestep_factor.register(FixedController)
 def _evaluate_timestep_factor_fixed(
     c: FixedController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
     return 1.0
@@ -345,7 +348,7 @@ def _evaluate_timestep_factor_fixed(
 @evaluate_timestep_accept.register(FixedController)
 def _evaluate_timestep_accept_fixed(
     c: FixedController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -453,7 +456,7 @@ class GradedController(Controller):
 @evaluate_error_estimate.register(GradedController)
 def _evaluate_error_estimate_graded(
     c: GradedController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     trunc: Array,
     y: Array,
     yprev: Array,
@@ -464,7 +467,7 @@ def _evaluate_error_estimate_graded(
 @evaluate_timestep_factor.register(GradedController)
 def _evaluate_timestep_factor_graded(
     c: GradedController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
     return 1.0
@@ -473,7 +476,7 @@ def _evaluate_timestep_factor_graded(
 @evaluate_timestep_accept.register(GradedController)
 def _evaluate_timestep_accept_graded(
     c: GradedController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -575,7 +578,7 @@ class AdaptiveController(Controller):
 @evaluate_error_estimate.register(AdaptiveController)
 def _evaluate_error_estimate_adaptive(
     c: AdaptiveController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     trunc: Array,
     y: Array,
     yprev: Array,
@@ -617,7 +620,7 @@ class IntegralController(AdaptiveController):
 @evaluate_timestep_factor.register(IntegralController)
 def _evaluate_timestep_factor_integral(
     c: IntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
     if eest == 0.0:
@@ -633,7 +636,7 @@ def _evaluate_timestep_factor_integral(
 @evaluate_timestep_accept.register(IntegralController)
 def _evaluate_timestep_accept_integral(
     c: IntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -657,7 +660,7 @@ def _evaluate_timestep_accept_integral(
 @evaluate_timestep_reject.register(IntegralController)
 def _evaluate_timestep_reject_integral(
     c: IntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -706,7 +709,7 @@ class ProportionalIntegralController(AdaptiveController):
 @evaluate_timestep_factor.register(ProportionalIntegralController)
 def _evaluate_timestep_factor_proportional_integral(
     c: ProportionalIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
     if eest == 0.0:
@@ -732,7 +735,7 @@ def _evaluate_timestep_factor_proportional_integral(
 @evaluate_timestep_accept.register(ProportionalIntegralController)
 def _evaluate_timestep_accept_proportional_integral(
     c: ProportionalIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -758,7 +761,7 @@ def _evaluate_timestep_accept_proportional_integral(
 @evaluate_timestep_reject.register(ProportionalIntegralController)
 def _evaluate_timestep_reject_proportional_integral(
     c: ProportionalIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -866,7 +869,7 @@ class JannelliIntegralController(AdaptiveController):
 @evaluate_error_estimate.register(JannelliIntegralController)
 def _evaluate_error_estimate_jannelli(
     c: JannelliIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     trunc: Array,
     y: Array,
     yprev: Array,
@@ -890,7 +893,7 @@ def _evaluate_error_estimate_jannelli(
 @evaluate_timestep_factor.register(JannelliIntegralController)
 def _evaluate_timestep_factor_jannelli(
     c: JannelliIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
     if eest < 0.0:
@@ -906,7 +909,7 @@ def _evaluate_timestep_factor_jannelli(
 @evaluate_timestep_accept.register(JannelliIntegralController)
 def _evaluate_timestep_accept_jannelli(
     c: JannelliIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -925,7 +928,7 @@ def _evaluate_timestep_accept_jannelli(
 @evaluate_timestep_reject.register(JannelliIntegralController)
 def _evaluate_timestep_reject_jannelli(
     c: JannelliIntegralController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],
@@ -1021,7 +1024,7 @@ def make_random_controller(
 @evaluate_error_estimate.register(RandomController)
 def _evaluate_error_estimate_random(
     c: RandomController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     trunc: Array,
     y: Array,
     yprev: Array,
@@ -1032,7 +1035,7 @@ def _evaluate_error_estimate_random(
 @evaluate_timestep_factor.register(RandomController)
 def _evaluate_timestep_factor_random(
     c: RandomController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
     return 1.0
@@ -1041,7 +1044,7 @@ def _evaluate_timestep_factor_random(
 @evaluate_timestep_accept.register(RandomController)
 def _evaluate_timestep_accept_random(
     c: RandomController,
-    m: FractionalDifferentialEquationMethod[StateFunctionT],
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     q: float,
     dtprev: float,
     state: dict[str, Any],

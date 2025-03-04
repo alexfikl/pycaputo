@@ -13,7 +13,7 @@ import numpy as np
 from scipy.special import gamma
 
 from pycaputo import events
-from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.derivatives import CaputoDerivative
 from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import (
@@ -111,7 +111,9 @@ class AdvanceResult(NamedTuple):
 
 
 @dataclass(frozen=True)
-class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireModelT]):
+class IntegrateFireMethod(
+    FractionalDifferentialEquationMethod[CaputoDerivative, IntegrateFireModelT]
+):
     r"""A discretization of Integrate-and-Fire models using a fractional derivative.
 
     A generic Integrate-and-Fire model is given by
@@ -158,15 +160,22 @@ class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireMode
 
         def __post_init__(self) -> None:
             super().__post_init__()
-            if any(a > 1.0 or a < 0.0 for a in self.derivative_order):
+
+            from pycaputo.derivatives import CaputoDerivative
+
+            if not all(isinstance(d, CaputoDerivative) for d in self.ds):
+                raise TypeError(f"Expected 'CaputoDerivative' operators: {self.ds}")
+
+            if any(d.alpha > 1.0 or d.alpha < 0.0 for d in self.ds):
                 raise ValueError(f"Expected 'alpha' in (0, 1): {self.derivative_order}")
 
     @cached_property
-    def d(self) -> tuple[CaputoDerivative, ...]:
-        return tuple([
-            CaputoDerivative(alpha=alpha, side=Side.Left)
-            for alpha in self.derivative_order
-        ])
+    def derivative_order(self) -> tuple[float, ...]:
+        return tuple([d.alpha for d in self.ds])
+
+    @cached_property
+    def alpha(self) -> Array:
+        return np.array([d.alpha for d in self.ds])
 
     @property
     def order(self) -> float:
@@ -191,14 +200,14 @@ class IntegrateFireMethod(FractionalDifferentialEquationMethod[IntegrateFireMode
 
 
 @make_initial_condition.register(IntegrateFireMethod)
-def _make_initial_condition_caputo(
+def _make_initial_condition_caputo(  # type: ignore[misc]
     m: IntegrateFireMethod[IntegrateFireModelT],
 ) -> Array:
     return m.y0[0]
 
 
 @evolve.register(IntegrateFireMethod)
-def _evolve_caputo_integrate_fire_l1(
+def _evolve_caputo_integrate_fire_l1(  # type: ignore[misc]
     m: IntegrateFireMethod[IntegrateFireModelT],
     *,
     history: History[Any] | None = None,

@@ -6,6 +6,7 @@ from __future__ import annotations
 import enum
 import math
 from dataclasses import dataclass
+from typing import TypeVar
 
 
 class Side(enum.Enum):
@@ -28,6 +29,9 @@ class FractionalOperator:
 
     For a recent review of these operators see [SalesTeodoro2019]_.
     """
+
+
+FractionalOperatorT = TypeVar("FractionalOperatorT", bound=FractionalOperator)
 
 
 @dataclass(frozen=True)

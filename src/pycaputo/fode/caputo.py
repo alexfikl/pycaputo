@@ -12,7 +12,7 @@ import numpy.linalg as la
 from scipy.special import gamma
 
 from pycaputo.controller import Controller
-from pycaputo.derivatives import CaputoDerivative, Side
+from pycaputo.derivatives import CaputoDerivative
 from pycaputo.fode.product_integration import (
     AdvanceResult,
     ProductIntegrationMethod,
@@ -69,13 +69,26 @@ def _truncation_error(
 
 
 @dataclass(frozen=True)
-class CaputoProductIntegrationMethod(ProductIntegrationMethod[StateFunctionT]):
+class CaputoProductIntegrationMethod(
+    ProductIntegrationMethod[CaputoDerivative, StateFunctionT]
+):
+    if __debug__:
+
+        def __post_init__(self) -> None:
+            super().__post_init__()
+
+            from pycaputo.derivatives import CaputoDerivative
+
+            if not all(isinstance(d, CaputoDerivative) for d in self.ds):
+                raise TypeError(f"Expected 'CaputoDerivative' operators: {self.ds}")
+
     @cached_property
-    def d(self) -> tuple[CaputoDerivative, ...]:
-        return tuple([
-            CaputoDerivative(alpha=alpha, side=Side.Left)
-            for alpha in self.derivative_order
-        ])
+    def derivative_order(self) -> tuple[float, ...]:
+        return tuple([d.alpha for d in self.ds])
+
+    @cached_property
+    def alpha(self) -> Array:
+        return np.array([d.alpha for d in self.ds])
 
 
 @dataclass(frozen=True)
@@ -133,7 +146,7 @@ class CaputoImplicitProductIntegrationMethod(
 
 
 @make_initial_condition.register(CaputoProductIntegrationMethod)
-def _make_initial_condition_caputo(
+def _make_initial_condition_caputo(  # type: ignore[misc]
     m: CaputoProductIntegrationMethod[StateFunctionT],
 ) -> Array:
     return m.y0[0]
@@ -186,7 +199,7 @@ def _update_caputo_forward_euler(
 
 
 @advance.register(ForwardEuler)
-def _advance_caputo_forward_euler(
+def _advance_caputo_forward_euler(  # type: ignore[misc]
     m: ForwardEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -222,7 +235,7 @@ class BackwardEuler(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
 
 
 @advance.register(BackwardEuler)
-def _advance_caputo_backward_euler(
+def _advance_caputo_backward_euler(  # type: ignore[misc]
     m: BackwardEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -312,7 +325,7 @@ def _update_caputo_weighted_euler(
 
 
 @advance.register(WeightedEuler)
-def _advance_caputo_weighted_euler(
+def _advance_caputo_weighted_euler(  # type: ignore[misc]
     m: WeightedEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -411,7 +424,7 @@ def _update_caputo_trapezoidal(
 
 
 @advance.register(Trapezoidal)
-def _advance_caputo_trapezoidal(
+def _advance_caputo_trapezoidal(  # type: ignore[misc]
     m: Trapezoidal[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -483,7 +496,7 @@ def _update_caputo_trapezoidal_extrapolation(
 
 
 @advance.register(ExplicitTrapezoidal)
-def _advance_caputo_explicit_trapezoidal(
+def _advance_caputo_explicit_trapezoidal(  # type: ignore[misc]
     m: ExplicitTrapezoidal[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -594,7 +607,7 @@ class PEC(CaputoPredictorCorrectorMethod[StateFunctionT]):
 
 
 @advance.register(CaputoPredictorCorrectorMethod)
-def _advance_caputo_predictor_corrector(
+def _advance_caputo_predictor_corrector(  # type: ignore[misc]
     m: CaputoPredictorCorrectorMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -676,7 +689,7 @@ def _weights_quadrature_trapezoidal(
 
 
 @advance.register(ModifiedPECE)
-def _advance_caputo_modified_pece(
+def _advance_caputo_modified_pece(  # type: ignore[misc]
     m: ModifiedPECE[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -775,7 +788,7 @@ def _update_caputo_l1(
 
 
 @advance.register(L1)
-def _advance_caputo_l1(
+def _advance_caputo_l1(  # type: ignore[misc]
     m: L1[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,

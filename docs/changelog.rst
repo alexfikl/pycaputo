@@ -27,6 +27,10 @@ Features
 Breaking Changes
 ^^^^^^^^^^^^^^^^
 
+* :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod` now takes
+  a tuple of :class:`~pycaputo.derivatives.FractionalOperator` instances, not
+  just derivative orders. This requires changing ``derivatives=(alpha, ...)``
+  to ``ds=(CaputoDerivative(alpha), ...)``.
 * Remove the ``gamma1p``, ``gamma2p``, ``gamma2m`` functions from
   :mod:`pycaputo.stepping`. Maybe the Caputo classes will cache them in the
   future.
