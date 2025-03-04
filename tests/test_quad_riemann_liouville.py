@@ -11,7 +11,7 @@ import pytest
 
 from pycaputo.logging import get_logger
 from pycaputo.quadrature import quad, riemann_liouville, variable_riemann_liouville
-from pycaputo.typing import Array
+from pycaputo.typing import Array, ScalarFunction
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
 TEST_FILENAME = pathlib.Path(__file__)
@@ -376,29 +376,62 @@ def test_riemann_liouville_diffusive(
 # {{{ test_variable_riemann_liouville
 
 
-def f_linear(x: Array) -> Array:
-    A = np.array([[-0.83, 1.0], [-2.0, 1.2048]])
-    b = np.array([1.0, 2.0])
+def make_variable_riemann_liouville_f(
+    alpha: tuple[float, float],
+    c: float,
+    *,
+    a: float,
+) -> tuple[ScalarFunction, ScalarFunction]:
+    # The solutions are constructed by numerically computing the inverse
+    # Laplace transform. Given
+    #
+    #       F(t) = I^{\alpha_1, \alpha_2}[f](t)
+    #   =>  LT[F] = LT[Psi] LT[f]
+    #
+    # where LT[Psi] is the known Laplace transform of the kernel and (f, LT[f])
+    # are also taken as some known functions. Then, we can compute the solution
+    #
+    #   F(t) = LT^{-1}[LT[Psi](s) LT[f](s)]
+    #
+    # and :tada:, we have a solution to test against!
 
-    return np.array(A @ x + b)
+    import mpmath  # type: ignore[import-untyped]
+    from scipy.special import jv
 
+    def f_vo(x: Array) -> Array:
+        # NOTE: using the Bessel function of the first-kind
+        return np.array(jv(0, 2.0 * np.sqrt(a * x)))
 
-def qf_linear(x: Array, alpha: float) -> Array:
-    return x
+    def f_vo_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+        return mpmath.exp(-a / s) / s
+
+    def psi_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+        sA = (alpha[0] * s + alpha[1] * c) / (s + c)
+        return s ** (-sA)
+
+    def qf_vo_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+        return psi_laplace_transform(s) * f_vo_laplace_transform(s)
+
+    def qf_vo(x: Array) -> Array:
+        qf = np.empty_like(x)
+        for i in range(1, x.size):
+            qf[i] = mpmath.invertlaplace(qf_vo_laplace_transform, x[i], method="talbot")
+
+        return qf
+
+    return f_vo, qf_vo
 
 
 @pytest.mark.parametrize(
-    ("name", "grid_type"),
+    ("alpha", "c"),
     [
-        ("ExponentialRectangular", "uniform"),
+        ((0.85, 0.85), 2.0),
+        ((0.6, 0.8), 2.0),
+        ((0.5, 0.9), 1.0),
+        ((0.9, 0.6), 1.0),
     ],
 )
-@pytest.mark.parametrize("alpha", [0.1, 0.5, 0.9])
-def test_variable_riemann_liouville(
-    name: str,
-    grid_type: str,
-    alpha: float,
-) -> None:
+def test_variable_riemann_liouville(alpha: tuple[float, float], c: float) -> None:
     r"""
     Check the convergence of approximations for the Riemann--Liouville integral.
     The convergence is checked in the :math:`\ell^2` norm using :func:`f_test`.
@@ -408,18 +441,18 @@ def test_variable_riemann_liouville(
     from pycaputo.grid import make_points_from_name
     from pycaputo.utils import EOCRecorder, savefig
 
-    meth: variable_riemann_liouville.VariableOrderMethod
-    if name == "ExponentialRectangular":
-        d = VariableExponentialCaputoDerivative(alpha=(-alpha, -(1 + alpha) / 2), c=2.0)
-        meth = variable_riemann_liouville.ExponentialRectangular(
-            d, tau=1.0e-12, r=0.99, safety_factor=0.01
-        )
-        order = 1
-    else:
-        raise ValueError(f"Unsupported method: '{name}'")
+    d = VariableExponentialCaputoDerivative(alpha=(-alpha[0], -alpha[1]), c=c)
+    meth = variable_riemann_liouville.ExponentialRectangular(
+        # NOTE: parameters match MATLAB code exactly
+        d,
+        tau=1.0e-12,
+        r=0.99,
+        safety_factor=0.01,
+    )
+    order = 1
 
-    print(meth)
     eoc = EOCRecorder(order=order)
+    f_test, qf_test = make_variable_riemann_liouville_f(alpha, c, a=1.0)
 
     if ENABLE_VISUAL:
         import matplotlib.pyplot as mp
@@ -428,12 +461,11 @@ def test_variable_riemann_liouville(
         ax = fig.gca()
 
     resolutions = [16, 32, 64, 128, 256]
-    resolutions = [64]
 
     for n in resolutions:
-        p = make_points_from_name(grid_type, n, a=0.0, b=0.5)
+        p = make_points_from_name("uniform", n, a=0.0, b=0.5)
         qf_num = quad(meth, f_test, p)
-        qf_ref = qf_test(p.x, alpha=alpha)
+        qf_ref = qf_test(p.x)
 
         h = np.max(p.dx)
         e = la.norm(qf_num[1:] - qf_ref[1:]) / la.norm(qf_ref[1:])
@@ -450,7 +482,7 @@ def test_variable_riemann_liouville(
         ax.set_xlabel("$x$")
         ax.set_ylabel(rf"$I^{{{alpha}}}_{{RL}} f$")
 
-        filename = f"test_rl_quadrature_{meth.name}_{alpha}"
+        filename = f"test_rl_quadrature_{meth.name}_{alpha[0]}_{alpha[1]}"
         savefig(fig, TEST_DIRECTORY / filename, normalize=True)
 
     assert order - 0.25 < eoc.estimated_order < order + 1.0
