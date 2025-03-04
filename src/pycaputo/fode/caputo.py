@@ -19,10 +19,13 @@ from pycaputo.fode.product_integration import (
 )
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
-from pycaputo.stepping import advance, gamma1p, gamma2m, gamma2p, make_initial_condition
+from pycaputo.stepping import advance, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
 
 log = get_logger(__name__)
+
+
+# {{{ base
 
 
 def _update_caputo_initial_condition(
@@ -57,6 +60,9 @@ def _truncation_error(
         raise TypeError(f"Unsupported controller type: {type(c)}")
 
     return trunc
+
+
+# }}}
 
 
 # {{{ CaputoProductIntegrationMethod
@@ -157,7 +163,7 @@ def _weights_quadrature_rectangular(
     ts = (t[n] - t[: n + 1]).reshape(-1, 1)
 
     alpha = m.alpha
-    g1p = gamma1p(m)
+    g1p = gamma(1 + alpha)
     omega = (ts[:-1] ** alpha - ts[1:] ** alpha) / g1p
 
     return np.array(omega)
@@ -361,10 +367,14 @@ def _weights_quadrature_trapezoidal_single(
     ts = (t[n] - t[: p + 1]).reshape(-1, 1)
     dt = np.diff(t[: p + 1]).reshape(-1, 1)
 
-    # compute integrals
     alpha = m.alpha
-    I00 = ts[0] ** alpha / gamma1p(m)
-    I1 = ts ** (1.0 + alpha) / gamma2p(m)
+    a1p = 1 + alpha
+    g1p = gamma(a1p)
+    g2p = a1p * g1p
+
+    # compute integrals
+    I00 = ts[0] ** alpha / g1p
+    I1 = ts ** (1.0 + alpha) / g2p
 
     # compute weights
     omega = np.empty((p + 1, alpha.size), dtype=I1.dtype)
@@ -372,7 +382,7 @@ def _weights_quadrature_trapezoidal_single(
     omega[1:p] = (I1[2:] - I1[1:-1]) / dt[1:] + (I1[:-2] - I1[1:-1]) / dt[:-1]
 
     if p < n:
-        I01 = ts[-1] ** alpha / gamma1p(m)
+        I01 = ts[-1] ** alpha / g1p
         omega[p] = I1[-2] / dt[-1] - I01 - I1[-1] / dt[-1]
     else:
         omega[p] = I1[-2] / dt[-1]
@@ -652,8 +662,12 @@ def _weights_quadrature_trapezoidal(
     dt = np.diff(t[: p + 1]).reshape(-1, 1)
 
     alpha = m.alpha
-    I0 = ts**alpha / gamma1p(m)
-    I1 = ts ** (1.0 + alpha) / gamma2p(m)
+    a1p = 1 + alpha
+    g1p = gamma(a1p)
+    g2p = a1p * g1p
+
+    I0 = ts**alpha / g1p
+    I1 = ts ** (1.0 + alpha) / g2p
 
     omegal = I1[1:] / dt + I0[:-1] - I1[:-1] / dt
     omegar = I1[:-1] / dt - I0[1:] - I1[1:] / dt
@@ -742,7 +756,7 @@ def _update_caputo_l1(
 
     # compute convolution coefficients
     alpha = m.alpha.reshape(-1, 1)
-    g2m = gamma2m(m).reshape(-1, 1)
+    g2m = gamma(2 - alpha)
 
     omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / g2m
     h = (omega / np.diff(history.ts[: n + 1])).T

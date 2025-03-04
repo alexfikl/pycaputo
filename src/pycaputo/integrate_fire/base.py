@@ -10,6 +10,7 @@ from functools import cached_property
 from typing import Any, NamedTuple, TypeVar
 
 import numpy as np
+from scipy.special import gamma
 
 from pycaputo import events
 from pycaputo.derivatives import CaputoDerivative, Side
@@ -19,7 +20,6 @@ from pycaputo.stepping import (
     FractionalDifferentialEquationMethod,
     advance,
     evolve,
-    gamma2m,
     make_initial_condition,
 )
 from pycaputo.typing import Array
@@ -345,7 +345,7 @@ def advance_caputo_integrate_fire_l1(
 
     # compute convolution coefficients
     alpha = m.alpha.reshape(-1, 1)
-    g2m = gamma2m(m).reshape(-1, 1)
+    g2m = gamma(2 - alpha)
 
     omega = (ts[:-1] ** (1 - alpha) - ts[1:] ** (1 - alpha)) / g2m
     h = (omega / np.diff(history.ts[: n + 1])).T
