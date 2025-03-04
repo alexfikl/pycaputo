@@ -500,6 +500,9 @@ def savefig(
     :arg filename: a file name where to save the figure. If the file name does
         not have an extension, the default format from ``savefig.format`` is
         used.
+    :arg normalize: if *True*, use :func:`slugify` to normalize the file name.
+        Note that this will slugify any extensions as well and replace them
+        with the default extension.
     :arg overwrite: if *True*, any existing files are overwritten.
     :arg kwargs: renaming arguments are passed directly to ``savefig``.
     """
@@ -507,12 +510,18 @@ def savefig(
 
     import matplotlib.pyplot as mp
 
+    ext = mp.rcParams["savefig.format"]
     filename = pathlib.Path(filename)
+
     if normalize:
-        filename = filename.with_stem(slugify(filename.stem))
+        # NOTE: slugify(name) will clubber any prefixes, so we special-case a
+        # few of them here to help out the caller
+        if filename.suffix in {".png", ".jpg", ".jpeg", ".pdf", ".eps", ".tiff"}:
+            filename = filename.with_stem(slugify(filename.stem))
+        else:
+            filename = filename.with_name(slugify(filename.name)).with_suffix(f".{ext}")
 
     if not filename.suffix:
-        ext = mp.rcParams["savefig.format"]
         filename = filename.with_suffix(f".{ext}").resolve()
 
     if not overwrite and filename.exists():

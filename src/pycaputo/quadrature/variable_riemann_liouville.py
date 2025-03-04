@@ -10,9 +10,12 @@ import numpy as np
 
 from pycaputo.derivatives import VariableExponentialCaputoDerivative
 from pycaputo.grid import Points, UniformPoints
+from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ArrayOrScalarFunction
 
 from .base import QuadratureMethod, quad
+
+log = get_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -28,7 +31,7 @@ class ExponentialRectangular(VariableOrderMethod):
     """This approximates the integral corresponding to
     :class:`~pycaputo.derivatives.VariableExponentialCaputoDerivative`.
 
-    The method is described in section 4.1 from [Garrappa2023]_.
+    The method is described in Section 4.1 from [Garrappa2023]_.
     """
 
     dd: VariableExponentialCaputoDerivative
@@ -69,14 +72,17 @@ class ExponentialRectangular(VariableOrderMethod):
 
 def gl_scarpi_exp_weights(
     d: VariableExponentialCaputoDerivative,
-    p: UniformPoints,
+    p: Points,
     *,
     tau: float | None = None,
     r: float | None = None,
     safety_factor: float | None = None,
-    psi_lim: float = 10.0,
-    psi_points: int = 128,
+    psi_lim: float = 5.0,
+    psi_points: int = 100,
 ) -> Array:
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
+
     alpha0, alpha1 = -d.alpha[0], -d.alpha[1]
     c = d.c
 
@@ -89,7 +95,7 @@ def gl_scarpi_exp_weights(
         # NOTE: [Garrappa2023] recommends 10^-12 ~ 10^-13 and the MATLAB code
         # uses 10^-12 exactly. This should work nicely for floats and doubles
         tau = 1.0e4 * eps
-    assert tau > eps
+    assert tau > 0
 
     if r is None:
         # NOTE: We need h < 1 - r from theory, so r should be very close to 1.
@@ -98,10 +104,10 @@ def gl_scarpi_exp_weights(
         r = 1.0 - 1.1 * h
     assert r is not None
 
-    # if h > 1 - r:
-    #     raise ValueError(
-    #         f"Invalid radius given (must be h < 1 - r): r = {r} and h = {h}"
-    #     )
+    if h > 1 - r:
+        # FIXME: Should this be a hard error? Does not seem like a hard requirement
+        # in the MATLAB code, and would likely not be hit in practice..
+        log.warning("Invalid radius given (must be r < 1 - h): r = %g and h = %g", r, h)
 
     @overload
     def Psi(z: float) -> float: ...
@@ -133,15 +139,19 @@ def gl_scarpi_exp_weights(
     y = np.linspace(-np.log(r / rho), psi_lim, psi_points)
     M_r_rho = np.max(np.abs(Psi(x + 1j * y)))
     N = ceil(
-        (np.log(M_r_rho / rho_n_inv + tau) - np.log(tau)) / (np.log(r) - np.log(rho))
+        (np.log(M_r_rho * rho_n_inv + tau) - np.log(tau)) / (np.log(r) - np.log(rho))
     )
+
+    # compute weights
+    if __debug__:
+        log.info("Predicted round-off error: %.12e", rho_n_inv * M_r * tau)
 
     omega = 2j * np.pi * np.arange(N) / N
     psi_k = Psi(rho * np.exp(omega))
 
     w = np.empty(n + 1, dtype=psi_k.dtype)
     for j in range(n + 1):
-        w[j] = rho_n_inv / N * np.sum(psi_k * np.exp(-j * omega))
+        w[j] = np.sum(psi_k * np.exp(-j * omega)) / (rho**j * N)
 
     return w.real
 
@@ -152,11 +162,10 @@ def _quad_vo_exp_rect(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
-    if not isinstance(p, UniformPoints):
-        raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
-
     fx = f(p.x) if callable(f) else f
     w = gl_scarpi_exp_weights(m.d, p, tau=m.tau, r=m.r, safety_factor=m.safety_factor)
+
+    log.info("%r", np.linalg.norm(w))
 
     qf = np.empty_like(fx)
     qf[0] = np.nan
@@ -164,7 +173,7 @@ def _quad_vo_exp_rect(
     for n in range(1, qf.size):
         qf[n] = np.sum(w[:n][::-1] * fx[:n])
 
-    return fx
+    return qf
 
 
 # }}}
