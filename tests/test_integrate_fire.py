@@ -183,6 +183,7 @@ def test_ad_ex_lambert_limits() -> None:
     from math import gamma
 
     from pycaputo.controller import make_jannelli_controller
+    from pycaputo.derivatives import CaputoDerivative as D
     from pycaputo.integrate_fire.ad_ex import (
         AD_EX_PARAMS,
         AdExModel,
@@ -219,7 +220,7 @@ def test_ad_ex_lambert_limits() -> None:
         ])
 
         method = CaputoAdExIntegrateFireL1Model(
-            derivative_order=alpha,
+            ds=(D(alpha[0]), D(alpha[1])),
             control=make_jannelli_controller(chimin=0.1, chimax=1.0),
             y0=(y0,),
             source=ad_ex,
@@ -277,6 +278,7 @@ def test_ad_ex_solve() -> None:
     """
 
     from pycaputo.controller import make_jannelli_controller
+    from pycaputo.derivatives import CaputoDerivative as D
     from pycaputo.integrate_fire.ad_ex import (
         AD_EX_PARAMS,
         AdExModel,
@@ -298,7 +300,7 @@ def test_ad_ex_solve() -> None:
             t = dt
             y0 = np.array([rng.uniform(param.v_reset, param.v_peak), rng.uniform()])
             method = CaputoAdExIntegrateFireL1Model(
-                derivative_order=alpha,
+                ds=(D(alpha[0]), D(alpha[1])),
                 control=make_jannelli_controller(chimin=0.1, chimax=1.0),
                 y0=(y0,),
                 source=ad_ex,
@@ -354,6 +356,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
     y0 = np.array([rng.uniform(model.param.v_reset, model.param.v_peak)])
 
     from pycaputo.controller import make_jannelli_controller
+    from pycaputo.derivatives import CaputoDerivative as D
     from pycaputo.stepping import evolve
     from pycaputo.utils import EOCRecorder, stringify_eoc
 
@@ -382,7 +385,7 @@ def test_pif_model(alpha: float, resolutions: list[tuple[float, float]]) -> None
         )
 
         stepper = pif.CaputoPerfectIntegrateFireL1Method(
-            derivative_order=(alpha,),
+            ds=(D(alpha),),
             control=c,
             y0=(y0,),
             source=model,

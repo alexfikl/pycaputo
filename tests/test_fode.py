@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 from pycaputo.controller import Controller
+from pycaputo.derivatives import CaputoDerivative
 from pycaputo.logging import get_logger
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
@@ -113,7 +114,7 @@ def _check_fixed_controller_evolution(
         evaluate_timestep_accept,
         evaluate_timestep_factor,
     )
-    from pycaputo.fode.caputo import ForwardEuler
+    from pycaputo.fode import caputo
 
     assert c.tfinal is not None
     assert c.nsteps is not None
@@ -124,8 +125,8 @@ def _check_fixed_controller_evolution(
     yprev = rng.normal(size=ncomponents)
     trunc = rng.normal(size=ncomponents)
 
-    m = ForwardEuler(
-        derivative_order=(0.8,) * y.size,
+    m = caputo.ForwardEuler(
+        ds=(CaputoDerivative(0.8),) * y.size,
         control=c,
         source=lambda t, y: np.zeros_like(y),
         y0=(yprev,),
@@ -202,11 +203,11 @@ def test_graded_controller() -> None:
     assert c.tfinal is not None
     assert c.nsteps is not None
 
-    from pycaputo.fode.caputo import ForwardEuler
+    from pycaputo.fode import caputo
 
     y0 = np.zeros(7)
-    m = ForwardEuler(
-        derivative_order=(0.8,) * y0.size,
+    m = caputo.ForwardEuler(
+        ds=(CaputoDerivative(0.8),) * y0.size,
         control=c,
         source=lambda t, y: np.zeros_like(y0),
         y0=(y0,),

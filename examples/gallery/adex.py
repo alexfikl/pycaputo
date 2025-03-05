@@ -8,6 +8,7 @@ from dataclasses import replace
 import numpy as np
 
 from pycaputo import fracevolve, fracplot
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import ad_ex
 
 # setup system (parameters from [Naud2008])
@@ -34,7 +35,7 @@ print(control)
 
 # setup stepper
 stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
-    derivative_order=alpha,
+    ds=tuple(D(alpha_i) for alpha_i in alpha),
     control=control,
     y0=(y0,),
     source=model,

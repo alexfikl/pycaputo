@@ -47,6 +47,7 @@ def van_der_pol_jac(t: float, y: Array, *, mu: float = 4.0) -> Array:
 
 # [tutorial-controller-start]
 from pycaputo.controller import make_jannelli_controller
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.fode import caputo
 
 tstart, tfinal = 0.0, 4.0
@@ -68,7 +69,7 @@ alpha = 0.8
 y0 = np.array([1.0, 0.0])
 
 m = caputo.PECE(
-    derivative_order=(alpha, alpha),
+    ds=(D(alpha), D(alpha)),
     control=c,
     source=van_der_pol,
     y0=(y0,),

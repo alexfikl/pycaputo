@@ -8,6 +8,7 @@ from dataclasses import replace
 import numpy as np
 
 from pycaputo import fracevolve, fracplot
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import lif
 from pycaputo.typing import Array
 
@@ -48,7 +49,7 @@ print(control)
 
 # setup stepper
 stepper = lif.CaputoLeakyIntegrateFireL1Method(
-    derivative_order=(alpha,),
+    ds=(D(alpha),),
     control=control,
     y0=(y0,),
     source=model,

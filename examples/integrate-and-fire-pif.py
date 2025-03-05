@@ -7,6 +7,7 @@ import math
 
 import numpy as np
 
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import pif
 from pycaputo.logging import get_logger
 
@@ -52,7 +53,7 @@ c = make_jannelli_controller(
 )
 
 stepper = pif.CaputoPerfectIntegrateFireL1Method(
-    derivative_order=(alpha,),
+    ds=(D(alpha),),
     control=c,
     y0=(y0,),
     source=model,

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import eif
 from pycaputo.logging import get_logger
 
@@ -53,7 +54,7 @@ c = make_jannelli_controller(
 )
 
 stepper = eif.CaputoExponentialIntegrateFireL1Method(
-    derivative_order=(alpha,),
+    ds=(D(alpha),),
     control=c,
     y0=(y0,),
     source=model,

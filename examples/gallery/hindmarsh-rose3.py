@@ -8,6 +8,7 @@ from dataclasses import replace
 import numpy as np
 
 from pycaputo import fracevolve, fracplots
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.fode.gallery import HindmarshRose3
 
 # parameters from Figure 5a from [Kaslik2017]
@@ -36,7 +37,7 @@ print(control)
 from pycaputo.fode import caputo
 
 stepper = caputo.PECE(
-    derivative_order=alpha,
+    ds=tuple(D(alpha_i) for alpha_i in alpha),
     control=control,
     source=func.source,
     y0=(y0,),
