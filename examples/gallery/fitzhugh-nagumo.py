@@ -6,6 +6,7 @@ from __future__ import annotations
 import numpy as np
 
 from pycaputo import fracevolve, fracplots
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.fode.gallery import FitzHughNagumo
 
 # setup system (parameters from Figure 4d from [Brandibur2018])
@@ -26,7 +27,7 @@ print(control)
 from pycaputo.fode import caputo
 
 stepper = caputo.L1(
-    derivative_order=alpha,
+    ds=tuple(D(alpha_i) for alpha_i in alpha),
     control=control,
     source=func.source,
     source_jac=func.source_jac,

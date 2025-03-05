@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import ad_ex
 from pycaputo.logging import get_logger
 
@@ -54,7 +55,7 @@ c: Controller = make_jannelli_controller(
 )
 
 stepper = ad_ex.CaputoAdExIntegrateFireL1Model(
-    derivative_order=alpha,
+    ds=(D(alpha[0]), D(alpha[1])),
     control=c,
     y0=(y0,),
     source=model,

@@ -13,7 +13,7 @@ import numpy as np
 import numpy.linalg as la
 import pytest
 
-from pycaputo.derivatives import FractionalOperatorT
+from pycaputo.derivatives import CaputoDerivative, FractionalOperatorT
 from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod, evolve
@@ -78,9 +78,7 @@ def garrappa2009_source_jac(t: float, y: Array, *, alpha: float) -> Array:
 
 
 def fode_factory(
-    cls: type[
-        FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunction]
-    ],
+    cls: type[FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunction]],
     *,
     wrap: bool = True,
     graded: bool = False,
@@ -98,13 +96,13 @@ def fode_factory(
         r = np.stack([
             garrappa2009_source(t, y[i], alpha=alpha[i]) for i in range(nterms)
         ])
-        return r.squeeze()
+        return r if r.size == 1 else r.squeeze()
 
     def source_jac(t: float, y: Array, *, alpha: tuple[float, ...]) -> Array:
         r = np.stack([
             garrappa2009_source_jac(t, y[i], alpha=alpha[i]) for i in range(nterms)
         ])
-        return r.squeeze()
+        return r if r.size == 1 else r.squeeze()
 
     def wrapper(
         alpha: float | tuple[float, ...], n: int
@@ -133,7 +131,7 @@ def fode_factory(
             control = make_fixed_controller(dt, tstart=tspan[0], tfinal=tspan[1])
 
         return cls(
-            derivative_order=alpha,
+            ds=tuple(CaputoDerivative(alpha_i) for alpha_i in alpha),  # type: ignore[misc]
             control=control,
             source=partial(source, alpha=alpha),
             y0=(y0,),

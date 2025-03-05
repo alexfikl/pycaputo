@@ -8,6 +8,7 @@ from dataclasses import replace
 import numpy as np
 
 from pycaputo import fracevolve, fracplot
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.fode.gallery import FitzHughRinzel, FitzHughRinzelParameter
 
 # setup system (parameters from Figure 3g from [Mondal2019])
@@ -29,7 +30,7 @@ print(control)
 from pycaputo.fode import caputo
 
 stepper = caputo.L1(
-    derivative_order=alpha,
+    ds=tuple(D(alpha_i) for alpha_i in alpha),
     control=control,
     source=func.source,
     source_jac=func.source_jac,

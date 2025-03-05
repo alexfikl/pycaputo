@@ -8,6 +8,7 @@ from dataclasses import replace
 import numpy as np
 
 from pycaputo import fracevolve, fracplot
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.fode.gallery import MorrisLecar, StandardMorrisLecarParameter
 
 # setup system (parameters from Section 4.2 and Figure 11 from [Shi2014])
@@ -41,7 +42,7 @@ print(control)
 from pycaputo.fode import caputo
 
 stepper = caputo.L1(
-    derivative_order=alpha,
+    ds=tuple(D(alpha_i) for alpha_i in alpha),
     control=control,
     source=func.source,
     source_jac=func.source_jac,

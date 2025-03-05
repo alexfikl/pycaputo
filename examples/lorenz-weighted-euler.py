@@ -37,6 +37,7 @@ def lorenz_jac(t: float, y: Array, *, sigma: float, rho: float, beta: float) -> 
 # {{{ solve
 
 from pycaputo.controller import make_fixed_controller
+from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.fode import caputo
 
 # NOTE: example taken from Figure 1 in https://doi.org/10.1103/PhysRevLett.91.034101
@@ -47,7 +48,7 @@ beta = 8.0 / 3.0
 y0 = np.array([10.0, 0.0, 10.0])
 
 stepper = caputo.WeightedEuler(
-    derivative_order=alpha,
+    ds=tuple(D(a) for a in alpha),
     control=make_fixed_controller(1.0e-3, tstart=0.0, tfinal=25.0),
     source=partial(lorenz, sigma=sigma, rho=rho, beta=beta),
     source_jac=partial(lorenz_jac, sigma=sigma, rho=rho, beta=beta),
