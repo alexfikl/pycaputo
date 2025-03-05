@@ -121,7 +121,7 @@ extensions = [
 ]
 
 # extension for source files
-source_suffix = ".rst"
+source_suffix = {".rst": "restructuredtext"}
 # name of the main (master) document
 master_doc = "index"
 # min sphinx version

@@ -32,6 +32,7 @@ class FractionalOperator:
 
 
 FractionalOperatorT = TypeVar("FractionalOperatorT", bound=FractionalOperator)
+"""A :class:`~typing.TypeVar` bound to :class:`FractionalOperator`."""
 
 
 @dataclass(frozen=True)
