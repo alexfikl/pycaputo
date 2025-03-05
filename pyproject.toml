@@ -61,6 +61,7 @@ optional-dependencies.docs = [
     "sphinx-design>=0.4",
 ]
 optional-dependencies.test = [
+    "mpmath",
     "mypy",
     "pytest",
     "pytest-benchmark",
