@@ -215,7 +215,7 @@ Features
 * Store an :class:`~numpy.ndarray` for the orders so that they are not recomputed
   at each time step in :class:`~pycaputo.stepping.FractionalDifferentialEquationMethod`.
   Several functions using :func:`~pycaputo.utils.cached_on_first_arg`, e.g.
-  :func:`~pycaputo.stepping.gamma1p` are also cached.
+  ``gamma1p`` are also cached.
 * Rework the hierarchy for the product integration methods and update their
   names. They are now available in :mod:`pycaputo.fode.caputo` only and called
   directly ``ForwardEuler`` (before it was ``CaputoForwardEulerMethod``).

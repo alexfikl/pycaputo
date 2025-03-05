@@ -90,18 +90,23 @@ class FractionalDifferentialEquationMethod(
     @abstractmethod
     def derivative_order(self) -> tuple[float, ...]:
         """A number that represents the *fractional* order of the operators in
-        :attr:`d`. For example, in the case of the Caputo derivative, this is
-        just the order :math:`\alpha`.
+        :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.ds`. For
+        example, in the case of the Caputo derivative, this is just the order
+        :math:`\alpha`.
         """
 
     @cached_property
     def smallest_derivative_order(self) -> float:
-        """Smallest value of the :attr:`derivative_order`."""
+        """Smallest value of the
+        :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.derivative_order`.
+        """
         return min(self.derivative_order)
 
     @cached_property
     def largest_derivative_order(self) -> float:
-        """Largest value of the :attr:`derivative_order`."""
+        """Largest value of the
+        :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.derivative_order`.
+        """
         return max(self.derivative_order)
 
     @property
