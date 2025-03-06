@@ -1,8 +1,8 @@
 Changelog
 =========
 
-pycaputo X.Y.Z (TDB)
---------------------
+pycaputo 0.9.0 (March 6, 2025)
+------------------------------
 
 Dependencies
 ^^^^^^^^^^^^
