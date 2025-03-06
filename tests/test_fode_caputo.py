@@ -385,6 +385,96 @@ def test_singular_caputo_l1(mesh_type: str, alpha: float) -> None:
 # }}}
 
 
+# {{{ test_variable_order_caputo
+
+
+@pytest.mark.parametrize(
+    ("alpha", "c", "omega"),
+    [
+        ((0.6, 0.8), 2.0, 1.0),
+        ((0.5, 0.9), 1.0, 2.0),
+        ((0.9, 0.6), 1.0, 0.5),
+    ],
+)
+def test_variable_order_caputo(
+    alpha: tuple[float, float], c: float, omega: float
+) -> None:
+    """Test convergence of the backward Euler method for variable-order Caputo.
+
+    The tests try to reproduce Table 1 from [Garrappa2023]_.
+    """
+
+    from pycaputo.events import StepCompleted
+    from pycaputo.utils import BlockTimer, EOCRecorder
+
+    order = 1.0
+    eoc = EOCRecorder(order=order)
+
+    from pycaputo.controller import make_fixed_controller
+    from pycaputo.derivatives import VariableExponentialCaputoDerivative as D
+    from pycaputo.fode import variable_caputo as vo
+
+    func = vo.Relaxation(D(alpha=alpha, c=c), y0=1.0, omega=omega)
+
+    for h in 2.0 ** (-np.arange(2, 8)):
+        control = make_fixed_controller(h, tstart=0.0, tfinal=4.0)
+        m = vo.VariableExponentialBackwardEuler(
+            ds=(func.d,),
+            source=func.source,
+            source_jac=func.source_jac,
+            control=control,
+            y0=(func(control.tstart),),
+        )
+
+        with BlockTimer(name=m.name) as bt:
+            ts = []
+            ys = []
+            for event in evolve(m):
+                assert isinstance(event, StepCompleted)
+                ts.append(event.t)
+                ys.append(event.y)
+
+        # FIXME: we are not matching the first-order from [Garrappa2023] and
+        # it's not clear why not. `ys[-1]` matches the output of the MATLAB code
+        # pretty much exactly, so only y_ref can be wrong here..
+        y_ref = func(control.tfinal - h)
+        error = la.norm(ys[-1] - y_ref)
+        log.info(
+            "dt %.5f y %.12e y_ref %.12e error %.12e (%s)",
+            h,
+            ys[-1],
+            la.norm(y_ref),
+            error,
+            bt,
+        )
+
+        eoc.add_data_point(h, error)
+
+    log.info("\n%s", eoc)
+
+    if ENABLE_VISUAL:
+        t = np.array(ts)
+        y = np.array(ys).squeeze()
+        y_ref = np.array([func(ti) for ti in t]).squeeze()
+
+        from pycaputo.utils import figure
+
+        filename = f"test_fode_variable_caputo_{alpha[0]}_{alpha[1]}"
+        with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
+            ax = fig.gca()
+
+            ax.plot(t, y, label=f"{m.name}")
+            ax.plot(t, y_ref, "k--", label="Reference")
+            ax.set_xlabel("$t$")
+            ax.set_ylabel("$y$")
+            ax.legend()
+
+    assert order - 0.2 < eoc.estimated_order < order + 0.5
+
+
+# }}}
+
+
 if __name__ == "__main__":
     import sys
 
