@@ -71,8 +71,11 @@ class ExponentialRectangular(VariableOrderMethod):
 
 
 def gl_scarpi_exp_weights(
-    d: VariableExponentialCaputoDerivative,
-    p: Points,
+    n: int,
+    h: float,
+    alpha0: float,
+    alpha1: float,
+    c: float,
     *,
     tau: float | None = None,
     r: float | None = None,
@@ -80,17 +83,20 @@ def gl_scarpi_exp_weights(
     psi_lim: float = 5.0,
     psi_points: int = 100,
 ) -> Array:
-    if not isinstance(p, UniformPoints):
-        raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
+    """
+    :arg n: number of points in the discretization.
+    :arg h: step size.
+    :arg alpha0: see :attr:`~pycaputo.derivatives.VariableExponentialCaputoDerivative`.
+    :arg alpha1: see :attr:`~pycaputo.derivatives.VariableExponentialCaputoDerivative`.
+    :arg c: see :attr:`~pycaputo.derivatives.VariableExponentialCaputoDerivative`.
 
-    alpha0, alpha1 = -d.alpha[0], -d.alpha[1]
-    c = d.c
-
-    n = p.size
-    h = p.dx[0]
+    :arg psi_lim: bound `[-psi_lim, psi_lim]` used when determining the :math:`M_r`
+        bound from the paper. This defaults to the same values as the MATLAB code.
+    :arg psi_points: number of points in the interval for *psi_lim*.
+    """
     logh = np.log(h)
 
-    eps = float(np.finfo(p.x.dtype).eps)
+    eps = float(np.finfo(np.array(h).dtype).eps)
     if tau is None:
         # NOTE: [Garrappa2023] recommends 10^-12 ~ 10^-13 and the MATLAB code
         # uses 10^-12 exactly. This should work nicely for floats and doubles
@@ -162,8 +168,20 @@ def _quad_vo_exp_rect(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
+    if not isinstance(p, UniformPoints):
+        raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
+
     fx = f(p.x) if callable(f) else f
-    w = gl_scarpi_exp_weights(m.d, p, tau=m.tau, r=m.r, safety_factor=m.safety_factor)
+    w = gl_scarpi_exp_weights(
+        p.size,
+        p.dx[0],
+        -m.d.alpha[0],
+        -m.d.alpha[1],
+        m.d.c,
+        tau=m.tau,
+        r=m.r,
+        safety_factor=m.safety_factor,
+    )
 
     log.info("%r", np.linalg.norm(w))
 

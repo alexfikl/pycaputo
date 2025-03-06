@@ -725,7 +725,7 @@ def cached_on_first_arg(
     :arg func: a function whose return values are cached in its first argument.
         This can be a simple function or a class method.
     """
-    cache_dict_name = f"_cached_method_{func.__module__}{func.__name__}"
+    cache_dict_name = f"_cached_function_{func.__module__}{func.__name__}"
 
     def wrapper(obj: T, /, *args: P.args, **kwargs: P.kwargs) -> R:
         key = frozenset(kwargs.items()) | frozenset(args)

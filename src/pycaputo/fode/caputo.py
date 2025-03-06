@@ -13,14 +13,15 @@ from scipy.special import gamma
 
 from pycaputo.controller import Controller
 from pycaputo.derivatives import CaputoDerivative
-from pycaputo.fode.product_integration import (
-    AdvanceResult,
-    ProductIntegrationMethod,
-)
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
+
+from .product_integration import (
+    AdvanceResult,
+    ProductIntegrationMethod,
+)
 
 log = get_logger(__name__)
 
