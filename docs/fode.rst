@@ -11,6 +11,11 @@ Caputo Derivative Equations
 
 .. automodule:: pycaputo.fode.caputo
 
+Variable-Order Caputo Derivative Equations
+------------------------------------------
+
+.. automodule:: pycaputo.fode.variable_caputo
+
 Special Solutions
 -----------------
 

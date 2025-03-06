@@ -40,10 +40,12 @@ class Relaxation(Function):
 
     .. math::
 
-        D^{\alpha(t)}[y](t) & = -\omega y,
+        D^{\alpha(t)}[y](t) = -\omega y,
 
-    The exact solution is also computed in :meth:`function` using an approximate
+    The exact solution is also computed in :meth:`__call__` using an approximate
     inverse Laplace transform.
+
+    .. automethod:: __call__
     """
 
     d: VariableExponentialCaputoDerivative
@@ -55,6 +57,8 @@ class Relaxation(Function):
     """Relaxation parameter (i.e. eigenvalue of the operator)."""
 
     def __call__(self, t: float) -> Array:
+        """Evaluate the exact solution at time *t*."""
+
         if t == 0.0:
             return np.array([self.y0])
 
@@ -171,7 +175,7 @@ class VariableExponentialBackwardEuler(
 def variable_caputo_backwards_euler_weights(
     m: VariableExponentialBackwardEuler[StateFunctionT],
 ) -> Array:
-    from pycaputo.quadrature.variable_riemann_liouville import gl_scarpi_exp_weights
+    from pycaputo.quadrature.variable_riemann_liouville import _gl_scarpi_exp_weights
 
     c = m.control
     assert isinstance(c, FixedController)
@@ -179,10 +183,10 @@ def variable_caputo_backwards_euler_weights(
     assert n is not None
     h = c.dt
 
-    # FIXME: ideally, `gl_scarpi_exp_weights` would support vector alpha
+    # FIXME: ideally, `_gl_scarpi_exp_weights` would support vector alpha
     omega = np.empty((n + 1, len(m.ds)), dtype=np.array(h).dtype)
     for i, d in enumerate(m.ds):
-        omega[:, i] = gl_scarpi_exp_weights(
+        omega[:, i] = _gl_scarpi_exp_weights(
             n,
             h,
             d.alpha[0],

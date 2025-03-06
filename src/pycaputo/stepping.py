@@ -89,7 +89,7 @@ class FractionalDifferentialEquationMethod(
     @property
     @abstractmethod
     def derivative_order(self) -> tuple[float, ...]:
-        """A number that represents the *fractional* order of the operators in
+        r"""A number that represents the *fractional* order of the operators in
         :attr:`~pycaputo.stepping.FractionalDifferentialEquationMethod.ds`. For
         example, in the case of the Caputo derivative, this is just the order
         :math:`\alpha`.
@@ -112,7 +112,7 @@ class FractionalDifferentialEquationMethod(
     @property
     @abstractmethod
     def order(self) -> float:
-        """Expected order of convergence of the method.
+        r"""Expected order of convergence of the method.
 
         In general, the order of convergence will depend on the parameters of
         the fractional operator (e.g. the order :math:`\alpha` of the Caputo
