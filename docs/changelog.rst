@@ -23,6 +23,13 @@ Features
   :mod:`pycaputo.fode.gallery`.
 * Made :class:`~pycaputo.fode.caputo.Trapezoidal` a bit faster by avoiding
   multiple ``einsum``.
+* Added an implementation for variable-order fractional operators based on
+  [Garrappa2023]_. We implement a variable-order Riemann-Liouville integral in
+  :class:`~pycaputo.quadrature.variable_riemann_liouville.ExponentialRectangular`
+  and an FODE solver for a variable-order Caputo derivative in
+  :class:`~pycaputo.fode.variable_caputo.VariableExponentialBackwardEuler`.
+  As the name suggest, this only supports the exponential decaying order
+  :math:`\alpha(t) = \alpha_2 + (\alpha_1 - \alpha_2) e^{-c t}` from the paper.
 
 Breaking Changes
 ^^^^^^^^^^^^^^^^

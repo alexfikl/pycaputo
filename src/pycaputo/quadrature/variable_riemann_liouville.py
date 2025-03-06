@@ -39,8 +39,10 @@ class ExponentialRectangular(VariableOrderMethod):
 
     tau: float | None = None
     r"""Tolerance used to determine the quadrature weights (see Section 4.4 in
-    [Garrappa2023]_). This is set to :math:`10^4 \epsilon` by default.
+    [Garrappa2023]_). This is set to :math:`10^4 \epsilon` by default, where
+    :math:`\epsilon` is the precision of the given points.
     """
+
     r: float | None = None
     """Radius used to determine the quadrature weights (see Section 4.4 in
     [Garrappa2023]_). This is set to :math:`1 - 1.1 h` by default.
@@ -70,7 +72,7 @@ class ExponentialRectangular(VariableOrderMethod):
         return self.dd
 
 
-def gl_scarpi_exp_weights(
+def _gl_scarpi_exp_weights(
     n: int,
     h: float,
     alpha0: float,
@@ -172,7 +174,7 @@ def _quad_vo_exp_rect(
         raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
 
     fx = f(p.x) if callable(f) else f
-    w = gl_scarpi_exp_weights(
+    w = _gl_scarpi_exp_weights(
         p.size,
         p.dx[0],
         -m.d.alpha[0],
