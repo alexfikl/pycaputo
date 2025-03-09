@@ -83,21 +83,19 @@ def _caputo_piecewise_constant_integral(x: Array, alpha: float) -> Array:
     """
 
     xn = x[-1]
-    return np.array(
-        ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha))
-        / math.gamma(2 - alpha)
-    )
+    gamma = math.gamma(2 - alpha)
+    return ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha)) / gamma  # type: ignore[no-any-return]
 
 
-def _caputo_l1_weights(p: Points, n: int, alpha: float) -> Array:
-    x = p.x[: n + 1]
-    dx = p.dx[:n]
+def _caputo_l1_weights(x: Array, dx: Array, n: int, alpha: float) -> Array:
+    x = x[: n + 1]
+    dx = dx[:n]
     a = _caputo_piecewise_constant_integral(x, alpha) / dx
 
     # NOTE: the first step of the discretization is just
     #   sum a_{ik} f'_k
     # and we need to re-arrange the sum with the approximation of the derivative
-    w = np.empty(n + 1, dtype=p.dtype)
+    w = np.empty(n + 1, dtype=x.dtype)
     w[1:n] = a[:-1] - a[1:]
     w[0] = -a[0]
     w[n] = a[-1]
@@ -113,7 +111,7 @@ def _quadrature_weights_caputo_l1(m: L1, p: Points, n: int) -> Array:
     if n == 0:
         return np.array([], dtype=p.dtype)
 
-    return _caputo_l1_weights(p, n, m.alpha)
+    return _caputo_l1_weights(p.x, p.dx, n, m.alpha)
 
 
 @diffs.register(L1)
@@ -124,7 +122,7 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
     if n == 0:
         return np.array([np.nan])
 
-    w = _caputo_l1_weights(p, n, m.alpha)
+    w = _caputo_l1_weights(p.x, p.dx, n, m.alpha)
     fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
 
     return np.sum(w * fx)  # type: ignore[no-any-return]
@@ -133,9 +131,9 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
 @diff.register(L1)
 def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     fx = f(p.x) if callable(f) else f
-    if fx.shape[0] != p.size:
+    if fx.shape[0] != p.x.size:
         raise ValueError(
-            f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
+            f"Shape of 'f' does match points: got {fx.shape} expected {p.x.shape}"
         )
 
     alpha = m.alpha
@@ -146,7 +144,7 @@ def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     df[0] = np.nan
 
     for n in range(1, df.size):
-        w = _caputo_l1_weights(p, n, alpha)
+        w = _caputo_l1_weights(p.x, p.dx, n, alpha)
         df[n] = np.sum(w * fx[: w.size])
 
     return df
