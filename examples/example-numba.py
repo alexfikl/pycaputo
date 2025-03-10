@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Alexandru Fikl <alexfikl@gmail.com>
+# SPDX-FileCopyrightText: 2025 Alexandru Fikl <alexfikl@gmail.com>
 # SPDX-License-Identifier: MIT
 
 """This example is a little experiment on using numba to speed up some code.
@@ -9,13 +9,18 @@ amazing speedups, but that of course does not work. This examples shows how the
 numba.
 
 While this works, the current performance improvements seem to be quite modest.
-However, this gives an idea of the work that would need to be done to allow
+This is likely due to the fact that we're already making heavy use of :mod:`numpy`
+and most operations are vectorized. Numba is more at home making standard Python
+loops go fast, so this will not give a big improvement.
+
+However, this gives an idea of the changes that would need to be done to allow
 the code to work with numba. The ``numba-scipy`` library is an example of how
 to wrap this into a more generic interface.
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 
 import numpy as np
@@ -91,7 +96,7 @@ def _(x: Array, alpha: float) -> Callable[..., Array]:
 
 
 @numba.jit(nopython=True)  # type: ignore[misc]
-def diff_fast(m: NumbaL1, f: Array, p: NumbaPoints) -> Array:
+def diff_wrap(m: NumbaL1, f: Array, p: NumbaPoints) -> Array:
     alpha = m.alpha
     x = p.x
     dx = p.dx
@@ -104,6 +109,34 @@ def diff_fast(m: NumbaL1, f: Array, p: NumbaPoints) -> Array:
     for n in range(1, df.size):
         w = caputo._caputo_l1_weights(x, dx, n, alpha)
         df[n] = np.sum(w * fx[: w.size])
+
+    return df
+
+
+# For comparison, we also add the entire implementation in here, in the hopes
+# that numba can do a better job when it sees the entire code. This also does
+# away with the wrappers for ``L1`` and ``Points`` to avoid boxing+unboxing them
+# for no reason.
+
+
+@numba.jit(nopython=True)  # type: ignore[misc]
+def diff_numba(f: Array, x: Array, dx: Array, alpha: float) -> Array:
+    df = np.empty_like(fx)
+    df[0] = np.nan
+
+    w = np.empty(x.size, dtype=x.dtype)
+    for n in range(1, df.size):
+        an = (
+            ((x[n] - x[:n]) ** (1 - alpha) - (x[n] - x[1 : n + 1]) ** (1 - alpha))
+            / math.gamma(2 - alpha)
+            / dx[:n]
+        )
+
+        w[1:n] = an[:-1] - an[1:]
+        w[0] = -an[0]
+        w[n] = an[-1]
+
+        df[n] = np.sum(w[: n + 1] * fx[: n + 1])
 
     return df
 
@@ -129,13 +162,20 @@ p_numba = NumbaPoints(p.x, p.dx)
 fx = f(p.x)
 
 diff_num_basic = diff(l1_basic, fx, p)
-diff_num_numba = diff_fast(l1_numba, fx, p_numba)
+diff_num_wrap = diff_wrap(l1_numba, fx, p_numba)
+diff_num_numba = diff_numba(fx, p.x, p.dx, alpha)
 
-print(diff_fast.inspect_types())
+print(diff_wrap.inspect_types(pretty=True))
+
+diff_wrap_error = np.linalg.norm(diff_num_basic[1:] - diff_num_wrap[1:])
+diff_numba_error = np.linalg.norm(diff_num_basic[1:] - diff_num_numba[1:])
+print(f"Error wrap {diff_wrap_error:.12e} numba {diff_numba_error:.12e}")
 
 result = timeit(lambda: diff(l1_basic, fx, p), skip=3)
 print(f"Basic: {result}")
-result = timeit(lambda: diff_fast(l1_numba, fx, p_numba), skip=3)
+result = timeit(lambda: diff_wrap(l1_numba, fx, p_numba), skip=3)
+print(f"Numba: {result}")
+result = timeit(lambda: diff_numba(fx, p.x, p.dx, alpha), skip=3)
 print(f"Numba: {result}")
 
 # }}}
