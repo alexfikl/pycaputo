@@ -172,6 +172,7 @@ plugins = "numpy.typing.mypy_plugin"
 module = [
     "array_api_compat.*",
     "differint.*",
+    "jax.*",
     "pytest_benchmark.*",
     "scienceplots.*",
     "scipy.*",
