@@ -9,6 +9,7 @@ from functools import cached_property
 from typing import Any
 
 import numpy as np
+from array_api_compat import array_namespace
 
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array
@@ -50,17 +51,19 @@ class Points:
     @cached_property
     def dx(self) -> Array:
         """Distance between points."""
-        return np.diff(self.x)
+        xp = array_namespace(self.x)
+        return xp.diff(self.x)  # type: ignore[no-any-return]
 
     @cached_property
     def xm(self) -> Array:
         """Array of midpoints."""
-        return np.array(self.x[1:] + self.x[:-1]) / 2
+        return (self.x[1:] + self.x[:-1]) / 2
 
     @cached_property
     def dxm(self) -> Array:
         """Distance between midpoints."""
-        return np.diff(self.xm)
+        xp = array_namespace(self.x)
+        return xp.diff(self.xm)  # type: ignore[no-any-return]
 
     def translate(self, a: float, b: float) -> Points:
         """Linearly translate the set of points to the new interval :math:`[a, b]`."""
@@ -70,7 +73,7 @@ class Points:
 
 
 def make_stretched_points(
-    n: int, a: float = 0.0, b: float = 1.0, strength: float = 4.0
+    n: int, a: float = 0.0, b: float = 1.0, strength: float = 4.0, xp: Any = None
 ) -> Points:
     r"""Construct a :class:`Points` on :math:`[a, b]`.
 
@@ -87,7 +90,10 @@ def make_stretched_points(
     :arg strength: a positive number that controls the clustering of points at
         the midpoint, i.e. a larger number denotes more points.
     """
-    x = np.linspace(0, 1, n)
+    if xp is None:
+        xp = np
+
+    x = xp.linspace(0, 1, n)
     x = x + strength * (0.5 - x) * (1 - x) * x**2
 
     return Points(a=a, b=b, x=a + (b - a) * x)
@@ -99,6 +105,7 @@ def make_stynes_points(
     b: float = 1.0,
     r: float = 3.0,
     alpha: float | None = None,
+    xp: Any = None,
 ) -> Points:
     r"""Construct a graded set of points on :math:`[a, b]`.
 
@@ -119,13 +126,16 @@ def make_stynes_points(
     :arg r: mesh grading -- a larger :math:`r` leads to more clustering
         of points near the origin :math:`a`.
     """
+    if xp is None:
+        xp = np
+
     if alpha is not None:
         if 0.0 < alpha <= 1.0:
             r = (2 - alpha) / alpha
         else:
             raise ValueError("Grading estimate is only valid for 'alpha' in (0, 1)")
 
-    x = np.linspace(0.0, 1.0, n)
+    x = xp.linspace(0.0, 1.0, n)
     return Points(a=a, b=b, x=a + (b - a) * x**r)
 
 
@@ -140,12 +150,17 @@ class UniformPoints(Points):
     """A uniform set of points in :math:`[a, b]`."""
 
 
-def make_uniform_points(n: int, a: float = 0.0, b: float = 1.0) -> UniformPoints:
+def make_uniform_points(
+    n: int, a: float = 0.0, b: float = 1.0, xp: Any = None
+) -> UniformPoints:
     """Construct a :class:`UniformPoints` on :math:`[a, b]`.
 
     :arg n: number of points in :math:`[a, b]`.
     """
-    return UniformPoints(a=a, b=b, x=np.linspace(a, b, n))
+    if xp is None:
+        xp = np
+
+    return UniformPoints(a=a, b=b, x=xp.linspace(a, b, n))
 
 
 # }}}
@@ -162,12 +177,17 @@ class MidPoints(Points):
     """
 
 
-def make_uniform_midpoints(n: int, a: float = 0.0, b: float = 1.0) -> MidPoints:
+def make_uniform_midpoints(
+    n: int, a: float = 0.0, b: float = 1.0, xp: Any = None
+) -> MidPoints:
     """Construct a :class:`MidPoints` on :math:`[a, b]`.
 
     :arg n: number of points in :math:`[a, b]`.
     """
-    x = np.linspace(a, b, n)
+    if xp is None:
+        xp = np
+
+    x = xp.linspace(a, b, n)
     x[1:] = (x[1:] + x[:-1]) / 2
 
     return MidPoints(a=a, b=b, x=x)
@@ -178,7 +198,9 @@ def make_midpoints_from(p: Points) -> MidPoints:
 
     The new grid will contain the point :math:`x_0` and the midpoints of *p*.
     """
-    x = np.empty_like(p.x)
+    xp = array_namespace(p.x)
+
+    x = xp.empty_like(p.x)
     x[0] = p.x[0]
     x[1:] = p.xm
 

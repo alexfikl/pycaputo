@@ -697,7 +697,10 @@ class BlockTimer:
         self.t_proc = time.process_time() - self.t_proc_start
 
     def __str__(self) -> str:
-        return f"{self.name}: {self.t_wall:.3e}s wall, {self.t_cpu:.3f}x cpu"
+        import datetime
+
+        t_wall = datetime.timedelta(seconds=round(self.t_wall))
+        return f"{self.name}: {t_wall} wall, {self.t_cpu:.3f}x cpu"
 
     def pretty(self) -> str:
         # NOTE: this matches how MATLAB shows the time from `toc`.

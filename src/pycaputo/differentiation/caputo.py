@@ -8,6 +8,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 
 import numpy as np
+from array_api_compat import array_namespace
 
 from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import MidPoints, Points, UniformPoints, make_midpoints_from
@@ -88,6 +89,10 @@ def _caputo_piecewise_constant_integral(x: Array, alpha: float) -> Array:
 
 
 def _caputo_l1_weights(x: Array, dx: Array, n: int, alpha: float) -> Array:
+    xp = array_namespace(x)
+    if n == 0:
+        return xp.array(np.nan)  # type: ignore[no-any-return]
+
     x = x[: n + 1]
     dx = dx[:n]
     a = _caputo_piecewise_constant_integral(x, alpha) / dx
@@ -95,12 +100,7 @@ def _caputo_l1_weights(x: Array, dx: Array, n: int, alpha: float) -> Array:
     # NOTE: the first step of the discretization is just
     #   sum a_{ik} f'_k
     # and we need to re-arrange the sum with the approximation of the derivative
-    w = np.empty(n + 1, dtype=x.dtype)
-    w[1:n] = a[:-1] - a[1:]
-    w[0] = -a[0]
-    w[n] = a[-1]
-
-    return w
+    return xp.concatenate([-a[:1], a[:-1] - a[1:], a[-1:]])  # type: ignore[no-any-return]
 
 
 @quadrature_weights.register(L1)
@@ -131,23 +131,23 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
 @diff.register(L1)
 def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
     fx = f(p.x) if callable(f) else f
-    if fx.shape[0] != p.x.size:
+    if fx.shape[0] != p.size:
         raise ValueError(
-            f"Shape of 'f' does match points: got {fx.shape} expected {p.x.shape}"
+            f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
         )
 
+    xp = array_namespace(fx)
     alpha = m.alpha
 
     # FIXME: in the uniform case, we can also do an FFT, but we need different
     # weights for that, so we leave it like this for now
-    df = np.empty_like(fx)
-    df[0] = np.nan
-
-    for n in range(1, df.size):
-        w = _caputo_l1_weights(p.x, p.dx, n, alpha)
-        df[n] = np.sum(w * fx[: w.size])
-
-    return df
+    return xp.array(  # type: ignore[no-any-return]
+        [
+            xp.sum(_caputo_l1_weights(p.x, p.dx, n, alpha) * fx[: n + 1])
+            for n in range(fx.size)
+        ],
+        dtype=fx.dtype,
+    )
 
 
 # }}}
