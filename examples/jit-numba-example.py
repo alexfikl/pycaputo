@@ -73,11 +73,6 @@ class NumbaPoints:
 # those of the original functions that are getting wrapped.
 
 
-@overload(caputo._caputo_l1_weights)  # type: ignore[misc]
-def _(x: Array, dx: Array, n: int, alpha: float) -> Callable[..., Array]:
-    return caputo._caputo_l1_weights
-
-
 @overload(caputo._caputo_piecewise_constant_integral)  # type: ignore[misc]
 def _(x: Array, alpha: float) -> Callable[..., Array]:
     return caputo._caputo_piecewise_constant_integral
@@ -93,30 +88,6 @@ def _(x: Array, alpha: float) -> Callable[..., Array]:
 
 # FIXME: Is there some way to make numba work this this? Maybe we could just be
 # stricter in our interface, but many methods expect a callable too..
-
-
-@numba.jit(nopython=True)  # type: ignore[misc]
-def diff_wrap(m: NumbaL1, f: Array, p: NumbaPoints) -> Array:
-    alpha = m.alpha
-    x = p.x
-    dx = p.dx
-
-    # FIXME: in the uniform case, we can also do an FFT, but we need different
-    # weights for that, so we leave it like this for now
-    df = np.empty_like(fx)
-    df[0] = np.nan
-
-    for n in range(1, df.size):
-        w = caputo._caputo_l1_weights(x, dx, n, alpha)
-        df[n] = np.sum(w * fx[: w.size])
-
-    return df
-
-
-# For comparison, we also add the entire implementation in here, in the hopes
-# that numba can do a better job when it sees the entire code. This also does
-# away with the wrappers for ``L1`` and ``Points`` to avoid boxing+unboxing them
-# for no reason.
 
 
 @numba.jit(nopython=True)  # type: ignore[misc]
@@ -162,19 +133,15 @@ p_numba = NumbaPoints(p.x, p.dx)
 fx = f(p.x)
 
 diff_num_basic = diff(l1_basic, fx, p)
-diff_num_wrap = diff_wrap(l1_numba, fx, p_numba)
 diff_num_numba = diff_numba(fx, p.x, p.dx, alpha)
 
-print(diff_wrap.inspect_types(pretty=True))
+print(diff_numba.inspect_types(pretty=True))
 
-diff_wrap_error = np.linalg.norm(diff_num_basic[1:] - diff_num_wrap[1:])
 diff_numba_error = np.linalg.norm(diff_num_basic[1:] - diff_num_numba[1:])
-print(f"Error wrap {diff_wrap_error:.12e} numba {diff_numba_error:.12e}")
+print(f"Error numba {diff_numba_error:.12e}")
 
 result = timeit(lambda: diff(l1_basic, fx, p), skip=3)
 print(f"Basic: {result}")
-result = timeit(lambda: diff_wrap(l1_numba, fx, p_numba), skip=3)
-print(f"Numba: {result}")
 result = timeit(lambda: diff_numba(fx, p.x, p.dx, alpha), skip=3)
 print(f"Numba: {result}")
 
