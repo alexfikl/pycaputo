@@ -40,6 +40,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
+    "array-api-compat>=1.11",
     "numpy>=1.17",
     "pymittagleffler>=0.1",
     "rich>=13",
@@ -169,6 +170,7 @@ plugins = "numpy.typing.mypy_plugin"
 
 [[tool.mypy.overrides]]
 module = [
+    "array_api_compat.*",
     "differint.*",
     "pytest_benchmark.*",
     "scienceplots.*",
