@@ -107,6 +107,7 @@ lint.select = [
     "ISC", # flake8-implicit-str-concat
     "N",   # pep8-naming
     "NPY", # numpy
+    "PGH", # pygrep-hooks
     "PL",  # pylint
     "PT",  # flake8-pytest-style
     "Q",   # flake8-quotes
