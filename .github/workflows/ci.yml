@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: extractions/setup-just@v2
+    - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v5
       with:
         python-version: '3.13'
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: extractions/setup-just@v2
+    - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v5
       with:
         python-version: '3.13'
@@ -75,7 +75,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: extractions/setup-just@v2
+    - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: extractions/setup-just@v2
+    - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v5
       with:
         python-version: '3.13'
