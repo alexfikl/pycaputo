@@ -35,7 +35,7 @@ try:
     import jax.numpy as jnp
     from jax.tree_util import register_dataclass
 
-    jax.config.update("jax_enable_x64", val=True)
+    jax.config.update("jax_enable_x64", val=True)  # type: ignore[no-untyped-call,unused-ignore]
 except ImportError:
     print("ERROR: this example requires the 'jax' package")
     raise SystemExit(0) from None
@@ -70,7 +70,7 @@ fx = f(p.x)
 diff_num_basic = diff(method, fx, p)
 
 # evaluate using jax
-p_jax = Points(p.a, p.b, x=jnp.array(p.x))
+p_jax = Points(p.a, p.b, x=jnp.array(p.x))  # type: ignore[arg-type,unused-ignore]
 fx_jax = f(p_jax.x)
 with BlockTimer("jax-compilation") as bt:
     diff_num_jax = diff_jax(method, fx, p_jax)
