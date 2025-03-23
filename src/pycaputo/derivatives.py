@@ -189,6 +189,51 @@ class CaputoHadamardDerivative(FractionalOperator):
 
 
 @dataclass(frozen=True)
+class CaputoFabrizioOperator(FractionalOperator):
+    r"""Caputo-Fabrizio fractional operator from [Caputo2015]_.
+
+    For an order :math:`n - 1 < \alpha \le n`, where :math:`n \in \mathbb{Z}`,
+    the Caputo-Fabrizio fractional operator applied to a function
+    :math:`f: [a, b] \to \mathbb{R}` is given by (see e.g. [Caputo2015]_)
+
+    .. math::
+
+        D_{CF}^\alpha[f](x) = \frac{M(\alpha)}{n - \alpha} \int_a^x
+            \exp \left(-\frac{\alpha - n + 1}{n - \alpha} (x - s)\right)
+            f^{(n)}(s) \,\mathrm{d}s,
+
+    Note that, unlike :class:`CaputoDerivative`, this operator has a very different
+    kernel. In particular, it is a smooth kernel with different properties. For
+    a discussion on fractional operators with smooth kernels see [SalesTeodoro2019]_.
+
+    .. [Caputo2015] M. Caputo, M. Fabrizio,
+        *A New Definition of Fractional Derivative Without Singular Kernel*,
+        Progress in Fractional Differentiation & Applications, Vol. 1, pp. 73--85, 2015.
+        `URL <https://digitalcommons.aaru.edu.jo/pfda/vol1/iss2/1/>`__.
+    """
+
+    alpha: float
+    """Parameter in the Caputo-Fabrizio operator that corresponds to a
+    derivative order."""
+
+    @property
+    def n(self) -> int:
+        r"""Integer part of the :attr:`~CaputoFabrizioOperator.alpha`, i.e.
+        :math:`n - 1 < \alpha \le n`.
+        """
+        return math.ceil(self.alpha)
+
+    def normalization(self) -> float:
+        r"""Normalization :math:`M(\alpha)` used in the definition of the operator.
+
+        From [Caputo2015]_, the normalization must satisfy
+        :math:`M(n - 1) = M(n) = 1`, so that the limits to the integer order limits
+        are satisfied. By default we take :math:`M(\alpha) = 1`.
+        """
+        return 1.0
+
+
+@dataclass(frozen=True)
 class VariableExponentialCaputoDerivative(FractionalOperator):
     r"""Variable-order exponential Caputo fractional-order derivative.
 

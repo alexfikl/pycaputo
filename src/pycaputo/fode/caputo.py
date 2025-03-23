@@ -78,8 +78,6 @@ class CaputoProductIntegrationMethod(
         def __post_init__(self) -> None:
             super().__post_init__()
 
-            from pycaputo.derivatives import CaputoDerivative
-
             if not all(isinstance(d, CaputoDerivative) for d in self.ds):
                 raise TypeError(f"Expected 'CaputoDerivative' operators: {self.ds}")
 
