@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pathlib
 from functools import partial
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -30,22 +31,31 @@ def func(t: float) -> Array:
     return np.array([np.sin(t)])
 
 
-def func_derivative(t: float, *, alpha: float) -> Array:
+def func_derivative(t: float, *, alpha: float, t0: float = 0.0) -> Array:
     return np.array([
         (
             alpha * np.cos(t)
             + (1 - alpha) * np.sin(t)
-            - alpha * np.exp(-alpha / (1 - alpha) * t)
+            - np.exp(-alpha / (1 - alpha) * (t - t0))
+            * (alpha * np.cos(t0) + (1 - alpha) * np.sin(t0))
         )
-        / (1.0 + 2.0 * (alpha - 1.0) * alpha)
+        / (1.0 - 2.0 * alpha * (1.0 - alpha))
     ])
 
 
-def func_source(t: float, y: Array, *, alpha: float) -> Array:
+def func_source(
+    t: float,
+    y: Array,
+    *,
+    alpha: float,
+    t0: float = 0.0,
+    beta: float = 2.0,
+    c: float = 0.0,
+) -> Array:
     y_ref = func(t)
-    dy_ref = func_derivative(t, alpha=alpha)
+    dy_ref = func_derivative(t, alpha=alpha, t0=t0)
 
-    return dy_ref - (y**3 - y_ref**3)
+    return dy_ref + c * (y**beta - y_ref**beta)
 
 
 # }}}
@@ -54,7 +64,13 @@ def func_source(t: float, y: Array, *, alpha: float) -> Array:
 # {{{ test_atangana_seda
 
 
-@pytest.mark.parametrize(("method", "order"), [("AtanganaSeda2", 2.0)])
+@pytest.mark.parametrize(
+    ("method", "order"),
+    [
+        ("AtanganaSeda2", 1.0),
+        ("AtanganaSeda3", 2.0),
+    ],
+)
 @pytest.mark.parametrize("alpha", [0.25, 0.5, 0.75, 0.95])
 def test_atangana_seda(method: str, order: float, alpha: float) -> None:
     from pycaputo.derivatives import CaputoFabrizioOperator
@@ -69,14 +85,23 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
     for h in 2.0 ** (-np.arange(2, 8)):
         from pycaputo.controller import make_fixed_controller
 
-        control = make_fixed_controller(h, tstart=0.0, tfinal=1.75 * np.pi)
+        tstart, tfinal = 0.0, 1.75 * np.pi
+        control = make_fixed_controller(h, tstart=tstart, tfinal=tfinal)
 
+        m: caputo_fabrizio.AtanganaSeda[Any]
         if method == "AtanganaSeda2":
             m = caputo_fabrizio.AtanganaSeda2(
                 ds=(d,),
                 control=control,
-                source=partial(func_source, alpha=alpha),
-                y0=(func(control.tstart),),
+                source=partial(func_source, alpha=alpha, t0=tstart),
+                y0=(func(tstart),),
+            )
+        elif method == "AtanganaSeda3":
+            m = caputo_fabrizio.AtanganaSeda3(
+                ds=(d,),
+                control=control,
+                source=partial(func_source, alpha=alpha, t0=tstart),
+                y0=(func(tstart),),
             )
         else:
             raise ValueError(f"Unsupported method: '{method}'")
@@ -90,8 +115,8 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
             ts.append(event.t)
             ys.append(event.y)
 
-        y_ref = func(control.tfinal)
-        error = la.norm(ys[-1] - y_ref)
+        y_ref = func(tfinal)
+        error = la.norm(ys[-1] - y_ref) / la.norm(y_ref)
         log.info(
             "dt %.5f y %.12e y_ref %.12e error %.12e",
             h,
@@ -111,7 +136,7 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
 
         from pycaputo.utils import figure
 
-        filename = f"test_fode_caputo_fabrizio_{alpha}"
+        filename = f"test_fode_caputo_fabrizio_{method}_{alpha}"
         with figure(TEST_DIRECTORY / filename, normalize=True) as fig:
             ax = fig.gca()
 

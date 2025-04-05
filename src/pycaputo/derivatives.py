@@ -205,6 +205,15 @@ class CaputoFabrizioOperator(FractionalOperator):
     Note that, unlike :class:`CaputoDerivative`, this operator has a very different
     kernel. In particular, it is a smooth kernel with different properties. For
     a discussion on fractional operators with smooth kernels see [SalesTeodoro2019]_.
+    The corresponding integral is given by
+
+    .. math::
+
+        I_{CF}^\alpha[f](x) =
+            \frac{1 - \alpha}{M(\alpha)} f(x)
+            + \frac{\alpha}{M(\alpha)} \int_{a}^x f(s) \,\mathrm{d}s,
+
+    We can see that the integral does not have a kernel at all
 
     .. [Caputo2015] M. Caputo, M. Fabrizio,
         *A New Definition of Fractional Derivative Without Singular Kernel*,

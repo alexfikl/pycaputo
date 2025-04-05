@@ -100,7 +100,7 @@ def _evolve_caputo_fabrizio_atangana_seda(  # type: ignore[misc]
     n = 0
     t = c.tstart
     y = make_initial_condition(m)
-    history.append(t, y)
+    history.append(t, m.source(t, y))
 
     # evolve
     from pycaputo.events import StepAccepted
@@ -149,28 +149,24 @@ def _advance_caputo_fabrizio_atangana_seda2(  # type: ignore[misc]
     dt: float,
 ) -> AdvanceResult:
     n = len(history)
-    t = history.ts[n - 1]
+    t = history.ts[n - 1] + dt
 
     alpha = m.alpha
     M = np.array([d.normalization() for d in m.ds])
     M1 = (1.0 - alpha) / M
     M2 = alpha / M
 
+    f = history.storage[n - 1]
     if n == 1:
-        # NOTE: on first iteration, we just do a standard Forward Euler
-        y0 = y
-        fy = m.source(t, y)
-        ynext = y0 + M1 * fy + dt * M2 * fy
+        # NOTE: first iteration: we just do a standard Forward Euler
+        dy = M1 * f + dt * M2 * f
     else:
-        # NOTE: on the rest, we do Equation 2.60
-        tprev = history.ts[n - 2]
-        yprev = history.storage[n - 2]
+        # NOTE: rest: we do Equation 2.60
+        fp = history.storage[n - 2]
+        dy = M1 * (f - fp) + dt * M2 * (3.0 / 2.0 * f - 1.0 / 2.0 * fp)
 
-        f = m.source(t, y)
-        fprev = m.source(tprev, yprev)
-        ynext = y + M1 * (f - fprev) + dt * M2 * (3.0 / 2.0 * f - 1.0 / 2.0 * fprev)
-
-    return AdvanceResult(ynext, np.zeros_like(ynext), ynext)
+    ynext = y + dy
+    return AdvanceResult(ynext, np.zeros_like(ynext), m.source(t, ynext))
 
 
 # }}}
@@ -182,7 +178,7 @@ def _advance_caputo_fabrizio_atangana_seda2(  # type: ignore[misc]
 @dataclass(frozen=True)
 class AtanganaSeda3(AtanganaSeda[StateFunctionT]):
     """Discretization of the :class:`~pycaputo.derivatives.CaputoFabrizioOperator`
-    based on Appendix A from [Atangana2021]_.
+    based on Section 5 from [Atangana2021]_.
 
     This method is implemented in the ``AS_Method_for_Chaotic_with_CF_Fractional.m``
     code snippet shown in the Appendix. It is a higher-order method compared to
@@ -201,7 +197,33 @@ def _advance_caputo_fabrizio_atangana_seda3(  # type: ignore[misc]
     y: Array,
     dt: float,
 ) -> AdvanceResult:
-    raise NotImplementedError
+    n = len(history)
+    t = history.ts[n - 1] + dt
+
+    alpha = m.alpha
+    M = np.array([d.normalization() for d in m.ds])
+    M1 = (1.0 - alpha) / M
+    M2 = alpha / M
+
+    f = history.storage[n - 1]
+    if n == 1:
+        # NOTE: first iteration: we just do a standard Forward Euler
+        dy = M1 * f + dt * M2 * f
+    elif n == 2:
+        # NOTE: second iteration: we do a AtanganaSeda2
+        fp = history.storage[n - 2]
+        dy = M1 * (f - fp) + dt * M2 * (1.5 * f - 0.5 * fp)
+    else:
+        # NOTE: rest: we do Equation 5.12
+        fp = history.storage[n - 2]
+        fpp = history.storage[n - 3]
+
+        dy = M1 * (f - fp) + dt * M2 * (
+            23.0 / 12.0 * f - 4.0 / 3.0 * fp + 5.0 / 12.0 * fpp
+        )
+
+    ynext = y + dy
+    return AdvanceResult(ynext, np.zeros_like(ynext), m.source(t, ynext))
 
 
 # }}}
