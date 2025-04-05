@@ -213,7 +213,9 @@ class CaputoFabrizioOperator(FractionalOperator):
             \frac{1 - \alpha}{M(\alpha)} f(x)
             + \frac{\alpha}{M(\alpha)} \int_{a}^x f(s) \,\mathrm{d}s,
 
-    We can see that the integral does not have a kernel at all
+    We can see that the integral does not have a kernel at all, so it cannot be
+    considered a fractional integral in the same sense as those of
+    Riemann-Liouville type.
 
     .. [Caputo2015] M. Caputo, M. Fabrizio,
         *A New Definition of Fractional Derivative Without Singular Kernel*,
