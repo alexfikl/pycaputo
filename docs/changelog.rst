@@ -1,6 +1,17 @@
 Changelog
 =========
 
+pycaputo TDB (TBD)
+------------------
+
+Features
+^^^^^^^^
+
+* Implement an FODE solver for the Caputo-Fabrizio operator using
+  :class:`~pycaputo.derivatives.CaputoFabrizioOperator`. The discretizations are
+  :class:`~pycaputo.fode.caputo_fabrizio.AtanganaSeda2` and
+  :class:`~pycaputo.fode.caputo_fabrizio.AtanganaSeda3`.
+
 pycaputo 0.9.0 (March 6, 2025)
 ------------------------------
 
