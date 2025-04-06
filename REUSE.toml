@@ -35,3 +35,8 @@ path = [".gitignore", ".broken.gitlab-ci.yml", ".github/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2023 Alexandru Fikl <alexfikl@gmail.com>"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["examples/data/atangana-seda-*.csv"]
+SPDX-FileCopyrightText = "2025 Alexandru Fikl <alexfikl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
