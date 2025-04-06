@@ -138,7 +138,9 @@ class AtanganaSeda2(AtanganaSeda[StateFunctionT]):
 
     @property
     def order(self) -> float:
-        return 3.0
+        # FIXME: this should be higher order (see Section 2.3.1 in [Atangana2021]),
+        # but there do not seem to be any convergence tests to verify that.
+        return 1.0
 
 
 @advance.register(AtanganaSeda2)
@@ -158,12 +160,12 @@ def _advance_caputo_fabrizio_atangana_seda2(  # type: ignore[misc]
 
     f = history.storage[n - 1]
     if n == 1:
-        # NOTE: first iteration: we just do a standard Forward Euler
+        # NOTE: first iteration: standard Forward Euler
         dy = M1 * f + dt * M2 * f
     else:
-        # NOTE: rest: we do Equation 2.60
+        # NOTE: otherwise: Equation 2.60
         fp = history.storage[n - 2]
-        dy = M1 * (f - fp) + dt * M2 * (3.0 / 2.0 * f - 1.0 / 2.0 * fp)
+        dy = M1 * (f - fp) + dt * M2 * (1.5 * f - 0.5 * fp)
 
     ynext = y + dy
     return AdvanceResult(ynext, np.zeros_like(ynext), m.source(t, ynext))
@@ -187,7 +189,8 @@ class AtanganaSeda3(AtanganaSeda[StateFunctionT]):
 
     @property
     def order(self) -> float:
-        return 4.0
+        # FIXME: this should be higher order (see Section 5.1 in [Atangana2021])
+        return 1.0
 
 
 @advance.register(AtanganaSeda3)
@@ -205,16 +208,22 @@ def _advance_caputo_fabrizio_atangana_seda3(  # type: ignore[misc]
     M1 = (1.0 - alpha) / M
     M2 = alpha / M
 
+    # NOTE: code in Atangana2021, Appendix A the first two equations are
+    #       y1 = y0 + dt * f0
+    #       y2 = y1 + dt * (1.5 * f1 - 0.5 * f0)
+    # which is not consistent with Section 5, Equation 5.5. We use the correct
+    # formulas instead, although some of the results no longer match..
+
     f = history.storage[n - 1]
     if n == 1:
-        # NOTE: first iteration: we just do a standard Forward Euler
+        # NOTE: first iteration: standard Forward Euler
         dy = M1 * f + dt * M2 * f
     elif n == 2:
-        # NOTE: second iteration: we do a AtanganaSeda2
+        # NOTE: second iteration: AtanganaSeda2
         fp = history.storage[n - 2]
         dy = M1 * (f - fp) + dt * M2 * (1.5 * f - 0.5 * fp)
     else:
-        # NOTE: rest: we do Equation 5.12
+        # NOTE: otherwise: Equation 5.12
         fp = history.storage[n - 2]
         fpp = history.storage[n - 3]
 

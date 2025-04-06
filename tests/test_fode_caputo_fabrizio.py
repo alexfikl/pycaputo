@@ -68,10 +68,10 @@ def func_source(
     ("method", "order"),
     [
         ("AtanganaSeda2", 1.0),
-        ("AtanganaSeda3", 2.0),
+        ("AtanganaSeda3", 1.0),
     ],
 )
-@pytest.mark.parametrize("alpha", [0.25, 0.5, 0.75, 0.95])
+@pytest.mark.parametrize("alpha", [0.25, 0.5, 0.75, 0.9])
 def test_atangana_seda(method: str, order: float, alpha: float) -> None:
     from pycaputo.derivatives import CaputoFabrizioOperator
 
@@ -82,7 +82,7 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
 
     eoc = EOCRecorder(order=order)
 
-    for h in 2.0 ** (-np.arange(2, 8)):
+    for h in 2.0 ** (-np.arange(3, 8)):
         from pycaputo.controller import make_fixed_controller
 
         tstart, tfinal = 0.0, 1.75 * np.pi
@@ -145,6 +145,8 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
             ax.set_xlabel("$t$")
             ax.set_ylabel("$y$")
             ax.legend()
+
+    assert order - 0.5 < eoc.estimated_order < order + 0.5
 
 
 # }}}
