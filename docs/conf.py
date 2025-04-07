@@ -155,8 +155,8 @@ html_theme_options = {
         },
         {
             "name": "CI",
-            "url": "https://github.com/alexfikl/pycaputo",
-            "icon": "https://github.com/alexfikl/pycaputo/workflows/CI/badge.svg",
+            "url": "https://github.com/alexfikl/pycaputo/actions/workflows/ci.yml",
+            "icon": "https://github.com/alexfikl/pycaputo/actions/workflows/ci.yml/badge.svg",
             "type": "url",
         },
         {
