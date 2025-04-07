@@ -1,6 +1,6 @@
-.. |badge-ci| image:: https://github.com/alexfikl/pycaputo/workflows/CI/badge.svg
+.. |badge-ci| image:: https://github.com/alexfikl/pycaputo/actions/workflows/ci.yml/badge.svg
     :alt: Build Status
-    :target: https://github.com/alexfikl/pycaputo/actions?query=branch%3Amain+workflow%3ACI
+    :target: https://github.com/alexfikl/pycaputo/actions/workflows/ci.yml
 
 .. |badge-pypi| image:: https://badge.fury.io/py/pycaputo.svg
     :alt: PyPI
