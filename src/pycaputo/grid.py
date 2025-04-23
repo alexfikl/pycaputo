@@ -349,9 +349,9 @@ def make_jacobi_gauss_lobatto_points(
 REGISTERED_POINTS: dict[str, Callable[..., Points]] = {
     "jacobi": make_jacobi_gauss_lobatto_points,
     "midpoints": make_uniform_midpoints,
+    "sine": make_sine_points,
     "stretch": make_stretched_points,
     "stynes": make_stynes_points,
-    "sine": make_sine_points,
     "uniform": make_uniform_points,
 }
 
