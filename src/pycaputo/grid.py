@@ -145,6 +145,49 @@ def make_stynes_points(
     return Points(a=a, b=b, x=a + (b - a) * x**r)
 
 
+def make_sine_points(
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    *,
+    A: float = 0.5,
+    omega: float = 1.0,
+) -> Points:
+    r"""Construct a set of points on :math:`[a, b]` with a sinusoidal spacing.
+
+    The time step will have a magnitude proportional to
+
+    .. math::
+
+        \Delta x_k \propto \frac{1}{2} \left[
+            1 + A \sin \left(2 \pi \omega \frac{k}{n - 2}\right)
+            \right]
+
+    :arg A: amplitude of the sine wave in :math:`(-1, 1)`. Note that an amplitude
+        close to 1 will result in very small spacing at points where the sine
+        argument is :math:`(2 j + 1) \pi / 2`.
+    :arg omega: wavenumber of the sine wave.
+    """
+    if not -1.0 < A < 1.0:
+        raise ValueError(f"Amplitude 'A' not in (-1, 1): {A}")
+
+    if omega <= 0:
+        raise ValueError(f"Wavenumber 'omega' cannot be non-positive: '{omega}'")
+
+    # create spacing in [0, 1]
+    k = np.arange(n - 1) / (n - 2)
+    dx = 1.0 + A * np.sin(2.0 * np.pi * omega * k)
+    dx /= np.sum(dx)
+
+    # cumsum everything up to get the actual grid points
+    x = np.empty(n)
+    x[0] = 0
+    x[1:] = np.cumsum(dx)
+    assert np.linalg.norm(np.diff(x) - dx) < 1.0e-15
+
+    return Points(a=a, b=b, x=a + (b - a) * x)
+
+
 # }}}
 
 
@@ -304,6 +347,7 @@ REGISTERED_POINTS: dict[str, Callable[..., Points]] = {
     "midpoints": make_uniform_midpoints,
     "stretch": make_stretched_points,
     "stynes": make_stynes_points,
+    "sine": make_sine_points,
     "uniform": make_uniform_points,
 }
 
