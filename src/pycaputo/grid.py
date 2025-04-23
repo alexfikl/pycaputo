@@ -72,38 +72,6 @@ class Points:
         return replace(self, a=self.a, b=self.b, x=x)
 
 
-def make_stretched_points(
-    n: int,
-    a: float = 0.0,
-    b: float = 1.0,
-    *,
-    strength: float = 4.0,
-    xp: Any = None,
-) -> Points:
-    r"""Construct a :class:`Points` on :math:`[a, b]`.
-
-    This uses a custom function that clusters points around the midpoint
-    based on the strength *strength*. The stretching is given by
-
-    .. math::
-
-        \phi(\xi) = \xi + A (x_c - x) (1 - \xi) \xi^2
-
-    where :math:`A` is the *strength* and :math:`x_c = 1/2` for the midpoint.
-
-    :arg n: number of points in :math:`[a, b]`.
-    :arg strength: a positive number that controls the clustering of points at
-        the midpoint, i.e. a larger number denotes more points.
-    """
-    if xp is None:
-        xp = np
-
-    x = xp.linspace(0, 1, n)
-    x = x + strength * (0.5 - x) * (1 - x) * x**2
-
-    return Points(a=a, b=b, x=a + (b - a) * x)
-
-
 def make_stynes_points(
     n: int,
     a: float = 0.0,
@@ -145,6 +113,40 @@ def make_stynes_points(
     return Points(a=a, b=b, x=a + (b - a) * x**r)
 
 
+def make_stretched_points(
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    *,
+    strength: float = 4.0,
+    xp: Any = None,
+) -> Points:
+    r"""Construct a :class:`Points` on :math:`[a, b]`.
+
+    This uses a custom function that clusters points around the midpoint
+    based on the strength *strength*. The stretching is given by
+
+    .. math::
+
+        \phi(\xi) = \xi + A (x_c - x) (1 - \xi) \xi^2
+
+    where :math:`A` is the *strength* and :math:`x_c = 1/2` for the midpoint.
+
+    **Note**: This function is mostly meant for testing.
+
+    :arg n: number of points in :math:`[a, b]`.
+    :arg strength: a positive number that controls the clustering of points at
+        the midpoint, i.e. a larger number denotes more points.
+    """
+    if xp is None:
+        xp = np
+
+    x = xp.linspace(0, 1, n)
+    x = x + strength * (0.5 - x) * (1 - x) * x**2
+
+    return Points(a=a, b=b, x=a + (b - a) * x)
+
+
 def make_sine_points(
     n: int,
     a: float = 0.0,
@@ -159,13 +161,15 @@ def make_sine_points(
 
     .. math::
 
-        \Delta x_k \propto \frac{1}{2} \left[
-            1 + A \sin \left(2 \pi \omega \frac{k}{n - 2}\right)
-            \right]
+        \Delta x_k \propto 1 + A \sin \left(2 \pi \omega \frac{k}{n - 2}\right)
 
-    :arg A: amplitude of the sine wave in :math:`(-1, 1)`. Note that an amplitude
-        close to 1 will result in very small spacing at points where the sine
-        argument is :math:`(2 j + 1) \pi / 2`.
+    The amplitude :math:`A` also controls the smallest time step allowed on this
+    grid. In particular, when the sine takes its minimal value of :math:`-1`,
+    an amplitude of :math:`A = ±1` can give almost zero spacing.
+
+    **Note**: This function is mostly meant for testing.
+
+    :arg A: amplitude of the sine wave in :math:`(-1, 1)`.
     :arg omega: wavenumber of the sine wave.
     """
     if not -1.0 < A < 1.0:
