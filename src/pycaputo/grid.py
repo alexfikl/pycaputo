@@ -73,7 +73,12 @@ class Points:
 
 
 def make_stretched_points(
-    n: int, a: float = 0.0, b: float = 1.0, strength: float = 4.0, xp: Any = None
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    *,
+    strength: float = 4.0,
+    xp: Any = None,
 ) -> Points:
     r"""Construct a :class:`Points` on :math:`[a, b]`.
 
@@ -103,6 +108,7 @@ def make_stynes_points(
     n: int,
     a: float = 0.0,
     b: float = 1.0,
+    *,
     r: float = 3.0,
     alpha: float | None = None,
     xp: Any = None,
@@ -151,7 +157,11 @@ class UniformPoints(Points):
 
 
 def make_uniform_points(
-    n: int, a: float = 0.0, b: float = 1.0, xp: Any = None
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    *,
+    xp: Any = None,
 ) -> UniformPoints:
     """Construct a :class:`UniformPoints` on :math:`[a, b]`.
 
@@ -178,7 +188,11 @@ class MidPoints(Points):
 
 
 def make_uniform_midpoints(
-    n: int, a: float = 0.0, b: float = 1.0, xp: Any = None
+    n: int,
+    a: float = 0.0,
+    b: float = 1.0,
+    *,
+    xp: Any = None,
 ) -> MidPoints:
     """Construct a :class:`MidPoints` on :math:`[a, b]`.
 

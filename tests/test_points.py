@@ -39,15 +39,18 @@ def test_points() -> None:
         p = make_points_from_name(name, 32, a=-1.0, b=3.0)
         assert abs(p.a - p.x[0]) < 1.0e-8
 
+        if name not in {"midpoints"}:
+            assert abs(p.b - p.x[-1]) < 1.0e-8
+
         if ENABLE_VISUAL:
             ax = fig.gca()
 
-            y = np.linspace(p.a, p.b, 128)
-            ax.plot(p.x, p.x, "o-")
-            ax.plot(y, y, "k--")
+            y = np.linspace(p.a, p.b, 32)
+            ax.plot(p.x[1:], p.dx, "o-")
+            ax.plot(y[1:], np.diff(y), "ko-")
 
             ax.set_xlabel("$x$")
-            ax.set_ylabel("$x$")
+            ax.set_ylabel(r"$\Delta x$")
 
             savefig(fig, TEST_DIRECTORY / f"test_points_{name}", normalize=True)
             fig.clf()
