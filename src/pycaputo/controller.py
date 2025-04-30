@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from functools import cached_property, singledispatch
+from functools import singledispatch
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -364,7 +364,138 @@ def _evaluate_timestep_accept_fixed(
 # }}}
 
 
+# {{{ GivenStepController
+
+
+@dataclass(frozen=True)
+class GivenStepController(Controller):
+    r"""A time step "controller" that uses a given array of time steps.
+
+    This is mostly meant for testing or when a given time stepping strategy is
+    known to work well (e.g. the graded :func:`~pycaputo.grid.make_stynes_points`
+    mesh for the L1 method).
+    """
+
+    timesteps: Array
+    """Fixed time step array used by the controller."""
+
+    @property
+    def is_adaptive(self) -> bool:
+        return False
+
+    @property
+    def dtinit(self) -> float:
+        return float(self.timesteps[0])
+
+
+@evaluate_error_estimate.register(GivenStepController)
+def _evaluate_error_estimate_given(
+    c: GivenStepController,
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
+    trunc: Array,
+    y: Array,
+    yprev: Array,
+) -> float:
+    return 0.0
+
+
+@evaluate_timestep_factor.register(GivenStepController)
+def _evaluate_timestep_factor_given(
+    c: GivenStepController,
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
+    eest: float,
+) -> float:
+    return 1.0
+
+
+@evaluate_timestep_accept.register(GivenStepController)
+def _evaluate_timestep_accept_given(
+    c: GivenStepController,
+    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
+    q: float,
+    dtprev: float,
+    state: dict[str, Any],
+) -> float:
+    n = state["n"]
+    if n >= c.timesteps.size - 1:
+        # NOTE: this time step is not going to get used
+        return 0.0
+
+    dt = c.timesteps[n + 1]
+    if c.tfinal is not None:
+        eps = 5.0 * np.finfo(m.y0[0].dtype).eps
+        dt = min(dt, c.tfinal - state["t"]) + eps
+
+    return float(dt)
+
+
+# }}}
+
+# {{{ RandomController
+
+
+@dataclass(frozen=True)
+class RandomController(GivenStepController):
+    """A fixed time step "controller" with random time steps."""
+
+
+def make_random_controller(
+    tstart: float = 0.0,
+    tfinal: float | None = None,
+    *,
+    dtmin: float = 1.0e-6,
+    dtmax: float = 1.0e-2,
+    rng: np.random.Generator | None = None,
+) -> RandomController:
+    r"""Construct a :class:`GivenStepController` with random time steps.
+
+    This controller is meant for testing and should not be used otherwise. The
+    time steps are uniformly sampled in :math:`[\Delta t_{\text{min}},
+    \Delta t_{\text{max}}]`.
+    """
+    if tfinal is None:
+        raise ValueError(f"Must provide 'tfinal': value '{tfinal}'")
+
+    if rng is None:
+        rng = np.random.default_rng()
+
+    n = int((tfinal - tstart) / dtmin) + 1
+    dt = rng.uniform(dtmin, dtmax, size=n)
+    ts = tstart + np.cumsum(np.hstack([[0.0], dt]))
+
+    ts = ts[ts < tfinal]
+    if abs(ts[-1] - tfinal) > 1.0e-14:
+        ts = np.hstack([ts, [tfinal]])
+
+    return RandomController(
+        tstart=tstart,
+        tfinal=tfinal,
+        nsteps=ts.size,
+        timesteps=ts,
+    )
+
+
+# }}}
+
 # {{{ GradedController
+
+
+@dataclass(frozen=True)
+class GradedController(GivenStepController):
+    r"""A fixed time step "controller" with a graded time step.
+
+    This graded grid of time steps is described in [Garrappa2015b]_. It
+    essentially takes the form
+
+    .. math::
+
+        \Delta t_n = \frac{t_f - t_s}{N^r} ((n + 1)^r - n^r),
+
+    where the time interval is :math:`[t_s, t_f]` and :math:`N` time steps are
+    taken. This graded grid can give full second-order convergence for certain
+    methods such as the Predictor-Corrector method (e.g. implemented by
+    :class:`~pycaputo.fode.caputo.PECE`).
+    """
 
 
 def make_graded_controller(
@@ -376,11 +507,12 @@ def make_graded_controller(
     alpha: float | None = None,
     r: float | None = None,
 ) -> GradedController:
-    """Create a controller with a graded time step (see :func:`make_fixed_controller`).
+    """Create a controller with a graded time step.
 
     :arg alpha: order of the fractional operator. The order is used to choose an
         optimal grading *r* according to [Stynes2017]_.
-    :arg r: the degree of grading in the time step (see :class:`GradedController`).
+    :arg r: the degree of grading in the time step. This exponent controls the
+        clustering of points at :attr:`~Controller.tstart`.
     """
     if tfinal is None and nsteps is None:
         raise ValueError("Must provide either 'tfinal' or 'nsteps' or both")
@@ -400,99 +532,16 @@ def make_graded_controller(
             raise ValueError("Must provide both 'tfinal' and 'nsteps' with no 'dt'")
     else:
         dt, tfinal, nsteps = _normalize_time_span_triple(dt, tstart, tfinal, nsteps)
-    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=nsteps, r=r)
 
+    assert tfinal is not None
+    assert nsteps is not None
 
-@dataclass(frozen=True)
-class GradedController(Controller):
-    r"""A :class:`Controller` with a variable graded time step.
+    xi = np.arange(nsteps + 1) / nsteps
+    ts = (tfinal - tstart) * (xi[1:] ** r - xi[:-1] ** r)
+    assert ts.size == nsteps
+    print(ts)
 
-    This graded grid of time steps is described in [Garrappa2015b]_. It
-    essentially takes the form
-
-    .. math::
-
-        \Delta t_n = \frac{t_f - t_s}{N^r} ((n + 1)^r - n^r),
-
-    where the time interval is :math:`[t_s, t_f]` and :math:`N` time steps are
-    taken. This graded grid can give full second-order convergence for certain
-    methods such as the Predictor-Corrector method (e.g. implemented by
-    :class:`~pycaputo.fode.caputo.PECE`).
-    """
-
-    r: float
-    """A grading exponent that controls the clustering of points at
-    :attr:`~Controller.tstart`.
-    """
-
-    if __debug__:
-
-        def __post_init__(self) -> None:
-            if self.tfinal is None:
-                raise ValueError("'tfinal' must be given for the graded estimate.")
-
-            if self.nsteps is None:
-                raise ValueError("'nsteps' must be given for the graded estimate")
-
-            if self.r < 1:
-                raise ValueError(f"Exponent must be >= 1: {self.r}")
-
-            super().__post_init__()
-
-    @property
-    def is_adaptive(self) -> bool:
-        return False
-
-    @property
-    def dtinit(self) -> float:
-        if self.tfinal is None or self.nsteps is None:
-            raise AttributeError(
-                f"type object '{type(self).__name__}' has no attribute 'dt'"
-            )
-
-        return (self.tfinal - self.tstart) / (self.nsteps - 1.0)
-
-
-@evaluate_error_estimate.register(GradedController)
-def _evaluate_error_estimate_graded(
-    c: GradedController,
-    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
-    trunc: Array,
-    y: Array,
-    yprev: Array,
-) -> float:
-    return 0.0
-
-
-@evaluate_timestep_factor.register(GradedController)
-def _evaluate_timestep_factor_graded(
-    c: GradedController,
-    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
-    eest: float,
-) -> float:
-    return 1.0
-
-
-@evaluate_timestep_accept.register(GradedController)
-def _evaluate_timestep_accept_graded(
-    c: GradedController,
-    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
-    q: float,
-    dtprev: float,
-    state: dict[str, Any],
-) -> float:
-    assert c.tfinal is not None
-    assert c.nsteps is not None
-
-    n = state["n"]
-    h = (c.tfinal - c.tstart) / (c.nsteps - 1) ** c.r
-    dt = q * h * ((n + 1) ** c.r - n**c.r)
-
-    if c.tfinal is not None:
-        eps = 5.0 * np.finfo(m.y0[0].dtype).eps
-        dt = min(dt, c.tfinal - state["t"]) + eps
-
-    return float(dt)
+    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=ts.size, timesteps=ts)
 
 
 # }}}
@@ -945,121 +994,6 @@ def _evaluate_timestep_reject_jannelli(
         dt = min(dt, c.tfinal - state["t"]) + eps
 
     return dt
-
-
-# }}}
-
-
-# {{{ random controller
-
-
-@dataclass(frozen=True)
-class RandomController(Controller):
-    r"""A time step controller with random time steps.
-
-    This controller is meant for testing and should not be used otherwise. The
-    time steps are uniformly sampled in :math:`[\Delta t_{\text{min}},
-    \Delta t_{\text{max}}]`.
-    """
-
-    dtmin: float
-    """A minimum allowable time step."""
-    dtmax: float
-    """A maximum allowable time step."""
-    rng: np.random.Generator
-    """A random number generator for the time steps."""
-
-    @property
-    def is_adaptive(self) -> bool:
-        return False
-
-    @cached_property
-    def times(self) -> Array:
-        assert self.tfinal is not None
-
-        n = int((self.tfinal - self.tstart) / self.dtmin) + 1
-        dt = self.rng.uniform(self.dtmin, self.dtmax, size=n)
-        ts = self.tstart + np.cumsum(np.hstack([[0.0], dt]))
-
-        ts = ts[ts < self.tfinal]
-        if abs(ts[-1] - self.tfinal) > 1.0e-14:
-            ts = np.hstack([ts, [self.tfinal]])
-
-        return np.array(ts)
-
-    @cached_property
-    def timesteps(self) -> Array:
-        return np.diff(self.times)
-
-    @property
-    def dtinit(self) -> float:
-        return float(self.timesteps[0])
-
-
-def make_random_controller(
-    tstart: float = 0.0,
-    tfinal: float | None = None,
-    *,
-    dtmin: float = 1.0e-6,
-    dtmax: float = 1.0e-2,
-    rng: np.random.Generator | None = None,
-) -> RandomController:
-    """Construct a :class:`RandomController`."""
-    if tfinal is None:
-        raise ValueError(f"Must provide 'tfinal': value '{tfinal}'")
-
-    if rng is None:
-        rng = np.random.default_rng()
-
-    return RandomController(
-        tstart=tstart,
-        tfinal=tfinal,
-        nsteps=None,
-        dtmin=dtmin,
-        dtmax=dtmax,
-        rng=rng,
-    )
-
-
-@evaluate_error_estimate.register(RandomController)
-def _evaluate_error_estimate_random(
-    c: RandomController,
-    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
-    trunc: Array,
-    y: Array,
-    yprev: Array,
-) -> float:
-    return 0.0
-
-
-@evaluate_timestep_factor.register(RandomController)
-def _evaluate_timestep_factor_random(
-    c: RandomController,
-    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
-    eest: float,
-) -> float:
-    return 1.0
-
-
-@evaluate_timestep_accept.register(RandomController)
-def _evaluate_timestep_accept_random(
-    c: RandomController,
-    m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
-    q: float,
-    dtprev: float,
-    state: dict[str, Any],
-) -> float:
-    n = state["n"]
-    if n >= c.timesteps.size - 1:
-        # NOTE: this time step is not going to get used
-        return 0.0
-
-    dt = c.timesteps[n + 1]
-    if c.tfinal is not None:
-        eps = 5.0 * np.finfo(m.y0[0].dtype).eps
-        dt = min(dt, c.tfinal - state["t"]) + eps
-
-    return float(dt)
 
 
 # }}}

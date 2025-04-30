@@ -105,15 +105,10 @@ def test_history_append() -> None:
 
 def _check_fixed_controller_evolution(
     c: Controller,
-    dt: float,
+    dtinit: float,
     *,
     rtol: float = 3.0e-12,
 ) -> None:
-    from pycaputo.controller import (
-        evaluate_error_estimate,
-        evaluate_timestep_accept,
-        evaluate_timestep_factor,
-    )
     from pycaputo.fode import caputo
 
     assert c.tfinal is not None
@@ -123,7 +118,6 @@ def _check_fixed_controller_evolution(
     rng = np.random.default_rng(seed=42)
     y = rng.normal(size=ncomponents)
     yprev = rng.normal(size=ncomponents)
-    trunc = rng.normal(size=ncomponents)
 
     m = caputo.ForwardEuler(
         ds=(CaputoDerivative(0.8),) * y.size,
@@ -132,22 +126,25 @@ def _check_fixed_controller_evolution(
         y0=(yprev,),
     )
 
-    n, t = 0, c.tstart
-    while not c.finished(n, t):
-        eest = evaluate_error_estimate(c, m, trunc, y, yprev)
-        q = evaluate_timestep_factor(c, m, eest)
+    from pycaputo.events import StepCompleted
+    from pycaputo.stepping import evolve
 
-        tmp_state = {"t": t, "n": n, "y": yprev}
-        dtnext = evaluate_timestep_accept(c, m, q, dt, tmp_state)
+    n = 0
+    t = c.tstart
+    dt = dtinit
+    for event in evolve(m, dtinit=dtinit):
+        assert isinstance(event, StepCompleted)
+
+        t = event.t
+        n = event.iteration
+        dtnext = event.dt
 
         # fmt: off
-        assert dtnext >= min(dt, c.tfinal - t), (
+        assert dtnext >= min(dt, c.tfinal - event.t), (
             f"[{n:04d}] dt = {dt:.8e} dtnext {dtnext:.8e} error {dt - dtnext:.8e}"
             )
         # fmt: on
 
-        t += dt
-        n += 1
         dt = dtnext
 
     # fmt: off
@@ -174,7 +171,7 @@ def test_fixed_controller() -> None:
     assert c.nsteps is not None
     assert abs(c.tfinal - c.tstart - c.dt * c.nsteps) < 1.0e-15
 
-    _check_fixed_controller_evolution(c, c.dt)
+    _check_fixed_controller_evolution(c, c.dtinit)
 
 
 # }}}
@@ -199,7 +196,9 @@ def test_graded_controller() -> None:
     with pytest.raises(ValueError, match="Grading estimate"):
         make_graded_controller(tfinal=1.0, alpha=2.0)
 
-    c = make_graded_controller(tfinal=1.0, nsteps=27, alpha=0.75)
+    alpha = 0.75
+    r = (2.0 - alpha) / alpha
+    c = make_graded_controller(tfinal=1.0, nsteps=27, r=r)
     assert c.tfinal is not None
     assert c.nsteps is not None
 
@@ -214,18 +213,19 @@ def test_graded_controller() -> None:
     )
 
     q = 1.0
-    n = np.arange(c.nsteps)
-    t_ref = c.tstart + (n / (c.nsteps - 1)) ** c.r * (c.tfinal - c.tstart)
+    xi = np.arange(c.nsteps + 1) / c.nsteps
+    t_ref = c.tstart + (c.tfinal - c.tstart) * xi**r
+    print(np.diff(t_ref))
 
-    t = dt = c.tstart
-    for i in range(c.nsteps):
-        dt = evaluate_timestep_accept(c, m, q, dt, {"t": t, "n": i})
+    t = dt = c.dtinit
+    for i in range(1, c.nsteps):
+        dt = evaluate_timestep_accept(c, m, q, dt, {"t": t, "n": i - 1})
 
-        assert abs(t - t_ref[i]) < 3.0e-14, (n, abs(t - t_ref[i]))
+        assert abs(t - t_ref[i]) < 3.0e-14, (i, abs(t - t_ref[i]))
         t += dt
 
     dt = evaluate_timestep_accept(c, m, q, dt, {"t": 0.0, "n": 0})
-    _check_fixed_controller_evolution(c, 0.0)
+    _check_fixed_controller_evolution(c, c.dtinit)
 
 
 # }}}
