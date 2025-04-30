@@ -244,6 +244,7 @@ def test_given_controller(name: str) -> None:
     tstart, tfinal = 0.0, 1.0
     nsteps = 31
 
+    c: GivenStepController
     if name == "random":
         rtol = 1.0e-10
         c = make_random_controller(tstart, tfinal, rng=rng)

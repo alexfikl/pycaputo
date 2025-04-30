@@ -125,7 +125,7 @@ def fode_factory(
         control: Controller
         if graded:
             control = make_graded_controller(
-                dt, tstart=tspan[0], tfinal=tspan[1], alpha=max(alpha)
+                tspan[0], tspan[1], dt=dt, alpha=max(alpha)
             )
         else:
             control = make_fixed_controller(dt, tstart=tspan[0], tfinal=tspan[1])
@@ -442,7 +442,7 @@ def test_variable_order_caputo(
         log.info(
             "dt %.5f y %.12e y_ref %.12e error %.12e (%s)",
             h,
-            ys[-1],
+            ys[-1].item(),
             la.norm(y_ref),
             error,
             bt,

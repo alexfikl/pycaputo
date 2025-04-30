@@ -120,7 +120,7 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
         log.info(
             "dt %.5f y %.12e y_ref %.12e error %.12e",
             h,
-            ys[-1],
+            ys[-1].item(),
             la.norm(y_ref),
             error,
         )
