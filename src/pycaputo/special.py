@@ -164,14 +164,12 @@ def _sin_derivative_caputo(
     alpha = d.alpha
     n = d.n
 
-    tomega = omega * t
-
     if n % 2 == 0:
-        Eab = mittag_leffler(-(tomega**2), 2, 2 + n - alpha)
-        result = (-1) ** (n // 2) * tomega ** (n + 1) / t**alpha * Eab
+        Eab = mittag_leffler(-((omega * t) ** 2), 2, 2 + n - alpha)
+        result = (-1) ** (n // 2) * omega ** (n + 1) * t ** (n + 1 - alpha) * Eab
     else:
-        Eab = mittag_leffler(-(tomega**2), 2, 1 + n - alpha)
-        result = (-1) ** ((n - 1) // 2) * tomega**n / t**alpha * Eab
+        Eab = mittag_leffler(-((omega * t) ** 2), 2, 1 + n - alpha)
+        result = (-1) ** ((n - 1) // 2) * omega**n * t ** (n - alpha) * Eab
 
     return np.array(result.real)
 
