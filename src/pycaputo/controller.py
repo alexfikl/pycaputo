@@ -470,8 +470,8 @@ def make_random_controller(
     return RandomController(
         tstart=tstart,
         tfinal=tfinal,
-        nsteps=ts.size,
-        timesteps=ts,
+        nsteps=ts.size - 1,
+        timesteps=np.diff(ts),
     )
 
 
@@ -499,10 +499,10 @@ class GradedController(GivenStepController):
 
 
 def make_graded_controller(
-    dt: float | None = None,
     tstart: float = 0.0,
     tfinal: float | None = None,
     nsteps: int | None = None,
+    dt: float | None = None,
     *,
     alpha: float | None = None,
     r: float | None = None,
@@ -531,8 +531,8 @@ def make_graded_controller(
 
     from pycaputo.grid import make_stynes_points
 
-    p = make_stynes_points(nsteps + 1, tstart, tfinal, r=r, alpha=alpha)
-    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=p.size, timesteps=p.dx)
+    ts = make_stynes_points(nsteps + 1, tstart, tfinal, r=r, alpha=alpha).dx
+    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=ts.size, timesteps=ts)
 
 
 # }}}

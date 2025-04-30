@@ -107,6 +107,7 @@ def _check_fixed_controller_evolution(
     c: Controller,
     dtinit: float,
     *,
+    is_increasing: bool = True,
     rtol: float = 3.0e-12,
 ) -> None:
     from pycaputo.fode import caputo
@@ -139,11 +140,12 @@ def _check_fixed_controller_evolution(
         n = event.iteration
         dtnext = event.dt
 
-        # fmt: off
-        assert dtnext >= min(dt, c.tfinal - event.t), (
-            f"[{n:04d}] dt = {dt:.8e} dtnext {dtnext:.8e} error {dt - dtnext:.8e}"
-            )
-        # fmt: on
+        if is_increasing:
+            # fmt: off
+            assert dtnext >= min(dt, c.tfinal - event.t), (
+                f"[{n:04d}] dt = {dt:.8e} dtnext {dtnext:.8e} error {dt - dtnext:.8e}"
+                )
+            # fmt: on
 
         dt = dtnext
 
@@ -215,7 +217,6 @@ def test_graded_controller() -> None:
     q = 1.0
     xi = np.arange(c.nsteps + 1) / c.nsteps
     t_ref = c.tstart + (c.tfinal - c.tstart) * xi**r
-    print(np.diff(t_ref))
 
     t = dt = c.dtinit
     for i in range(1, c.nsteps):
@@ -224,8 +225,43 @@ def test_graded_controller() -> None:
         assert abs(t - t_ref[i]) < 3.0e-14, (i, abs(t - t_ref[i]))
         t += dt
 
-    dt = evaluate_timestep_accept(c, m, q, dt, {"t": 0.0, "n": 0})
-    _check_fixed_controller_evolution(c, c.dtinit)
+
+# }}}
+
+
+# {{{ test_given_controller
+
+
+@pytest.mark.parametrize("name", ["random", "graded", "stretch"])
+def test_given_controller(name: str) -> None:
+    from pycaputo.controller import (
+        GivenStepController,
+        make_graded_controller,
+        make_random_controller,
+    )
+
+    rng = np.random.default_rng(seed=42)
+    tstart, tfinal = 0.0, 1.0
+    nsteps = 31
+
+    if name == "random":
+        rtol = 1.0e-10
+        c = make_random_controller(tstart, tfinal, rng=rng)
+    elif name == "graded":
+        rtol = 5.0e-12
+        c = make_graded_controller(tstart, tfinal, nsteps=nsteps, alpha=0.75)
+    elif name == "stretch":
+        from pycaputo.grid import make_stretched_points
+
+        rtol = 5.0e-13
+        p = make_stretched_points(nsteps + 1, tstart, tfinal)
+        c = GivenStepController(
+            tstart=tstart, tfinal=tfinal, nsteps=nsteps, timesteps=p.dx
+        )
+    else:
+        raise ValueError(f"Unknown controller name: {name!r}")
+
+    _check_fixed_controller_evolution(c, c.dtinit, rtol=rtol, is_increasing=False)
 
 
 # }}}
