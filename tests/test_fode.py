@@ -194,7 +194,7 @@ def test_graded_controller() -> None:
         make_graded_controller(tfinal=1.0)
 
     with pytest.raises(ValueError, match="Grading estimate"):
-        make_graded_controller(tfinal=1.0, alpha=2.0)
+        make_graded_controller(tfinal=1.0, nsteps=27, alpha=2.0)
 
     alpha = 0.75
     r = (2.0 - alpha) / alpha

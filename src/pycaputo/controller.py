@@ -520,13 +520,6 @@ def make_graded_controller(
     if r is None and alpha is None:
         raise ValueError("Must provide either 'alpha' or 'r' or both to define grading")
 
-    if r is None:
-        assert alpha is not None
-        if 0.0 < alpha <= 1.0:
-            r = (2 - alpha) / alpha
-        else:
-            raise ValueError("Grading estimate is only valid for 'alpha' in (0, 1)")
-
     if dt is None:
         if tfinal is None or nsteps is None:
             raise ValueError("Must provide both 'tfinal' and 'nsteps' with no 'dt'")
@@ -536,12 +529,10 @@ def make_graded_controller(
     assert tfinal is not None
     assert nsteps is not None
 
-    xi = np.arange(nsteps + 1) / nsteps
-    ts = (tfinal - tstart) * (xi[1:] ** r - xi[:-1] ** r)
-    assert ts.size == nsteps
-    print(ts)
+    from pycaputo.grid import make_stynes_points
 
-    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=ts.size, timesteps=ts)
+    p = make_stynes_points(nsteps + 1, tstart, tfinal, r=r, alpha=alpha)
+    return GradedController(tstart=tstart, tfinal=tfinal, nsteps=p.size, timesteps=p.dx)
 
 
 # }}}

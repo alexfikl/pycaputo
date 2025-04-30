@@ -77,7 +77,7 @@ def make_stynes_points(
     a: float = 0.0,
     b: float = 1.0,
     *,
-    r: float = 3.0,
+    r: float | None = 3.0,
     alpha: float | None = None,
     xp: Any = None,
 ) -> Points:
@@ -98,12 +98,17 @@ def make_stynes_points(
     :arg alpha: order of the fractional operator. The order is used to choose an
         optimal grading *r* according to [Stynes2017]_.
     :arg r: mesh grading -- a larger :math:`r` leads to more clustering
-        of points near the origin :math:`a`.
+        of points near the origin :math:`a`. If set to *None*, a default optimal
+        value is determined from *alpha*.
     """
     if xp is None:
         xp = np
 
-    if alpha is not None:
+    if r is None and alpha is None:
+        raise ValueError("Must provide either 'alpha' or 'r' to define grading")
+
+    if r is None:
+        assert alpha is not None
         if 0.0 < alpha <= 1.0:
             r = (2 - alpha) / alpha
         else:
