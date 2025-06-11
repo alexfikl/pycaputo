@@ -625,12 +625,16 @@ class TicTocTimer:
 
         # ... do some work ...
 
-        time.toc()
+        elapsed = time.toc()
         print(time)
     """
 
     t_wall_start: float = field(init=False)
     t_wall: float = field(init=False)
+
+    n_calls: int = field(init=False)
+    t_avg: float = field(init=False)
+    t_sqr: float = field(init=False)
 
     def tic(self) -> None:
         self.t_wall = 0.0
@@ -638,14 +642,32 @@ class TicTocTimer:
 
     def toc(self) -> float:
         self.t_wall = time.perf_counter() - self.t_wall_start
+
+        # statistics
+        self.n_calls += 1
+
+        delta0 = self.t_wall - self.t_avg
+        self.t_avg += delta0 / self.n_calls
+        delta1 = self.t_wall - self.t_avg
+        self.t_sqr += delta0 * delta1
+
         return self.t_wall
 
     def __str__(self) -> str:
         # NOTE: this matches how MATLAB shows the time from `toc`.
         return f"Elapsed time is {self.t_wall:.5f} seconds."
 
+    def stats(self) -> str:
+        """Aggregate statistics across multiple calls to :meth:`toc`."""
+        # NOTE: n_calls == 0 => toc was not called yet, so stddev is zero
+        #       n_calls == 1 => only one call to toc, so the stddev is zero
+        t_std = np.sqrt(self.t_sqr / (self.n_calls - 1)) if self.n_calls > 1 else 0.0
+
+        return f"avg {self.t_avg:.3f}s ± {t_std:.3f}s"
+
     def short(self) -> str:
-        return f"walltime {self.t_wall:.5f} sec"
+        """A shorter string for the last :meth:`tic`-:meth:`toc` cycle."""
+        return f"wall {self.t_wall:.5f}s"
 
 
 @dataclass
