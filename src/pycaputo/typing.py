@@ -11,6 +11,7 @@ from typing import (
     ClassVar,
     ParamSpec,
     Protocol,
+    TypeAlias,
     TypeVar,
     runtime_checkable,
 )
@@ -34,6 +35,15 @@ PathLike = os.PathLike[str] | str
 
 # }}}
 
+
+# {{{ numbers
+
+Integer: TypeAlias = int | np.integer[Any]
+"""An alias for supported integer types."""
+Float: TypeAlias = int | float | np.integer[Any] | np.floating[Any]
+"""An alias for supported floating point types."""
+
+# }}}
 
 # {{{ numpy
 

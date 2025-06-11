@@ -415,9 +415,10 @@ def test_variable_order_caputo(
     from pycaputo.fode import variable_caputo as vo
 
     func = vo.Relaxation(D(alpha=alpha, c=c), y0=1.0, omega=omega)
+    tstart, tfinal = 0.0, 4.0
 
     for h in 2.0 ** (-np.arange(2, 8)):
-        control = make_fixed_controller(h, tstart=0.0, tfinal=4.0)
+        control = make_fixed_controller(float(h), tstart=tstart, tfinal=tfinal)
         m = vo.VariableExponentialBackwardEuler(
             ds=(func.d,),
             source=func.source,
@@ -437,7 +438,7 @@ def test_variable_order_caputo(
         # FIXME: we are not matching the first-order from [Garrappa2023] and
         # it's not clear why not. `ys[-1]` matches the output of the MATLAB code
         # pretty much exactly, so only y_ref can be wrong here..
-        y_ref = func(control.tfinal - h)
+        y_ref = func(tfinal - float(h))
         error = la.norm(ys[-1] - y_ref)
         log.info(
             "dt %.5f y %.12e y_ref %.12e error %.12e (%s)",

@@ -86,7 +86,7 @@ def test_atangana_seda(method: str, order: float, alpha: float) -> None:
         from pycaputo.controller import make_fixed_controller
 
         tstart, tfinal = 0.0, 1.75 * np.pi
-        control = make_fixed_controller(h, tstart=tstart, tfinal=tfinal)
+        control = make_fixed_controller(float(h), tstart=tstart, tfinal=tfinal)
 
         m: caputo_fabrizio.AtanganaSeda[Any]
         if method == "AtanganaSeda2":
