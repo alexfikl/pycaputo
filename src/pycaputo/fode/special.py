@@ -46,16 +46,24 @@ class Solution(Function):
     subclass of :class:`Function` and can also be used to define the equation.
     """
 
-    def __call__(self, t: float) -> Array:
+    def __call__(self, t: float | Array) -> Array:
         return self.function(t)
 
     @abstractmethod
-    def function(self, t: float) -> Array:
-        """Evaluates the reference solution at *t*."""
+    def function(self, t: float | Array) -> Array:
+        """Evaluates the reference solution at *t*.
+
+        :returns: an array of shape ``(n, d)``, where *n* is the size of *t*
+            and *d* is the size of the system.
+        """
 
     @abstractmethod
-    def derivative(self, t: float) -> Array:
-        """Evaluates the fractional derivative of the reference solution at *t*."""
+    def derivative(self, t: float | Array) -> Array:
+        """Evaluates the fractional derivative of the reference solution at *t*.
+
+        :returns: an array of shape ``(n, d)``, where *n* is the size of *t*
+            and *d* is the size of the system.
+        """
 
 
 # {{{ monomials
@@ -113,11 +121,11 @@ class Monomial(Solution):
             if self.beta <= 0:
                 raise ValueError(f"'beta' must be positive: {self.beta}")
 
-    def function(self, t: float) -> Array:
+    def function(self, t: float | Array) -> Array:
         result = np.sum(self.Yv * (t - self.t0) ** self.nu)
         return np.array([result])
 
-    def derivative(self, t: float) -> Array:
+    def derivative(self, t: float | Array) -> Array:
         from pycaputo.special import pow_derivative
 
         result = np.sum([
@@ -240,7 +248,9 @@ class Sine(Solution):
 
     .. math::
 
-        D^\alpha_C[y](t) = D^\alpha_C[y_{\text{ref}}](t).
+        D^\alpha_C[y](t) =
+            D^\alpha_C[y_{\text{ref}}](t)
+            + \zeta (y_{\text{ref}}^\beta(t) - y^\beta(t)).
     """
 
     d: FractionalOperator
@@ -248,21 +258,33 @@ class Sine(Solution):
 
     t0: float
     """The starting time for the equation."""
+    zeta: float
+    """Nonlinear forcing term magnitude."""
+    beta: float
+    """Nonlinear forcing term power."""
 
-    def function(self, t: float) -> Array:
-        return np.array([np.sin(t)])
+    def function(self, t: float | Array) -> Array:
+        return np.array([np.sin(t)]).T  # type: ignore[no-any-return]
 
-    def derivative(self, t: float) -> Array:
+    def derivative(self, t: float | Array) -> Array:
         from pycaputo.special import sin_derivative
 
         result = sin_derivative(self.d, t, t0=self.t0, omega=1.0)
         return np.array([result])
 
     def source(self, t: float, y: Array) -> Array:
-        return self.function(t)
+        f = self.derivative(t)
+        yref = self.function(t)
+
+        return f + self.zeta * (yref**self.beta - y**self.beta)
 
     def source_jac(self, t: float, y: Array) -> Array:
-        return np.zeros_like(y)
+        if self.beta == 1:
+            dy = np.full_like(y, -self.zeta)
+        else:
+            dy = -self.zeta * self.beta * y ** (self.beta - 1)
+
+        return np.diag(dy).squeeze()
 
 
 # }}}
