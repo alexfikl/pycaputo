@@ -629,12 +629,12 @@ class TicTocTimer:
         print(time)
     """
 
-    t_wall_start: float = field(init=False)
-    t_wall: float = field(init=False)
+    t_wall_start: float = field(default=0.0, init=False)
+    t_wall: float = field(default=0.0, init=False)
 
-    n_calls: int = field(init=False)
-    t_avg: float = field(init=False)
-    t_sqr: float = field(init=False)
+    n_calls: int = field(default=0, init=False)
+    t_avg: float = field(default=0.0, init=False)
+    t_sqr: float = field(default=0.0, init=False)
 
     def tic(self) -> None:
         self.t_wall = 0.0
