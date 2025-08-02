@@ -8,7 +8,7 @@ packaging==25.0
     # via hatchling
 pathspec==0.12.1
     # via hatchling
-pip==25.1.1
+pip==25.2
     # via -r .github/requirements-build.in
 pluggy==1.6.0
     # via hatchling
