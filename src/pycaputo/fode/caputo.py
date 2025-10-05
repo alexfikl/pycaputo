@@ -523,7 +523,7 @@ def _advance_caputo_explicit_trapezoidal(  # type: ignore[misc]
 # }}}
 
 
-# {{{ Predictor-Corector (PEC and PECE)
+# {{{ Predictor-Corrector (PEC and PECE)
 
 
 @dataclass(frozen=True)
