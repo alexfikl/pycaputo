@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
-    - uses: fsfe/reuse-action@v5
+    - uses: fsfe/reuse-action@v6
 
   typos:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
