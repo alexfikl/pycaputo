@@ -24,7 +24,7 @@ black:
 [doc("Run pyproject-fmt over the configuration")]
 pyproject:
     {{ PYTHON }} -m pyproject_fmt \
-        --indent 4 --max-supported-python "3.13" \
+        --indent 4 --max-supported-python "3.14" \
         pyproject.toml
     @echo -e "\e[1;32mpyproject clean!\e[0m"
 
