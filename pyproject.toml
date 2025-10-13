@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "pycaputo"
-version = "0.9.0"
+version = "0.10.0"
 description = "Evaluate fractional integrals and solve fractional ODEs"
 readme = "README.rst"
 keywords = [

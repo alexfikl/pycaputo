@@ -7,7 +7,7 @@ pycaputo 0.10.0 (October 13, 2025)
 Dependencies
 ^^^^^^^^^^^^
 
-* Add official support for Python 3.13.
+* Add official support for Python 3.14.
 
 Features
 ^^^^^^^^
