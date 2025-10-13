@@ -1,8 +1,13 @@
 Changelog
 =========
 
-pycaputo TDB (TBD)
-------------------
+pycaputo 0.10.0 (October 13, 2025)
+----------------------------------
+
+Dependencies
+^^^^^^^^^^^^
+
+* Add official support for Python 3.13.
 
 Features
 ^^^^^^^^
@@ -11,6 +16,16 @@ Features
   :class:`~pycaputo.derivatives.CaputoFabrizioOperator`. The discretizations are
   :class:`~pycaputo.fode.caputo_fabrizio.AtanganaSeda2` and
   :class:`~pycaputo.fode.caputo_fabrizio.AtanganaSeda3`.
+* Add example for using ``numba`` and ``jax`` (through ``array_api_compat``)
+  with some of the simpler fractional derivative evaluation methods.
+* Add a sinusoidal grid spacing :func:`~pycaputo.grid.make_sine_points`.
+* Refactor fixed step size controllers. They now all inherit from a base class
+  that just stores all the time steps (:class:`~pycaputo.controller.GivenStepController`).
+
+Fixes
+^^^^^
+
+* Make :func:`~pycaputo.special.sine` work at ``t = 0``.
 
 pycaputo 0.9.0 (March 6, 2025)
 ------------------------------
