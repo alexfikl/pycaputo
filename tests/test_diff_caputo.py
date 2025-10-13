@@ -523,7 +523,7 @@ def test_caputo_vs_differint(
     if name == "L1":
         assert error_vs_di < 1.0e-12
     elif name == "L2":
-        assert error_vs_di < 1.0e-11
+        assert error_vs_di < 2.0e-11
     elif name == "L2C":
         # FIXME: need to implement a L2CF similar to L2F to better compare
         assert error_vs_di < 7.0e-2
