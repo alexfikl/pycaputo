@@ -16,7 +16,7 @@ poetry-core==2.2.1
     # via -r .ci/requirements-build.in
 setuptools==80.9.0
     # via -r .ci/requirements-build.in
-tomli==2.2.1 ; python_full_version < '3.11'
+tomli==2.3.0 ; python_full_version < '3.11'
     # via hatchling
 trove-classifiers==2025.9.11.17
     # via hatchling
