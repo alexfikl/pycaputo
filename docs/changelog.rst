@@ -25,7 +25,7 @@ Features
 Fixes
 ^^^^^
 
-* Make :func:`~pycaputo.special.sine` work at ``t = 0``.
+* Make :func:`~pycaputo.special.sin_derivative` work at ``t = 0``.
 
 pycaputo 0.9.0 (March 6, 2025)
 ------------------------------
