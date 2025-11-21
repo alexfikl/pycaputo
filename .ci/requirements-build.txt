@@ -8,7 +8,7 @@ packaging==25.0
     # via hatchling
 pathspec==0.12.1
     # via hatchling
-pip==25.2
+pip==25.3
     # via -r .ci/requirements-build.in
 pluggy==1.6.0
     # via hatchling
@@ -18,7 +18,7 @@ setuptools==80.9.0
     # via -r .ci/requirements-build.in
 tomli==2.3.0 ; python_full_version < '3.11'
     # via hatchling
-trove-classifiers==2025.9.11.17
+trove-classifiers==2025.11.14.15
     # via hatchling
 wheel==0.45.1
     # via -r .ci/requirements-build.in

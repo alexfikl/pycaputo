@@ -11,20 +11,20 @@ numpy==2.2.6 ; python_full_version < '3.11'
     #   pycaputo (pyproject.toml)
     #   pymittagleffler
     #   scipy
-numpy==2.3.3 ; python_full_version >= '3.11'
+numpy==2.3.5 ; python_full_version >= '3.11'
     # via
     #   pycaputo (pyproject.toml)
     #   pymittagleffler
     #   scipy
 pygments==2.19.2
     # via rich
-pymittagleffler==0.1.5
+pymittagleffler==0.1.7
     # via pycaputo (pyproject.toml)
 rich==14.2.0
     # via pycaputo (pyproject.toml)
 scipy==1.15.3 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml)
-scipy==1.16.2 ; python_full_version >= '3.11'
+scipy==1.16.3 ; python_full_version >= '3.11'
     # via pycaputo (pyproject.toml)
 typing-extensions==4.15.0
     # via pycaputo (pyproject.toml)
