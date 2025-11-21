@@ -92,7 +92,7 @@ class EIFDim(NamedTuple):
         )
 
     def ref(self, alpha: float) -> EIFReference:
-        r"""Construct reference variables used in non-dimensionalizating the PIF model.
+        r"""Construct reference variables used in non-dimensionalizing the PIF model.
 
         The non-dimensionalization is performed using the following rescaling
 

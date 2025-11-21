@@ -131,7 +131,7 @@ class LIFDim(NamedTuple):
         )
 
     def ref(self, alpha: float, *, V_ref: float | None = None) -> LIFReference:
-        r"""Construct reference variables used in non-dimensionalizating the LIF model.
+        r"""Construct reference variables used in non-dimensionalizing the LIF model.
 
         The non-dimensionalization is performed using the following rescaling
 

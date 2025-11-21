@@ -107,7 +107,7 @@ class AdExDim(NamedTuple):
         )
 
     def ref(self, alpha: float | tuple[float, float]) -> AdExReference:
-        r"""Construct reference variables used in non-dimensionalizating the AdEx model.
+        r"""Construct reference variables used in non-dimensionalizing the AdEx model.
 
         The non-dimensionalization is performed using the following rescaling
 
