@@ -20,7 +20,7 @@ jobs:
     name: Licensing (REUSE)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: fsfe/reuse-action@v6
 
   typos:
@@ -28,7 +28,7 @@ jobs:
     name: Spelling (typos)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: crate-ci/typos@master
 
   ruff:
@@ -36,7 +36,7 @@ jobs:
     name: Linting (ruff)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
@@ -53,7 +53,7 @@ jobs:
     name: Annotations (mypy)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
@@ -74,7 +74,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
       fail-fast: false
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
@@ -91,7 +91,7 @@ jobs:
     name: Examples
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
@@ -112,7 +112,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - uses: actions/setup-python@v6

@@ -9,7 +9,7 @@ jobs:
     name: Automatic Push to gitlab.dev.info.uvt.ro
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Main Script
       run: |
         mkdir ~/.ssh
