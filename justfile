@@ -112,11 +112,11 @@ pip-install:
 clean:
     rm -rf *.png
     rm -rf build dist
-    rm -rf docs/build.sphinx
+    rm -rf docs/_build
 
 [doc("Remove various temporary files and caches")]
 purge: clean
-    rm -rf .ruff_cache .pytest_cache .pytest-cache .mypy_cache tags
+    rm -rf .ruff_cache .pytest_cache .mypy_cache tags
 
 [doc("Regenerate ctags")]
 ctags:
