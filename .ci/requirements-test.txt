@@ -46,7 +46,7 @@ pygments==2.19.2
     # via
     #   pytest
     #   rich
-pymittagleffler==0.1.7
+pymittagleffler==0.1.8
     # via pycaputo (pyproject.toml)
 pytest==9.0.2
     # via

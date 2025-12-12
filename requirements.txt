@@ -18,7 +18,7 @@ numpy==2.3.5 ; python_full_version >= '3.11'
     #   scipy
 pygments==2.19.2
     # via rich
-pymittagleffler==0.1.7
+pymittagleffler==0.1.8
     # via pycaputo (pyproject.toml)
 rich==14.2.0
     # via pycaputo (pyproject.toml)
