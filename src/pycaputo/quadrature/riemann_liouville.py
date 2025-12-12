@@ -551,9 +551,9 @@ def _quad_rl_conv(
         raise TypeError(f"Only uniforms points are supported: '{type(p).__name__}'")
 
     from pycaputo.generating_functions import (
-        lubich_bdf_starting_weights,
-        lubich_bdf_starting_weights_count,
+        lmm_starting_weights,
         lubich_bdf_weights,
+        lubich_starting_powers,
     )
 
     fx = f(p.x) if callable(f) else f
@@ -564,13 +564,13 @@ def _quad_rl_conv(
     qf[0] = np.nan
 
     w = lubich_bdf_weights(-alpha, m.quad_order, p.size)
-
     if np.isfinite(m.beta):
-        s = lubich_bdf_starting_weights_count(m.quad_order, alpha)
-        omegas = lubich_bdf_starting_weights(w, s, alpha, beta=m.beta)
+        sigma = lubich_starting_powers(m.quad_order, alpha, beta=m.beta)
+        omegas = lmm_starting_weights(w, sigma, alpha)
 
-        for n, omega in enumerate(omegas):
-            qc = np.sum(w[: n + s][::-1] * fx[: n + s])
+        s = sigma.size
+        for n, omega in omegas:
+            qc = np.sum(w[:n][::-1] * fx[:n])
             qs = np.sum(omega * fx[: s + 1])
 
             qf[n + s] = dxa * (qc + qs)
