@@ -73,7 +73,7 @@ class NumbaPoints:
 # those of the original functions that are getting wrapped.
 
 
-@overload(caputo._caputo_piecewise_constant_integral)  # type: ignore[misc]
+@overload(caputo._caputo_piecewise_constant_integral)  # type: ignore[untyped-decorator]
 def _(x: Array, alpha: float) -> Callable[..., Array]:
     return caputo._caputo_piecewise_constant_integral
 
@@ -90,7 +90,7 @@ def _(x: Array, alpha: float) -> Callable[..., Array]:
 # stricter in our interface, but many methods expect a callable too..
 
 
-@numba.jit(nopython=True)  # type: ignore[misc]
+@numba.jit(nopython=True)  # type: ignore[untyped-decorator]
 def diff_numba(f: Array, x: Array, dx: Array, alpha: float) -> Array:
     df = np.empty_like(fx)
     df[0] = np.nan
