@@ -154,10 +154,16 @@ class InMemoryHistory(History[T]):
         """
         # NOTE: mostly following the growth pattern of python lists
         # https://github.com/python/cpython/blob/76bef3832bae64664882e27ecb6f89800a12cf43/Objects/listobject.c#L73
-
         new_size = new_size + (new_size >> 3) + (3 if new_size < 9 else 6)
-        self.storage.resize((new_size, *self.storage.shape[1:]))
-        self.ts.resize((new_size,))
+
+        # NOTE: `np.resize` is being deprecated, so this should be updated
+        #   https://github.com/numpy/numpy/issues/28800
+        object.__setattr__(
+            self,
+            "storage",
+            np.resize(self.storage, (new_size, *self.storage.shape[1:])),
+        )
+        object.__setattr__(self, "ts", np.resize(self.ts, (new_size,)))
 
     def append(self, t: float, y: Array) -> None:
         k = self.filled
