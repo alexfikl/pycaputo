@@ -63,7 +63,7 @@ optional-dependencies.docs = [
 ]
 optional-dependencies.test = [
     "mpmath",
-    "mypy",
+    "ty",
     "pytest",
     "pytest-benchmark",
     "ruff",
@@ -160,27 +160,6 @@ addopts = [
     "--capture=no",
     "--verbose",
 ]
-
-[tool.mypy]
-strict = true
-python_version = "3.10"
-hide_error_codes = false
-warn_unused_ignores = true
-local_partial_types = true
-
-[[tool.mypy.overrides]]
-module = [
-    "array_api_compat.*",
-    "differint.*",
-    "jax.*",
-    "pytest_benchmark.*",
-    "scienceplots.*",
-    "scipy.*",
-    "matplotlib.*",
-    "mpl_toolkits.mplot3d.*",
-    "numba.*",
-]
-ignore_missing_imports = true
 
 [tool.doc8]
 max-line-length = 88
