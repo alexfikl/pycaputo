@@ -101,7 +101,7 @@ FitzHugh-Nagumo Models
     +++
 
     This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 4d
+    :class:`~pycaputo.fode.gallery.FitzHughNagumo` class to reproduce Figure 4d
     from [Brandibur2018]_. The complete setup (with parameters) can be found in
     :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
 
