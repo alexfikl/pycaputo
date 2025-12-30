@@ -1,7 +1,8 @@
 cache:
   - key:
       files:
-        - requirements-test.txt
+        - .ci/requirements-build.txt
+        - .ci/requirements-test.txt
     paths:
       - vendor/apt
       - vendor/python
@@ -12,19 +13,18 @@ before_script:
   - free -h
   - export APT_DIR="$(pwd)/vendor/apt" && mkdir -pv "$APT_DIR"
   - apt-get update && apt-get -o dir::cache::archives="$APT_DIR" install -y --no-install-recommends just
-  - python -m venv --system-site-packages vendor/python
+  - just ci-install vendor/python
   - source vendor/python/bin/activate
-  - just pip-install
 
 ruff:
   image: "python:3.13"
   script: |
     just ruff
 
-mypy:
+ty:
   image: "python:3.13"
   script: |
-    just mypy
+    just ty
 
 pytest:
   image: "python:$PYTHON_VERSION"
