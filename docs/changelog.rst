@@ -8,7 +8,7 @@ Fixes
 ^^^^^
 
 * Fix crash due to ``ndarray.resize`` on Python 3.14 and numpy 2.4.0. This seemed
-  to be due an updated check for the refcount. An update is available in
+  to be due an updated check for the refcount. An upstream fix is available in
   `#30728 <https://github.com/numpy/numpy/pull/30278>`__, but this fix should
   make that unnecessary.
 
@@ -16,8 +16,8 @@ Maintenance
 ^^^^^^^^^^^
 
 * Switched to `ty <https://github.com/astral-sh/ty>`__ for type checking. It is
-  not as good at ``mypy --strict`` at the moment, but seems to be improving fast
-  and it much faster.
+  not as good as ``mypy --strict`` at the moment, but seems to be improving fast
+  and is much faster.
 
 pycaputo 0.10.0 (October 13, 2025)
 ----------------------------------
