@@ -46,13 +46,13 @@ class Points:
     @property
     def shape(self) -> tuple[int, ...]:
         """The shape of the points array in the set."""
-        return self.x.shape  # type: ignore[no-any-return]
+        return self.x.shape
 
     @cached_property
     def dx(self) -> Array:
         """Distance between points."""
         xp = array_namespace(self.x)
-        return xp.diff(self.x)  # type: ignore[no-any-return]
+        return xp.diff(self.x)
 
     @cached_property
     def xm(self) -> Array:
@@ -63,7 +63,7 @@ class Points:
     def dxm(self) -> Array:
         """Distance between midpoints."""
         xp = array_namespace(self.x)
-        return xp.diff(self.xm)  # type: ignore[no-any-return]
+        return xp.diff(self.xm)
 
     def translate(self, a: float, b: float) -> Points:
         """Linearly translate the set of points to the new interval :math:`[a, b]`."""

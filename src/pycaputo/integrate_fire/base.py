@@ -200,14 +200,14 @@ class IntegrateFireMethod(
 
 
 @make_initial_condition.register(IntegrateFireMethod)
-def _make_initial_condition_caputo(  # type: ignore[misc]
+def _make_initial_condition_caputo(
     m: IntegrateFireMethod[IntegrateFireModelT],
 ) -> Array:
     return m.y0[0]
 
 
 @evolve.register(IntegrateFireMethod)
-def _evolve_caputo_integrate_fire_l1(  # type: ignore[misc]
+def _evolve_caputo_integrate_fire_l1(
     m: IntegrateFireMethod[IntegrateFireModelT],
     *,
     history: History[Any] | None = None,

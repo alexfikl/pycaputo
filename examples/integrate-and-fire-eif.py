@@ -85,6 +85,7 @@ for event in evolve(stepper, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
+    assert isinstance(event, (StepAccepted, StepRejected))
     log.info("%s energy %.5e eest %+.5e", event, np.linalg.norm(event.y), event.eest)
 
 # }}}

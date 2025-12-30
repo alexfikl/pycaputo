@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
-import rich
+if TYPE_CHECKING:
+    from rich.table import Table
 
 
-def stringify_table(table: rich.table.Table) -> str:
+def stringify_table(table: Table) -> str:
     """Stringify a rich table."""
     import io
 

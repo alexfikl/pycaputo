@@ -123,7 +123,7 @@ class AdExDim(NamedTuple):
             components :math:`(V, w)`. These can be the same if the two variables
             use the same order.
         """
-        alpha = (alpha, alpha) if isinstance(alpha, float) else alpha
+        alpha = (alpha, alpha) if isinstance(alpha, (int, float)) else alpha
         if not len(alpha) == 2:
             raise ValueError(f"Only 2 orders 'alpha' are required: given {len(alpha)}")
 
@@ -546,7 +546,7 @@ def find_maximum_time_step_lambert(
 
     import scipy.optimize as so
 
-    result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])
+    result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])  # ty: ignore[no-matching-overload]
     return float(result.root) - tprev
 
 
@@ -570,7 +570,7 @@ class CaputoAdExIntegrateFireL1Model(IntegrateFireMethod[AdExModel]):
         # estimates for the time step even though it does not do the interpolation
         return 1.0
 
-    def solve(self, t: float, y: Array, h: Array, r: Array) -> Array:
+    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         """Solve the implicit equation for the AdEx model.
 
         In this case, since the right-hand side is nonlinear, but we can solve
@@ -583,14 +583,14 @@ class CaputoAdExIntegrateFireL1Model(IntegrateFireMethod[AdExModel]):
         """
         from scipy.special import lambertw
 
-        d0, d1, d2, c0, c1 = _evaluate_lambert_coefficients(self.source, t, y, h, r)
+        d0, d1, d2, c0, c1 = _evaluate_lambert_coefficients(self.source, t, y0, c, r)
         dstar = -d2 / d0 * np.exp(-d1 / d0)
         Vstar = -d1 / d0 - lambertw(dstar, tol=1.0e-12)
         Vstar = np.real_if_close(Vstar, tol=100)
         wstar = c0 * Vstar + c1
 
         ystar = np.array([Vstar, wstar])
-        assert np.linalg.norm(ystar - h * self.source(t, ystar) - r) < 1.0e-8
+        assert np.linalg.norm(ystar - c * self.source(t, ystar) - r) < 1.0e-8
 
         return ystar
 
@@ -608,7 +608,7 @@ def _ad_ex_spike_reset(
 
 
 @advance.register(CaputoAdExIntegrateFireL1Model)
-def _advance_caputo_ad_ex_l1(  # type: ignore[misc]
+def _advance_caputo_ad_ex_l1(
     m: CaputoAdExIntegrateFireL1Model,
     history: ProductIntegrationHistory,
     y: Array,

@@ -179,7 +179,7 @@ def test_cached_on_first_arg(cls: type) -> None:
     cached_func(o)
     assert flag[0] == 1
 
-    cached_func.clear_cached(o)  # type: ignore[attr-defined]
+    cached_func.clear_cached(o)  # ty: ignore[unresolved-attribute]
     cached_func(o)
     assert flag[0] == 2
 

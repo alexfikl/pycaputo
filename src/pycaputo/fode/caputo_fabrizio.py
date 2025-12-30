@@ -73,14 +73,14 @@ class AtanganaSeda(
 
 
 @make_initial_condition.register(AtanganaSeda)
-def _make_initial_condition_caputo_fabrizio_atangana_seda(  # type: ignore[misc]
+def _make_initial_condition_caputo_fabrizio_atangana_seda(
     m: AtanganaSeda[StateFunctionT],
 ) -> Array:
     return m.y0[0]
 
 
 @evolve.register(AtanganaSeda)
-def _evolve_caputo_fabrizio_atangana_seda(  # type: ignore[misc]
+def _evolve_caputo_fabrizio_atangana_seda(
     m: AtanganaSeda[StateFunctionT],
     *,
     history: ProductIntegrationHistory | None = None,
@@ -144,7 +144,7 @@ class AtanganaSeda2(AtanganaSeda[StateFunctionT]):
 
 
 @advance.register(AtanganaSeda2)
-def _advance_caputo_fabrizio_atangana_seda2(  # type: ignore[misc]
+def _advance_caputo_fabrizio_atangana_seda2(
     m: AtanganaSeda2[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -194,7 +194,7 @@ class AtanganaSeda3(AtanganaSeda[StateFunctionT]):
 
 
 @advance.register(AtanganaSeda3)
-def _advance_caputo_fabrizio_atangana_seda3(  # type: ignore[misc]
+def _advance_caputo_fabrizio_atangana_seda3(
     m: AtanganaSeda3[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,

@@ -264,7 +264,7 @@ class Sine(Solution):
     """Nonlinear forcing term power."""
 
     def function(self, t: float | Array) -> Array:
-        return np.array([np.sin(t)]).T  # type: ignore[no-any-return]
+        return np.array([np.sin(t)]).T
 
     def derivative(self, t: float | Array) -> Array:
         from pycaputo.special import sin_derivative

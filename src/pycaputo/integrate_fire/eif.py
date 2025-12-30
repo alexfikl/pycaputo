@@ -226,7 +226,7 @@ class EIFModel(IntegrateFireModel):
 
 
 def _evaluate_lambert_coefficients(
-    eif: EIFModel, t: float, y: Array, h: Array, r: Array
+    eif: EIFModel, t: float, y: Array, h: float | Array, r: Array
 ) -> tuple[float, float, Array]:
     d0 = 1 + h
     d1 = h
@@ -266,7 +266,7 @@ def find_maximum_time_step_lambert(
 
     import scipy.optimize as so
 
-    result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])
+    result = so.root_scalar(f=func, x0=t, bracket=[tprev, t])  # ty: ignore[no-matching-overload]
     t = float(result.root)
 
     return t - tprev
@@ -285,7 +285,7 @@ class CaputoExponentialIntegrateFireL1Method(IntegrateFireMethod[EIFModel]):
         # estimates for the time step even though it does not do the interpolation
         return 1.0
 
-    def solve(self, t: float, y: Array, h: Array, r: Array) -> Array:
+    def solve(self, t: float, y0: Array, c: Array, r: Array) -> Array:
         r"""Solve the implicit equation for the EIF model.
 
         In this case, since the right-hand side is nonlinear, but we can solve
@@ -298,17 +298,17 @@ class CaputoExponentialIntegrateFireL1Method(IntegrateFireMethod[EIFModel]):
         """
         from scipy.special import lambertw
 
-        d0, d1, d2 = _evaluate_lambert_coefficients(self.source, t, y, h, r)
+        d0, d1, d2 = _evaluate_lambert_coefficients(self.source, t, y0, c, r)
         V = d2 / d0 - lambertw(-d1 / d0 * np.exp(d2 / d0), tol=1.0e-12)
         V = np.real_if_close(V, tol=100)
 
-        assert np.linalg.norm(V - h * self.source(t, V) - r) < 1.0e-8
+        assert np.linalg.norm(V - c * self.source(t, V) - r) < 1.0e-8
 
         return np.array(V)
 
 
 @advance.register(CaputoExponentialIntegrateFireL1Method)
-def _advance_caputo_eif_l1(  # type: ignore[misc]
+def _advance_caputo_eif_l1(
     m: CaputoExponentialIntegrateFireL1Method,
     history: ProductIntegrationHistory,
     y: Array,

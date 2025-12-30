@@ -41,7 +41,7 @@ classifiers = [
 ]
 dependencies = [
     "array-api-compat>=1.11",
-    "numpy>=1.17",
+    "numpy>=2.1",
     "pymittagleffler>=0.1",
     "rich>=13",
     "scipy>=1.7",
@@ -55,10 +55,21 @@ urls.Repository = "https://github.com/alexfikl/pycaputo"
 
 [dependency-groups]
 dev = [ "doc8", "pyproject-fmt", "reuse", "typos", "uv" ]
-# NOTE: typing dependencies: matplotlib, scienceplots, types-dataclasses
-test = [ "matplotlib", "mpmath", "pytest", "ruff", "scienceplots", "ty", "types-dataclasses" ]
+# NOTE: typing dependencies: matplotlib, scienceplots, scipy-stubs, types-dataclasses
+test = [
+    "matplotlib",
+    "mpmath",
+    "pytest",
+    "pytest-benchmark",
+    "ruff",
+    "scienceplots",
+    "scipy-stubs",
+    "ty",
+    "types-dataclasses",
+]
 docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.4" ]
 vis = [ "scienceplots>=2.1" ]
+examples = [ "numba" ]
 
 [tool.hatch.metadata]
 allow-direct-references = true

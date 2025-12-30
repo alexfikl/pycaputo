@@ -62,7 +62,7 @@ class Relaxation(Function):
         if t == 0.0:
             return np.array([self.y0])
 
-        import mpmath  # type: ignore[import-untyped]
+        import mpmath
 
         alpha1, alpha2 = self.d.alpha
         c = self.d.c
@@ -203,14 +203,14 @@ def variable_caputo_backwards_euler_weights(
 
 
 @make_initial_condition.register(VariableExponentialBackwardEuler)
-def _make_initial_condition_vo_caputo_backward_euler(  # type: ignore[misc]
+def _make_initial_condition_vo_caputo_backward_euler(
     m: VariableExponentialBackwardEuler[StateFunctionT],
 ) -> Array:
     return m.y0[0]
 
 
 @advance.register(VariableExponentialBackwardEuler)
-def _advance_vo_caputo_backward_euler(  # type: ignore[misc]
+def _advance_vo_caputo_backward_euler(
     m: VariableExponentialBackwardEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -236,7 +236,7 @@ def _advance_vo_caputo_backward_euler(  # type: ignore[misc]
 
 
 @evolve.register(VariableExponentialBackwardEuler)
-def _evolve_vo_caputo_backward_euler(  # type: ignore[misc]
+def _evolve_vo_caputo_backward_euler(
     m: VariableExponentialBackwardEuler[StateFunctionT],
     *,
     history: ProductIntegrationHistory | None = None,

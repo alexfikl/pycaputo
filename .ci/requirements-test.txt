@@ -44,8 +44,16 @@ numpy==2.4.0 ; python_full_version >= '3.11'
     #   contourpy
     #   differint
     #   matplotlib
+    #   numpy-typing-compat
+    #   optype
     #   pymittagleffler
     #   scipy
+numpy-typing-compat==20251206.2.4 ; python_full_version >= '3.11'
+    # via optype
+optype==0.9.3 ; python_full_version < '3.11'
+    # via scipy-stubs
+optype==0.15.0 ; python_full_version >= '3.11'
+    # via scipy-stubs
 packaging==25.0
     # via
     #   matplotlib
@@ -54,6 +62,8 @@ pillow==12.0.0
     # via matplotlib
 pluggy==1.6.0
     # via pytest
+py-cpuinfo==9.0.0
+    # via pytest-benchmark
 pygments==2.19.2
     # via
     #   pytest
@@ -63,6 +73,10 @@ pymittagleffler==0.1.8
 pyparsing==3.3.1
     # via matplotlib
 pytest==9.0.2
+    # via
+    #   pycaputo (pyproject.toml:test)
+    #   pytest-benchmark
+pytest-benchmark==5.2.3
     # via pycaputo (pyproject.toml:test)
 python-dateutil==2.9.0.post0
     # via matplotlib
@@ -76,6 +90,10 @@ scipy==1.15.3 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml)
 scipy==1.16.3 ; python_full_version >= '3.11'
     # via pycaputo (pyproject.toml)
+scipy-stubs==1.15.3.0 ; python_full_version < '3.11'
+    # via pycaputo (pyproject.toml:test)
+scipy-stubs==1.16.3.3 ; python_full_version >= '3.11'
+    # via pycaputo (pyproject.toml:test)
 six==1.17.0
     # via python-dateutil
 tomli==2.3.0 ; python_full_version < '3.11'
@@ -88,3 +106,4 @@ typing-extensions==4.15.0
     # via
     #   pycaputo (pyproject.toml)
     #   exceptiongroup
+    #   optype

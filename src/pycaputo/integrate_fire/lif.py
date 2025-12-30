@@ -58,7 +58,7 @@ def _find_first_spike_time(p: LIF, V0: float = 0.0) -> float:
     import scipy.optimize as so
 
     bracket = _find_bracket(func)
-    result = so.root_scalar(func, x0=(bracket[1] + bracket[0]) / 2, bracket=bracket)
+    result = so.root_scalar(func, x0=(bracket[1] + bracket[0]) / 2, bracket=bracket)  # ty: ignore[no-matching-overload]
 
     return float(result.root)
 
@@ -309,7 +309,7 @@ class CaputoLeakyIntegrateFireL1Method(IntegrateFireMethod[LIFModel]):
 
 
 @advance.register(CaputoLeakyIntegrateFireL1Method)
-def _advance_caputo_lif_l1(  # type: ignore[misc]
+def _advance_caputo_lif_l1(
     m: CaputoLeakyIntegrateFireL1Method,
     history: ProductIntegrationHistory,
     y: Array,

@@ -395,7 +395,7 @@ def make_variable_riemann_liouville_f(
     #
     # and :tada:, we have a solution to test against!
 
-    import mpmath  # type: ignore[import-untyped]
+    import mpmath
     from scipy.special import jv
 
     def f_vo(x: Array) -> Array:

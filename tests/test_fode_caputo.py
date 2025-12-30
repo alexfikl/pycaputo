@@ -131,7 +131,7 @@ def fode_factory(
             control = make_fixed_controller(dt, tstart=tspan[0], tfinal=tspan[1])
 
         return cls(
-            ds=tuple(CaputoDerivative(alpha_i) for alpha_i in alpha),  # type: ignore[misc]
+            ds=tuple(CaputoDerivative(alpha_i) for alpha_i in alpha),  # ty: ignore[invalid-argument-type]
             control=control,
             source=partial(source, alpha=alpha),
             y0=(y0,),

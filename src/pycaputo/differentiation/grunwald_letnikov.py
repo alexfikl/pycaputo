@@ -113,7 +113,7 @@ class ShiftedGrunwaldLetnikov(GrunwaldLetnikovMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if not 0.0 <= self.shift <= 1.0:
                 raise ValueError(f"Shift must be in 0 <= shift <= 1: {self.shift}")
@@ -190,7 +190,7 @@ class TianZhouDeng2(GrunwaldLetnikovMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if not all(-1.0 <= s <= 1.0 for s in self.shift):
                 raise ValueError(f"Shift must be in 0 <= shift <= 1: {self.shift}")
@@ -289,7 +289,7 @@ class TianZhouDeng3(GrunwaldLetnikovMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if not all(-1.0 <= s <= 1.0 for s in self.shift):
                 raise ValueError(f"Shift must be in 0 <= shift <= 1: {self.shift}")

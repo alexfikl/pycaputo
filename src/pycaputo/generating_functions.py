@@ -143,7 +143,7 @@ def lubich_bdf_starting_weights(
     if s <= 0:
         raise ValueError(f"Negative s is not allowed: {s}")
 
-    if beta.is_integer() and beta <= 0:
+    if (isinstance(beta, int) or beta.is_integer()) and beta <= 0:
         raise ValueError(f"Values of beta in 0, -1, ... are not supported: {beta}")
 
     from scipy.linalg import lu_factor, lu_solve

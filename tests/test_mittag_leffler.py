@@ -82,7 +82,7 @@ def test_mittag_leffler_opt(alpha: float) -> None:
         b = a - rng.uniform(m - 2, m + 2)
         f = partial(opt_func, a=a, b=b, alpha=alpha)
         bracket = opt_find_bracket(f)
-        result = so.root_scalar(f, x0=(bracket[0] + bracket[1]) / 2, bracket=bracket)
+        result = so.root_scalar(f, x0=(bracket[0] + bracket[1]) / 2, bracket=bracket)  # ty: ignore[no-matching-overload]
 
         fstar = f(result.root)
         log.info(

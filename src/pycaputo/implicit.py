@@ -34,7 +34,7 @@ def _solve_scalar(
         assert df is not None
         return 1 - c * df(t, y)
 
-    result = so.root_scalar(
+    result = so.root_scalar(  # ty: ignore[no-matching-overload]
         f=func,
         x0=y0,
         fprime=jac if df is not None else None,

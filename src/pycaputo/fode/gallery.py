@@ -701,7 +701,7 @@ class HindmarshRose3(HindmarshRose2):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if not 0.0 < self.epsilon < 1:
                 raise ValueError(f"Parameter 'epsilon' not in (0, 1): {self.epsilon}")
@@ -767,7 +767,7 @@ class HindmarshRose4(HindmarshRose3):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             # TODO: verify if these assumptions are necessary? It's unclear from
             # the papers what these variables represent and what ranges are allowed
@@ -1675,34 +1675,34 @@ class StandardMorrisLecarParameter(MorrisLecarParameter):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if self.phi <= 0 or self.phi > 1.0:
                 raise ValueError(f"Frequency 'phi' must be in [0, 1]: {self.phi}")
 
     def m_inf(self, V: float) -> float:
         V = (V - self.vinf[0]) / self.vinf[1]
-        return (1.0 + np.tanh(V)) / 2.0  # type: ignore[no-any-return]
+        return (1.0 + np.tanh(V)) / 2.0
 
     def m_inf_derivative(self, V: float) -> float:
         V = (V - self.vinf[0]) / self.vinf[1]
-        return 1.0 / np.cosh(V) ** 2 / (2.0 * self.vinf[1])  # type: ignore[no-any-return]
+        return 1.0 / np.cosh(V) ** 2 / (2.0 * self.vinf[1])
 
     def w_inf(self, V: float) -> float:
         V = (V - self.vinf[2]) / self.vinf[3]
-        return (1.0 + np.tanh(V)) / 2.0  # type: ignore[no-any-return]
+        return (1.0 + np.tanh(V)) / 2.0
 
     def w_inf_derivative(self, V: float) -> float:
         V = (V - self.vinf[2]) / self.vinf[3]
-        return 1.0 / np.cosh(V) ** 2 / (2.0 * self.vinf[3])  # type: ignore[no-any-return]
+        return 1.0 / np.cosh(V) ** 2 / (2.0 * self.vinf[3])
 
     def tau_w(self, V: float) -> float:
         V = (V - self.vinf[2]) / self.vinf[3]
-        return 1.0 / (self.phi * np.cosh(V / 2.0))  # type: ignore[no-any-return]
+        return 1.0 / (self.phi * np.cosh(V / 2.0))
 
     def tau_w_derivative(self, V: float) -> float:
         V = (V - self.vinf[2]) / self.vinf[3]
-        return (  # type: ignore[no-any-return]
+        return (
             -2.0 / (self.phi * self.vinf[3]) * np.sinh(V / 2.0) ** 3 / np.sinh(V) ** 2
         )
 

@@ -64,7 +64,7 @@ class L1(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
             if not 0 < self.alpha < 1:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
@@ -85,13 +85,13 @@ def _caputo_piecewise_constant_integral(x: Array, alpha: float) -> Array:
 
     xn = x[-1]
     gamma = math.gamma(2 - alpha)
-    return ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha)) / gamma  # type: ignore[no-any-return]
+    return ((xn - x[:-1]) ** (1 - alpha) - (xn - x[1:]) ** (1 - alpha)) / gamma
 
 
 def _caputo_l1_weights(x: Array, dx: Array, n: int, alpha: float) -> Array:
     xp = array_namespace(x)
     if n == 0:
-        return xp.array(np.nan)  # type: ignore[no-any-return]
+        return xp.array(np.nan)
 
     x = x[: n + 1]
     dx = dx[:n]
@@ -100,7 +100,7 @@ def _caputo_l1_weights(x: Array, dx: Array, n: int, alpha: float) -> Array:
     # NOTE: the first step of the discretization is just
     #   sum a_{ik} f'_k
     # and we need to re-arrange the sum with the approximation of the derivative
-    return xp.concatenate([-a[:1], a[:-1] - a[1:], a[-1:]])  # type: ignore[no-any-return]
+    return xp.concatenate([-a[:1], a[:-1] - a[1:], a[-1:]])
 
 
 @quadrature_weights.register(L1)
@@ -125,7 +125,7 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
     w = _caputo_l1_weights(p.x, p.dx, n, m.alpha)
     fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
 
-    return np.sum(w * fx)  # type: ignore[no-any-return]
+    return np.sum(w * fx)
 
 
 @diff.register(L1)
@@ -141,7 +141,7 @@ def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
 
     # FIXME: in the uniform case, we can also do an FFT, but we need different
     # weights for that, so we leave it like this for now
-    return xp.array(  # type: ignore[no-any-return]
+    return xp.array(
         [
             xp.sum(_caputo_l1_weights(p.x, p.dx, n, alpha) * fx[: n + 1])
             for n in range(fx.size)
@@ -174,7 +174,7 @@ class ModifiedL1(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
             if not 0 < self.alpha < 1:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
@@ -246,7 +246,7 @@ class L2(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
             if not 1 < self.alpha < 2:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 1 < alpha < 2: {self.alpha}"
@@ -327,7 +327,7 @@ def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Arra
     w = quadrature_weights(m, p, n)
     fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
 
-    return np.sum(w * fx)  # type: ignore[no-any-return]
+    return np.sum(w * fx)
 
 
 @diff.register(L2)
@@ -386,7 +386,7 @@ class L2C(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
             if not 1 < self.alpha < 2:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
@@ -529,7 +529,7 @@ def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Ar
     x[1:] = p.x
     fx = f(x)
 
-    return np.sum(w * fx)  # type: ignore[no-any-return]
+    return np.sum(w * fx)
 
 
 @diff.register(L2F)
@@ -598,7 +598,7 @@ class LXD(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
 
 @quadrature_weights.register(LXD)
@@ -641,7 +641,7 @@ def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
             f"f is a {type(f).__name__!r}"
         ) from exc
 
-    return np.sum(w * dfx)  # type: ignore[no-any-return]
+    return np.sum(w * dfx)
 
 
 @diff.register(LXD)
@@ -778,13 +778,13 @@ def _diffusive_gamma_solve_ivp(
     omega_jac = np.diag(omega_b)
 
     def fun(t: Array, phi: Array) -> Array:
-        return omega_a * f(t, d=n) + omega_b * phi  # type: ignore[no-any-return]
+        return omega_a * f(t, d=n) + omega_b * phi
 
     def fun_jac(t: float, phi: Array) -> Array:
         return omega_jac
 
     phi0 = np.zeros_like(omega)
-    result = solve_ivp(
+    result = solve_ivp(  # ty: ignore[no-matching-overload]
         fun,
         (p.a, p.b),
         phi0,
@@ -834,7 +834,7 @@ class YuanAgrawal(DiffusiveCaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
 

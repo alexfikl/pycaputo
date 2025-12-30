@@ -145,7 +145,7 @@ class CaputoImplicitProductIntegrationMethod(
 
 
 @make_initial_condition.register(CaputoProductIntegrationMethod)
-def _make_initial_condition_caputo(  # type: ignore[misc]
+def _make_initial_condition_caputo(
     m: CaputoProductIntegrationMethod[StateFunctionT],
 ) -> Array:
     return m.y0[0]
@@ -198,7 +198,7 @@ def _update_caputo_forward_euler(
 
 
 @advance.register(ForwardEuler)
-def _advance_caputo_forward_euler(  # type: ignore[misc]
+def _advance_caputo_forward_euler(
     m: ForwardEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -234,7 +234,7 @@ class BackwardEuler(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
 
 
 @advance.register(BackwardEuler)
-def _advance_caputo_backward_euler(  # type: ignore[misc]
+def _advance_caputo_backward_euler(
     m: BackwardEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -324,7 +324,7 @@ def _update_caputo_weighted_euler(
 
 
 @advance.register(WeightedEuler)
-def _advance_caputo_weighted_euler(  # type: ignore[misc]
+def _advance_caputo_weighted_euler(
     m: WeightedEuler[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -423,7 +423,7 @@ def _update_caputo_trapezoidal(
 
 
 @advance.register(Trapezoidal)
-def _advance_caputo_trapezoidal(  # type: ignore[misc]
+def _advance_caputo_trapezoidal(
     m: Trapezoidal[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -495,7 +495,7 @@ def _update_caputo_trapezoidal_extrapolation(
 
 
 @advance.register(ExplicitTrapezoidal)
-def _advance_caputo_explicit_trapezoidal(  # type: ignore[misc]
+def _advance_caputo_explicit_trapezoidal(
     m: ExplicitTrapezoidal[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -606,7 +606,7 @@ class PEC(CaputoPredictorCorrectorMethod[StateFunctionT]):
 
 
 @advance.register(CaputoPredictorCorrectorMethod)
-def _advance_caputo_predictor_corrector(  # type: ignore[misc]
+def _advance_caputo_predictor_corrector(
     m: CaputoPredictorCorrectorMethod[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -688,7 +688,7 @@ def _weights_quadrature_trapezoidal(
 
 
 @advance.register(ModifiedPECE)
-def _advance_caputo_modified_pece(  # type: ignore[misc]
+def _advance_caputo_modified_pece(
     m: ModifiedPECE[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,
@@ -787,7 +787,7 @@ def _update_caputo_l1(
 
 
 @advance.register(L1)
-def _advance_caputo_l1(  # type: ignore[misc]
+def _advance_caputo_l1(
     m: L1[StateFunctionT],
     history: ProductIntegrationHistory,
     y: Array,

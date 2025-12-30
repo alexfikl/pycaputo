@@ -279,7 +279,7 @@ class CaputoPerfectIntegrateFireL1Method(IntegrateFireMethod[PIFModel]):
 
 
 @advance.register(CaputoPerfectIntegrateFireL1Method)
-def _advance_caputo_pif_l1(  # type: ignore[misc]
+def _advance_caputo_pif_l1(
     m: CaputoPerfectIntegrateFireL1Method,
     history: ProductIntegrationHistory,
     y: Array,

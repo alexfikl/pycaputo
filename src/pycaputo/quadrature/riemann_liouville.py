@@ -57,7 +57,7 @@ class Rectangular(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
             if not 0.0 <= self.theta <= 1.0:
                 raise ValueError(
                     f"Weight is expected to be in [0, 1]: theta is '{self.theta}'"
@@ -215,7 +215,7 @@ def _quad_rl_simpson(
     qf[1:] = (w * fx[0] + what * fm[0]) + (2 - alpha) * fx[1:]
 
     # add 1 <= k <= n - 1 cases
-    for n in range(2, qf.size):  # type: ignore[assignment]
+    for n in range(2, qf.size):
         k = indices[1:n]
         # fmt: off
         w = (
@@ -310,7 +310,7 @@ def _quad_rl_cubic_hermite(
         - 2 * alpha * h * fp[1:]
     )
 
-    for n in range(2, qf.size):  # type: ignore[assignment]
+    for n in range(2, qf.size):
         k = indices[1:n]
         # fmt: off
         w = 6 * (
@@ -414,11 +414,11 @@ class SplineLagrange(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            from warnings import warn
-
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if self.npoints > 16:
+                from warnings import warn
+
                 warn(
                     "Evaluating Lagrange polynomials of order > 16 might be "
                     "numerically unstable",
@@ -522,14 +522,16 @@ class Lubich(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if not 1 <= self.quad_order <= 6:
                 raise ValueError(
                     f"Only orders 1 <= q <= 6 are supported: {self.quad_order}"
                 )
 
-            if self.beta.is_integer() and self.beta <= 0:
+            if (
+                isinstance(self.beta, int) or self.beta.is_integer()
+            ) and self.beta <= 0:
                 raise ValueError(
                     f"Values of beta in 0, -1, ... are not supported: {self.beta}"
                 )
@@ -650,7 +652,7 @@ def _diffusive_gamma_solve_ivp(
         return omega_jac
 
     phi0 = np.zeros_like(omega)
-    result = solve_ivp(
+    result = solve_ivp(  # ty: ignore[no-matching-overload]
         fun,
         (p.a, p.b),
         phi0,
@@ -700,7 +702,7 @@ class YuanAgrawal(DiffusiveRiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()
+            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
 
             if self.alpha <= -1:
                 raise ValueError(
@@ -755,7 +757,7 @@ def _quad_rl_yuan_agrawal(
 
     # solve ODE at quadrature nodes
     omega, w = m.nodes_and_weights()
-    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=m._qtol)
+    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=m._qtol)  # ty: ignore[invalid-argument-type]
 
     # compute RL integral
     qf = np.empty_like(x, dtype=dtype)

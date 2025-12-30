@@ -292,7 +292,7 @@ def check_usetex(*, s: bool) -> bool:
         return False
 
     try:
-        return bool(matplotlib.checkdep_usetex(s))  # type: ignore[attr-defined,unused-ignore]
+        return bool(matplotlib.checkdep_usetex(s))  # ty: ignore[unresolved-attribute]
     except AttributeError:
         # NOTE: simplified version from matplotlib
         # https://github.com/matplotlib/matplotlib/blob/ec85e725b4b117d2729c9c4f720f31cf8739211f/lib/matplotlib/__init__.py#L439=L456
@@ -465,9 +465,9 @@ def figure(
 
         for ax in fig.axes:
             assert isinstance(ax, Axes3D)
-            ax.xaxis.pane.fill = pane_fill
-            ax.yaxis.pane.fill = pane_fill
-            ax.zaxis.pane.fill = pane_fill
+            ax.xaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
+            ax.yaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
+            ax.zaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
 
     try:
         yield fig
@@ -480,7 +480,7 @@ def figure(
         if filename is not None:
             savefig(fig, filename, **kwargs)
         else:
-            mp.show(block=True)  # type: ignore[no-untyped-call,unused-ignore]
+            mp.show(block=True)
 
         mp.close(fig)
 
@@ -752,7 +752,8 @@ def cached_on_first_arg(
     :arg func: a function whose return values are cached in its first argument.
         This can be a simple function or a class method.
     """
-    cache_dict_name = f"_cached_function_{func.__module__}{func.__name__}"
+    name = getattr(func, "__name__", type(func).__name__)
+    cache_dict_name = f"_cached_function_{func.__module__}{name}"
 
     def wrapper(obj: T, /, *args: P.args, **kwargs: P.kwargs) -> R:
         key = frozenset(kwargs.items()) | frozenset(args)
@@ -777,8 +778,9 @@ def cached_on_first_arg(
 
     from functools import update_wrapper
 
+    # FIXME: find a way to tell the type checker about this
     new_wrapper = update_wrapper(wrapper, func)
-    new_wrapper.clear_cached = clear_cached  # type: ignore[attr-defined]
+    new_wrapper.clear_cached = clear_cached  # ty: ignore[unresolved-attribute]
 
     return new_wrapper
 
@@ -890,13 +892,13 @@ def dc_stringify(
         assert not isinstance(dc, type)
         fields = dc_asdict(dc)
     elif isinstance(dc, tuple) and hasattr(dc, "_asdict"):  # is_namedtuple
-        fields = dc._asdict()
+        fields = dc._asdict()  # ty: ignore[call-non-callable]
     elif isinstance(dc, dict):
         fields = dc
     else:
         raise TypeError(f"unrecognized type: '{type(dc).__name__}'")
 
-    width = len(max(fields, key=len))
+    width = len(max(fields, key=len))  # ty: ignore[no-matching-overload]
     fmt = f"{{:{width}}} : {{}}"
 
     def stringify(v: Any) -> str:
@@ -907,7 +909,7 @@ def dc_stringify(
         return sv
 
     instance_attrs = sorted(
-        {k: stringify(v) for k, v in fields.items() if k != "name"}.items()
+        {k: stringify(v) for k, v in fields.items() if k != "name"}.items()  # ty: ignore[invalid-argument-type]
     )
 
     header_attrs = []

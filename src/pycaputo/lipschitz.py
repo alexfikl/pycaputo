@@ -3,11 +3,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import scipy.stats
 
 from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ScalarFunction
+
+if TYPE_CHECKING:
+    from scipy.stats._distn_infrastructure import rv_frozen
 
 log = get_logger(__name__)
 
@@ -94,7 +99,7 @@ def uniform_sample_maximum_slopes(
     return smax
 
 
-def fit_reverse_weibull(x: Array) -> scipy.stats.rv_continuous:
+def fit_reverse_weibull(x: Array) -> rv_frozen:
     """Fits a reverse Weibull distribution to the CDF of *x*.
 
     See :data:`scipy.stats.weibull_max` for details on the distribution.

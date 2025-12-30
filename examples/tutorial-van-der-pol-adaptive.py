@@ -84,7 +84,7 @@ dtinit = 1.0e-1
 dtest = estimate_initial_time_step(
     tstart,
     y0,
-    m.source,
+    m.source,  # ty: ignore[invalid-argument-type]
     m.smallest_derivative_order,
     trunc=m.order,
 )
@@ -121,6 +121,7 @@ for event in evolve(m, dtinit=dtinit):
     else:
         raise RuntimeError(event)
 
+    assert isinstance(event, (StepAccepted, StepRejected))
     log.info(
         "%s[%06d] t = %.5e dt = %.5e (eest %+.5e q %.5e) energy %.5e",
         "[green][A][/]" if isinstance(event, StepAccepted) else "[red][R][/]",

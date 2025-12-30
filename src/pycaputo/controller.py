@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import singledispatch
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
@@ -19,7 +19,11 @@ if TYPE_CHECKING:
 # {{{ utils
 
 
-def _hairer_norm(x: Array, *, p: int | float | str = 2) -> float:
+def _hairer_norm(
+    x: Array,
+    *,
+    p: int | float | Literal["inf"] | Literal["-inf"] = 2,
+) -> float:
     r"""Computes the norm from Equation 4.11 in [Hairer2008]_
 
     .. math::
@@ -39,7 +43,7 @@ def _hairer_norm(x: Array, *, p: int | float | str = 2) -> float:
 
     from numbers import Number
 
-    if isinstance(p, int | float | Number):
+    if isinstance(p, (int, float, Number)):
         return float((np.sum(x**p) / x.size) ** (1.0 / p))
 
     raise ValueError(f"Unknown norm order: {p!r}")
