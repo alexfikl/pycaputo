@@ -8,10 +8,10 @@ import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rich.table import Table
+    import rich.table
 
 
-def stringify_table(table: Table) -> str:
+def stringify_table(table: rich.table.Table) -> str:
     """Stringify a rich table."""
     import io
 
