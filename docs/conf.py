@@ -125,7 +125,7 @@ source_suffix = {".rst": "restructuredtext"}
 # name of the main (master) document
 master_doc = "index"
 # min sphinx version
-needs_sphinx = "4.0"
+needs_sphinx = "6.0"
 # files to ignore
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # highlighting
@@ -202,5 +202,16 @@ intersphinx_mapping = {
     "pymittagleffler": ("https://mittagleffler.readthedocs.io/en/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy", None),
 }
+
+# }}}
+
+# {{{
+
+nitpick_ignore_regex = [
+    # NOTE: https://github.com/sphinx-doc/sphinx/issues/14159
+    ("py:class", r".*list\[tuple\[float"),
+    # NOTE: this is not a documented scipy class.
+    ("py:class", r".*rv_frozen"),
+]
 
 # }}}
