@@ -63,10 +63,10 @@ optional-dependencies.docs = [
 ]
 optional-dependencies.test = [
     "mpmath",
-    "ty",
     "pytest",
     "pytest-benchmark",
     "ruff",
+    "ty",
     "types-dataclasses",
 ]
 optional-dependencies.vis = [

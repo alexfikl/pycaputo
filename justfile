@@ -68,16 +68,20 @@ ty:
 # }}}
 # {{{ pin
 
+REQUIREMENTS_DIR := ".ci"
+
 [private]
 requirements_build_txt:
     uv pip compile --upgrade --universal --python-version "3.10" \
-        -o .ci/requirements-build.txt .ci/requirements-build.in
+        -o {{ REQUIREMENTS_DIR }}/requirements-build.txt \
+        {{ REQUIREMENTS_DIR }}/requirements-build.in
 
 [private]
 requirements_test_txt:
     uv pip compile --upgrade --universal --python-version "3.10" \
         --extra test \
-        -o .ci/requirements-test.txt pyproject.toml .ci/requirements-git.txt
+        -o {{ REQUIREMENTS_DIR }}/requirements-test.txt \
+        pyproject.toml {{ REQUIREMENTS_DIR }}/requirements-git.txt
 
 [private]
 requirements_txt:
@@ -100,13 +104,24 @@ develop:
         --editable .
 
 [doc("Editable install using pinned dependencies from requirements-test.txt")]
-pip-install:
-    {{ PYTHON }} -m pip install --verbose --requirement .ci/requirements-build.txt
+ci-install venv=".venv":
+    #!/usr/bin/env bash
+
+    # build a virtual environment
+    python -m venv {{ venv }}
+    source {{ venv }}/bin/activate
+
+    # install build dependencies (need to be first due to  --no-build-isolation)
+    {{ PYTHON }} -m pip install --requirement {{ REQUIREMENTS_DIR }}/requirements-build.txt
+
+    # install all pinned dependencies
     {{ PYTHON }} -m pip install \
         --verbose \
-        --requirement .ci/requirements-test.txt \
+        --requirement {{ REQUIREMENTS_DIR }}/requirements-test.txt \
         --no-build-isolation \
         --editable .
+
+    echo -e "\e[1;32mvenv setup completed: '{{ venv }}'!\e[0m"
 
 [doc("Remove various build artifacts")]
 clean:

@@ -45,12 +45,12 @@ jobs:
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
       run: |
-        just pip-install
+        just ci-install .venv && source .venv/bin/activate
         just ruff
 
-  mypy:
+  ty:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    name: Annotations (mypy)
+    name: Annotations (ty)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -62,8 +62,8 @@ jobs:
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
       run: |
-        just pip-install
-        just mypy
+        just ci-install .venv && source .venv/bin/activate
+        just ty
 
   pytest:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -83,7 +83,7 @@ jobs:
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
       run: |
-        just pip-install
+        just ci-install .venv && source .venv/bin/activate
         just test
 
   examples:
@@ -100,11 +100,11 @@ jobs:
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
       run: |
-        just pip-install
+        just ci-install .venv && source .venv/bin/activate
         just examples
 
   deploy:
-    needs: [reuse, typos, ruff, mypy, pytest, examples]
+    needs: [reuse, typos, ruff, ty, pytest, examples]
     name: PyPI deploy
     environment: pypi
     permissions:
