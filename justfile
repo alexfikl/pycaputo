@@ -79,7 +79,7 @@ requirements_build_txt:
 [private]
 requirements_test_txt:
     uv pip compile --upgrade --universal --python-version "3.10" \
-        --extra test \
+        --group test \
         -o {{ REQUIREMENTS_DIR }}/requirements-test.txt \
         pyproject.toml {{ REQUIREMENTS_DIR }}/requirements-git.txt
 

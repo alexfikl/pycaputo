@@ -48,32 +48,17 @@ dependencies = [
     # NOTE: for `Self` (used in `history.py`)
     "typing-extensions>=4",
 ]
-optional-dependencies.dev = [
-    "doc8",
-    "matplotlib",
-    "pyproject-fmt",
-    "reuse",
-    "typos",
-    "uv",
-]
-optional-dependencies.docs = [
-    "sphinx>=6",
-    "sphinx-book-theme",
-    "sphinx-design>=0.4",
-]
-optional-dependencies.test = [
-    "mpmath",
-    "pytest",
-    "pytest-benchmark",
-    "ruff",
-    "ty",
-    "types-dataclasses",
-]
-optional-dependencies.vis = [
-    "scienceplots>=2.1",
-]
+# NOTE: this is only here for readthedocs (keep in sync with the dependency group)
+optional-dependencies.docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.4" ]
 urls.Documentation = "https://pycaputo.readthedocs.io"
 urls.Repository = "https://github.com/alexfikl/pycaputo"
+
+[dependency-groups]
+dev = [ "doc8", "pyproject-fmt", "reuse", "typos", "uv" ]
+# NOTE: typing dependencies: matplotlib, scienceplots, types-dataclasses
+test = [ "matplotlib", "mpmath", "pytest", "ruff", "scienceplots", "ty", "types-dataclasses" ]
+docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.4" ]
+vis = [ "scienceplots>=2.1" ]
 
 [tool.hatch.metadata]
 allow-direct-references = true
