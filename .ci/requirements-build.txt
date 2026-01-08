@@ -6,7 +6,7 @@ hatchling==1.28.0
     # via -r .ci/requirements-build.in
 packaging==25.0
     # via hatchling
-pathspec==0.12.1
+pathspec==1.0.2
     # via hatchling
 pip==25.3
     # via -r .ci/requirements-build.in
