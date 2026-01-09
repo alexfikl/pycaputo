@@ -82,7 +82,7 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 rich==14.2.0
     # via pycaputo (pyproject.toml)
-ruff==0.14.10
+ruff==0.14.11
     # via pycaputo (pyproject.toml:test)
 scienceplots==2.2.0
     # via pycaputo (pyproject.toml:test)
