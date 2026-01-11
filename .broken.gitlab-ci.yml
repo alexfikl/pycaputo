@@ -17,12 +17,12 @@ before_script:
   - source vendor/python/bin/activate
 
 ruff:
-  image: "python:3.13"
+  image: "python:3.14"
   script: |
     just ruff
 
 ty:
-  image: "python:3.13"
+  image: "python:3.14"
   script: |
     just ty
 
@@ -35,6 +35,6 @@ pytest:
     just test
 
 examples:
-  image: "python:3.13"
+  image: "python:3.14"
   script: |
     just examples

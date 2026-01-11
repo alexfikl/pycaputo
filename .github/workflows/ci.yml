@@ -40,7 +40,7 @@ jobs:
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
-        python-version: '3.13'
+        python-version: '3.14'
         cache: 'pip'
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
@@ -57,7 +57,7 @@ jobs:
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
-        python-version: '3.13'
+        python-version: '3.14'
         cache: 'pip'
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
@@ -95,7 +95,7 @@ jobs:
     - uses: extractions/setup-just@v3
     - uses: actions/setup-python@v6
       with:
-        python-version: '3.13'
+        python-version: '3.14'
         cache: 'pip'
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
@@ -117,7 +117,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-python@v6
       with:
-        python-version: '3.13'
+        python-version: '3.14'
     - id: dist
       uses: casperdcl/deploy-pypi@v2
       with:
