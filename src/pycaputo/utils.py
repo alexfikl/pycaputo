@@ -467,7 +467,7 @@ def figure(
             assert isinstance(ax, Axes3D)
             ax.xaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
             ax.yaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
-            ax.zaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
+            ax.zaxis.pane.fill = pane_fill
 
     try:
         yield fig
