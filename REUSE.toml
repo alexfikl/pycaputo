@@ -21,8 +21,9 @@ SPDX-License-Identifier = "CC0-1.0"
 [[annotations]]
 path = [
     ".readthedocs.yml",
-    "justfile",
+    "CITATION.cff",
     "README.rst",
+    "justfile",
     "pyproject.toml",
     "requirements.txt",
 ]
