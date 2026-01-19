@@ -82,7 +82,7 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 rich==14.2.0
     # via pycaputo (pyproject.toml)
-ruff==0.14.11
+ruff==0.14.13
     # via pycaputo (pyproject.toml:test)
 scienceplots==2.2.0
     # via pycaputo (pyproject.toml:test)
@@ -92,13 +92,13 @@ scipy==1.17.0 ; python_full_version >= '3.11'
     # via pycaputo (pyproject.toml)
 scipy-stubs==1.15.3.0 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml:test)
-scipy-stubs==1.17.0.0 ; python_full_version >= '3.11'
+scipy-stubs==1.17.0.1 ; python_full_version >= '3.11'
     # via pycaputo (pyproject.toml:test)
 six==1.17.0
     # via python-dateutil
 tomli==2.4.0 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.11
+ty==0.0.12
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
