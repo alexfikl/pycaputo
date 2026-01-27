@@ -4,9 +4,11 @@ editables==0.5
     # via -r .ci/requirements-build.in
 hatchling==1.28.0
     # via -r .ci/requirements-build.in
-packaging==25.0
-    # via hatchling
-pathspec==1.0.3
+packaging==26.0
+    # via
+    #   hatchling
+    #   wheel
+pathspec==1.0.4
     # via hatchling
 pip==25.3
     # via -r .ci/requirements-build.in
@@ -14,11 +16,11 @@ pluggy==1.6.0
     # via hatchling
 poetry-core==2.3.0
     # via -r .ci/requirements-build.in
-setuptools==80.9.0
+setuptools==80.10.2
     # via -r .ci/requirements-build.in
 tomli==2.4.0 ; python_full_version < '3.11'
     # via hatchling
 trove-classifiers==2026.1.14.14
     # via hatchling
-wheel==0.45.1
+wheel==0.46.3
     # via -r .ci/requirements-build.in
