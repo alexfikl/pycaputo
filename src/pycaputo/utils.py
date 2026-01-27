@@ -917,7 +917,7 @@ def dc_stringify(
         if not isinstance(dc, dict):
             header_attrs.append(("class", type(dc).__name__))
         if "name" in fields:
-            header_attrs.append(("name", fields["name"]))
+            header_attrs.append(("name", fields["name"]))  # ty: ignore[invalid-argument-type]
         if not header_attrs:
             header_attrs.append(("attribute", "value"))
     else:
