@@ -71,9 +71,6 @@ docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.4" ]
 vis = [ "scienceplots>=2.1" ]
 examples = [ "numba" ]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
 [tool.hatch.build.targets.sdist]
 exclude = [
     ".github",
@@ -85,6 +82,9 @@ exclude = [
 packages = [
     "src/pycaputo",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.ruff]
 target-version = "py310"
@@ -149,6 +149,13 @@ lint.isort.required-imports = [
     "from __future__ import annotations",
 ]
 
+[tool.typos.default.extend-words]
+Pn = "Pn"
+[tool.typos.files]
+extend-exclude = [
+    "docs/benchmarks",
+]
+
 [tool.pytest.ini_options]
 testpaths = "tests"
 addopts = [
@@ -161,11 +168,3 @@ addopts = [
 [tool.doc8]
 max-line-length = 88
 ignore-path = "src/*.egg-info"
-
-[tool.typos.files]
-extend-exclude = [
-    "docs/benchmarks",
-]
-
-[tool.typos.default.extend-words]
-Pn = "Pn"
