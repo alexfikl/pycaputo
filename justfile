@@ -151,9 +151,7 @@ generate-doc-figures artifact="all":
 
 [doc("Run pytest tests")]
 test *PYTEST_ADDOPTS:
-    {{ PYTHON }} -m pytest \
-        --junit-xml=pytest-results.xml \
-        {{ PYTEST_ADDOPTS }}
+    {{ PYTHON }} -m pytest -m "not benchmark" {{ PYTEST_ADDOPTS }}
 
 [doc("Run pytest benchmarks")]
 benchmark:
