@@ -56,3 +56,16 @@ At the moment, performance is not an important focus, but fractional-order
 operators are generally more computationally intensive than their integer-order
 counterparts. Once a solid framework is worked out, more care will be given to
 this aspect as well.
+
+Acknowledgments
+===============
+
+Work on ``pycaputo`` was sponsored, in part, by
+
+* the West University of Timișoara (Romania) under START Grant No. 33580/25.05.2023,
+* the CNCS-UEFISCDI (Romania), under Project No. ROSUA-2024-0002,
+* the "Romanian Hub for Artificial Intelligence - HRIA", Smart Growth,
+  Digitization and Financial Instruments Program, 2021-2027, MySMIS no. 351416.
+
+The views and opinions expressed herein do not necessarily reflect those of the
+funding agencies.
