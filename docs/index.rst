@@ -63,6 +63,7 @@ Acknowledgments
 Work on ``pycaputo`` was sponsored, in part, by
 
 * the West University of Timișoara (Romania) under START Grant No. 33580/25.05.2023,
+* the UEFISCDI (Romania), under Project no. PN-IV-P2-2.2-MC-2024-0805.
 * the CNCS-UEFISCDI (Romania), under Project No. ROSUA-2024-0002,
 * the "Romanian Hub for Artificial Intelligence - HRIA", Smart Growth,
   Digitization and Financial Instruments Program, 2021-2027, MySMIS no. 351416.
