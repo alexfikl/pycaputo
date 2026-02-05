@@ -909,7 +909,7 @@ def dc_stringify(
         return sv
 
     instance_attrs = sorted(
-        {k: stringify(v) for k, v in fields.items() if k != "name"}.items()  # ty: ignore[invalid-argument-type]
+        {k: stringify(v) for k, v in fields.items() if k != "name"}.items()
     )
 
     header_attrs = []
