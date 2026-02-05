@@ -20,7 +20,7 @@ pygments==2.19.2
     # via rich
 pymittagleffler==0.1.8
     # via pycaputo (pyproject.toml)
-rich==14.3.1
+rich==14.3.2
     # via pycaputo (pyproject.toml)
 scipy==1.15.3 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml)

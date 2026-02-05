@@ -80,9 +80,9 @@ pytest-benchmark==5.2.3
     # via pycaputo (pyproject.toml:test)
 python-dateutil==2.9.0.post0
     # via matplotlib
-rich==14.3.1
+rich==14.3.2
     # via pycaputo (pyproject.toml)
-ruff==0.14.14
+ruff==0.15.0
     # via pycaputo (pyproject.toml:test)
 scienceplots==2.2.0
     # via pycaputo (pyproject.toml:test)
@@ -98,7 +98,7 @@ six==1.17.0
     # via python-dateutil
 tomli==2.4.0 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.14
+ty==0.0.15
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
