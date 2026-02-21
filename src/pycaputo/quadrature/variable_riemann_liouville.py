@@ -11,7 +11,7 @@ import numpy as np
 from pycaputo.derivatives import VariableExponentialCaputoDerivative
 from pycaputo.grid import Points, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction, is_scalar_function
 
 from .base import QuadratureMethod, quad
 
@@ -173,7 +173,7 @@ def _quad_vo_exp_rect(
     if not isinstance(p, UniformPoints):
         raise TypeError(f"Only uniform points are supported: {type(p).__name__}")
 
-    fx = f(p.x) if callable(f) else f
+    fx: Array = f(p.x) if is_scalar_function(f) else f
     w = _gl_scarpi_exp_weights(
         p.size,
         p.dx[0],

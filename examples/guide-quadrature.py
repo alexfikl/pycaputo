@@ -14,7 +14,7 @@ import numpy as np
 
 from pycaputo.derivatives import HadamardDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction, is_scalar_function
 
 # {{{
 
@@ -51,7 +51,7 @@ def _quad_hadamard(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
-    fx = f(p.x) if callable(f) else f
+    fx = f(p.x) if is_scalar_function(f) else f
     # ... add an actual implementation here ...
     return np.zeros_like(fx)
     # [register-end]

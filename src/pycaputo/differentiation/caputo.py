@@ -17,7 +17,9 @@ from pycaputo.typing import (
     Array,
     ArrayOrScalarFunction,
     DifferentiableScalarFunction,
+    IntegerArray,
     Scalar,
+    is_scalar_function,
 )
 
 from .base import (
@@ -123,14 +125,14 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
         return np.array([np.nan])
 
     w = _caputo_l1_weights(p.x, p.dx, n, m.alpha)
-    fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
+    fx: Array = f(p.x[: w.size]) if is_scalar_function(f) else f[: w.size]
 
     return np.sum(w * fx)
 
 
 @diff.register(L1)
 def _diff_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points) -> Array:
-    fx = f(p.x) if callable(f) else f
+    fx = f(p.x) if is_scalar_function(f) else f
     if fx.shape[0] != p.size:
         raise ValueError(
             f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
@@ -204,7 +206,7 @@ def _diffs_caputo_modified_l1(
     if not isinstance(p, MidPoints):
         p = make_midpoints_from(p)
 
-        if not callable(f):
+        if not is_scalar_function(f):
             f[1:] = (f[:-1] + f[1]) / 2.0
 
     return diffs.dispatch(L1)(m, f, p, n)
@@ -217,7 +219,7 @@ def _diff_caputo_modified_l1(
     if not isinstance(p, MidPoints):
         p = make_midpoints_from(p)
 
-        if not callable(f):
+        if not is_scalar_function(f):
             f[1:] = (f[:-1] + f[1]) / 2.0
 
     return diff.dispatch(L1)(m, f, p)
@@ -317,7 +319,7 @@ def _quadrature_weights_caputo_l2(m: L2, p: Points, n: int) -> Array:
 
 
 @diffs.register(L2)
-def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Array:
+def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
     if not 0 <= n <= p.size:
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
@@ -325,14 +327,14 @@ def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Arra
         return np.array([np.nan])
 
     w = quadrature_weights(m, p, n)
-    fx = f(p.x[: w.size]) if callable(f) else f[: w.size]
+    fx: Array = f(p.x[: w.size]) if is_scalar_function(f) else f[: w.size]
 
     return np.sum(w * fx)
 
 
 @diff.register(L2)
 def _diff_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points) -> Array:
-    fx = f(p.x) if callable(f) else f
+    fx: Array = f(p.x) if is_scalar_function(f) else f
     if fx.shape[0] != p.size:
         raise ValueError(
             f"Shape of 'f' does match points: got {fx.shape} expected {p.shape}"
@@ -393,7 +395,7 @@ class L2C(CaputoMethod):
                 )
 
 
-def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
+def _weights_l2(alpha: float, i: int | Array, k: int | IntegerArray) -> Array:
     return np.array((i - k) ** (2 - alpha) - (i - k - 1) ** (2 - alpha))
 
 
@@ -401,7 +403,7 @@ def _weights_l2(alpha: float, i: int | Array, k: int | Array) -> Array:
 def _diff_l2c_method(m: L2C, f: ArrayOrScalarFunction, p: Points) -> Array:
     # precompute variables
     x = p.x
-    fx: Array = f(x) if callable(f) else f
+    fx: Array = f(x) if is_scalar_function(f) else f
 
     alpha = m.alpha
     w0 = 1 / math.gamma(3 - alpha)
@@ -507,11 +509,11 @@ def _quadrature_weights_caputo_l2f(m: L2F, p: Points, n: int) -> Array:
 
 
 @diffs.register(L2F)
-def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Array:
+def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Scalar:
     if m.side == Side.Right:
         raise NotImplementedError("Right boundary approximation not implemented")
 
-    if not callable(f):
+    if not is_scalar_function(f):
         raise FunctionCallableError(
             f"The '{type(m).__name__}' method requires evaluating the function "
             f"values. 'f' is not callable: {type(f)}"
@@ -534,7 +536,7 @@ def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Ar
 
 @diff.register(L2F)
 def _diff_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points) -> Array:
-    if not callable(f):
+    if not is_scalar_function(f):
         raise FunctionCallableError(
             f"The '{type(m).__name__}' method requires evaluating the function "
             f"values. 'f' is not callable: {type(f)}"
@@ -555,11 +557,11 @@ def _diff_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points) -> Array:
     cp = 1.0 / dx[1:]
 
     if m.side == Side.Left:
-        fa = f(p.a - dx[0])
+        fa: Array = f(p.a - dx[0])
         ddfx[1:] = (cm * fx[:-2] - (cm + cp) * fx[1:-1] + cp * fx[2:]) / dxm
         ddfx[0] = (fx[1] - 2.0 * fx[0] + fa) / dx[0] ** 2
     else:
-        fb = f(p.b + dx[-1])
+        fb: Array = f(p.b + dx[-1])
         ddfx[:-1] = (cm * fx[:-2] - (cm + cp) * fx[1:-1] + cp * fx[2:]) / dxm
         ddfx[-1] = (fx[-2] - 2.0 * fx[-1] + fb) / dx[-1] ** 2
 
@@ -622,7 +624,7 @@ def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
     if n == 0:
         return np.array([np.nan])
 
-    if not callable(f):
+    if not is_scalar_function(f):
         raise FunctionCallableError(
             f"The '{type(m).__name__}' method requires evaluating the first "
             f"derivative. 'f' is not callable: {type(f)}"
@@ -646,7 +648,7 @@ def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
 
 @diff.register(LXD)
 def _diff_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points) -> Array:
-    if not callable(f):
+    if not is_scalar_function(f):
         raise FunctionCallableError(
             f"The '{type(m).__name__}' method requires evaluating the first "
             f"derivative. 'f' is not callable: {type(f)}"
@@ -719,7 +721,7 @@ def _diff_jacobi(m: Jacobi, f: ArrayOrScalarFunction, p: Points) -> Array:
     from pycaputo.jacobi import jacobi_caputo_derivative, jacobi_project
 
     # NOTE: Equation 3.63 [Li2020]
-    fx = f(p.x) if callable(f) else f
+    fx: Array = f(p.x) if is_scalar_function(f) else f
     fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)

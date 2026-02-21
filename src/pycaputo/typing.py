@@ -6,7 +6,6 @@ from __future__ import annotations
 import os
 from dataclasses import Field
 from typing import (
-    TYPE_CHECKING,
     Any,
     ClassVar,
     ParamSpec,
@@ -17,6 +16,7 @@ from typing import (
 )
 
 import numpy as np
+from typing_extensions import TypeIs
 
 # {{{ TypeVars
 
@@ -48,14 +48,16 @@ Float: TypeAlias = int | float | np.integer[Any] | np.floating[Any]
 # {{{ numpy
 
 
-if TYPE_CHECKING:
-    Array = np.ndarray[Any, Any]
-    Scalar = np.number[Any] | Array
-else:
-    Array = np.ndarray
-    """Array type alias for :class:`numpy.ndarray`."""
-    Scalar = np.number | Array
-    """Scalar type alias (generally a value convertible to a :class:`float`)."""
+Array = np.ndarray[tuple[int, ...], np.dtype[np.floating[Any]]]
+"""Array type alias for a floating point :class:`numpy.ndarray`."""
+IntegerArray = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any]]]
+"""Array type alias for an integer :class:`numpy.ndarray`."""
+Scalar = np.number[Any] | np.ndarray[tuple[()], np.dtype[np.number[Any]]]
+"""Scalar type alias (generally a value convertible to a :class:`float`)."""
+
+
+def is_array(x: object) -> TypeIs[Array]:
+    return isinstance(x, np.ndarray) and x.dtype.char != "O"
 
 
 # }}}
@@ -107,6 +109,18 @@ class DifferentiableScalarFunction(Protocol):
 
 ArrayOrScalarFunction = Array | ScalarFunction | DifferentiableScalarFunction
 """A union of scalar functions."""
+
+
+def is_scalar_function(f: object) -> TypeIs[ScalarFunction]:
+    """A type guard for scalar functions."""
+    # NOTE: do not feel inclined to use `isinstance(f, ScalarFunction)` here, since
+    # it does nothing -- it only checks that the `__call__` method exists.
+    return callable(f)
+
+
+def is_differentiable_function(f: object) -> TypeIs[DifferentiableScalarFunction]:
+    """A type guard for scalar functions."""
+    return callable(f)
 
 
 @runtime_checkable

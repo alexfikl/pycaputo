@@ -12,7 +12,7 @@ import numpy as np
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
+from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar, is_scalar_function
 
 from . import caputo
 from .base import DerivativeMethod, diff, diffs, quadrature_weights
@@ -177,7 +177,7 @@ def _diffs_rl_from_caputo(
     n: int,
 ) -> Scalar:
     x = p.x
-    fx: Array = f(x[: n + 1]) if callable(f) else f[: n + 1]
+    fx: Array = f(x[: n + 1]) if is_scalar_function(f) else f[: n + 1]
 
     df = diffs(m.base, fx, p, n)
 
@@ -194,7 +194,7 @@ def _diff_rl_from_caputo(
     p: Points,
 ) -> Array:
     x = p.x
-    fx = f(x) if callable(f) else f
+    fx: Array = f(x) if is_scalar_function(f) else f
 
     df = diff(m.base, fx, p)
     df[1:] += _rl_correction(m, p.x, fx)

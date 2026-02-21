@@ -11,7 +11,7 @@ import numpy as np
 from pycaputo.derivatives import GrunwaldLetnikovDerivative, Side
 from pycaputo.grid import Points, UniformPoints
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ArrayOrScalarFunction
+from pycaputo.typing import Array, ArrayOrScalarFunction, is_scalar_function
 
 from .base import DerivativeMethod, diff
 
@@ -57,13 +57,15 @@ class GrunwaldLetnikov(GrunwaldLetnikovMethod):
 
 @diff.register(GrunwaldLetnikov)
 def _diff_grunwald_letnikov_method(
-    m: GrunwaldLetnikov, f: ArrayOrScalarFunction, p: Points
+    m: GrunwaldLetnikov,
+    f: ArrayOrScalarFunction,
+    p: Points,
 ) -> Array:
     if not isinstance(p, UniformPoints):
         raise TypeError(f"{type(m).__name__!r} only supports uniform grids")
 
     alpha = m.alpha
-    fx = f(p.x) if callable(f) else f
+    fx: Array = f(p.x) if is_scalar_function(f) else f
 
     # NOTE: subtract f(a) to ensure that the function is always zero at 0
     fa = fx[0]
@@ -132,13 +134,15 @@ class ShiftedGrunwaldLetnikov(GrunwaldLetnikovMethod):
 
 @diff.register(ShiftedGrunwaldLetnikov)
 def _diff_shifted_grunwald_letnikov_method(
-    m: ShiftedGrunwaldLetnikov, f: ArrayOrScalarFunction, p: Points
+    m: ShiftedGrunwaldLetnikov,
+    f: ArrayOrScalarFunction,
+    p: Points,
 ) -> Array:
     if not isinstance(p, UniformPoints):
         raise TypeError(f"{type(m).__name__!r} only supports uniform grids")
 
     h = p.dx[0]
-    if callable(f):
+    if is_scalar_function(f):
         fa = f(p.x[0])
         fx: Array = f(p.x + m.shift * h) - fa
     else:
@@ -227,7 +231,7 @@ def _diff_tian_zhou_deng_2(
     h = p.dx[0]
     s_p, s_q = m.shift
 
-    if callable(f):
+    if is_scalar_function(f):
         fa = f(p.x[0])
         fx_p: Array = f(p.x + s_p * h) - fa
         fx_q: Array = f(p.x + s_q * h) - fa
@@ -325,8 +329,8 @@ def _diff_tian_zhou_deng_3(
     h = p.dx[0]
     s_p, s_q, s_r = m.shift
 
-    if callable(f):
-        fa = f(p.x[0])
+    if is_scalar_function(f):
+        fa: Array = f(p.x[0])
         fx_p: Array = f(p.x + s_p * h) - fa
         fx_q: Array = f(p.x + s_q * h) - fa
         fx_r: Array = f(p.x + s_r * h) - fa

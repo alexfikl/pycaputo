@@ -17,6 +17,7 @@ from pycaputo.typing import (
     ArrayOrScalarFunction,
     DifferentiableScalarFunction,
     ScalarFunction,
+    is_scalar_function,
 )
 
 from .base import QuadratureMethod, quad
@@ -75,7 +76,7 @@ def _quad_rl_rect(
     p: Points,
 ) -> Array:
     x = p.x
-    fx = f(x) if callable(f) else f
+    fx: Array = f(x) if is_scalar_function(f) else f
     alpha = -m.alpha
     w0 = 1 / math.gamma(1 + alpha)
 
@@ -120,7 +121,7 @@ def _quad_rl_trap(
     from pycaputo.grid import UniformPoints
 
     x = p.x
-    fx = f(x) if callable(f) else f
+    fx: Array = f(x) if is_scalar_function(f) else f
     alpha = -m.alpha
     w0 = 1 / math.gamma(2 + alpha)
 
@@ -183,7 +184,7 @@ def _quad_rl_simpson(
 ) -> Array:
     from pycaputo.grid import UniformPoints
 
-    if not callable(f):
+    if not is_scalar_function(f):
         raise TypeError(f"Input 'f' needs to be a callable: {type(f).__name__}")
 
     if not isinstance(p, UniformPoints):
@@ -379,7 +380,7 @@ def _quad_rl_spec(
     from pycaputo.jacobi import jacobi_project, jacobi_riemann_liouville_integral
 
     # NOTE: Equation 3.63 [Li2020]
-    fx = f(p.x) if callable(f) else f
+    fx: Array = f(p.x) if is_scalar_function(f) else f
     fhat = jacobi_project(fx, p)
 
     df = np.zeros_like(fhat)
@@ -458,7 +459,7 @@ def _quad_rl_spline(
     xi = m.xi
     alpha = -m.alpha
 
-    if not callable(f):
+    if not is_scalar_function(f):
         raise TypeError(
             f"'{type(m).__name__}' only supports callable functions: 'f' is a "
             f"{type(f).__name__}"
@@ -558,7 +559,7 @@ def _quad_rl_conv(
         lubich_bdf_weights,
     )
 
-    fx = f(p.x) if callable(f) else f
+    fx: Array = f(p.x) if is_scalar_function(f) else f
     alpha = -m.alpha
     dxa = p.dx[0] ** alpha
 
@@ -747,7 +748,7 @@ def _quad_rl_yuan_agrawal(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
-    if not callable(f):
+    if not is_scalar_function(f):
         raise TypeError(
             f"{type(m).__name__!r} requires a callable: f is a {type(f).__name__!r}"
         )
@@ -757,7 +758,7 @@ def _quad_rl_yuan_agrawal(
 
     # solve ODE at quadrature nodes
     omega, w = m.nodes_and_weights()
-    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=m._qtol)  # ty: ignore[invalid-argument-type]
+    phi = _diffusive_gamma_solve_ivp(m, f, p, omega, method=m.method, qtol=m._qtol)
 
     # compute RL integral
     qf = np.empty_like(x, dtype=dtype)

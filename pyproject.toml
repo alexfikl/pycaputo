@@ -46,6 +46,7 @@ dependencies = [
     "rich>=13",
     "scipy>=1.7",
     # NOTE: for `Self` (used in `history.py`)
+    # NOTE: for `TypeIs` (used in `typing.py`)
     "typing-extensions>=4",
 ]
 # NOTE: this is only here for readthedocs (keep in sync with the dependency group)
@@ -157,3 +158,6 @@ ini_options.addopts = [
     "--capture=no",
     "--verbose",
 ]
+
+[tool.ty]
+rules.undefined-reveal = "ignore"

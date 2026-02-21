@@ -11,7 +11,7 @@ from typing import Any
 
 import numpy as np
 
-from pycaputo.typing import Array
+from pycaputo.typing import Array, IntegerArray
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ class InterpStencil:
 
     coeffs: Array
     """Coefficients used in the stencil."""
-    offsets: Array
+    offsets: IntegerArray
     """Offsets around the centered :math:`0` used in the stencil."""
     x: float
     """Point at which the interpolation was evaluated."""
@@ -42,7 +42,7 @@ class InterpStencil:
         return self.coeffs.size
 
     @cached_property
-    def padded_coeffs(self) -> Array:
+    def padded_coeffs(self) -> IntegerArray:
         """Padded coefficients that are symmetric around the :math:`0`
         index and can be easily applied as a convolution.
         """
@@ -70,7 +70,9 @@ def apply_interpolation(s: InterpStencil, f: Array) -> Array:
     return np.convolve(f, a, mode="same")
 
 
-def determine_truncation_error(offsets: Array, x: float, h: float = 1.0) -> float:
+def determine_truncation_error(
+    offsets: IntegerArray, x: float, h: float = 1.0
+) -> float:
     r"""Approximate the truncation error of the Lagrange interpolation.
 
     .. math::

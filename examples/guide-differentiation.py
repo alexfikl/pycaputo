@@ -14,7 +14,7 @@ import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
 from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar
+from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar, is_scalar_function
 
 # {{{
 
@@ -86,7 +86,7 @@ def _diff_rl(
     f: ArrayOrScalarFunction,
     p: Points,
 ) -> Array:
-    fx = f(p.x) if callable(f) else f
+    fx = f(p.x) if is_scalar_function(f) else f
     # ... add an actual implementation here ...
     return np.zeros_like(fx)
     # [register-end]

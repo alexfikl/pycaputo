@@ -10,7 +10,7 @@ from typing import Any, NamedTuple
 
 import numpy as np
 
-from pycaputo.typing import Array, ScalarFunction
+from pycaputo.typing import Array, IntegerArray, ScalarFunction
 
 
 class Truncation(NamedTuple):
@@ -40,11 +40,11 @@ class DiffStencil:
     derivative: int
     coeffs: Array
     """Coefficients used in the stencil."""
-    offsets: Array
+    offsets: IntegerArray
     """Offsets around the centered :math:`0` used in the stencil."""
 
     @cached_property
-    def padded_coeffs(self) -> Array:
+    def padded_coeffs(self) -> IntegerArray:
         """Padded coefficients that are symmetric around the :math:`0`
         index and can be easily applied as a convolution.
         """
