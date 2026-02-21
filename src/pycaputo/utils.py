@@ -465,8 +465,8 @@ def figure(
 
         for ax in fig.axes:
             assert isinstance(ax, Axes3D)
-            ax.xaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
-            ax.yaxis.pane.fill = pane_fill  # ty: ignore[possibly-missing-attribute]
+            ax.xaxis.pane.fill = pane_fill  # ty: ignore[unresolved-attribute]
+            ax.yaxis.pane.fill = pane_fill  # ty: ignore[unresolved-attribute]
             ax.zaxis.pane.fill = pane_fill
 
     try:
