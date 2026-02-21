@@ -16,7 +16,7 @@ pluggy==1.6.0
     # via hatchling
 poetry-core==2.3.1
     # via -r .ci/requirements-build.in
-setuptools==80.10.2
+setuptools==82.0.0
     # via -r .ci/requirements-build.in
 tomli==2.4.0 ; python_full_version < '3.11'
     # via hatchling
