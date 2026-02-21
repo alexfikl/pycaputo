@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import math
 import pathlib
 
 import numpy as np
@@ -76,7 +77,7 @@ def test_riemann_liouville_quad(
     meth: riemann_liouville.RiemannLiouvilleMethod
     if name == "Rectangular":
         meth = riemann_liouville.Rectangular(-alpha, theta=0.5)
-        order = min(2.0, 1 + alpha) if meth.theta == 0.5 else 1.0
+        order = min(2.0, 1 + alpha) if math.isclose(meth.theta, 0.5) else 1.0
     elif name == "Trapezoidal":
         meth = riemann_liouville.Trapezoidal(-alpha)
         order = 2.0

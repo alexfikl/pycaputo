@@ -54,7 +54,7 @@ urls.Documentation = "https://pycaputo.readthedocs.io"
 urls.Repository = "https://github.com/alexfikl/pycaputo"
 
 [dependency-groups]
-dev = [ "doc8", "pyproject-fmt", "reuse", "typos", "uv" ]
+dev = [ "pyproject-fmt", "reuse", "typos", "uv" ]
 # NOTE: typing dependencies: matplotlib, scienceplots, scipy-stubs, types-dataclasses
 test = [
     "matplotlib",
@@ -157,7 +157,3 @@ ini_options.addopts = [
     "--capture=no",
     "--verbose",
 ]
-
-[tool.doc8]
-max-line-length = 88
-ignore-path = "src/*.egg-info"
