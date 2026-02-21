@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from functools import cached_property
 from math import ceil
@@ -296,7 +297,11 @@ class WeightedEuler(CaputoImplicitProductIntegrationMethod[StateFunctionT]):
 
     @property
     def order(self) -> float:
-        return (1.0 + self.smallest_derivative_order) if self.theta == 0.5 else 1.0
+        return (
+            (1.0 + self.smallest_derivative_order)
+            if math.isclose(self.theta, 0.5)
+            else 1.0
+        )
 
 
 def _update_caputo_weighted_euler(
@@ -308,15 +313,16 @@ def _update_caputo_weighted_euler(
     """Adds the weighted Euler right-hand side to *out*."""
     assert 0 < n <= len(history)
     omega = _weights_quadrature_rectangular(m, history.ts, n)
+    eps = np.finfo(out.dtype).eps
 
     # add forward terms
     theta = m.theta
     fs = history.storage[:n]
-    if theta != 0.0:
+    if abs(theta) > eps:
         out += theta * np.einsum("ij,ij->j", omega, fs)
 
     # add backwards terms
-    if theta != 1.0:
+    if abs(theta - 1.0) > eps:
         # NOTE: this is implicit so we do not add the last term
         out += (1 - theta) * np.einsum("ij,ij->j", omega[:-1], fs[1:])
 
@@ -340,7 +346,8 @@ def _advance_caputo_weighted_euler(
     fnext = _update_caputo_initial_condition(fnext, m.y0, t - tstart)
     fnext, fac = _update_caputo_weighted_euler(fnext, m, history, n)
 
-    if m.theta != 1.0:  # noqa: SIM108
+    eps = np.finfo(y.dtype).eps
+    if abs(m.theta - 1.0) > eps:  # noqa: SIM108
         # NOTE: solve `y = fac * f(t, y) + fnext`
         ynext = m.solve(t, y, fac, fnext)
     else:

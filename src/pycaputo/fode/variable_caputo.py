@@ -59,7 +59,7 @@ class Relaxation(Function):
     def __call__(self, t: float) -> Array:
         """Evaluate the exact solution at time *t*."""
 
-        if t == 0.0:
+        if t == 0:
             return np.array([self.y0])
 
         import mpmath

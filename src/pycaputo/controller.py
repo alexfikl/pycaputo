@@ -667,7 +667,7 @@ def _evaluate_timestep_factor_integral(
     m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
-    if eest == 0.0:
+    if abs(eest) < 1.0e-15:
         return c.qmax
 
     order = m.order
@@ -756,7 +756,7 @@ def _evaluate_timestep_factor_proportional_integral(
     m: FractionalDifferentialEquationMethod[FractionalOperatorT, StateFunctionT],
     eest: float,
 ) -> float:
-    if eest == 0.0:
+    if abs(eest) < 1.0e-15:
         return c.qmax
 
     # NOTE: the factors used here are from OrdinaryDiffEq.jl

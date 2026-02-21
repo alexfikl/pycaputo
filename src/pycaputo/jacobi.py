@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterator
 
 import numpy as np
@@ -21,7 +22,7 @@ def jacobi_gamma(n: int, alpha: float, beta: float) -> float:
     """
     from math import gamma
 
-    if alpha == beta == -0.5 and n == 0:
+    if math.isclose(alpha, -0.5) and math.isclose(beta, -0.5) and n == 0:
         # NOTE: gamma(n + alpha + beta + 1) is not defined in this case
         return np.pi
 
