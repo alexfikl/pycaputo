@@ -68,28 +68,23 @@ test = [
     "types-dataclasses",
 ]
 docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.4" ]
-vis = [ "scienceplots>=2.1" ]
 examples = [ "numba" ]
+vis = [ "scienceplots>=2.1" ]
 
-[tool.hatch.build.targets.sdist]
-exclude = [
+[tool.hatch]
+build.targets.sdist.exclude = [
     ".github",
     ".ci",
     "docs/_build",
 ]
-
-[tool.hatch.build.targets.wheel]
-packages = [
+build.targets.wheel.packages = [
     "src/pycaputo",
 ]
-
-[tool.hatch.metadata]
-allow-direct-references = true
+metadata.allow-direct-references = true
 
 [tool.ruff]
 target-version = "py310"
 line-length = 88
-
 preview = true
 lint.select = [
     "A",   # flake8-builtins
@@ -137,7 +132,6 @@ lint.ignore = [
     "S102",    # exec-builtin
     "UP037",   # quoted-annotation
 ]
-
 lint.flake8-quotes.docstring-quotes = "double"
 lint.flake8-quotes.inline-quotes = "double"
 lint.flake8-quotes.multiline-quotes = "double"
@@ -149,16 +143,15 @@ lint.isort.required-imports = [
     "from __future__ import annotations",
 ]
 
-[tool.typos.default.extend-words]
-Pn = "Pn"
-[tool.typos.files]
-extend-exclude = [
+[tool.typos]
+default.extend-words.Pn = "Pn"
+files.extend-exclude = [
     "docs/benchmarks",
 ]
 
-[tool.pytest.ini_options]
-testpaths = "tests"
-addopts = [
+[tool.pytest]
+ini_options.testpaths = "tests"
+ini_options.addopts = [
     "-rswx",
     "--durations=25",
     "--capture=no",
