@@ -58,7 +58,7 @@ class Rectangular(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
             if not 0.0 <= self.theta <= 1.0:
                 raise ValueError(
                     f"Weight is expected to be in [0, 1]: theta is '{self.theta}'"
@@ -415,7 +415,7 @@ class SplineLagrange(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             if self.npoints > 16:
                 from warnings import warn
@@ -523,7 +523,7 @@ class Lubich(RiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             if not 1 <= self.quad_order <= 6:
                 raise ValueError(
@@ -703,7 +703,7 @@ class YuanAgrawal(DiffusiveRiemannLiouvilleMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             if self.alpha <= -1:
                 raise ValueError(

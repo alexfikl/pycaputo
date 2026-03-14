@@ -66,7 +66,7 @@ class L1(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
             if not 0 < self.alpha < 1:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
@@ -176,7 +176,7 @@ class ModifiedL1(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
             if not 0 < self.alpha < 1:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
@@ -248,7 +248,7 @@ class L2(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
             if not 1 < self.alpha < 2:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 1 < alpha < 2: {self.alpha}"
@@ -388,7 +388,7 @@ class L2C(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
             if not 1 < self.alpha < 2:
                 raise ValueError(
                     f"'{type(self).__name__}' only supports 0 < alpha < 1: {self.alpha}"
@@ -600,7 +600,7 @@ class LXD(CaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
 
 @quadrature_weights.register(LXD)
@@ -836,7 +836,7 @@ class YuanAgrawal(DiffusiveCaputoMethod):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
 

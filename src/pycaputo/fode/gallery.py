@@ -701,7 +701,7 @@ class HindmarshRose3(HindmarshRose2):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             if not 0.0 < self.epsilon < 1:
                 raise ValueError(f"Parameter 'epsilon' not in (0, 1): {self.epsilon}")
@@ -767,7 +767,7 @@ class HindmarshRose4(HindmarshRose3):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             # TODO: verify if these assumptions are necessary? It's unclear from
             # the papers what these variables represent and what ranges are allowed
@@ -1675,7 +1675,7 @@ class StandardMorrisLecarParameter(MorrisLecarParameter):
     if __debug__:
 
         def __post_init__(self) -> None:
-            super().__post_init__()  # ty: ignore[possibly-missing-attribute]
+            super().__post_init__()
 
             if self.phi <= 0 or self.phi > 1.0:
                 raise ValueError(f"Frequency 'phi' must be in [0, 1]: {self.phi}")
