@@ -70,7 +70,7 @@ fx = f(p.x)
 diff_num_basic = diff(method, fx, p)
 
 # evaluate using jax
-p_jax = Points(p.a, p.b, x=jnp.array(p.x))
+p_jax = Points(p.a, p.b, x=jnp.array(p.x))  # ty: ignore[invalid-argument-type]
 fx_jax = f(p_jax.x)
 with BlockTimer("jax-compilation") as bt:
     diff_num_jax = diff_jax(method, fx, p_jax)

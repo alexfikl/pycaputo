@@ -152,6 +152,7 @@ files.extend-exclude = [
 
 [tool.ty]
 rules.undefined-reveal = "ignore"
+rules.unused-ignore-comment = "ignore"
 
 [tool.pytest]
 ini_options.testpaths = "tests"
