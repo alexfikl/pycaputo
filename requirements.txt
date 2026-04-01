@@ -11,12 +11,12 @@ numpy==2.2.6 ; python_full_version < '3.11'
     #   pycaputo (pyproject.toml)
     #   pymittagleffler
     #   scipy
-numpy==2.4.3 ; python_full_version >= '3.11'
+numpy==2.4.4 ; python_full_version >= '3.11'
     # via
     #   pycaputo (pyproject.toml)
     #   pymittagleffler
     #   scipy
-pygments==2.19.2
+pygments==2.20.0
     # via rich
 pymittagleffler==0.2.0
     # via pycaputo (pyproject.toml)
