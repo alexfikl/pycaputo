@@ -119,7 +119,7 @@ jobs:
       with:
         python-version: '3.14'
     - id: dist
-      uses: casperdcl/deploy-pypi@v2
+      uses: casperdcl/deploy-pypi@v3
       with:
         build: true
         upload: false
