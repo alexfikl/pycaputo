@@ -14,15 +14,15 @@ differint @ git+https://github.com/differint/differint.git@0c4b6ebe8c0d97fc3b3b9
     # via -r .ci/requirements-git.txt
 exceptiongroup==1.3.1 ; python_full_version < '3.11'
     # via pytest
-fonttools==4.62.1
+fonttools==4.63.0
     # via matplotlib
 iniconfig==2.3.0
     # via pytest
 kiwisolver==1.5.0
     # via matplotlib
-markdown-it-py==4.0.0
+markdown-it-py==4.2.0
     # via rich
-matplotlib==3.10.8
+matplotlib==3.10.9
     # via
     #   pycaputo (pyproject.toml:test)
     #   scienceplots
@@ -54,7 +54,7 @@ optype==0.9.3 ; python_full_version < '3.11'
     # via scipy-stubs
 optype==0.17.0 ; python_full_version >= '3.11'
     # via scipy-stubs
-packaging==26.1
+packaging==26.2
     # via
     #   matplotlib
     #   pytest
@@ -82,7 +82,7 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 rich==15.0.0
     # via pycaputo (pyproject.toml)
-ruff==0.15.11
+ruff==0.15.13
     # via pycaputo (pyproject.toml:test)
 scienceplots==2.2.1
     # via pycaputo (pyproject.toml:test)
@@ -98,7 +98,7 @@ six==1.17.0
     # via python-dateutil
 tomli==2.4.1 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.31
+ty==0.0.35
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
