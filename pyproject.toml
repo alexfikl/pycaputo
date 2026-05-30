@@ -150,6 +150,10 @@ files.extend-exclude = [
     "docs/benchmarks",
 ]
 
+[tool.ty]
+rules.undefined-reveal = "ignore"
+rules.unused-ignore-comment = "ignore"
+
 [tool.pytest]
 ini_options.testpaths = "tests"
 ini_options.addopts = [
@@ -158,7 +162,3 @@ ini_options.addopts = [
     "--capture=no",
     "--verbose",
 ]
-
-[tool.ty]
-rules.undefined-reveal = "ignore"
-rules.unused-ignore-comment = "ignore"
