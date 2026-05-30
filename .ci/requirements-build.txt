@@ -14,13 +14,13 @@ pip==26.1.1
     # via -r .ci/requirements-build.in
 pluggy==1.6.0
     # via hatchling
-poetry-core==2.4.0
+poetry-core==2.4.1
     # via -r .ci/requirements-build.in
 setuptools==82.0.1
     # via -r .ci/requirements-build.in
 tomli==2.4.1 ; python_full_version < '3.11'
     # via hatchling
-trove-classifiers==2026.5.7.17
+trove-classifiers==2026.5.22.10
     # via hatchling
 wheel==0.47.0
     # via -r .ci/requirements-build.in
