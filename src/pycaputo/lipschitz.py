@@ -159,7 +159,7 @@ def estimate_lipschitz_constant(
     cdf = fit_reverse_weibull(smax)
 
     # NOTE: the estimate for the Lipschitz constant is the location parameter
-    return float(cdf.kwds["loc"])
+    return float(cdf.kwds["loc"])  # ty: ignore[invalid-argument-type]
 
 
 # }}}
