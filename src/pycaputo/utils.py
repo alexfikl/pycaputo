@@ -418,11 +418,11 @@ def set_recommended_matplotlib(
         defaults["savefig"].update({"facecolor": black, "edgecolor": black})
 
     for group, params in defaults.items():
-        mp.rc(group, **params)
+        mp.rc(group, **params)  # ty: ignore[invalid-argument-type]
 
     if overrides:
         for group, params in overrides.items():
-            mp.rc(group, **params)
+            mp.rc(group, **params)  # ty: ignore[invalid-argument-type]
 
 
 @contextmanager
