@@ -2,7 +2,7 @@
 #    uv pip compile --universal --python-version 3.10 -o .ci/requirements-build.txt .ci/requirements-build.in
 editables==0.6
     # via -r .ci/requirements-build.in
-hatchling==1.29.0
+hatchling==1.30.1
     # via -r .ci/requirements-build.in
 packaging==26.2
     # via
@@ -10,7 +10,7 @@ packaging==26.2
     #   wheel
 pathspec==1.1.1
     # via hatchling
-pip==26.1.1
+pip==26.1.2
     # via -r .ci/requirements-build.in
 pluggy==1.6.0
     # via hatchling
@@ -20,7 +20,7 @@ setuptools==82.0.1
     # via -r .ci/requirements-build.in
 tomli==2.4.1 ; python_full_version < '3.11'
     # via hatchling
-trove-classifiers==2026.5.22.10
+trove-classifiers==2026.6.1.19
     # via hatchling
 wheel==0.47.0
     # via -r .ci/requirements-build.in
