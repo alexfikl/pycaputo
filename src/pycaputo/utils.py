@@ -365,7 +365,10 @@ def set_recommended_matplotlib(
 
     # NOTE: preserve existing colors (the ones in "science" are ugly)
     prop_cycle = mp.rcParams["axes.prop_cycle"]
-    with suppress(ImportError):
+
+    # NOTE: scienceplots (2.2.1) does not support matplotlib 3.11, so we just
+    # ignore it for now. It will get fixed eventually
+    with suppress(ImportError, AttributeError):
         import scienceplots  # noqa: F401
 
         mp.style.use(["science", "ieee"])
