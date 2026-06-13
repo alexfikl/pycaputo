@@ -73,15 +73,15 @@ examples = [ "numba" ]
 vis = [ "scienceplots>=2.1" ]
 
 [tool.hatch]
-build.targets.sdist.exclude = [
-    ".github",
-    ".ci",
-    "docs/_build",
-]
+metadata.allow-direct-references = true
 build.targets.wheel.packages = [
     "src/pycaputo",
 ]
-metadata.allow-direct-references = true
+build.targets.sdist.exclude = [
+    ".ci",
+    ".github",
+    "docs/_build",
+]
 
 [tool.ruff]
 target-version = "py310"
