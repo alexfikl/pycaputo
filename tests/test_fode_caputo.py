@@ -25,7 +25,8 @@ TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
 log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
-set_recommended_matplotlib()
+if ENABLE_VISUAL:
+    set_recommended_matplotlib()
 
 # {{{ solution: Section 3.3.1, Example 2 [Li2015]
 
