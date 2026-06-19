@@ -8,9 +8,13 @@ from __future__ import annotations
 
 import os
 import sys
+from collections.abc import Callable
 from importlib import metadata
+from typing import Any
 
 from docutils import nodes
+from docutils.parsers.rst.states import Inliner
+from sphinx.application import Sphinx
 
 # {{{ project information
 
@@ -27,8 +31,18 @@ url = "https://github.com/alexfikl/pycaputo"
 # {{{ github roles
 
 
-def autolink(pattern: str):
-    def role(name, rawtext, text, lineno, inliner, options=None, context=None):
+def autolink(
+    pattern: str,
+) -> Callable[..., tuple[list[nodes.Node], list[str]]]:
+    def role(
+        name: str,
+        rawtext: str,
+        text: str,
+        lineno: int,
+        inliner: Inliner,
+        options: dict[str, Any] | None = None,
+        context: list[Any] | None = None,
+    ) -> tuple[list[nodes.Node], list[str]]:
         if options is None:
             options = {}
 
@@ -42,7 +56,13 @@ def autolink(pattern: str):
     return role
 
 
-def add_dataclass_annotation(app, name, obj, options, bases):
+def add_dataclass_annotation(
+    app: Sphinx,
+    name: str,
+    obj: type,
+    options: dict[str, Any],
+    bases: list[type],
+) -> None:
     from dataclasses import is_dataclass
 
     if is_dataclass(obj):
@@ -55,7 +75,7 @@ def add_dataclass_annotation(app, name, obj, options, bases):
         bases.remove(object)
 
 
-def linkcode_resolve(domain, info):
+def linkcode_resolve(domain: str, info: dict[str, str]) -> str | None:
     if domain != "py" or not info["module"]:
         return None
 
@@ -96,7 +116,7 @@ def linkcode_resolve(domain, info):
     return f"{url}/blob/main/src/{filepath}#L{linestart}-L{linestop}"
 
 
-def setup(app) -> None:
+def setup(app: Sphinx) -> None:
     (tmp_url,) = (
         v for k, v in m.items() if k.startswith("Project-URL") and "Repository" in v
     )
