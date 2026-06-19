@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 import os
+import pathlib
 import time
-from collections.abc import Callable, Iterable, Iterator
-from contextlib import contextmanager, suppress
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, field, is_dataclass
 from types import TracebackType
 from typing import Any, Concatenate, Literal, NamedTuple
@@ -282,6 +283,39 @@ def visualize_eoc(
 # }}}
 
 
+# {{{ load_scienceplots_styles
+
+
+class Styles:
+    def __init__(self, styles: dict[str, str]) -> None:
+        self.styles = styles
+
+    def get(self, styles: str | Sequence[str]) -> tuple[str, ...]:
+        if isinstance(styles, str):
+            styles = [styles]
+
+        # NOTE: this silently does nothing if the styles are incorrectly named or
+        # if scienceplots does not actually exist. This should be fine..
+        return tuple(self.styles[style] for style in styles if style in self.styles)
+
+
+def load_scienceplots_styles() -> Styles:
+    from importlib.util import find_spec
+
+    spec = find_spec("scienceplots")
+    if spec is None:
+        return Styles({})
+
+    if spec.submodule_search_locations is None:
+        return Styles({})
+
+    styles_root = pathlib.Path(spec.submodule_search_locations[0]) / "styles"
+    return Styles({f.stem: str(f) for f in styles_root.rglob("*") if f.is_file()})
+
+
+# }}}
+
+
 # {{{ matplotlib helpers
 
 
@@ -322,7 +356,7 @@ def set_recommended_matplotlib(
     These are mainly used in the tests and examples to provide a uniform style
     to the results using `SciencePlots <https://github.com/garrettj403/SciencePlots>`__.
     For other applications, it is recommended to use local settings (e.g. in
-    `matplotlibrc`).
+    `matplotlibrc` or a personal `.mplstyle` file).
 
     :arg use_tex: if *True*, LaTeX labels are enabled. By default, this checks
         if LaTeX is available on the system and only enables it if possible.
@@ -360,21 +394,15 @@ def set_recommended_matplotlib(
             "PYCAPUTO_SAVEFIG", mp.rcParams["savefig.format"]
         ).lower()
 
-    # NOTE: preserve existing colors (the ones in "science" are ugly)
-    prop_cycle = mp.rcParams["axes.prop_cycle"]
-
-    # NOTE: scienceplots (2.2.1) does not support matplotlib 3.11, so we just
-    # ignore it for now. It will get fixed eventually
-    with suppress(ImportError, AttributeError):
-        import scienceplots  # noqa: F401
-
-        mp.style.use(["science", "ieee"])
-
     # NOTE: the 'petroff10' style is available for version >= 3.10.0 and changes
     # the 'prop_cycle' to the 10 colors that are more accessible
+    prop_cycle = mp.rcParams["axes.prop_cycle"]
     if "petroff10" in mp.style.available:
         mp.style.use("petroff10")
         prop_cycle = mp.rcParams["axes.prop_cycle"]
+
+    scienceplots = load_scienceplots_styles()
+    mp.style.use(scienceplots.get(["science", "ieee"]))
 
     mp.rc("figure", figsize=(8, 8), dpi=300)
     mp.rc("figure.constrained_layout", use=True)
