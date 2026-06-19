@@ -21,11 +21,10 @@ from pycaputo.stepping import (
     evolve,
     make_initial_condition,
 )
+from pycaputo.typing import Array  # noqa: TC001
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-
-    from pycaputo.typing import Array
 
 log = get_logger(__name__)
 
