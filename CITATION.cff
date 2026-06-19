@@ -6,7 +6,7 @@ authors:
   orcid: "https://orcid.org/0000-0002-0552-5936"
 
 title: "pycaputo: Fractional Calculus Toolkit"
-version: 0.10.1
+version: 0.10.2
 identifiers:
 - description: Archived snapshot (all versions)
   type: doi
@@ -14,6 +14,6 @@ identifiers:
 - description: Archived snapshot (latest version)
   type: doi
   value: "10.5281/zenodo.18100139"
-date-released: "2025-12-30"
+date-released: "2026-06-19"
 repository-code: "https://github.com/alexfikl/pycaputo"
 license: MIT
