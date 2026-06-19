@@ -52,11 +52,15 @@ numpy==2.4.6 ; python_full_version >= '3.11'
     #   optype
     #   pymittagleffler
     #   scipy
-numpy-typing-compat==20251206.2.4 ; python_full_version >= '3.11'
+numpy-typing-compat==20251206.2.4 ; python_full_version == '3.11.*'
+    # via optype
+numpy-typing-compat==20260602.2.4 ; python_full_version >= '3.12'
     # via optype
 optype==0.9.3 ; python_full_version < '3.11'
     # via scipy-stubs
-optype==0.17.1 ; python_full_version >= '3.11'
+optype==0.17.1 ; python_full_version == '3.11.*'
+    # via scipy-stubs
+optype==0.18.0 ; python_full_version >= '3.12'
     # via scipy-stubs
 packaging==26.2
     # via
@@ -76,7 +80,7 @@ pymittagleffler==0.2.0
     # via pycaputo (pyproject.toml)
 pyparsing==3.3.2
     # via matplotlib
-pytest==9.0.3
+pytest==9.1.1
     # via
     #   pycaputo (pyproject.toml:test)
     #   pytest-benchmark
@@ -86,7 +90,7 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 rich==15.0.0
     # via pycaputo (pyproject.toml)
-ruff==0.15.17
+ruff==0.15.18
     # via pycaputo (pyproject.toml:test)
 scienceplots==2.2.1
     # via pycaputo (pyproject.toml:test)
@@ -96,13 +100,15 @@ scipy==1.17.1 ; python_full_version >= '3.11'
     # via pycaputo (pyproject.toml)
 scipy-stubs==1.15.3.0 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml:test)
-scipy-stubs==1.17.1.5 ; python_full_version >= '3.11'
+scipy-stubs==1.17.1.5 ; python_full_version == '3.11.*'
+    # via pycaputo (pyproject.toml:test)
+scipy-stubs==1.18.0.0 ; python_full_version >= '3.12'
     # via pycaputo (pyproject.toml:test)
 six==1.17.0
     # via python-dateutil
 tomli==2.4.1 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.49
+ty==0.0.51
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
