@@ -35,23 +35,11 @@ def main(infile: pathlib.Path, *, outfile: pathlib.Path | None = None) -> int:
 
     from pycaputo.utils import figure, set_recommended_matplotlib
 
-    set_recommended_matplotlib(
-        overrides={
-            "figure": {"figsize": (8, 10)},
-            "axes": {
-                "labelsize": 20,
-                "titlesize": 20,
-                "grid": True,
-                "grid.axis": "y",
-                "grid.which": "major",
-            },
-            "xtick": {"labelsize": 12, "direction": "out"},
-            "ytick": {"labelsize": 16, "direction": "out"},
-        }
-    )
+    set_recommended_matplotlib()
 
-    with figure(outfile) as fig:
+    with figure(outfile, figsize=(8, 10)) as fig:
         ax = fig.gca()
+
         ax.bxp(
             [result.asbxp() for result in sorted(results, key=lambda r: r.median)],
             showfliers=False,
@@ -59,11 +47,16 @@ def main(infile: pathlib.Path, *, outfile: pathlib.Path | None = None) -> int:
             boxprops={"facecolor": "gray", "alpha": 0.6},
             medianprops={"linewidth": 3, "color": "black"},
         )
-
         ax.set_xlim([0, len(results) + 1])
-        ax.set_ylabel("Time (s)")
+
+        ax.set_ylabel("Time (s)", fontsize=20)
+        ax.set_title(f"{machine.python} - {machine.system}", pad=20, fontsize=20)
+
         ax.set_xticks(ax.get_xticks(), ax.get_xticklabels(), rotation=25, ha="right")
-        ax.set_title(f"{machine.python} - {machine.system}", pad=20)
+        ax.tick_params(axis="y", labelsize=16, direction="out")
+        ax.tick_params(axis="x", labelsize=12, direction="out")
+
+        ax.grid(visible=True, axis="y", which="major")
 
     return 0
 

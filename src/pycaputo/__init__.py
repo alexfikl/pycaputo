@@ -292,7 +292,7 @@ def fracplot(
     if ylabel is None:
         ylabel = _DEFAULT_YLABEL[dim]
 
-    overrides = {"lines": {"linewidth": 1}} if dim == 3 else {}
+    linewidth = 1 if dim == 3 else 2
     suffixes = _get_default_dark(default=bool(dark)) if dark is None else ((dark, ""),)
     outfile = None
 
@@ -302,13 +302,13 @@ def fracplot(
         if filename is not None:
             outfile = filename.parent / f"{filename.stem}{suffix_i}{filename.suffix}"
 
-        set_recommended_matplotlib(dark=dark_i, overrides=overrides)
+        set_recommended_matplotlib(dark=dark_i)
 
         if dim == 1:
             with figure(outfile) as fig:
                 ax = fig.gca()
 
-                ax.plot(t, y)
+                ax.plot(t, y, lw=linewidth)
                 ax.set_xlabel(f"${xlabel}$")
                 ax.set_ylabel(f"${ylabel}$")
                 if ylim is not None:
@@ -317,7 +317,7 @@ def fracplot(
             with figure(outfile) as fig:
                 ax = fig.gca()
 
-                ax.plot(y[0], y[1])
+                ax.plot(y[0], y[1], lw=linewidth)
                 ax.set_xlabel(f"${xlabel}$")
                 ax.set_ylabel(f"${ylabel}$")
 
@@ -328,7 +328,7 @@ def fracplot(
                 ax = fig.gca()
                 ax.view_init(elev=15, azim=azimuth, roll=0)
 
-                ax.plot(y[0], y[1], y[2])
+                ax.plot(y[0], y[1], y[2], lw=linewidth)
                 ax.set_xlabel(f"${xlabel}$")
                 ax.set_ylabel(f"${ylabel}$")
 

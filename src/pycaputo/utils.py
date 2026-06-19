@@ -316,7 +316,6 @@ def set_recommended_matplotlib(
     use_tex: bool | None = None,
     dark: bool | None = None,
     savefig_format: str | None = None,
-    overrides: dict[str, Any] | None = None,
 ) -> None:
     """Set custom :mod:`matplotlib` parameters.
 
@@ -334,8 +333,6 @@ def set_recommended_matplotlib(
     :arg savefig_format: the format used when saving figures. By default, this
         uses the ``PYCAPUTO_SAVEFIG`` environment variable and falls back to
         the :mod:`matplotlib` parameter ``savefig.format``.
-    :arg overrides: a mapping of parameters to override the defaults. These
-        can also be set separately after this function was called.
     """
     try:
         import matplotlib.pyplot as mp
@@ -422,10 +419,6 @@ def set_recommended_matplotlib(
 
     for group, params in defaults.items():
         mp.rc(group, **params)  # ty: ignore[invalid-argument-type]
-
-    if overrides:
-        for group, params in overrides.items():
-            mp.rc(group, **params)  # ty: ignore[invalid-argument-type]
 
 
 @contextmanager
