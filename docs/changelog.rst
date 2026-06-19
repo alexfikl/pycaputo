@@ -1,6 +1,16 @@
 Changelog
 =========
 
+pycaputo 0.10.2 (June 19, 2026)
+-------------------------------
+
+Maintenance
+^^^^^^^^^^^
+
+* Port documentation to Sphinx 9.
+* Add a ``CITATION.cff`` file.
+* Port plotting helpers to Matplotlib 3.11.
+
 pycaputo 0.10.1 (December 30, 2025)
 -----------------------------------
 
