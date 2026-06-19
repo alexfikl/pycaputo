@@ -5,17 +5,16 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, fields
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic
 
 import numpy as np
 from typing_extensions import Self
 
 from pycaputo.logging import get_logger
+from pycaputo.typing import Array, T
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-    from pycaputo.typing import Array
 
 log = get_logger(__name__)
 
@@ -49,10 +48,6 @@ class StateInfo:
 
     def zeros(self) -> Array:
         return np.zeros(self.shape, dtype=self.dtype)
-
-
-T = TypeVar("T", bound=State)
-"""Invariant type variable bound to :class:`State`."""
 
 
 class History(ABC, Generic[T]):

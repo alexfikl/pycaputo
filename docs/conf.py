@@ -17,7 +17,9 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from docutils.parsers.rst.states import Inliner
+    from sphinx.addnodes import pending_xref
     from sphinx.application import Sphinx
+    from sphinx.environment import BuildEnvironment
 
 # {{{ project information
 
@@ -31,7 +33,7 @@ url = "https://github.com/alexfikl/pycaputo"
 
 # }}}
 
-# {{{ github roles
+# {{{ sphinx extras
 
 
 def autolink(
@@ -119,6 +121,50 @@ def linkcode_resolve(domain: str, info: dict[str, str]) -> str | None:
     return f"{url}/blob/main/src/{filepath}#L{linestart}-L{linestop}"
 
 
+def process_autodoc_missing_reference(
+    app: Sphinx,
+    env: BuildEnvironment,
+    node: pending_xref,
+    contnode: nodes.Text | nodes.TextElement,
+) -> nodes.TextElement | None:
+    """Fix missing references due to string annotations."""
+
+    target = node["reftarget"]
+    if target not in custom_type_links:
+        return None
+
+    from docutils.nodes import Text
+
+    inventory, reftarget, reftype = custom_type_links[target]
+    if "." in reftarget:
+        module, objname = reftarget.rsplit(".", maxsplit=1)
+    else:
+        module = objname = reftarget
+
+    if isinstance(contnode, Text):
+        if app.config.autodoc_typehints_format == "short":
+            contnode = Text(objname)
+        else:
+            contnode = Text(reftarget)
+
+    if inventory:
+        node.attributes["py:module"] = module
+        node.attributes["reftype"] = reftype
+        node.attributes["reftarget"] = reftarget
+
+        from sphinx.ext import intersphinx
+
+        return intersphinx.resolve_reference_in_inventory(
+            env, inventory, node, contnode
+        )
+    else:
+        target = target.split(".")[-1]
+        py_domain = env.get_domain("py")
+        return py_domain.resolve_xref(
+            env, node["refdoc"], app.builder, reftype, target, node, contnode
+        )
+
+
 def setup(app: Sphinx) -> None:
     (tmp_url,) = (
         v for k, v in m.items() if k.startswith("Project-URL") and "Repository" in v
@@ -128,6 +174,7 @@ def setup(app: Sphinx) -> None:
     app.add_role("ghpr", autolink(f"{project_url}/pull/{{number}}"))
     app.add_role("ghissue", autolink(f"{project_url}/issues/{{number}}"))
     app.connect("autodoc-process-bases", add_dataclass_annotation)
+    app.connect("missing-reference", process_autodoc_missing_reference)
 
 
 # }}}
@@ -236,5 +283,14 @@ nitpick_ignore_regex = [
     # NOTE: this is not a documented scipy class.
     ("py:class", r".*rv_frozen"),
 ]
+
+# fmt: off
+custom_type_links = {
+    # numpy
+    "np.random.Generator": ("numpy", "numpy.random.Generator", "class"),
+    # pycaputo
+    "pycaputo.integrate_fire.base.IntegrateFireModelT": (None, "pycaputo.integrate_fire.IntegrateFireModelT", "obj"),  # noqa: E501
+}
+# fmt: on
 
 # }}}

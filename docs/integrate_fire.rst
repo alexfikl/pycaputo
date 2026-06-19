@@ -29,5 +29,3 @@ Adaptive Exponential Integrate-and-Fire Model
 ---------------------------------------------
 
 .. automodule:: pycaputo.integrate_fire.ad_ex
-
-.. autoclass:: pycaputo.integrate_fire.base.IntegrateFireModelT

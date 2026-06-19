@@ -7,7 +7,13 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo import derivatives as ds
+from pycaputo.derivatives import (
+    CaputoDerivative,
+    FractionalOperator,
+    GrunwaldLetnikovDerivative,
+    RiemannLiouvilleDerivative,
+    Side,
+)
 from pycaputo.logging import get_logger
 
 if TYPE_CHECKING:
@@ -20,7 +26,7 @@ log = get_logger(__name__)
 
 
 def _pow_derivative_caputo(
-    d: ds.CaputoDerivative, t: float | Array, omega: float
+    d: CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
     from math import gamma
 
@@ -36,7 +42,7 @@ def _pow_derivative_caputo(
 
 
 def _pow_derivative_riemann_liouville(
-    d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
+    d: RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
     from math import gamma
 
@@ -52,7 +58,7 @@ def _pow_derivative_riemann_liouville(
 
 
 def pow_derivative(
-    d: ds.FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
+    d: FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
 ) -> Array:
     r"""Evaluates the application of the fractional operator *d* to the power
     function.
@@ -70,15 +76,15 @@ def pow_derivative(
     """
 
     side = getattr(d, "side", None)
-    if side != ds.Side.Left:
+    if side != Side.Left:
         raise ValueError(f"Unsupported derivative side: {side}")
 
-    if isinstance(d, ds.CaputoDerivative):
+    if isinstance(d, CaputoDerivative):
         return _pow_derivative_caputo(d, t - t0, omega)
-    elif isinstance(d, ds.RiemannLiouvilleDerivative):
+    elif isinstance(d, RiemannLiouvilleDerivative):
         return _pow_derivative_riemann_liouville(d, t - t0, omega)
-    elif isinstance(d, ds.GrunwaldLetnikovDerivative):
-        d = ds.RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
+    elif isinstance(d, GrunwaldLetnikovDerivative):
+        d = RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
         return _pow_derivative_riemann_liouville(d, t - t0, omega)
     else:
         raise NotImplementedError(
@@ -93,7 +99,7 @@ def pow_derivative(
 
 
 def _exp_derivative_caputo(
-    d: ds.CaputoDerivative, t: float | Array, omega: float
+    d: CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
     from pymittagleffler import mittag_leffler
 
@@ -107,7 +113,7 @@ def _exp_derivative_caputo(
 
 
 def _exp_derivative_riemann_liouville(
-    d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
+    d: RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
     from pymittagleffler import mittag_leffler
 
@@ -120,7 +126,7 @@ def _exp_derivative_riemann_liouville(
 
 
 def exp_derivative(
-    d: ds.FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
+    d: FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
 ) -> Array:
     r"""Evaluates the application of the fractional operator *d* to the exponential
     function.
@@ -138,15 +144,15 @@ def exp_derivative(
     """
 
     side = getattr(d, "side", None)
-    if side != ds.Side.Left:
+    if side != Side.Left:
         raise ValueError(f"Unsupported derivative side: {side}")
 
-    if isinstance(d, ds.CaputoDerivative):
+    if isinstance(d, CaputoDerivative):
         return _exp_derivative_caputo(d, t - t0, omega)
-    elif isinstance(d, ds.RiemannLiouvilleDerivative):
+    elif isinstance(d, RiemannLiouvilleDerivative):
         return _exp_derivative_riemann_liouville(d, t - t0, omega)
-    elif isinstance(d, ds.GrunwaldLetnikovDerivative):
-        d = ds.RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
+    elif isinstance(d, GrunwaldLetnikovDerivative):
+        d = RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
         return _exp_derivative_riemann_liouville(d, t - t0, omega)
     else:
         raise NotImplementedError(
@@ -161,7 +167,7 @@ def exp_derivative(
 
 
 def _sin_derivative_caputo(
-    d: ds.CaputoDerivative, t: float | Array, omega: float
+    d: CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
     from pymittagleffler import mittag_leffler
 
@@ -179,7 +185,7 @@ def _sin_derivative_caputo(
 
 
 def _sin_derivative_riemann_liouville(
-    d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
+    d: RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
     from pymittagleffler import mittag_leffler
 
@@ -193,7 +199,7 @@ def _sin_derivative_riemann_liouville(
 
 
 def sin_derivative(
-    d: ds.FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
+    d: FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
 ) -> Array:
     r"""Evaluates the application of the fractional operator *d* to the sine function.
 
@@ -210,15 +216,15 @@ def sin_derivative(
     """
 
     side = getattr(d, "side", None)
-    if side != ds.Side.Left:
+    if side != Side.Left:
         raise ValueError(f"Unsupported derivative side: {side}")
 
-    if isinstance(d, ds.CaputoDerivative):
+    if isinstance(d, CaputoDerivative):
         return _sin_derivative_caputo(d, t - t0, omega)
-    elif isinstance(d, ds.RiemannLiouvilleDerivative):
+    elif isinstance(d, RiemannLiouvilleDerivative):
         return _sin_derivative_riemann_liouville(d, t - t0, omega)
-    elif isinstance(d, ds.GrunwaldLetnikovDerivative):
-        d = ds.RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
+    elif isinstance(d, GrunwaldLetnikovDerivative):
+        d = RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
         return _sin_derivative_riemann_liouville(d, t - t0, omega)
     else:
         raise NotImplementedError(
@@ -233,7 +239,7 @@ def sin_derivative(
 
 
 def _cos_derivative_caputo(
-    d: ds.CaputoDerivative, t: float | Array, omega: float
+    d: CaputoDerivative, t: float | Array, omega: float
 ) -> Array:
     from pymittagleffler import mittag_leffler
 
@@ -253,7 +259,7 @@ def _cos_derivative_caputo(
 
 
 def _cos_derivative_riemann_liouville(
-    d: ds.RiemannLiouvilleDerivative, t: float | Array, omega: float
+    d: RiemannLiouvilleDerivative, t: float | Array, omega: float
 ) -> Array:
     from pymittagleffler import mittag_leffler
 
@@ -266,7 +272,7 @@ def _cos_derivative_riemann_liouville(
 
 
 def cos_derivative(
-    d: ds.FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
+    d: FractionalOperator, t: float | Array, *, t0: float = 0.0, omega: float = 1.0
 ) -> Array:
     r"""Evaluates the application of the fractional operator *d* to the cosine function.
 
@@ -283,15 +289,15 @@ def cos_derivative(
     """
 
     side = getattr(d, "side", None)
-    if side != ds.Side.Left:
+    if side != Side.Left:
         raise ValueError(f"Unsupported derivative side: {side}")
 
-    if isinstance(d, ds.CaputoDerivative):
+    if isinstance(d, CaputoDerivative):
         return _cos_derivative_caputo(d, t - t0, omega)
-    elif isinstance(d, ds.RiemannLiouvilleDerivative):
+    elif isinstance(d, RiemannLiouvilleDerivative):
         return _cos_derivative_riemann_liouville(d, t - t0, omega)
-    elif isinstance(d, ds.GrunwaldLetnikovDerivative):
-        d = ds.RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
+    elif isinstance(d, GrunwaldLetnikovDerivative):
+        d = RiemannLiouvilleDerivative(alpha=d.alpha, side=d.side)
         return _cos_derivative_riemann_liouville(d, t - t0, omega)
     else:
         raise NotImplementedError(
