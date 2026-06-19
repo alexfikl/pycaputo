@@ -6,15 +6,18 @@
 The definition is given by registering a new method using ``quad.register``.
 """
 
-from __future__ import annotations  # noqa: I001
+from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.derivatives import HadamardDerivative, Side
-from pycaputo.grid import Points
 from pycaputo.typing import Array, ArrayOrScalarFunction, is_scalar_function
+
+if TYPE_CHECKING:
+    from pycaputo.grid import Points
 
 # {{{
 

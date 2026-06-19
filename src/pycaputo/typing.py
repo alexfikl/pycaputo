@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import os
-from dataclasses import Field
 from typing import (
+    TYPE_CHECKING,
     Any,
     ClassVar,
     ParamSpec,
@@ -17,6 +17,9 @@ from typing import (
 
 import numpy as np
 from typing_extensions import TypeIs
+
+if TYPE_CHECKING:
+    from dataclasses import Field
 
 # {{{ TypeVars
 

@@ -5,14 +5,16 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, NamedTuple, overload
+from typing import TYPE_CHECKING, Any, NamedTuple, overload
 
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
 
 from .special import Function
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 log = get_logger(__name__)
 

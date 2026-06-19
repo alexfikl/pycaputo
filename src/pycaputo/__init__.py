@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import pathlib
-from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -16,15 +15,22 @@ from pycaputo.derivatives import (
     RiemannLiouvilleDerivative,
     Side,
 )
-from pycaputo.differentiation import DerivativeMethod
-from pycaputo.grid import Points
 from pycaputo.logging import get_logger
-from pycaputo.stepping import FractionalDifferentialEquationMethod
-from pycaputo.typing import Array, ArrayOrScalarFunction, PathLike, ScalarFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from pycaputo.derivatives import FractionalOperatorT
-    from pycaputo.typing import StateFunctionT
+    from pycaputo.differentiation import DerivativeMethod
+    from pycaputo.grid import Points
+    from pycaputo.stepping import FractionalDifferentialEquationMethod
+    from pycaputo.typing import (
+        Array,
+        ArrayOrScalarFunction,
+        PathLike,
+        ScalarFunction,
+        StateFunctionT,
+    )
 
 log = get_logger("pycaputo")
 

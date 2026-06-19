@@ -4,10 +4,9 @@
 from __future__ import annotations
 
 import pathlib
-from collections.abc import Callable
 from dataclasses import replace
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import numpy.linalg as la
@@ -17,8 +16,12 @@ from pycaputo.derivatives import CaputoDerivative, FractionalOperatorT
 from pycaputo.fode import caputo
 from pycaputo.logging import get_logger
 from pycaputo.stepping import FractionalDifferentialEquationMethod, evolve
-from pycaputo.typing import Array, StateFunction
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pycaputo.typing import Array, StateFunction
 
 TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent

@@ -8,13 +8,16 @@ from __future__ import annotations
 
 import os
 import sys
-from collections.abc import Callable
 from importlib import metadata
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from docutils import nodes
-from docutils.parsers.rst.states import Inliner
-from sphinx.application import Sphinx
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from docutils.parsers.rst.states import Inliner
+    from sphinx.application import Sphinx
 
 # {{{ project information
 

@@ -6,10 +6,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
+from typing import TYPE_CHECKING
 
-from pycaputo.derivatives import FractionalOperator
-from pycaputo.grid import Points
-from pycaputo.typing import Array, ArrayOrScalarFunction
+if TYPE_CHECKING:
+    from pycaputo.derivatives import FractionalOperator
+    from pycaputo.grid import Points
+    from pycaputo.typing import Array, ArrayOrScalarFunction
 
 
 @dataclass(frozen=True)

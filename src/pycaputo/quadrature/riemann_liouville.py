@@ -7,11 +7,11 @@ import math
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.grid import Points
 from pycaputo.typing import (
     Array,
     ArrayOrScalarFunction,
@@ -21,6 +21,9 @@ from pycaputo.typing import (
 )
 
 from .base import QuadratureMethod, quad
+
+if TYPE_CHECKING:
+    from pycaputo.grid import Points
 
 
 @dataclass(frozen=True)

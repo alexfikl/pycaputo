@@ -3,9 +3,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 # {{{ linear spike time estimate
 

@@ -10,11 +10,14 @@ Other methods are available at :mod:`pycaputo.differentiation`.
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 log = get_logger("tutorial")
 

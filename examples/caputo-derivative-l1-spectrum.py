@@ -18,13 +18,17 @@ matrices can be constructed.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from pycaputo.differentiation import quadrature_weights
 from pycaputo.differentiation.caputo import L1
 from pycaputo.grid import make_uniform_points
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 log = get_logger("caputo_derivative_l1_spectrum")
 

@@ -6,16 +6,19 @@ from __future__ import annotations
 import os
 import pathlib
 import time
-from collections.abc import Callable, Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field, is_dataclass
-from types import TracebackType
-from typing import Any, Concatenate, Literal, NamedTuple
+from typing import TYPE_CHECKING, Any, Concatenate, Literal, NamedTuple
 
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable, Iterator, Sequence
+    from types import TracebackType
+
+    from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
 
 log = get_logger(__name__)
 

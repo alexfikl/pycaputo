@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 import pathlib
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.linalg as la
@@ -12,8 +13,10 @@ import pytest
 
 from pycaputo.logging import get_logger
 from pycaputo.quadrature import quad, riemann_liouville, variable_riemann_liouville
-from pycaputo.typing import Array, ScalarFunction
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array, ScalarFunction
 
 TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent

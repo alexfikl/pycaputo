@@ -10,11 +10,14 @@ The example uses the PECE method with a fixed step size.
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 log = get_logger("tutorial")
 

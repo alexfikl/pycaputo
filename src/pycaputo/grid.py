@@ -3,16 +3,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from array_api_compat import array_namespace
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pycaputo.typing import Array
 
 log = get_logger(__name__)
 

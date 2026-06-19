@@ -6,11 +6,12 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import numpy as np
 
-from pycaputo.typing import Array, IntegerArray, ScalarFunction
+if TYPE_CHECKING:
+    from pycaputo.typing import Array, IntegerArray, ScalarFunction
 
 
 class Truncation(NamedTuple):

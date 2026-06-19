@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import numpy as np
 
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 
 class Reference(NamedTuple):

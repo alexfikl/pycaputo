@@ -21,10 +21,12 @@ It uses a spectral method based on Jacobi polynomials to compute the gradient.
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 # {{{ evaluate
 

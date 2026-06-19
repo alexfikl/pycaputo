@@ -3,16 +3,15 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.linalg as la
 
 from pycaputo.controller import FixedController
 from pycaputo.derivatives import VariableExponentialCaputoDerivative
-from pycaputo.events import Event
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import (
@@ -26,6 +25,11 @@ from pycaputo.utils import cached_on_first_arg
 
 from .product_integration import AdvanceResult
 from .special import Function
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.events import Event
 
 log = get_logger(__name__)
 

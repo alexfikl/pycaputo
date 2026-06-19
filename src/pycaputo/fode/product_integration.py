@@ -3,14 +3,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import numpy as np
 
 from pycaputo.derivatives import FractionalOperatorT
-from pycaputo.events import Event
 from pycaputo.history import History, ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import (
@@ -20,6 +18,11 @@ from pycaputo.stepping import (
     make_initial_condition,
 )
 from pycaputo.typing import Array, StateFunctionT
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.events import Event
 
 log = get_logger(__name__)
 

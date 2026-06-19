@@ -4,13 +4,16 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo import fracevolve, fracplot
 from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import pif
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 
 class PIFModel(pif.PIFModel):

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pathlib
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import numpy.linalg as la
@@ -13,8 +13,10 @@ import pytest
 
 from pycaputo.fode import caputo_fabrizio
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent

@@ -20,12 +20,15 @@ import csv
 import math
 import pathlib
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.derivatives import CaputoFabrizioOperator
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 log = get_logger("atangana-seda")
 dirname = pathlib.Path(__file__).parent

@@ -6,15 +6,18 @@
 The definition is given by registering a new method using ``diff.register``.
 """
 
-from __future__ import annotations  # noqa: I001
+from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.grid import Points
 from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar, is_scalar_function
+
+if TYPE_CHECKING:
+    from pycaputo.grid import Points
 
 # {{{
 

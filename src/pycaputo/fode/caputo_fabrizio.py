@@ -3,15 +3,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.controller import FixedController
 from pycaputo.derivatives import CaputoFabrizioOperator
-from pycaputo.events import Event
 from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import (
@@ -23,6 +22,11 @@ from pycaputo.stepping import (
 from pycaputo.typing import Array, StateFunctionT
 
 from .product_integration import AdvanceResult
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.events import Event
 
 log = get_logger(__name__)
 

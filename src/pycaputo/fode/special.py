@@ -5,11 +5,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.derivatives import FractionalOperator
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from pycaputo.derivatives import FractionalOperator
+    from pycaputo.typing import Array
 
 
 @dataclass(frozen=True)

@@ -9,10 +9,11 @@ import numpy as np
 import scipy.stats
 
 from pycaputo.logging import get_logger
-from pycaputo.typing import Array, ScalarFunction
 
 if TYPE_CHECKING:
     from scipy.stats._distn_infrastructure import rv_frozen
+
+    from pycaputo.typing import Array, ScalarFunction
 
 log = get_logger(__name__)
 

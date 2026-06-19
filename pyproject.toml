@@ -107,6 +107,7 @@ lint.select = [
     "RUF", # ruff
     "S",   # flake8-bandit
     "SIM", # flake8-simplify
+    "TC",  # flake8-type-checking
     "UP",  # pyupgrade
     "W",   # flake8
 ]

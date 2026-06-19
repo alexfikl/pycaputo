@@ -7,14 +7,13 @@ import math
 from dataclasses import dataclass
 from functools import cached_property
 from math import ceil
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.linalg as la
 from scipy.special import gamma
 
-from pycaputo.controller import Controller
 from pycaputo.derivatives import CaputoDerivative
-from pycaputo.history import ProductIntegrationHistory
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
@@ -23,6 +22,10 @@ from .product_integration import (
     AdvanceResult,
     ProductIntegrationMethod,
 )
+
+if TYPE_CHECKING:
+    from pycaputo.controller import Controller
+    from pycaputo.history import ProductIntegrationHistory
 
 log = get_logger(__name__)
 

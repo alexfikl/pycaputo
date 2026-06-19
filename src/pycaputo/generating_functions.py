@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.typing import Array
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from pycaputo.typing import Array
 
 # {{{ Lubich1986 weights
 

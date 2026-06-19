@@ -4,19 +4,20 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import cached_property, singledispatch
 from typing import TYPE_CHECKING, Any, Generic
 
 from pycaputo.derivatives import FractionalOperatorT
-from pycaputo.events import Event
-from pycaputo.history import History
 from pycaputo.typing import Array, StateFunctionT
 
 if TYPE_CHECKING:
     # NOTE: avoid cyclic import
+    from collections.abc import Iterable, Iterator
+
     from pycaputo.controller import Controller
+    from pycaputo.events import Event
+    from pycaputo.history import History
 
 
 @dataclass(frozen=True)

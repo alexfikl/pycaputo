@@ -16,12 +16,16 @@ does.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import scipy.stats as ss
 
 from pycaputo.lipschitz import fit_reverse_weibull, uniform_sample_maximum_slopes
-from pycaputo.typing import Array
 from pycaputo.utils import figure, set_recommended_matplotlib
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 
 def f(x: Array) -> Array:

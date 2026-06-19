@@ -21,14 +21,18 @@ to wrap this into a more generic interface.
 from __future__ import annotations
 
 import math
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from pycaputo.differentiation import caputo, diff
 from pycaputo.grid import make_uniform_points
-from pycaputo.typing import Array
 from pycaputo.utils import timeit
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pycaputo.typing import Array
 
 try:
     import numba  # ty: ignore[unresolved-import]

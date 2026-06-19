@@ -3,13 +3,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import numpy.linalg as la
 import pytest
-from pytest_benchmark.fixture import BenchmarkFixture
 
 from pycaputo.differentiation import caputo, diff
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pytest_benchmark.fixture import BenchmarkFixture
+
+    from pycaputo.typing import Array
 
 
 def func(x: Array, *, alpha: float) -> Array:

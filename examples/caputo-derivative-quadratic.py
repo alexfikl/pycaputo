@@ -10,12 +10,16 @@ This uses a spectral method with Jacobi polynomials for the added accuracy.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from pycaputo.differentiation import diff
 from pycaputo.differentiation.caputo import Jacobi
 from pycaputo.grid import make_jacobi_gauss_lobatto_points
-from pycaputo.typing import Array
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 try:
     import matplotlib  # noqa: F401

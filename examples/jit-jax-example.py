@@ -23,10 +23,14 @@ However, the compilation times are rather ridiculous, getting to around 2-3min.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pycaputo.differentiation import caputo, diff
 from pycaputo.grid import Points, make_uniform_points
-from pycaputo.typing import Array
 from pycaputo.utils import BlockTimer, timeit
+
+if TYPE_CHECKING:
+    from pycaputo.typing import Array
 
 # {{{ jax
 
