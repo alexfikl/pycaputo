@@ -299,7 +299,7 @@ class CaputoExponentialIntegrateFireL1Method(IntegrateFireMethod[EIFModel]):
         from scipy.special import lambertw
 
         d0, d1, d2 = _evaluate_lambert_coefficients(self.source, t, y0, c, r)
-        V = d2 / d0 - lambertw(-d1 / d0 * np.exp(d2 / d0), tol=1.0e-12)
+        V = d2 / d0 - lambertw(-d1 / d0 * np.exp(d2 / d0), tol=1.0e-12)  # ty: ignore[invalid-argument-type]
         V = np.real_if_close(V, tol=100)
 
         assert np.linalg.norm(V - c * self.source(t, V) - r) < 1.0e-8
