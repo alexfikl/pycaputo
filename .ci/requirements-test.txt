@@ -84,7 +84,10 @@ pytest==9.1.1
     # via
     #   pycaputo (pyproject.toml:test)
     #   pytest-benchmark
+    #   pytest-github-actions-annotate-failures
 pytest-benchmark==5.2.3
+    # via pycaputo (pyproject.toml:test)
+pytest-github-actions-annotate-failures==0.4.2
     # via pycaputo (pyproject.toml:test)
 python-dateutil==2.9.0.post0
     # via matplotlib
@@ -96,7 +99,9 @@ scienceplots==2.2.1
     # via pycaputo (pyproject.toml:test)
 scipy==1.15.3 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml)
-scipy==1.17.1 ; python_full_version >= '3.11'
+scipy==1.17.1 ; python_full_version == '3.11.*'
+    # via pycaputo (pyproject.toml)
+scipy==1.18.0 ; python_full_version >= '3.12'
     # via pycaputo (pyproject.toml)
 scipy-stubs==1.15.3.0 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml:test)

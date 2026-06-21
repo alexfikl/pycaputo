@@ -17,8 +17,8 @@ isort:
     @echo -e "\e[1;32mruff isort clean!\e[0m"
 
 [doc("Run ruff format over the source code")]
-black:
-    ruff format src tests examples docs scripts
+black *ARGS:
+    ruff format {{ ARGS }} src tests examples docs scripts
     @echo -e "\e[1;32mruff format clean!\e[0m"
 
 [doc("Run pyproject-fmt over the configuration")]
@@ -51,13 +51,13 @@ reuse:
     @echo -e "\e[1;32mREUSE compliant!\e[0m"
 
 [doc("Run ruff checks over the source code")]
-ruff:
-    ruff check src tests examples docs scripts
+ruff *ARGS:
+    ruff check {{ ARGS }} src tests examples docs scripts
     @echo -e "\e[1;32mruff clean!\e[0m"
 
 [doc("Run ty checks over the source code")]
-ty:
-    ty check src tests examples scripts
+ty *ARGS:
+    ty check {{ ARGS }} src tests examples scripts
     @echo -e "\e[1;32mty clean!\e[0m"
 
 # }}}

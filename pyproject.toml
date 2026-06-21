@@ -62,6 +62,7 @@ test = [
     "mpmath",
     "pytest",
     "pytest-benchmark",
+    "pytest-github-actions-annotate-failures",
     "ruff",
     "scienceplots",
     "scipy-stubs",
