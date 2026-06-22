@@ -42,7 +42,17 @@ numpy==2.2.6 ; python_full_version < '3.11'
     #   matplotlib
     #   pymittagleffler
     #   scipy
-numpy==2.4.6 ; python_full_version >= '3.11'
+numpy==2.4.6 ; python_full_version == '3.11.*'
+    # via
+    #   pycaputo (pyproject.toml)
+    #   contourpy
+    #   differint
+    #   matplotlib
+    #   numpy-typing-compat
+    #   optype
+    #   pymittagleffler
+    #   scipy
+numpy==2.5.0 ; python_full_version >= '3.12'
     # via
     #   pycaputo (pyproject.toml)
     #   contourpy
@@ -54,7 +64,7 @@ numpy==2.4.6 ; python_full_version >= '3.11'
     #   scipy
 numpy-typing-compat==20251206.2.4 ; python_full_version == '3.11.*'
     # via optype
-numpy-typing-compat==20260602.2.4 ; python_full_version >= '3.12'
+numpy-typing-compat==20260602.2.5 ; python_full_version >= '3.12'
     # via optype
 optype==0.9.3 ; python_full_version < '3.11'
     # via scipy-stubs
