@@ -435,10 +435,10 @@ class DifferIntCaputoL2C(caputo.CaputoMethod):
 def _diff_differint_l2c(m: DifferIntCaputoL2C, f: ScalarFunction, p: Points) -> Array:
     from differint.differint import CaputoL2Cpoint
 
-    df = np.empty_like(p.x)
+    df = np.zeros_like(p.x)
     df[0] = np.nan
 
-    for n in range(2, df.size - 1):
+    for n in range(2, df.size):
         df[n] = CaputoL2Cpoint(
             m.alpha,
             f,
