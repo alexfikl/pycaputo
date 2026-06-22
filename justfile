@@ -118,6 +118,24 @@ ci-install venv=".venv":
 
     echo -e "\e[1;32mvenv setup completed: '{{ venv }}'!\e[0m"
 
+[doc("Show information about the environment")]
+ci-info:
+    #!/usr/bin/env bash
+
+    set -o errexit -o errtrace -o nounset -o pipefail
+
+    echo "-----------------------------------------------"
+    echo "CWD:          $(pwd)"
+    echo "OS:           $(uname -nrm)"
+    echo "Python:       $(python --version)"
+    echo "git rev:      $(git rev-parse --short HEAD)"
+
+    if [[ -f /proc/cpuinfo ]]; then
+        echo "CPU:         $(grep 'model name' /proc/cpuinfo | head -n 1 | cut -d ':' -f 2)"
+    fi
+
+    echo "-----------------------------------------------"
+
 [doc("Remove various build artifacts")]
 clean:
     rm -rf *.png

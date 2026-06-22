@@ -83,6 +83,7 @@ jobs:
         cache-dependency-path: '.ci/requirements-test.txt'
     - name: Main Script
       run: |
+        just ci-info
         just ci-install .venv && source .venv/bin/activate
         just test --junit-xml=pytest-results.xml
 
