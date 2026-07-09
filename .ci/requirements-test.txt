@@ -52,7 +52,7 @@ numpy==2.4.6 ; python_full_version == '3.11.*'
     #   optype
     #   pymittagleffler
     #   scipy
-numpy==2.5.0 ; python_full_version >= '3.12'
+numpy==2.5.1 ; python_full_version >= '3.12'
     # via
     #   pycaputo (pyproject.toml)
     #   contourpy
@@ -76,7 +76,7 @@ packaging==26.2
     # via
     #   matplotlib
     #   pytest
-pillow==12.2.0
+pillow==12.3.0
     # via matplotlib
 pluggy==1.6.0
     # via pytest
@@ -103,9 +103,9 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 rich==15.0.0
     # via pycaputo (pyproject.toml)
-ruff==0.15.18
+ruff==0.15.20
     # via pycaputo (pyproject.toml:test)
-scienceplots==2.2.1
+scienceplots==2.2.2
     # via pycaputo (pyproject.toml:test)
 scipy==1.15.3 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml)
@@ -123,11 +123,11 @@ six==1.17.0
     # via python-dateutil
 tomli==2.4.1 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.51
+ty==0.0.57
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via
     #   pycaputo (pyproject.toml)
     #   exceptiongroup
