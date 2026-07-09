@@ -71,7 +71,7 @@ class Relaxation(Function):
         alpha1, alpha2 = self.d.alpha
         c = self.d.c
 
-        def y_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+        def y_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:  # ty: ignore[invalid-type-form]
             # Equation 13 from [Garrappa2023]
             sA = (alpha1 * s + alpha2 * c) / (s + c)
             H = 1.0 / (s + self.omega * s ** (1 - sA))

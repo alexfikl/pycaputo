@@ -407,14 +407,14 @@ def make_variable_riemann_liouville_f(
         # NOTE: using the Bessel function of the first-kind
         return np.array(jv(0, 2.0 * np.sqrt(a * x)))
 
-    def f_vo_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+    def f_vo_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:  # ty: ignore[invalid-type-form]
         return mpmath.exp(-a / s) / s
 
-    def psi_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+    def psi_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:  # ty: ignore[invalid-type-form]
         sA = (alpha[0] * s + alpha[1] * c) / (s + c)
         return s ** (-sA)
 
-    def qf_vo_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:
+    def qf_vo_laplace_transform(s: mpmath.mpf) -> mpmath.mpf:  # ty: ignore[invalid-type-form]
         return psi_laplace_transform(s) * f_vo_laplace_transform(s)
 
     def qf_vo(x: Array) -> Array:
