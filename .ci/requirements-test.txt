@@ -86,7 +86,7 @@ pygments==2.20.0
     # via
     #   pytest
     #   rich
-pymittagleffler==0.2.0
+pymittagleffler==0.2.1
     # via pycaputo (pyproject.toml)
 pyparsing==3.3.2
     # via matplotlib
@@ -103,7 +103,7 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 rich==15.0.0
     # via pycaputo (pyproject.toml)
-ruff==0.15.20
+ruff==0.15.22
     # via pycaputo (pyproject.toml:test)
 scienceplots==2.2.2
     # via pycaputo (pyproject.toml:test)
@@ -117,13 +117,13 @@ scipy-stubs==1.15.3.0 ; python_full_version < '3.11'
     # via pycaputo (pyproject.toml:test)
 scipy-stubs==1.17.1.5 ; python_full_version == '3.11.*'
     # via pycaputo (pyproject.toml:test)
-scipy-stubs==1.18.0.0 ; python_full_version >= '3.12'
+scipy-stubs==1.18.0.1 ; python_full_version >= '3.12'
     # via pycaputo (pyproject.toml:test)
 six==1.17.0
     # via python-dateutil
 tomli==2.4.1 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.57
+ty==0.0.60
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
