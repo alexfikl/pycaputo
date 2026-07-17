@@ -96,8 +96,8 @@ def determine_truncation_error(
 
 def wandering(
     n: int,
-    wanderer: int | bool | float = 1.0,  # noqa: FBT001
-    landscape: int | bool | float = 0.0,  # noqa: FBT001
+    wanderer: int | bool | float = 1.0,  # ruff:ignore[boolean-type-hint-positional-argument]
+    landscape: int | bool | float = 0.0,  # ruff:ignore[boolean-type-hint-positional-argument]
 ) -> Iterator[Array]:
     for i in range(n):
         yield np.array([landscape] * i + [wanderer] + [landscape] * (n - i - 1))

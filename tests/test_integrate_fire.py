@@ -192,7 +192,7 @@ def test_ad_ex_lambert_limits() -> None:
         AD_EX_PARAMS,
         AdExModel,
         CaputoAdExIntegrateFireL1Model,
-        _evaluate_lambert_coefficients_time,  # noqa: PLC2701
+        _evaluate_lambert_coefficients_time,  # ruff:ignore[import-private-name]
         find_maximum_time_step_lambert,
     )
 

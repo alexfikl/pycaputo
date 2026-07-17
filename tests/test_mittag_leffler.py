@@ -125,7 +125,9 @@ def test_mittag_leffler_sine_mathematica(iref: int) -> None:
     from mittag_leffler_ref import MATHEMATICA_SINE_RESULTS
 
     from pycaputo.derivatives import CaputoDerivative, Side
-    from pycaputo.special import _sin_derivative_caputo  # noqa: PLC2701
+    from pycaputo.special import (
+        _sin_derivative_caputo,  # ruff:ignore[import-private-name]
+    )
 
     ref = MATHEMATICA_SINE_RESULTS[iref]
 

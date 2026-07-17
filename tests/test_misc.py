@@ -148,7 +148,7 @@ def test_estimate_lischitz_constant(
 # {{{ test_cached_on_first_arg
 
 
-class MyClass:  # noqa: B903
+class MyClass:  # ruff:ignore[class-as-data-structure]
     def __init__(self, value: float) -> None:
         self.value = value
 

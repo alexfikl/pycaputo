@@ -520,7 +520,7 @@ class FitzHughRinzel(Function):
     """Parameters in the FitzHugh-Rinzel system."""
 
     def source(self, t: float, y: Array) -> Array:
-        I, a, b, c, d, delta, mu = self.p  # noqa: E741
+        I, a, b, c, d, delta, mu = self.p  # ruff:ignore[ambiguous-variable-name]
 
         return np.array([
             y[0] - y[0] ** 3 / 3 - y[1] + y[2] + I,
@@ -829,11 +829,11 @@ class HodgkinHuxleyParameter(ABC):
     C: float
     """Membrane capacitance."""
 
-    g_Na: float  # noqa: N815
+    g_Na: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Maximum conductance (mS/cm^2) of the :math:`\mathrm{Na}^+` ionic current."""
-    g_K: float  # noqa: N815
+    g_K: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Maximum conductance (mS/cm^2) of the :math:`\mathrm{K}^+` ionic current."""
-    g_L: float  # noqa: N815
+    g_L: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     """Maximum conductance (mS/cm^2) of the leak current."""
 
     V_Na: float
@@ -1595,17 +1595,17 @@ class MorrisLecarParameter(ABC):
 
     C: float
     """Membrane capacitance."""
-    g_Ca: float  # noqa: N815
+    g_Ca: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Maximum conductance of the :math:`\mathrm{Ca}^{2+}` ionic current."""
-    g_K: float  # noqa: N815
+    g_K: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Maximum conductance of the :math:`\mathrm{K}^{+}` ionic current."""
-    g_L: float  # noqa: N815
+    g_L: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Maximum conductance of the leak current."""
-    v_Ca: float  # noqa: N815
+    v_Ca: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Equilibrium potential for the :math:`\mathrm{Ca}^{2+}` ion channel."""
-    v_K: float  # noqa: N815
+    v_K: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Equilibrium potential for the :math:`\mathrm{K}^{+}` ion channel."""
-    v_L: float  # noqa: N815
+    v_L: float  # ruff:ignore[mixed-case-variable-in-class-scope]
     r"""Equilibrium potential for the leak current."""
 
     epsilon: float

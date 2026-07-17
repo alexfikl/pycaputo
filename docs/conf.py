@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 m = metadata.metadata("pycaputo")
 project = m["Name"]
 author = m["Author-email"]
-copyright = f"2023 {author}"  # noqa: A001
+copyright = f"2023 {author}"  # ruff:ignore[builtin-variable-shadowing]
 version = m["Version"]
 release = version
 url = "https://github.com/alexfikl/pycaputo"
@@ -289,7 +289,7 @@ custom_type_links = {
     # numpy
     "np.random.Generator": ("numpy", "numpy.random.Generator", "class"),
     # pycaputo
-    "pycaputo.integrate_fire.base.IntegrateFireModelT": (None, "pycaputo.integrate_fire.IntegrateFireModelT", "obj"),  # noqa: E501
+    "pycaputo.integrate_fire.base.IntegrateFireModelT": (None, "pycaputo.integrate_fire.IntegrateFireModelT", "obj"),  # ruff:ignore[line-too-long]
 }
 # fmt: on
 

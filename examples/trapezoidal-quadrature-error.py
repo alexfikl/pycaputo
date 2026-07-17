@@ -104,7 +104,7 @@ log.info("Error:\n%s", eoc)
 # {{{ plot
 
 try:
-    import matplotlib  # noqa: F401
+    import matplotlib  # ruff:ignore[unused-import]
 except ImportError as exc:
     raise SystemExit(0) from exc
 

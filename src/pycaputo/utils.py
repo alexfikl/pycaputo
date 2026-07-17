@@ -198,7 +198,7 @@ def stringify_eoc(*eocs: EOCRecorder) -> str:
         lines.append(("Expected", *expected))
 
     widths = [max(len(line[i]) for line in lines) for i in range(ncolumns)]
-    formats = ["{:%s}" % w for w in widths]  # noqa: UP031
+    formats = ["{:%s}" % w for w in widths]  # ruff:ignore[printf-string-formatting]
 
     return "\n".join([
         " | ".join(fmt.format(value) for fmt, value in zip(formats, line, strict=True))
@@ -342,7 +342,7 @@ def check_usetex(*, s: bool) -> bool:
         if not shutil.which("dvipng"):
             return False
 
-        if not shutil.which("gs"):  # noqa: SIM103
+        if not shutil.which("gs"):  # ruff:ignore[needless-bool]
             return False
 
         return True

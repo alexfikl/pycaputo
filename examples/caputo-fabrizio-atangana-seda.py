@@ -107,7 +107,7 @@ for event in evolve(stepper):
 # {{{ plot
 
 try:
-    import matplotlib  # noqa: F401
+    import matplotlib  # ruff:ignore[unused-import]
 except ImportError as exc:
     log.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc

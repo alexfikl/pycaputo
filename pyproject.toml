@@ -113,30 +113,30 @@ lint.select = [
     "W",   # flake8
 ]
 lint.ignore = [
-    "A005",    # shadowing-builtin-module
-    "ANN401",  # any-type
-    "C409",    # incorrectly-parenthesized-tuple-in-subscript
-    "E203",    # whitespace-before-punctuation
-    "E402",    # module-import-not-at-top-of-file
-    "ISC001",  # single-line-implicit-string-concatenation
-    "N803",    # non-lowercase-argument
-    "N806",    # non-lowercase-variable-in-function
-    "PLC0415", # import-outside-top-level
-    "PLC2801", # unnecessary-dunder-call
-    "PLR0911", # too-many-return-statements
-    "PLR0912", # too-many-branches
-    "PLR0913", # too-many-arguments
-    "PLR0914", # too-many-locals
-    "PLR0915", # too-many-statements
-    "PLR0917", # too-many-positional
-    "PLR2004", # magic-value-comparison
-    "PLR6104", # non-augmented-assignment
-    "PLR6301", # no-self-use
-    "PLW0717", # too-many-statements-in-try
-    "RUF067",  # non-empty-init-module
-    "S101",    # assert
-    "S102",    # exec-builtin
-    "UP037",   # quoted-annotation
+    "any-type",                                  # any-type
+    "assert",                                    # assert
+    "exec-builtin",                              # exec-builtin
+    "import-outside-top-level",                  # import-outside-top-level
+    "invalid-argument-name",                     # non-lowercase-argument
+    "magic-value-comparison",                    # magic-value-comparison
+    "module-import-not-at-top-of-file",          # module-import-not-at-top-of-file
+    "no-self-use",                               # no-self-use
+    "non-augmented-assignment",                  # non-augmented-assignment
+    "non-empty-init-module",                     # non-empty-init-module
+    "non-lowercase-variable-in-function",        # non-lowercase-variable-in-function
+    "quoted-annotation",                         # quoted-annotation
+    "single-line-implicit-string-concatenation", # single-line-implicit-string-concatenation
+    "stdlib-module-shadowing",                   # shadowing-builtin-module
+    "too-many-arguments",                        # too-many-arguments
+    "too-many-branches",                         # too-many-branches
+    "too-many-locals",                           # too-many-locals
+    "too-many-positional-arguments",             # too-many-positional
+    "too-many-return-statements",                # too-many-return-statements
+    "too-many-statements",                       # too-many-statements
+    "too-many-statements-in-try-clause",         # too-many-statements-in-try
+    "unnecessary-dunder-call",                   # unnecessary-dunder-call
+    "unnecessary-literal-within-tuple-call",     # incorrectly-parenthesized-tuple-in-subscript
+    "whitespace-before-punctuation",             # whitespace-before-punctuation
 ]
 lint.flake8-quotes.docstring-quotes = "double"
 lint.flake8-quotes.inline-quotes = "double"

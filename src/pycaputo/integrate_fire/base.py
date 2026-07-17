@@ -21,7 +21,7 @@ from pycaputo.stepping import (
     evolve,
     make_initial_condition,
 )
-from pycaputo.typing import Array  # noqa: TC001
+from pycaputo.typing import Array  # ruff:ignore[typing-only-first-party-import]
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

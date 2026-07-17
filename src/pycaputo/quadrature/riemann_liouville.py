@@ -714,7 +714,9 @@ class YuanAgrawal(DiffusiveRiemannLiouvilleMethod):
                     f"-1 < alpha < 0: {self.alpha}"
                 )
 
-            from scipy.integrate._ivp.ivp import METHODS  # noqa: PLC2701
+            from scipy.integrate._ivp.ivp import (  # ruff:ignore[import-private-name]
+                METHODS,
+            )
 
             if self.method not in METHODS:
                 raise ValueError(

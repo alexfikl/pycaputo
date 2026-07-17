@@ -9,7 +9,7 @@ from pycaputo.fode.gallery import HodgkinHuxleyParameter
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 try:
-    import matplotlib  # noqa: F401
+    import matplotlib  # ruff:ignore[unused-import]
 
     set_recommended_matplotlib()
 except ImportError as exc:

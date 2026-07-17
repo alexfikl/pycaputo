@@ -275,7 +275,7 @@ def fracplot(
     :arg dark: if *True*, a dark themed plot is created instead.
     """
     try:
-        import matplotlib  # noqa: F401
+        import matplotlib  # ruff:ignore[unused-import]
     except ImportError:
         log.warning("'matplotlib' is not available.")
         return

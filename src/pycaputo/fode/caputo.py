@@ -14,7 +14,9 @@ import numpy.linalg as la
 from scipy.special import gamma
 
 from pycaputo.derivatives import CaputoDerivative
-from pycaputo.history import ProductIntegrationHistory  # noqa: TC001
+from pycaputo.history import (
+    ProductIntegrationHistory,  # ruff:ignore[typing-only-first-party-import]
+)
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
@@ -350,7 +352,7 @@ def _advance_caputo_weighted_euler(
     fnext, fac = _update_caputo_weighted_euler(fnext, m, history, n)
 
     eps = np.finfo(y.dtype).eps
-    if abs(m.theta - 1.0) > eps:  # noqa: SIM108
+    if abs(m.theta - 1.0) > eps:  # ruff:ignore[if-else-block-instead-of-if-exp]
         # NOTE: solve `y = fac * f(t, y) + fnext`
         ynext = m.solve(t, y, fac, fnext)
     else:

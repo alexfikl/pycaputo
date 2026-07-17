@@ -7,7 +7,7 @@ import logging
 import os
 import pathlib
 import shutil
-import subprocess  # noqa: S404
+import subprocess  # ruff:ignore[suspicious-subprocess-import]
 import sys
 import tempfile
 
@@ -157,7 +157,7 @@ def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
 
         with tempfile.TemporaryDirectory() as cwd:
             try:
-                subprocess.run(  # noqa: S603
+                subprocess.run(  # ruff:ignore[subprocess-without-shell-equals-true]
                     [sys.executable, "-O", str(script_path)],
                     cwd=cwd,
                     env=env,

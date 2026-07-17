@@ -53,7 +53,7 @@ for event in evolve(stepper):
 # {{{ plot
 
 try:
-    import matplotlib  # noqa: F401
+    import matplotlib  # ruff:ignore[unused-import]
 except ImportError as exc:
     raise SystemExit(0) from exc
 
@@ -82,7 +82,7 @@ with figure("variable-order-caputo-relaxation") as fig:
         ax.plot(
             t,
             y_ref,
-            label=rf"$\alpha_1 = {alpha[0]:.1f}, \alpha_2 = {alpha[1]:.1f}, c = {c:.1f}$",  # noqa: E501
+            label=rf"$\alpha_1 = {alpha[0]:.1f}, \alpha_2 = {alpha[1]:.1f}, c = {c:.1f}$",  # ruff:ignore[line-too-long]
         )
 
     ax.plot(t, np.array(ys).squeeze(), "k--", label="Numerical")

@@ -123,7 +123,7 @@ def _gl_scarpi_exp_weights(
     @overload
     def Psi(z: Array) -> Array: ...
 
-    def Psi(z: Any) -> Any:  # noqa: N802
+    def Psi(z: Any) -> Any:  # ruff:ignore[invalid-function-name]
         return np.exp(
             -(alpha1 * c * h + alpha0 - alpha0 * z)
             / (c * h + 1 - z)

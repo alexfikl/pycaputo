@@ -133,7 +133,7 @@ def test_finite_difference_taylor_stencil() -> None:
             ax.plot(k, sign * k**s.derivative, "k--")
 
             ax.set_xlabel("$k h$")
-            ax.set_ylabel(r"$\tilde{k} h$")  # noqa: RUF027
+            ax.set_ylabel(r"$\tilde{k} h$")  # ruff:ignore[missing-f-string-syntax]
             ax.set_xlim(0.0, float(np.pi))
             ax.set_ylim(0.0, float(sign * np.pi**s.derivative))
 

@@ -9,7 +9,9 @@ from typing import NamedTuple, overload
 
 import numpy as np
 
-from pycaputo.history import ProductIntegrationHistory  # noqa: TC001
+from pycaputo.history import (
+    ProductIntegrationHistory,  # ruff:ignore[typing-only-first-party-import]
+)
 from pycaputo.integrate_fire.base import (
     AdvanceResult,
     IntegrateFireMethod,
@@ -17,7 +19,7 @@ from pycaputo.integrate_fire.base import (
 )
 from pycaputo.logging import get_logger
 from pycaputo.stepping import advance
-from pycaputo.typing import Array  # noqa: TC001
+from pycaputo.typing import Array  # ruff:ignore[typing-only-first-party-import]
 
 log = get_logger(__name__)
 
@@ -499,7 +501,7 @@ def _evaluate_lambert_coefficients(
 
     # V coefficients: d0 V + d1 = d2 exp(V)
     dummy = np.zeros_like(y)
-    I, _ = ad_ex.source(t, dummy) - 1.0  # noqa: E741
+    I, _ = ad_ex.source(t, dummy) - 1.0  # ruff:ignore[ambiguous-variable-name]
     d0 = 1 + hV * (1 + c0)
     d1 = -hV * (I - c1) - rV
     d2 = hV

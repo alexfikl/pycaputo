@@ -144,12 +144,12 @@ for event in evolve(m, dtinit=dtinit):
 # {{{ plot
 
 try:
-    import matplotlib  # noqa: F401
+    import matplotlib  # ruff:ignore[unused-import]
 except ImportError as exc:
     log.warning("'matplotlib' is not available.")
     raise SystemExit(0) from exc
 
-from pycaputo import _get_default_dark  # noqa: PLC2701
+from pycaputo import _get_default_dark  # ruff:ignore[import-private-name]
 from pycaputo.utils import figure, set_recommended_matplotlib
 
 for dark, suffix in _get_default_dark():
