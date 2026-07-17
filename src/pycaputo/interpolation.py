@@ -6,7 +6,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 import numpy as np
 
@@ -94,11 +94,27 @@ def determine_truncation_error(
     return float(c)
 
 
+@overload
+def wandering(n: int, wanderer: int, landscape: int) -> Iterator[IntegerArray]: ...
+
+
+@overload
+def wandering(n: int, wanderer: float, landscape: float) -> Iterator[Array]: ...
+
+
+@overload
+def wandering(
+    n: int,
+    wanderer: bool,  # ruff:ignore[boolean-type-hint-positional-argument]
+    landscape: bool,  # ruff:ignore[boolean-type-hint-positional-argument]
+) -> Iterator[IntegerArray]: ...
+
+
 def wandering(
     n: int,
     wanderer: int | bool | float = 1.0,  # ruff:ignore[boolean-type-hint-positional-argument]
     landscape: int | bool | float = 0.0,  # ruff:ignore[boolean-type-hint-positional-argument]
-) -> Iterator[Array]:
+) -> Iterator[Array | IntegerArray]:
     for i in range(n):
         yield np.array([landscape] * i + [wanderer] + [landscape] * (n - i - 1))
 
