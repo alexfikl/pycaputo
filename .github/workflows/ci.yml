@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   reuse:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Licensing (REUSE)
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +23,6 @@ jobs:
     - uses: fsfe/reuse-action@v6
 
   typos:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Spelling (typos)
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +30,6 @@ jobs:
     - uses: crate-ci/typos@master
 
   ruff:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Linting (ruff)
     runs-on: ubuntu-latest
     steps:
@@ -49,7 +46,6 @@ jobs:
         just ruff --output-format=github
 
   ty:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Annotations (ty)
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +62,6 @@ jobs:
         just ty --output-format=github
 
   pytest:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Tests (pytest-${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
@@ -88,7 +83,6 @@ jobs:
         just test --junit-xml=pytest-results.xml
 
   examples:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Examples
     runs-on: ubuntu-latest
     steps:
