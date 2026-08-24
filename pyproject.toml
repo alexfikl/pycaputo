@@ -150,6 +150,7 @@ lint.isort.required-imports = [
 ]
 
 [tool.typos]
+default.extend-words.ND = "ND"
 default.extend-words.Pn = "Pn"
 files.extend-exclude = [
     "docs/benchmarks",
