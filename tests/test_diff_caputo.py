@@ -590,7 +590,6 @@ def test_caputo_consistency(
         if n == 0:
             w = quadrature_weights(meth, p, n)
             assert w.shape == (0,)
-            assert df_from_diffs.shape == (1,)
             assert np.isnan(df_from_diffs)
         else:
             w = quadrature_weights(meth, p, n)

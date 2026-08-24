@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 import numpy as np
 
 if TYPE_CHECKING:
-    from pycaputo.typing import Array, IntegerArray, ScalarFunction
+    from pycaputo.typing import Array1D, Float, Scalar, ScalarFunction
 
 
 class Truncation(NamedTuple):
@@ -39,13 +39,13 @@ class DiffStencil:
 
     """Order of the derivative approximated by the stencil."""
     derivative: int
-    coeffs: Array
+    coeffs: Array1D[np.floating[Any]]
     """Coefficients used in the stencil."""
-    offsets: IntegerArray
+    offsets: Array1D[np.integer[Any]]
     """Offsets around the centered :math:`0` used in the stencil."""
 
     @cached_property
-    def padded_coeffs(self) -> IntegerArray:
+    def padded_coeffs(self) -> Array1D[np.integer[Any]]:
         """Padded coefficients that are symmetric around the :math:`0`
         index and can be easily applied as a convolution.
         """
@@ -61,7 +61,9 @@ class DiffStencil:
         return determine_stencil_truncation_error(self)
 
 
-def apply_derivative(s: DiffStencil, f: Array, h: float = 1.0) -> Array:
+def apply_derivative(
+    s: DiffStencil, f: Array1D[np.floating[Any]], h: Float = 1.0
+) -> Array1D[np.floating[Any]]:
     """Apply the stencil to a function *f* and a step size *h*.
 
     Note that only interior points are correctly computed. Any boundary
@@ -74,7 +76,7 @@ def apply_derivative(s: DiffStencil, f: Array, h: float = 1.0) -> Array:
 
 
 def apply_function_derivative(
-    s: DiffStencil, f: ScalarFunction, x: Array, h: float = 1.0
+    s: DiffStencil, f: ScalarFunction, x: Scalar, h: Float = 1.0
 ) -> float:
     """Compute derivative of a function *f* at *x* with a step size *h*.
 
@@ -120,7 +122,9 @@ def determine_stencil_truncation_error(
     return Truncation(i - s.derivative, c)
 
 
-def modified_wavenumber(s: DiffStencil, k: Array) -> Array:
+def modified_wavenumber(
+    s: DiffStencil, k: Array1D[np.floating[Any]]
+) -> Array1D[np.complexfloating[Any]]:
     """Compute the modified wavenumber of the stencil *s* at each number *k*.
 
     :arg k: wavenumber at which to compute the derivative.

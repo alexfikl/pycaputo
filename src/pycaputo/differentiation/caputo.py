@@ -122,7 +122,7 @@ def _diffs_caputo_l1(m: L1, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     if n == 0:
-        return np.array([np.nan])
+        return np.nan
 
     w = _caputo_l1_weights(p.x, p.dx, n, m.alpha)
     fx: Array = f(p.x[: w.size]) if is_scalar_function(f) else f[: w.size]
@@ -324,7 +324,7 @@ def _diffs_caputo_l2(m: L2, f: ArrayOrScalarFunction, p: Points, n: int) -> Scal
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     if n == 0:
-        return np.array([np.nan])
+        return np.nan
 
     w = quadrature_weights(m, p, n)
     fx: Array = f(p.x[: w.size]) if is_scalar_function(f) else f[: w.size]
@@ -523,7 +523,7 @@ def _diffs_caputo_l2f(m: L2F, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     if n == 0:
-        return np.array([np.nan])
+        return np.nan
 
     w = _caputo_l2f_weights(p, n, m.alpha)
     x = np.empty(w.size, dtype=p.dtype)
@@ -622,7 +622,7 @@ def _diffs_caputo_lxd(m: LXD, f: ArrayOrScalarFunction, p: Points, n: int) -> Sc
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     if n == 0:
-        return np.array([np.nan])
+        return np.nan
 
     if not is_scalar_function(f):
         raise FunctionCallableError(

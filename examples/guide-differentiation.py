@@ -9,12 +9,18 @@ The definition is given by registering a new method using ``diff.register``.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar, is_scalar_function
+from pycaputo.typing import (
+    Array1D,
+    Array2D,
+    ArrayOrScalarFunction,
+    Scalar,
+    is_scalar_function,
+)
 
 if TYPE_CHECKING:
     from pycaputo.grid import Points
@@ -58,7 +64,7 @@ def _quadrature_weights_rl(
     m: RiemannLiouvilleDerivativeMethod,
     p: Points,
     n: int,
-) -> Array:
+) -> Array1D[np.floating[Any]]:
     # ... add an actual implementation here ...
     return np.zeros(n, dtype=p.x.dtype)
 
@@ -67,7 +73,7 @@ def _quadrature_weights_rl(
 def _differentiation_matrix_rl(
     m: RiemannLiouvilleDerivativeMethod,
     p: Points,
-) -> Array:
+) -> Array2D[np.floating[Any]]:
     # ... add an actual implementation here ...
     return np.zeros((p.size, p.size), dtype=p.x.dtype)
 
@@ -80,7 +86,7 @@ def _diffs_rl(
     n: int,
 ) -> Scalar:
     # ... add an actual implementation here ...
-    return np.array(0.0)
+    return np.float64(0.0)
 
 
 @diff.register(RiemannLiouvilleDerivativeMethod)
@@ -88,7 +94,7 @@ def _diff_rl(
     m: RiemannLiouvilleDerivativeMethod,
     f: ArrayOrScalarFunction,
     p: Points,
-) -> Array:
+) -> Array1D[np.floating[Any]]:
     fx = f(p.x) if is_scalar_function(f) else f
     # ... add an actual implementation here ...
     return np.zeros_like(fx)

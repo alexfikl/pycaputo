@@ -5,8 +5,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from pycaputo.derivatives import FractionalOperator
 from pycaputo.differentiation.base import (
     DerivativeMethod,
@@ -126,7 +124,7 @@ def diffs_fallback(
         raise IndexError(f"Index 'n' out of range: 0 <= {n} < {p.size}")
 
     result = diff(m, f, p)
-    return np.array(result[n])
+    return result[n]
 
 
 __all__ = (
