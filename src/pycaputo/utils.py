@@ -15,7 +15,7 @@ import numpy as np
 from pycaputo.logging import get_logger
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator, Sequence
+    from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
     from types import TracebackType
 
     from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
@@ -444,7 +444,7 @@ def figure(
     projection: str | None = None,
     figsize: tuple[float, float] | None = None,
     **kwargs: Any,
-) -> Iterator[Any]:
+) -> Generator[Any]:
     """A small wrapper context manager around :class:`matplotlib.figure.Figure`.
 
     :arg nrows: number of rows of subplots.
