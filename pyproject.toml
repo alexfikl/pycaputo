@@ -113,30 +113,30 @@ lint.select = [
     "W",   # flake8
 ]
 lint.ignore = [
-    "any-type",                                  # any-type
-    "assert",                                    # assert
-    "exec-builtin",                              # exec-builtin
-    "import-outside-top-level",                  # import-outside-top-level
-    "invalid-argument-name",                     # non-lowercase-argument
-    "magic-value-comparison",                    # magic-value-comparison
-    "module-import-not-at-top-of-file",          # module-import-not-at-top-of-file
-    "no-self-use",                               # no-self-use
-    "non-augmented-assignment",                  # non-augmented-assignment
-    "non-empty-init-module",                     # non-empty-init-module
-    "non-lowercase-variable-in-function",        # non-lowercase-variable-in-function
-    "quoted-annotation",                         # quoted-annotation
-    "single-line-implicit-string-concatenation", # single-line-implicit-string-concatenation
-    "stdlib-module-shadowing",                   # shadowing-builtin-module
-    "too-many-arguments",                        # too-many-arguments
-    "too-many-branches",                         # too-many-branches
-    "too-many-locals",                           # too-many-locals
-    "too-many-positional-arguments",             # too-many-positional
-    "too-many-return-statements",                # too-many-return-statements
-    "too-many-statements",                       # too-many-statements
-    "too-many-statements-in-try-clause",         # too-many-statements-in-try
-    "unnecessary-dunder-call",                   # unnecessary-dunder-call
-    "unnecessary-literal-within-tuple-call",     # incorrectly-parenthesized-tuple-in-subscript
-    "whitespace-before-punctuation",             # whitespace-before-punctuation
+    "any-type",
+    "assert",
+    "exec-builtin",
+    "import-outside-top-level",
+    "invalid-argument-name",
+    "magic-value-comparison",
+    "module-import-not-at-top-of-file",
+    "no-self-use",
+    "non-augmented-assignment",
+    "non-empty-init-module",
+    "non-lowercase-variable-in-function",
+    "quoted-annotation",
+    "single-line-implicit-string-concatenation",
+    "stdlib-module-shadowing",
+    "too-many-arguments",
+    "too-many-branches",
+    "too-many-locals",
+    "too-many-positional-arguments",
+    "too-many-return-statements",
+    "too-many-statements",
+    "too-many-statements-in-try-clause",
+    "unnecessary-dunder-call",
+    "unnecessary-literal-within-tuple-call",
+    "whitespace-before-punctuation",
 ]
 lint.flake8-quotes.docstring-quotes = "double"
 lint.flake8-quotes.inline-quotes = "double"
