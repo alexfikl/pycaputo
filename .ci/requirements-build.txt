@@ -12,15 +12,15 @@ pathspec==1.1.1
     # via hatchling
 pip==26.2.1
     # via -r .ci/requirements-build.in
-pluggy==1.6.0
+pluggy==1.7.0
     # via hatchling
 poetry-core==2.5.0
     # via -r .ci/requirements-build.in
 setuptools==84.0.0
     # via -r .ci/requirements-build.in
-tomli==2.4.1 ; python_full_version < '3.11'
+tomli==2.5.0 ; python_full_version < '3.11'
     # via hatchling
-tomlkit==0.15.1
+tomlkit==0.15.2
     # via hatchling
 trove-classifiers==2026.9.21.13
     # via hatchling
