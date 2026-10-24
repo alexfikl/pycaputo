@@ -3,12 +3,11 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 
-from pycaputo.logging import get_logger
-
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ get_basic_machine_info

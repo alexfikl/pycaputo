@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, replace
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
@@ -10,14 +11,12 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from array_api_compat import array_namespace
 
-from pycaputo.logging import get_logger
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from pycaputo.typing import Array
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 # {{{ non-uniform points
 

@@ -18,6 +18,7 @@ matrices can be constructed.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -25,12 +26,13 @@ import numpy as np
 from pycaputo.differentiation import quadrature_weights
 from pycaputo.differentiation.caputo import L1
 from pycaputo.grid import make_uniform_points
-from pycaputo.logging import get_logger
+from pycaputo.utils import set_up_logging
 
 if TYPE_CHECKING:
     from pycaputo.typing import Array
 
-log = get_logger("caputo_derivative_l1_spectrum")
+set_up_logging()
+log = logging.getLogger(__name__)
 
 
 # {{{ matrix

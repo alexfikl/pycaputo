@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from dataclasses import dataclass
 from functools import cached_property
@@ -11,7 +12,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from pycaputo.derivatives import RiemannLiouvilleDerivative, Side
-from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ArrayOrScalarFunction, Scalar, is_scalar_function
 
 from . import caputo
@@ -20,7 +20,7 @@ from .base import DerivativeMethod, diff, diffs, quadrature_weights
 if TYPE_CHECKING:
     from pycaputo.grid import Points
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)

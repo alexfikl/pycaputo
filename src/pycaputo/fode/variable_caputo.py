@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -13,7 +14,6 @@ import numpy.linalg as la
 from pycaputo.controller import FixedController
 from pycaputo.derivatives import VariableExponentialCaputoDerivative
 from pycaputo.history import ProductIntegrationHistory
-from pycaputo.logging import get_logger
 from pycaputo.stepping import (
     FractionalDifferentialEquationMethod,
     advance,
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
     from pycaputo.events import Event
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ gallery

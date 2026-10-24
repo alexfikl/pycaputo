@@ -10,13 +10,16 @@
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 
 from pycaputo.derivatives import VariableExponentialCaputoDerivative as D
 from pycaputo.fode import variable_caputo as caputo
-from pycaputo.logging import get_logger
+from pycaputo.utils import set_up_logging
 
-log = get_logger("integrate-and-fire")
+set_up_logging()
+log = logging.getLogger(__name__)
 
 # {{{ evolve
 

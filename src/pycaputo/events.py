@@ -3,15 +3,14 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-
-from pycaputo.logging import get_logger
 
 if TYPE_CHECKING:
     from pycaputo.typing import Array
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)

@@ -3,19 +3,18 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.stats
-
-from pycaputo.logging import get_logger
 
 if TYPE_CHECKING:
     from scipy.stats._distn_infrastructure import rv_frozen
 
     from pycaputo.typing import Array, ScalarFunction
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ estimate_lipschitz_constant

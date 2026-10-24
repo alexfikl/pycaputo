@@ -26,16 +26,18 @@ we should expect the error to scale as
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pycaputo.logging import get_logger
+from pycaputo.utils import set_up_logging
 
 if TYPE_CHECKING:
     from pycaputo.typing import Array
 
-log = get_logger("trapezoidal")
+set_up_logging()
+log = logging.getLogger(__name__)
 
 
 # {{{ function

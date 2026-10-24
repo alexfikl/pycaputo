@@ -3,16 +3,15 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from pycaputo.logging import get_logger
-
 if TYPE_CHECKING:
     from pycaputo.typing import Array, StateFunction
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ root solve

@@ -3,20 +3,19 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, NamedTuple, overload
 
 import numpy as np
 
-from pycaputo.logging import get_logger
-
 from .special import Function
 
 if TYPE_CHECKING:
     from pycaputo.typing import Array
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ Arneodo

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import pathlib
 import time
@@ -12,15 +13,15 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, NamedTuple
 
 import numpy as np
 
-from pycaputo.logging import get_logger
-
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
     from types import TracebackType
 
+    import rich.table
+
     from pycaputo.typing import Array, DataclassInstance, P, PathLike, R, T
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ environment
@@ -37,6 +38,93 @@ BOOLEAN_STATES = {
 def get_environ_bool(name: str) -> bool:
     value = os.environ.get(name)
     return BOOLEAN_STATES.get(value.lower(), False) if value else False
+
+
+# }}}
+
+
+# {{{ logging
+
+
+PYCAPUTO_HANDLER_NAME = "pycaputo"
+
+
+def stringify_table(table: rich.table.Table) -> str:
+    """Stringify a rich table."""
+    import io
+
+    from rich.console import Console
+
+    file = io.StringIO()
+    console = Console(file=file)
+    console.print(table)
+
+    return str(file.getvalue())
+
+
+def set_up_logging(
+    level: int | str | None = None,
+    *,
+    rich: bool = True,
+) -> logging.Logger:
+    """Set up logging for scripts, examples, and tests.
+
+    A :class:`rich.logging.RichHandler` writing to ``stderr`` is installed by
+    default; the ``NO_COLOR`` environment variable disables colors and
+    highlighting. The ``PYCAPUTO_LOGGING_LEVEL`` environment variable can be
+    used to set a default logging level. Any handler previously installed by
+    this function is replaced.
+
+    :arg level: log level as an integer or case insensitive name (e.g. ``"INFO"``).
+    :arg rich: if *False*, use a plain :class:`logging.StreamHandler` instead.
+    """
+    root = logging.getLogger()
+
+    if level is None:
+        level = os.environ.get("PYCAPUTO_LOGGING_LEVEL", "INFO")
+
+    if isinstance(level, str):
+        level = getattr(logging, level.upper())
+
+    if not isinstance(level, int):
+        raise TypeError(f"'level' must be an int or str: {level!r}")
+
+    # remove any existing handler installed by this function
+    for handler in root.handlers[:]:
+        if handler.get_name() == PYCAPUTO_HANDLER_NAME:
+            root.removeHandler(handler)
+
+    if rich:
+        from rich.console import Console
+        from rich.highlighter import NullHighlighter
+        from rich.logging import RichHandler
+
+        no_color = "NO_COLOR" in os.environ
+        handler = RichHandler(
+            level,
+            console=Console(stderr=True, no_color=no_color),
+            show_time=True,
+            omit_repeated_times=False,
+            show_level=True,
+            show_path=True,
+            highlighter=NullHighlighter() if no_color else None,
+            markup=False,
+        )
+    else:
+        handler = logging.StreamHandler()
+        handler.setFormatter(
+            logging.Formatter(
+                "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+                datefmt="%H:%M:%S",
+            )
+        )
+
+    handler.set_name(PYCAPUTO_HANDLER_NAME)
+    handler.setLevel(level)
+    root.addHandler(handler)
+    root.setLevel(level)
+
+    return root
 
 
 # }}}

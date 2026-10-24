@@ -6,11 +6,6 @@ Implicit Solvers
 
 .. automodule:: pycaputo.implicit
 
-Logging
--------
-
-.. automodule:: pycaputo.logging
-
 Typing
 ------
 

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, NamedTuple, overload
 
@@ -16,14 +17,13 @@ from pycaputo.integrate_fire.base import (
     IntegrateFireMethod,
     IntegrateFireModel,
 )
-from pycaputo.logging import get_logger
 from pycaputo.stepping import advance
 from pycaputo.typing import Array  # ruff:ignore[typing-only-first-party-import]
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 # {{{ first spike time
 

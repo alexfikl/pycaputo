@@ -11,13 +11,10 @@ import subprocess  # ruff:ignore[suspicious-subprocess-import]
 import sys
 import tempfile
 
-import rich.logging
+from pycaputo.utils import set_up_logging
 
-SCRIPT_FILENAME = pathlib.Path(__file__)
-
-log = logging.getLogger(SCRIPT_FILENAME.stem)
-log.setLevel(logging.ERROR)
-log.addHandler(rich.logging.RichHandler())
+set_up_logging("ERROR")
+log = logging.getLogger(__name__)
 
 
 EXAMPLES_DIR = pathlib.Path("examples").resolve()
@@ -203,7 +200,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.quiet:
-        log.setLevel(logging.INFO)
+        set_up_logging("INFO")
 
     scripts = args.script
     if len(scripts) == 1 and scripts[0] == "all":

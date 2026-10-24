@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -14,12 +15,11 @@ from pycaputo.derivatives import (
     RiemannLiouvilleDerivative,
     Side,
 )
-from pycaputo.logging import get_logger
 
 if TYPE_CHECKING:
     from pycaputo.typing import Array
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ power

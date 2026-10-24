@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -12,7 +13,6 @@ from array_api_compat import array_namespace
 
 from pycaputo.derivatives import CaputoDerivative, Side
 from pycaputo.grid import MidPoints, Points, UniformPoints, make_midpoints_from
-from pycaputo.logging import get_logger
 from pycaputo.typing import (
     Array,
     ArrayOrScalarFunction,
@@ -30,7 +30,7 @@ from .base import (
     quadrature_weights,
 )
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)

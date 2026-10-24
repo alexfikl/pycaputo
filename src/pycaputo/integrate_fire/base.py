@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
@@ -14,7 +15,6 @@ from scipy.special import gamma
 from pycaputo import events
 from pycaputo.derivatives import CaputoDerivative
 from pycaputo.history import History, ProductIntegrationHistory
-from pycaputo.logging import get_logger
 from pycaputo.stepping import (
     FractionalDifferentialEquationMethod,
     advance,
@@ -26,7 +26,7 @@ from pycaputo.typing import Array  # ruff:ignore[typing-only-first-party-import]
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 # {{{ model interface
 

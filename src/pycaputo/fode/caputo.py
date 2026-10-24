@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from dataclasses import dataclass
 from functools import cached_property
@@ -17,7 +18,6 @@ from pycaputo.derivatives import CaputoDerivative
 from pycaputo.history import (
     ProductIntegrationHistory,  # ruff:ignore[typing-only-first-party-import]
 )
-from pycaputo.logging import get_logger
 from pycaputo.stepping import advance, make_initial_condition
 from pycaputo.typing import Array, StateFunctionT
 
@@ -29,7 +29,7 @@ from .product_integration import (
 if TYPE_CHECKING:
     from pycaputo.controller import Controller
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ base

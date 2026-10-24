@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, NamedTuple
 
@@ -10,7 +11,6 @@ import numpy as np
 
 from pycaputo.derivatives import FractionalOperatorT
 from pycaputo.history import History, ProductIntegrationHistory
-from pycaputo.logging import get_logger
 from pycaputo.stepping import (
     FractionalDifferentialEquationMethod,
     advance,
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from pycaputo.events import Event
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 class AdvanceResult(NamedTuple):

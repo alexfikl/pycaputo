@@ -3,12 +3,11 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
-
-from pycaputo.logging import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
     from pycaputo.grid import Points
     from pycaputo.typing import Array, ScalarFunction
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ Vandermonde matrix

@@ -3,15 +3,17 @@
 
 from __future__ import annotations
 
+import logging
 import math
 
 import numpy as np
 
 from pycaputo.derivatives import CaputoDerivative as D
 from pycaputo.integrate_fire import pif
-from pycaputo.logging import get_logger
+from pycaputo.utils import set_up_logging
 
-log = get_logger("integrate-and-fire")
+set_up_logging()
+log = logging.getLogger(__name__)
 
 # {{{ model
 

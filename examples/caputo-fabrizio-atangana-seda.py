@@ -17,6 +17,7 @@ In particular: the time step :math:`\Delta t` is not provided and the scaling
 from __future__ import annotations
 
 import csv
+import logging
 import math
 import pathlib
 from dataclasses import dataclass
@@ -25,12 +26,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from pycaputo.derivatives import CaputoFabrizioOperator
-from pycaputo.logging import get_logger
+from pycaputo.utils import set_up_logging
 
 if TYPE_CHECKING:
     from pycaputo.typing import Array
 
-log = get_logger("atangana-seda")
+set_up_logging()
+log = logging.getLogger(__name__)
 dirname = pathlib.Path(__file__).parent
 
 

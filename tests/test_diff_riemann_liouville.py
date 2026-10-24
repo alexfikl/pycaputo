@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import pathlib
 from typing import TYPE_CHECKING
 
@@ -11,7 +12,6 @@ import numpy.linalg as la
 import pytest
 
 from pycaputo.differentiation import diff, riemann_liouville
-from pycaputo.logging import get_logger
 from pycaputo.utils import get_environ_bool, set_recommended_matplotlib
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ TEST_FILENAME = pathlib.Path(__file__)
 TEST_DIRECTORY = TEST_FILENAME.parent
 ENABLE_VISUAL = get_environ_bool("ENABLE_VISUAL")
 
-log = get_logger(f"pycaputo.{TEST_FILENAME.stem}")
+log = logging.getLogger(__name__)
 if ENABLE_VISUAL:
     set_recommended_matplotlib()
 

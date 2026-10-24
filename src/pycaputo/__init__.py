@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import pathlib
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -15,7 +16,8 @@ from pycaputo.derivatives import (
     RiemannLiouvilleDerivative,
     Side,
 )
-from pycaputo.logging import get_logger
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -32,7 +34,7 @@ if TYPE_CHECKING:
         StateFunctionT,
     )
 
-log = get_logger("pycaputo")
+log = logging.getLogger(__name__)
 
 
 # {{{ diff

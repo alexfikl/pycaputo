@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from math import gamma
 
@@ -10,12 +11,11 @@ import numpy as np
 
 from pycaputo.derivatives import GrunwaldLetnikovDerivative, Side
 from pycaputo.grid import Points, UniformPoints
-from pycaputo.logging import get_logger
 from pycaputo.typing import Array, ArrayOrScalarFunction, is_scalar_function
 
 from .base import DerivativeMethod, diff
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)

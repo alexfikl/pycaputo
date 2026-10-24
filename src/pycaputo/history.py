@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, fields
 from typing import TYPE_CHECKING, Any, Generic
@@ -10,13 +11,12 @@ from typing import TYPE_CHECKING, Any, Generic
 import numpy as np
 from typing_extensions import Self
 
-from pycaputo.logging import get_logger
 from pycaputo.typing import Array, T
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # {{{ interface
