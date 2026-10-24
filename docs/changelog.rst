@@ -1,6 +1,20 @@
 Changelog
 =========
 
+pycaputo 0.10.3 (October 24, 2026)
+----------------------------------
+
+Dependencies
+^^^^^^^^^^^^
+
+* Add official support for Python 3.15.
+
+Maintenance
+^^^^^^^^^^^
+
+* Fix some broken tests, with incorrectly initialized memory.
+* Fix new ``ruff``, ``ty``, etc. errors.
+
 pycaputo 0.10.2 (June 19, 2026)
 -------------------------------
 
