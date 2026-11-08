@@ -35,9 +35,9 @@ if TYPE_CHECKING:
     from pycaputo.typing import Array
 
 try:
-    import numba  # ty: ignore[unresolved-import]
-    from numba.experimental import jitclass  # ty: ignore[unresolved-import]
-    from numba.extending import overload  # ty: ignore[unresolved-import]
+    import numba  # ty: ignore[import-not-found]
+    from numba.experimental import jitclass  # ty: ignore[import-not-found]
+    from numba.extending import overload  # ty: ignore[import-not-found]
 except ImportError:
     print("ERROR: this example requires the 'numba' package")
     raise SystemExit(0) from None

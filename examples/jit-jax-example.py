@@ -35,9 +35,9 @@ if TYPE_CHECKING:
 # {{{ jax
 
 try:
-    import jax  # ty: ignore[unresolved-import]
-    import jax.numpy as jnp  # ty: ignore[unresolved-import]
-    from jax.tree_util import register_dataclass  # ty: ignore[unresolved-import]
+    import jax  # ty: ignore[import-not-found]
+    import jax.numpy as jnp  # ty: ignore[import-not-found]
+    from jax.tree_util import register_dataclass  # ty: ignore[import-not-found]
 
     jax.config.update("jax_enable_x64", val=True)
 except ImportError:

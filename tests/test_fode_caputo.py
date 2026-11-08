@@ -137,7 +137,7 @@ def fode_factory(
         return cls(
             ds=tuple(CaputoDerivative(alpha_i) for alpha_i in alpha),  # ty: ignore[invalid-argument-type]
             control=control,
-            source=partial(source, alpha=alpha),
+            source=partial(source, alpha=alpha),  # ty: ignore[invalid-argument-type]
             y0=(y0,),
             **kwargs,
         )

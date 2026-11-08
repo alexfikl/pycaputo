@@ -882,6 +882,7 @@ def _diff_caputo_yuan_agrawal(
     assert isinstance(f, DifferentiableScalarFunction)
 
     try:
+        # FIXME: is it reasonable to ask f to be able to evaluate just one x?
         dtype = np.array(f(p.x[0], d=0)).dtype
     except TypeError:
         raise TypeError(
@@ -900,7 +901,7 @@ def _diff_caputo_yuan_agrawal(
     qf[0] = np.nan
     qf[1:] = np.einsum("i,ij->j", w, phi)
 
-    return qf
+    return qf  # ty: ignore[invalid-return-type]
 
 
 # }}}
