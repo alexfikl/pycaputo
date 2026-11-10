@@ -131,7 +131,7 @@ six==1.17.0 ; python_full_version < '3.11'
     # via python-dateutil
 tomli==2.5.0 ; python_full_version < '3.11'
     # via pytest
-ty==0.0.99
+ty==0.0.100
     # via pycaputo (pyproject.toml:test)
 types-dataclasses==0.6.6
     # via pycaputo (pyproject.toml:test)
