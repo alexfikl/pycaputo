@@ -417,7 +417,7 @@ def check_usetex(*, s: bool) -> bool:
         return False
 
     try:
-        return bool(matplotlib.checkdep_usetex(s))  # ty: ignore[unresolved-attribute]
+        return bool(matplotlib.checkdep_usetex(s))  # ty: ignore[missing-attribute]
     except AttributeError:
         # NOTE: simplified version from matplotlib
         # https://github.com/matplotlib/matplotlib/blob/ec85e725b4b117d2729c9c4f720f31cf8739211f/lib/matplotlib/__init__.py#L439=L456
@@ -562,8 +562,8 @@ def figure(
 
         for ax in fig.axes:
             assert isinstance(ax, Axes3D)
-            ax.xaxis.pane.fill = pane_fill  # ty: ignore[unresolved-attribute]
-            ax.yaxis.pane.fill = pane_fill  # ty: ignore[unresolved-attribute]
+            ax.xaxis.pane.fill = pane_fill  # ty: ignore[missing-attribute]
+            ax.yaxis.pane.fill = pane_fill  # ty: ignore[missing-union-attribute]
             ax.zaxis.pane.fill = pane_fill
 
     try:
@@ -877,7 +877,7 @@ def cached_on_first_arg(
 
     # FIXME: find a way to tell the type checker about this
     new_wrapper = update_wrapper(wrapper, func)
-    new_wrapper.clear_cached = clear_cached  # ty: ignore[unresolved-attribute]
+    new_wrapper.clear_cached = clear_cached  # ty: ignore[missing-attribute]
 
     return new_wrapper
 
