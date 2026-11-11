@@ -1,7 +1,9 @@
 SPHINXOPTS := "-W --keep-going -n"
-SPHINXBUILD := "python `which sphinx-build`"
+SPHINXBUILD := "python -m sphinx"
 SOURCEDIR := "."
 BUILDDIR := "_build"
+
+SVGO := "svgo"
 
 _default:
     @just --list
@@ -25,3 +27,7 @@ rebuild target="html":
 view:
     @echo "Opened in browser '${BROWSER}'"
     @${BROWSER} {{ BUILDDIR }}/html/index.html
+
+[doc("Scrub SVG files in _static with svgo")]
+optimize_svg:
+    @{{ SVGO }} --multipass --precision 3 --pretty --indent 0 --recursive --folder _static
