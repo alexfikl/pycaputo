@@ -147,6 +147,7 @@ def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
         "PYTHONPATH": str(pathlib.Path.cwd()),
     })
 
+    generated: list[str] = []
     for name, artifacts in ARTIFACTS.items():
         if scripts is not None and name not in unique_scripts:
             continue
@@ -173,7 +174,41 @@ def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
                     outfile = outdir / infile.name
 
                     shutil.copyfile(infile, outfile)
+                    generated.append(str(outfile))
                     log.info("Generated '%s' from '%s'.", outfile.name, infile)
+
+    if not generated:
+        return 0
+
+    svgo = shutil.which("svgo")
+    if svgo is None:
+        log.warning("'svgo' was not found. Skipping SVG optimization.")
+        return 0
+
+    log.info("Optimizing %d SVG files with svgo.", len(generated))
+    try:
+        proc = subprocess.run(  # ruff:ignore[subprocess-without-shell-equals-true]
+            [
+                # NOTE: keep in sync with `docs/justfile optimize_svg`
+                svgo,
+                "--multipass",
+                "--precision",
+                "3",
+                "--pretty",
+                "--indent",
+                "0",
+                *generated,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        log.error("Failed to optimize SVG files: %s", exc.stderr)
+        return 1
+
+    if proc.stdout:
+        log.info("%s", proc.stdout.rstrip())
 
     return 0
 
