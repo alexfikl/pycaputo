@@ -143,6 +143,7 @@ def main(outdir: pathlib.Path, scripts: list[str] | None = None) -> int:
         "PYCAPUTO_LOGGING_LEVEL": "ERROR",
         "PYCAPUTO_SAVEFIG": "SVG",
         "PYCAPUTO_DARK": "BOTH",
+        "MPLBACKEND": "Agg",
         "PYTHONPATH": str(pathlib.Path.cwd()),
     })
 
