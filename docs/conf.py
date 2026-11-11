@@ -287,6 +287,9 @@ nitpick_ignore_regex = [
 # fmt: off
 custom_type_links = {
     # numpy
+    "np.complexfloating": ("numpy", "numpy.complexfloating", "class"),
+    "np.floating": ("numpy", "numpy.floating", "class"),
+    "np.integer": ("numpy", "numpy.integer", "class"),
     "np.random.Generator": ("numpy", "numpy.random.Generator", "class"),
     # pycaputo
     "pycaputo.integrate_fire.base.IntegrateFireModelT": (None, "pycaputo.integrate_fire.IntegrateFireModelT", "obj"),  # ruff:ignore[line-too-long]
