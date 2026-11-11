@@ -51,7 +51,7 @@ dependencies = [
     "typing-extensions>=4",
 ]
 # NOTE: this is only here for readthedocs (keep in sync with the dependency group)
-optional-dependencies.docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.4" ]
+optional-dependencies.docs = [ "sphinx>=6", "sphinx-book-theme", "sphinx-design>=0.8" ]
 urls.Documentation = "https://pycaputo.readthedocs.io"
 urls.Repository = "https://github.com/alexfikl/pycaputo"
 
