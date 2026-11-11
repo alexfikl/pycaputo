@@ -29,12 +29,12 @@ Integrate-and-Fire Models
         :align: center
         :alt: Fractional-order perfect integrate-and-fire system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.integrate_fire.pif.PIFModel` class. The complete setup
-    (with parameters) can be found in
-    :download:`examples/gallery/pif.py <../examples/gallery/pif.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.integrate_fire.pif.PIFModel` class. The complete setup
+        (with parameters) can be found in
+        :download:`examples/gallery/pif.py <../examples/gallery/pif.py>`.
 
 .. card:: Fractional-order Leaky Integrate-and-Fire (LIF) System
     :class-title: sd-text-center
@@ -51,12 +51,12 @@ Integrate-and-Fire Models
         :align: center
         :alt: Fractional-order leaky integrate-and-fire system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.integrate_fire.lif.LIFModel` class. The complete setup
-    (with parameters) can be found in
-    :download:`examples/gallery/lif.py <../examples/gallery/lif.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.integrate_fire.lif.LIFModel` class. The complete setup
+        (with parameters) can be found in
+        :download:`examples/gallery/lif.py <../examples/gallery/lif.py>`.
 
 .. card:: Fractional-order Adaptive Exponential Integrate-and-Fire (AdEx) System
     :class-title: sd-text-center
@@ -73,12 +73,12 @@ Integrate-and-Fire Models
         :align: center
         :alt: Fractional-order adaptive exponential integrate-and-fire system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.integrate_fire.ad_ex.AdExModel` class to reproduce Figure4d
-    from [Naud2008]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/adex.py <../examples/gallery/adex.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.integrate_fire.ad_ex.AdExModel` class to reproduce Figure4d
+        from [Naud2008]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/adex.py <../examples/gallery/adex.py>`.
 
 FitzHugh-Nagumo Models
 ----------------------
@@ -98,12 +98,12 @@ FitzHugh-Nagumo Models
         :align: center
         :alt: Fractional-order FitzHugh-Nagumo system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.FitzHughNagumo` class to reproduce Figure 4d
-    from [Brandibur2018]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.FitzHughNagumo` class to reproduce Figure 4d
+        from [Brandibur2018]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/fitzhugh-nagumo.py <../examples/gallery/fitzhugh-nagumo.py>`.
 
 FitzHugh-Rinzel Models
 ----------------------
@@ -123,12 +123,12 @@ FitzHugh-Rinzel Models
         :align: center
         :alt: Fractional-order FitzHugh-Rinzel system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 3g
-    from [Mondal2019]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/fitzhugh-rinzel.py <../examples/gallery/fitzhugh-rinzel.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.FitzHughRinzel` class to reproduce Figure 3g
+        from [Mondal2019]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/fitzhugh-rinzel.py <../examples/gallery/fitzhugh-rinzel.py>`.
 
 Morris-Lecar Models
 -------------------
@@ -148,12 +148,12 @@ Morris-Lecar Models
         :align: center
         :alt: Fractional-order Morris-Lecar system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.MorrisLecar` class to reproduce Figure 11
-    from [Shi2014]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/morris-lecar.py <../examples/gallery/morris-lecar.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.MorrisLecar` class to reproduce Figure 11
+        from [Shi2014]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/morris-lecar.py <../examples/gallery/morris-lecar.py>`.
 
 Hindmarsh-Rose Models
 ---------------------
@@ -173,12 +173,12 @@ Hindmarsh-Rose Models
         :align: center
         :alt: Fractional-order two-dimensional Hindmarsh-Rose system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.HindmarshRose2` class to reproduce Figure 3b
-    from [Kaslik2017]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/hindmarsh-rose2.py <../examples/gallery/hindmarsh-rose2.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.HindmarshRose2` class to reproduce Figure 3b
+        from [Kaslik2017]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/hindmarsh-rose2.py <../examples/gallery/hindmarsh-rose2.py>`.
 
 .. card:: Fractional-order three-dimensional Hindmarsh-Rose System
     :class-title: sd-text-center
@@ -195,12 +195,12 @@ Hindmarsh-Rose Models
         :align: center
         :alt: Fractional-order three-dimensional Hindmarsh-Rose system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.HindmarshRose3` class to reproduce Figure 5a
-    from [Kaslik2017]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/hindmarsh-rose3.py <../examples/gallery/hindmarsh-rose3.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.HindmarshRose3` class to reproduce Figure 5a
+        from [Kaslik2017]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/hindmarsh-rose3.py <../examples/gallery/hindmarsh-rose3.py>`.
 
 .. card:: Fractional-order four-dimensional Hindmarsh-Rose System
     :class-title: sd-text-center
@@ -217,12 +217,12 @@ Hindmarsh-Rose Models
         :align: center
         :alt: Fractional-order four-dimensional Hindmarsh-Rose system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.HindmarshRose4` class to reproduce Figure 1
-    from [Giresse2019]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/hindmarsh-rose4.py <../examples/gallery/hindmarsh-rose4.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.HindmarshRose4` class to reproduce Figure 1
+        from [Giresse2019]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/hindmarsh-rose4.py <../examples/gallery/hindmarsh-rose4.py>`.
 
 Hodgkin-Huxley Models
 ---------------------
@@ -242,9 +242,9 @@ Hodgkin-Huxley Models
         :align: center
         :alt: Fractional-order Hodgkin-Huxley system
 
-    +++
+    .. card-footer::
 
-    This example uses the Caputo derivative and the
-    :class:`~pycaputo.fode.gallery.HodgkinHuxley` class to reproduce Figure 4
-    from [Nagy2014]_. The complete setup (with parameters) can be found in
-    :download:`examples/gallery/hodgkin-huxley.py <../examples/gallery/hodgkin-huxley.py>`.
+        This example uses the Caputo derivative and the
+        :class:`~pycaputo.fode.gallery.HodgkinHuxley` class to reproduce Figure 4
+        from [Nagy2014]_. The complete setup (with parameters) can be found in
+        :download:`examples/gallery/hodgkin-huxley.py <../examples/gallery/hodgkin-huxley.py>`.
