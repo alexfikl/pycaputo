@@ -989,7 +989,7 @@ def dc_stringify(
         assert not isinstance(dc, type)
         fields = dc_asdict(dc)
     elif isinstance(dc, tuple) and hasattr(dc, "_asdict"):  # is_namedtuple
-        fields = dc._asdict()  # ty: ignore[call-non-callable]
+        fields = dc._asdict()  # ty: ignore[not-callable]
     elif isinstance(dc, dict):
         fields = dc
     else:

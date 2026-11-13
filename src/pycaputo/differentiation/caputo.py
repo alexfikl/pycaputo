@@ -901,7 +901,7 @@ def _diff_caputo_yuan_agrawal(
     qf[0] = np.nan
     qf[1:] = np.einsum("i,ij->j", w, phi)
 
-    return qf  # ty: ignore[invalid-return-type]
+    return qf  # ty: ignore[invalid-explicit-return]
 
 
 # }}}
